@@ -303,6 +303,14 @@
                                     <TextBlock Text="{l:Tr Ui_AiName}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <Button Classes="action" Command="{Binding MovePrintedCommand}" IsEnabled="{Binding HasFields}"
+                                    ToolTip.Tip="{l:Tr Ui_MovePrintedTip}" x:Name="MovePrintedButton">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <c:Icon Data="{StaticResource I.Erase}" Size="18" />
+                                    <TextBlock Text="{l:Tr Ui_MovePrinted}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_MovePrintedNote}" Margin="0,0,0,6" />
 
                             <TextBlock Classes="section" Text="{l:Tr Ui_SectionEdit}" />
                             <TextBlock Classes="note" Text="{l:Tr Ui_EditKeys}" />
@@ -505,6 +513,9 @@
                             <CheckBox IsChecked="{Binding Erase.KeepColored}" Content="{l:Tr Ui_EraseKeepColored}" />
                             <TextBlock Classes="note" Text="{l:Tr Ui_EraseKeepColoredNote}" Margin="28,0,0,6" />
                             <CheckBox IsChecked="{Binding Erase.Rules}" Content="{l:Tr Ui_EraseRules}" />
+                            <CheckBox IsChecked="{Binding Erase.MakeEditable}" Content="{l:Tr Ui_EraseMakeEditable}" Margin="0,6,0,0"
+                                      x:Name="EraseMakeEditable" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_EraseMakeEditableNote}" Margin="28,0,0,0" />
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
@@ -541,6 +552,17 @@
                         <TextBlock Text="{l:Tr Ui_Field}" FontSize="15" FontWeight="SemiBold" />
                         <TextBlock Classes="note" Text="{l:Tr Ui_NoSelection}" Margin="0,8,0,0" IsVisible="{Binding !HasSelection}" />
                         <StackPanel IsVisible="{Binding HasSelection}">
+                            <!-- filling (Preview): the value; preparing the form: name, type, alignment -->
+                            <StackPanel IsVisible="{Binding PreviewMode}">
+                                <TextBlock Classes="caption" Text="{Binding SelectedField.Label}"
+                                           IsVisible="{Binding SelectedField.Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}" />
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_Value}" />
+                                <TextBox Text="{Binding SelectedField.Value}" IsVisible="{Binding !SelectedField.IsCheckbox, FallbackValue=False}"
+                                         TextWrapping="Wrap" x:Name="FieldValueBox" />
+                                <CheckBox IsChecked="{Binding SelectedField.Ticked}" Content="{l:Tr Ui_Ticked}"
+                                          IsVisible="{Binding SelectedField.IsCheckbox, FallbackValue=False}" />
+                            </StackPanel>
+                            <StackPanel IsVisible="{Binding IsDesignMode}">
                             <TextBlock Classes="caption" Text="{l:Tr Ui_Name}" />
                             <TextBox Text="{Binding SelectedField.Name}" x:Name="FieldNameBox" />
                             <Grid ColumnDefinitions="*,8,*">
@@ -559,24 +581,59 @@
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Boxes}" />
                                 <NumericUpDown Value="{Binding SelectedField.MaxLen}" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
                             </StackPanel>
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_Label}" />
-                            <TextBlock Text="{Binding SelectedField.Label}" TextWrapping="Wrap" />
+                            <StackPanel IsVisible="{Binding SelectedField.Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_Label}" />
+                                <TextBlock Text="{Binding SelectedField.Label}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            </StackPanel>
+                            <!-- how the value looks: fitted to the box unless a size is chosen -->
+                            <StackPanel IsVisible="{Binding !SelectedField.IsCheckbox, FallbackValue=False}" x:Name="TextStylePanel">
+                                <Grid ColumnDefinitions="*,8,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_TextSize}" />
+                                        <ComboBox x:Name="SizeBox" ItemsSource="{x:Static vm:MainViewModel.FontSizes}" HorizontalAlignment="Stretch"
+                                                  SelectedValue="{Binding SelectedField.FontSize}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_TextColor}" />
+                                        <ComboBox x:Name="ColorBox" ItemsSource="{x:Static vm:MainViewModel.TextColors}" HorizontalAlignment="Stretch"
+                                                  SelectedValue="{Binding SelectedField.Color}" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_TextFace}" />
+                                <ComboBox x:Name="FaceBox" ItemsSource="{x:Static vm:MainViewModel.FontFaces}" HorizontalAlignment="Stretch"
+                                          SelectedValue="{Binding SelectedField.Font}" />
+                                <Button Content="{l:Tr Ui_StyleApplyAll}" Command="{Binding ApplyStyleToAllCommand}" Padding="10,4" FontSize="12"
+                                        Margin="0,8,0,0" />
+                            </StackPanel>
                             <StackPanel IsVisible="{Binding SelectedField.HasPrefilled, FallbackValue=False}">
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Prefilled}" />
                                 <TextBlock Text="{Binding SelectedField.PrefilledText}" TextWrapping="Wrap" Foreground="#da1e28" />
+                                <Button Classes="action" Command="{Binding MovePrintedCommand}" CommandParameter="{Binding SelectedField}"
+                                        Margin="0,8,0,0" x:Name="MovePrintedFieldButton">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <c:Icon Data="{StaticResource I.Erase}" Size="18" />
+                                        <TextBlock Text="{l:Tr Ui_MovePrintedField}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
-                            <TextBlock Text="{Binding SelectedField.PositionText}" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,10,0,0" />
                         </StackPanel>
                         <Rectangle Height="1" Fill="{StaticResource RuleBrush}" Margin="0,16,0,8" />
-                        <TextBlock Classes="caption" Text="{l:Tr Ui_FieldsOnPage}" Margin="0,4,0,4" />
+                        <TextBlock Classes="caption" Text="{Binding ListCaption}" Margin="0,4,0,4" x:Name="FieldListCaption" />
+                        <TextBlock Classes="note" Text="{Binding ListEmptyText}" IsVisible="{Binding ListEmpty}" Margin="0,4,0,0" />
                     </StackPanel>
-                    <ListBox ItemsSource="{Binding PageFields}" SelectedItem="{Binding SelectedField}" x:Name="FieldList">
+                    <!-- what is in each field (its value), else the form's own label, else the name -->
+                    <ListBox ItemsSource="{Binding ListFields}" SelectedItem="{Binding SelectedField, Mode=OneWay}" x:Name="FieldList">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:FieldViewModel">
                                 <DockPanel>
                                     <TextBlock DockPanel.Dock="Right" Text="{Binding KindText}" Foreground="{StaticResource MutedBrush}" FontSize="11"
                                                VerticalAlignment="Center" Margin="8,0,0,0" />
-                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Name}" IsVisible="{Binding ShowName}" FontSize="10"
+                                                   Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
                                 </DockPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

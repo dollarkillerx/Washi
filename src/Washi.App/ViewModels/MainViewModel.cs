@@ -91,6 +91,42 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     // ------------------------------------------------------------------ state
     public ObservableCollection<FieldViewModel> Fields { get; } = [];
     public ObservableCollection<FieldViewModel> PageFields { get; } = [];
+
+    /// <summary>
+    /// The rows of the field list. Preparing a form: every field of the page. Filling it (Preview): only what has
+    /// been filled in, as an overview of what will be saved; a long list of empty fields helps nobody.
+    /// </summary>
+    public ObservableCollection<FieldViewModel> ListFields { get; } = [];
+
+    public string ListCaption => PreviewMode
+        ? L.F("Ui_FilledOnPage", PageFields.Count(f => f.HasValue), PageFields.Count)
+        : L.F("Ui_FieldsOnPageCount", PageFields.Count);
+
+    public bool ListEmpty => ListFields.Count == 0 && HasDocument;
+    public string ListEmptyText => L.Get(PreviewMode ? "Ui_NothingFilled" : "Ui_NoFieldsOnPage");
+
+    /// <summary>Design-time properties (name, type, alignment) are shown while preparing the form, not while filling it.</summary>
+    public bool IsDesignMode => !PreviewMode;
+
+    private void RefreshListFields()
+    {
+        var want = PreviewMode ? PageFields.Where(f => f.HasValue).ToList() : PageFields.ToList();
+        if (!want.SequenceEqual(ListFields))
+        {
+            var selected = SelectedField;
+            ListFields.Clear();
+            foreach (var f in want) ListFields.Add(f);
+            if (!ReferenceEquals(SelectedField, selected)) SelectedField = selected;   // the list must not drop the selection
+        }
+        OnPropertyChanged(nameof(ListCaption));
+        OnPropertyChanged(nameof(ListEmpty));
+        OnPropertyChanged(nameof(ListEmptyText));
+    }
+
+    private void OnFieldPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FieldViewModel.Value)) RefreshListFields();
+    }
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
@@ -177,6 +213,8 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     public int FilledCount => Fields.Count(f => f.Value.Length > 0);
 
+    public bool HasFields => Fields.Count > 0;
+
     public bool IsSelectMode => !DrawMode && !PreviewMode;
     [ObservableProperty] private bool _busy;
     [ObservableProperty] private string _status = "";
@@ -203,6 +241,33 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public static IReadOnlyList<Choice<FieldKind>> Kinds =>
         [.. Enum.GetValues<FieldKind>().Select(k => new Choice<FieldKind>(k, L.Get("Kind_" + k.ToString().ToLowerInvariant())))];
 
+    /// <summary>Text sizes for a field's value: fitted to the box by default, or a fixed size in points.</summary>
+    public static IReadOnlyList<Choice<double>> FontSizes =>
+        [new(0, L.Get("Ui_SizeAuto")), .. new double[] { 6, 7, 8, 9, 10, 10.5, 11, 12, 14, 16, 18, 24 }.Select(v => new Choice<double>(v, v.ToString("0.#") + " pt"))];
+
+    public static IReadOnlyList<Choice<string>> FontFaces =>
+        [new("", L.Get("Ui_FaceAuto")), new("serif", L.Get("Ui_FaceSerif")), new("sans", L.Get("Ui_FaceSans"))];
+
+    public static IReadOnlyList<Choice<string>> TextColors =>
+    [
+        new("", L.Get("Ui_ColorBlack")), new("#1F3A93", L.Get("Ui_ColorBlue")), new("#C0392B", L.Get("Ui_ColorRed")),
+        new("#1E8449", L.Get("Ui_ColorGreen")), new("#6F6F6F", L.Get("Ui_ColorGrey")),
+    ];
+
+    /// <summary>Gives every text field the selected field's size, colour and face.</summary>
+    [RelayCommand]
+    private void ApplyStyleToAll()
+    {
+        if (SelectedField is not { } s) return;
+        foreach (var f in Fields.Where(f => f.Kind != FieldKind.Checkbox && !ReferenceEquals(f, s)))
+        {
+            f.FontSize = s.FontSize;
+            f.Color = s.Color;
+            f.Font = s.Font;
+        }
+        Status = L.F("Ui_StyleApplied", Fields.Count(f => f.Kind != FieldKind.Checkbox));
+    }
+
     public static IReadOnlyList<Choice<int>> Alignments =>
         [new(0, L.Get("Ui_AlignLeft")), new(1, L.Get("Ui_AlignCenter")), new(2, L.Get("Ui_AlignRight"))];
 
@@ -220,6 +285,8 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value) DrawMode = false;
         OnPropertyChanged(nameof(Hint));
         OnPropertyChanged(nameof(IsSelectMode));
+        OnPropertyChanged(nameof(IsDesignMode));
+        RefreshListFields();
     }
 
     /// <summary>Raised when a text field should get the inline editor (Preview); the view places it.</summary>
@@ -422,6 +489,97 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         });
     }
 
+    /// <summary>The on-device OCR engine for printed values; tests replace it.</summary>
+    public Func<Washi.Core.Ocr.IOcrEngine> OcrFactory { get; set; } = () => Washi.Core.Ocr.OcrEngines.Create("auto");
+
+    /// <summary>
+    /// Makes what is already printed in the fields editable: the print under every field is erased for real into
+    /// &lt;name&gt;_erased.pdf (the original is not changed), its text (from the PDF, or OCR of the erased ink) becomes
+    /// the field's value, and Preview opens so each value can be clicked and edited. The fields are kept as they are.
+    /// </summary>
+    /// <param name="only">One field (the button in the field panel); null converts every field.</param>
+    [RelayCommand]
+    private async Task MovePrintedAsync(FieldViewModel? only)
+    {
+        if (PdfPath is not { } pdf || Fields.Count == 0) return;
+        var targets = only is not null ? [only] : Fields.Where(f => f.Kind != FieldKind.Checkbox).ToList();
+        var cells = targets.Select((f, i) => new Washi.Core.Pages.PrintedCell(i.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            f.Page, f.Rect, f.Kind == FieldKind.Comb)).ToList();
+        var (output, replace) = WorkingCopy(pdf);
+        var languages = OcrLanguageOrder;
+        Washi.Core.Pages.PrintedResult? result = null;
+        await Run(async () =>
+        {
+            Status = L.Get("Ui_MovingPrinted");
+            try
+            {
+                // text and images only: on a black-printed form the boxes of a comb or a checkbox are drawings too,
+                // and they are the form, not data (strokes and marks go with the Erase tool, where they are shown first)
+                result = await Washi.Core.Pages.PrintedText.MoveIntoFieldsAsync(pdf, output, cells, OcrFactory, languages,
+                    new Washi.Core.Pages.EraseOptions(Drawings: false));
+            }
+            catch (Washi.Core.Pages.EraseException e)
+            {
+                Status = L.F("Ui_EraseFailed", Errors.Text(e));
+            }
+        });
+        if (result is null) return;
+        output = Commit(output, replace);
+
+        // the erased copy replaces the page on screen; the fields stay
+        int moved = 0, byOcr = 0;
+        foreach (var v in result.Values)
+        {
+            var f = targets[int.Parse(v.Key, System.Globalization.CultureInfo.InvariantCulture)];
+            f.Prefilled = "";
+            if (v.Text.Length == 0 || f.Value.Length > 0) continue;   // what the user already typed wins over the old print
+            f.Value = f.Kind == FieldKind.Comb && f.MaxLen > 0 && v.Text.Length > f.MaxLen ? v.Text[..f.MaxLen] : v.Text;
+            moved++;
+            if (v.FromOcr) byOcr++;
+        }
+        await SwapDocumentAsync(output);
+        PreviewMode = true;
+        Status = L.F("Ui_MovedPrinted", moved, byOcr, Path.GetFileName(output));
+        // one field from its panel: go straight to editing it
+        if (only is not null && only.Kind != FieldKind.Checkbox)
+        {
+            if (only.Page != PageIndex) PageIndex = only.Page;
+            ActivateField(only);
+        }
+    }
+
+    /// <summary>OCR languages for printed values: the form language when chosen, else Japanese first (the forms Washi
+    /// is built for), then Chinese and English.</summary>
+    internal IReadOnlyList<string> OcrLanguageOrder =>
+        FormLanguage.Value is { Length: > 0 } lang && lang != "auto" ? [lang, "en"] : ["ja", "zh-Hans", "en"];
+
+    /// <summary>The copy Washi wrote in this session (erased); later erases update it instead of copying it again.</summary>
+    internal string? OwnCopy { get; set; }
+
+    /// <summary>
+    /// Where an erase writes: the open file is the original → a new &lt;name&gt;_erased.pdf; it is Washi's own
+    /// copy → a temporary file that then replaces that copy (the original is never touched).
+    /// </summary>
+    internal (string Output, bool Replace) WorkingCopy(string pdf) =>
+        pdf == OwnCopy && File.Exists(pdf) ? (Path.Combine(Path.GetDirectoryName(pdf)!, $".{Path.GetFileNameWithoutExtension(pdf)}.{Guid.NewGuid():N}.pdf"), true)
+                                           : (EraseToolViewModel.FreeName(pdf), false);
+
+    internal string Commit(string output, bool replace)
+    {
+        if (!replace) { OwnCopy = output; return output; }
+        File.Move(output, OwnCopy!, overwrite: true);
+        return OwnCopy!;
+    }
+
+    /// <summary>Shows another file of the same form (an erased copy) without touching the fields.</summary>
+    internal async Task SwapDocumentAsync(string path)
+    {
+        PdfPath = path;   // (the same path again when Washi's own copy was rewritten: the page is rendered anew below)
+        _detectedFor = path;
+        await RenderPageAsync();
+        _ = RenderThumbnailsAsync(path);
+    }
+
     /// <summary>Builds the AI model; tests replace it.</summary>
     public Func<Washi.Ai.IAiModel> ModelFactory { get; set; } = () => Washi.Ai.AiSettings.Load().CreateModel();
 
@@ -431,7 +589,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (PdfPath is not { } pdf || Fields.Count == 0) return;
         Washi.Ai.IAiModel model;
         try { model = ModelFactory(); }
-        catch (Washi.Ai.AiException e) { Status = L.F("Ai_Error", e.Message); return; }
+        catch (Washi.Ai.AiException e) { Status = L.F("Ai_Error", UiErrors.Text(e)); return; }
 
         var fields = Fields.Select(f => f.ToDetected()).ToList();
         var payload = Washi.Ai.AiFeatures.DescribeNaming(model, fields);
@@ -453,7 +611,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
             catch (Exception e) when (e is Washi.Ai.AiException or HttpRequestException or System.ClientModel.ClientResultException
                                           or Anthropic.Exceptions.AnthropicException or OperationCanceledException or TimeoutException)
             {
-                Status = L.F("Ai_Error", e.Message);
+                Status = L.F("Ai_Error", UiErrors.Text(e));
             }
         });
     }
@@ -512,12 +670,13 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     private bool _fitPending;
 
     /// <summary>A new field drawn by the user on the current page.</summary>
-    public FieldViewModel AddField(Washi.Core.PdfRect rect)
+    public FieldViewModel AddField(Washi.Core.PdfRect rect, int? page = null)
     {
-        int n = Fields.Count(f => f.Page == PageIndex) + 1;
+        int p = page ?? PageIndex;
+        int n = Fields.Count(f => f.Page == p) + 1;
         string name;
-        do name = $"p{PageIndex + 1}_text_{n++:000}"; while (Fields.Any(f => f.Name == name));
-        var field = new FieldViewModel { Page = PageIndex, Kind = FieldKind.Text, Name = name };
+        do name = $"p{p + 1}_text_{n++:000}"; while (Fields.Any(f => f.Name == name));
+        var field = new FieldViewModel { Page = p, Kind = FieldKind.Text, Name = name };
         field.SetRect(rect);
         Fields.Add(field);
         SelectedField = field;
@@ -534,7 +693,12 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     private void OnFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        foreach (FieldViewModel f in e.OldItems ?? Array.Empty<FieldViewModel>()) f.PropertyChanged -= OnFieldPropertyChanged;
+        foreach (FieldViewModel f in e.NewItems ?? Array.Empty<FieldViewModel>()) f.PropertyChanged += OnFieldPropertyChanged;
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+            foreach (var f in Fields) { f.PropertyChanged -= OnFieldPropertyChanged; f.PropertyChanged += OnFieldPropertyChanged; }
         UpdateSnapshot();
+        OnPropertyChanged(nameof(HasFields));
         RefreshPageFields();
         var summary = Summary();
         FieldSummary = Fields.Count == 0 ? "" : L.F("Ui_FieldTotal", Fields.Count, summary);
@@ -545,6 +709,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         PageFields.Clear();
         foreach (var f in Fields.Where(f => f.Page == PageIndex).OrderBy(f => Math.Round(f.Y0 / 6)).ThenBy(f => f.X0))
             PageFields.Add(f);
+        RefreshListFields();
     }
 
     private string Summary() => string.Join(", ", Fields.GroupBy(f => f.Kind).OrderBy(g => g.Key).Select(g => $"{g.Count()} {g.First().KindText}"));
@@ -609,12 +774,12 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         }
         catch (Exception e) when (e is Washi.Core.Pages.PageAssemblyException or Washi.Core.Ocr.OcrException)
         {
-            Status = L.F("Ui_Error", e.Message);
+            Status = L.F("Ui_Error", Errors.Text(e));
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException
                                       or System.Text.Json.JsonException or PdfSharp.Pdf.IO.PdfReaderException)
         {
-            Status = L.F("Ui_Error", e.Message);
+            Status = L.F("Ui_Error", Errors.Text(e));
         }
         finally { Busy = false; }
     }

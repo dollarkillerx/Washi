@@ -3,6 +3,7 @@
              xmlns:vm="using:Washi.App.ViewModels"
              xmlns:svc="using:Washi.App.Services"
              xmlns:l="using:Washi.App.Localization"
+             xmlns:c="using:Washi.App.Controls"
              x:Class="Washi.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -64,8 +65,22 @@
                                       Width="280" x:Name="ProviderBox" />
 
                             <TextBlock Classes="label" Text="{l:Tr Ui_AiModel}" />
-                            <AutoCompleteBox Text="{Binding Model}" ItemsSource="{Binding Models}" FilterMode="Contains"
-                                             MinimumPrefixLength="0" x:Name="ModelBox" />
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Command="{Binding RefreshModelsCommand}" IsEnabled="{Binding !LoadingModels}"
+                                        ToolTip.Tip="{l:Tr Ui_AiModelsRefresh}" Margin="8,0,0,0" Padding="10,6" x:Name="RefreshModelsButton">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <c:Icon Data="{StaticResource I.Refresh}" Size="14" />
+                                        <TextBlock Text="{l:Tr Ui_AiModelsRefresh}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <ComboBox IsEditable="True" ItemsSource="{Binding Models}" Text="{Binding Model}" HorizontalAlignment="Stretch"
+                                          PlaceholderText="{l:Tr Ui_AiModelWatermark}" MaxDropDownHeight="360" x:Name="ModelBox" />
+                            </DockPanel>
+                            <DockPanel Margin="0,4,0,0">
+                                <ProgressBar DockPanel.Dock="Left" IsIndeterminate="True" IsVisible="{Binding LoadingModels}" Width="40"
+                                             Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Classes="note" Text="{Binding ModelsStatus}" Classes.error="{Binding ModelsStatusIsError}" x:Name="ModelsStatusText" />
+                            </DockPanel>
 
                             <TextBlock Classes="label" Text="{l:Tr Ui_AiEndpoint}" />
                             <TextBox Text="{Binding Endpoint}" PlaceholderText="{Binding EndpointHint}" x:Name="EndpointBox" />

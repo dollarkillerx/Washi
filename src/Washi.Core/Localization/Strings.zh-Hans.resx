@@ -101,8 +101,8 @@
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>发送给 AI？</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>发送</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>取消</value></data>
-  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>这里印有内容（以图形而非文字的形式绘制）。</value></data>
-  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>这里印有文字，但 PDF 的文字层无法读取（字体没有 Unicode 对照表）。OCR 可以识别。</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>这里印有内容（以图形而非文字绘制）。点下方按钮即可读取并变为可编辑的值。</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>这里印有文字，但 PDF 的文字层无法读取（字体没有 Unicode 对照表）。点下方按钮即可用 OCR 读取，并变为可编辑的值。</value></data>
   <data name="Kind_text" xml:space="preserve"><value>文本</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金额</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>分格</value></data>
@@ -308,5 +308,81 @@
   <data name="Erase_KeptLargeImage" xml:space="preserve"><value>这里被一张大图（扫描件？）覆盖，不会修改其像素</value></data>
   <data name="Erase_KeptGrouped" xml:space="preserve"><value>成组的内容不会删除</value></data>
   <data name="Erase_KeptColored" xml:space="preserve"><value>表格的彩色印刷会保留（见上方选项）</value></data>
+  <data name="Erase_KeptClips" xml:space="preserve"><value>用作其他内容裁剪形状的文字会保留（删除会改变显示效果）</value></data>
   <data name="Erase_KeptChained" xml:space="preserve"><value>与同一行的下一段文字相连：请把框拉大到包含两段</value></data>
+  <data name="Ui_AiModelWatermark" xml:space="preserve"><value>选择或输入模型</value></data>
+  <data name="Ui_AiModelsRefresh" xml:space="preserve"><value>获取模型列表</value></data>
+  <data name="Ui_AiModelsLoading" xml:space="preserve"><value>正在获取提供方的模型列表…</value></data>
+  <data name="Ui_AiModelsLoaded" xml:space="preserve"><value>可用模型 {0} 个，请从列表中选择。</value></data>
+  <data name="Ui_AiModelsNotListed" xml:space="preserve"><value>可用模型 {0} 个，其中没有“{1}”。</value></data>
+  <data name="Ui_AiModelsNone" xml:space="preserve"><value>提供方没有返回模型，请手动输入模型 ID。</value></data>
+  <data name="Ui_AiModelsNeedKey" xml:space="preserve"><value>填入 API key 后即可显示提供方的模型列表。</value></data>
+  <data name="Ui_AiModelsNeedEndpoint" xml:space="preserve"><value>请先填写接口地址，例如 http://localhost:11434/v1</value></data>
+  <data name="Ui_AiModelsTimeout" xml:space="preserve"><value>30 秒内没有响应</value></data>
+  <data name="Ui_MovePrinted" xml:space="preserve"><value>把已印文字变为可编辑</value></data>
+  <data name="Ui_MovePrintedTip" xml:space="preserve"><value>删除填写栏里已印的内容，并把它作为可编辑的值填入栏位</value></data>
+  <data name="Ui_MovePrintedNote" xml:space="preserve"><value>Washi 会读取每个栏位里已印的内容（PDF 文字无法读取时用 OCR），填为栏位的值，并在副本（&lt;名称&gt;_erased.pdf）中删除原印字。请在预览中核对。</value></data>
+  <data name="Ui_MovingPrinted" xml:space="preserve"><value>正在读取并删除已印内容…</value></data>
+  <data name="Ui_MovedPrinted" xml:space="preserve"><value>已把 {0} 个栏位的已印文字变为可编辑的值（其中 {1} 个由 OCR 识别，请核对）。原印字已在 {2} 中删除；点击栏位即可修改。</value></data>
+  <data name="Ui_EraseMakeEditable" xml:space="preserve"><value>删除后在每个框里放一个可编辑的栏位</value></data>
+  <data name="Ui_EraseMakeEditableNote" xml:space="preserve"><value>栏位里会填入原来印的文字（需要时用 OCR 识别），可以直接在原处修改。</value></data>
+  <data name="Ui_ErasedEditable" xml:space="preserve"><value>已保存 {0}：删除了 {1} 项，{2} 个框里已放入带原文字的可编辑栏位。点击即可修改。</value></data>
+  <data name="Ui_MovePrintedField" xml:space="preserve"><value>把这里的印字变为可编辑</value></data>
+  <data name="Err_AiNoModel" xml:space="preserve"><value>还没有选择模型：请在“设置 → AI 模型”中选择。</value></data>
+  <data name="Err_AiNoKey" xml:space="preserve"><value>没有 {0} 的 API key：请在“设置 → AI 模型”中填写（或设置 {1}）。</value></data>
+  <data name="Err_AiNoEndpoint" xml:space="preserve"><value>本地 / OpenAI 兼容的提供方需要填写接口地址，例如 http://localhost:11434/v1</value></data>
+  <data name="Err_AiCutOff" xml:space="preserve"><value>回答被截断（输出上限）；请减少一次处理的页数或栏位。</value></data>
+  <data name="Err_AiFiltered" xml:space="preserve"><value>提供方的内容过滤器中止了回答。</value></data>
+  <data name="Err_AiNoVision" xml:space="preserve"><value>{0} 设置为不发送页面图像；OCR 需要能读图的模型。</value></data>
+  <data name="Err_AiBadJson" xml:space="preserve"><value>模型没有按预期格式回答，请重试。</value></data>
+  <data name="Err_AiDeclined" xml:space="preserve"><value>模型拒绝了这个请求。{0}</value></data>
+  <data name="Err_AiKeychainMacOnly" xml:space="preserve"><value>目前只有 macOS 可以保存 key；请改为设置环境变量 {0}。</value></data>
+  <data name="Err_AiKeychain" xml:space="preserve"><value>无法把 key 保存到钥匙串：{0}</value></data>
+  <data name="Err_AiAuth" xml:space="preserve"><value>API key 被拒绝或缺失</value></data>
+  <data name="Err_AiRateLimited" xml:space="preserve"><value>请求过于频繁：请稍后重试</value></data>
+  <data name="Err_AiOverloaded" xml:space="preserve"><value>提供方目前过载：请稍后重试</value></data>
+  <data name="Err_AiInvalidRequest" xml:space="preserve"><value>提供方拒绝了请求（模型不存在或不支持某个选项）</value></data>
+  <data name="Err_AiNetwork" xml:space="preserve"><value>无法连接提供方（网络、地址或超时）</value></data>
+  <data name="Err_AiMalformed" xml:space="preserve"><value>无法解析提供方的回应</value></data>
+  <data name="Err_OcrNoEngine" xml:space="preserve"><value>没有可用的本机 OCR 引擎：macOS 请安装 Xcode 命令行工具（xcode-select --install），其他系统请安装 tesseract。</value></data>
+  <data name="Err_OcrVisionUnavailable" xml:space="preserve"><value>Apple Vision OCR 需要 macOS 并安装 Xcode 命令行工具（xcode-select --install）。</value></data>
+  <data name="Err_OcrVisionCompile" xml:space="preserve"><value>无法编译 Vision OCR 辅助程序：{0}</value></data>
+  <data name="Err_OcrTesseractMissing" xml:space="preserve"><value>未找到 tesseract；请安装（macOS：brew install tesseract tesseract-lang）。</value></data>
+  <data name="Err_OcrTesseractLanguages" xml:space="preserve"><value>tesseract 没有安装语言 {0}（已安装：{1}）。macOS：brew install tesseract-lang</value></data>
+  <data name="Err_OcrFailed" xml:space="preserve"><value>{0} OCR 失败：{1}</value></data>
+  <data name="Err_EraseNoArea" xml:space="preserve"><value>请先画一个框。</value></data>
+  <data name="Err_EraseNothing" xml:space="preserve"><value>那里没有可删除的已印内容（按当前选项）。</value></data>
+  <data name="Err_EraseOnlyKept" xml:space="preserve"><value>没有可以删除的内容：{0}</value></data>
+  <data name="Err_EraseUnmatched" xml:space="preserve"><value>第 {0} 页的结构 Washi 暂时无法安全删除；未做任何修改。</value></data>
+  <data name="Err_EraseChanged" xml:space="preserve"><value>结果在删除范围之外与原件不同（{0} 个像素），因此没有保留。</value></data>
+  <data name="Err_Exists" xml:space="preserve"><value>{0} 已存在；Washi 从不覆盖文件。</value></data>
+  <data name="Err_NoPage" xml:space="preserve"><value>第 {0} 页不存在（该 PDF 共 {1} 页）。</value></data>
+  <data name="Err_CannotOpen" xml:space="preserve"><value>无法打开 {0}。</value></data>
+  <data name="Err_PageUnreadable" xml:space="preserve"><value>无法读取第 {0} 页。</value></data>
+  <data name="Err_ProtectedChanges" xml:space="preserve"><value>{0} 不允许修改（权限设置禁止）；Washi 不会解除保护。</value></data>
+  <data name="Err_ProtectedReuse" xml:space="preserve"><value>{0} 不允许复用其页面（权限设置禁止）；Washi 不会解除保护。</value></data>
+  <data name="Err_Password" xml:space="preserve"><value>{0} 有密码保护；Washi 不会解除保护。</value></data>
+  <data name="Err_NothingToMerge" xml:space="preserve"><value>没有可合并的文件。</value></data>
+  <data name="Err_RangeOutside" xml:space="preserve"><value>页码范围 {0} 超出了 1-{1}。</value></data>
+  <data name="Err_BadRange" xml:space="preserve"><value>“{0}”不是有效的页码范围（例如 1-3,5）。</value></data>
+  <data name="Ui_Value" xml:space="preserve"><value>值</value></data>
+  <data name="Ui_Ticked" xml:space="preserve"><value>已勾选</value></data>
+  <data name="Ui_FilledOnPage" xml:space="preserve"><value>本页已填写：{0} / {1}</value></data>
+  <data name="Ui_FieldsOnPageCount" xml:space="preserve"><value>本页的填写栏（{0}）</value></data>
+  <data name="Ui_NothingFilled" xml:space="preserve"><value>本页还没有填写内容。点击页面上的栏位即可输入。</value></data>
+  <data name="Ui_NoFieldsOnPage" xml:space="preserve"><value>本页还没有填写栏。</value></data>
+  <data name="Ui_TextSize" xml:space="preserve"><value>字号</value></data>
+  <data name="Ui_SizeAuto" xml:space="preserve"><value>适应栏位</value></data>
+  <data name="Ui_TextColor" xml:space="preserve"><value>颜色</value></data>
+  <data name="Ui_ColorBlack" xml:space="preserve"><value>黑色</value></data>
+  <data name="Ui_ColorBlue" xml:space="preserve"><value>蓝色</value></data>
+  <data name="Ui_ColorRed" xml:space="preserve"><value>红色</value></data>
+  <data name="Ui_ColorGreen" xml:space="preserve"><value>绿色</value></data>
+  <data name="Ui_ColorGrey" xml:space="preserve"><value>灰色</value></data>
+  <data name="Ui_TextFace" xml:space="preserve"><value>字体</value></data>
+  <data name="Ui_FaceAuto" xml:space="preserve"><value>表单默认</value></data>
+  <data name="Ui_FaceSerif" xml:space="preserve"><value>宋体 / 明朝（衬线）</value></data>
+  <data name="Ui_FaceSans" xml:space="preserve"><value>黑体 / 哥特（无衬线）</value></data>
+  <data name="Ui_StyleApplyAll" xml:space="preserve"><value>应用到所有栏位</value></data>
+  <data name="Ui_StyleApplied" xml:space="preserve"><value>已把字号、颜色和字体应用到 {0} 个栏位。</value></data>
 </root>

@@ -256,6 +256,17 @@ public sealed class EditorTests : IDisposable
         await vm.Erase.AddBoxAsync(new Washi.Core.PdfRect(180, 40, 540, 125));
         Shot(w, "erase");
 
+        vm.Erase.Reset();
+        vm.ActiveTool = Tool.Form;
+        if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })
+        {
+            await vm.MovePrintedCommand.ExecuteAsync(null);
+            vm.SelectedField = vm.Fields.FirstOrDefault(f => f.Value.Length > 0);
+            Shot(w, "moved");
+            File.WriteAllLines(Path.Combine(outDir, "moved_values.txt"),
+                [vm.Status, .. vm.Fields.Where(f => f.Value.Length > 0).Select(f => $"p{f.Page + 1} {f.Name}: {f.Value}")]);
+        }
+
         vm.ActiveTool = Tool.Ask;
         Shot(w, "assistant");
 

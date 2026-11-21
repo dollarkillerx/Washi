@@ -28,6 +28,12 @@ public sealed record DetectedField
     public string Prefilled { get; init; } = "";
     public string Label { get; init; } = "";
     public IReadOnlyList<string> Notes { get; init; } = [];
+    /// <summary>Text size in points; 0 = fitted to the field.</summary>
+    public double FontSize { get; init; }
+    /// <summary>"#RRGGBB"; empty = black.</summary>
+    public string Color { get; init; } = "";
+    /// <summary>"" (the form language's usual face), "serif" or "sans".</summary>
+    public string Font { get; init; } = "";
 
     public Washi.Core.Forms.FormField ToFormField() => new(
         Page,
@@ -38,7 +44,8 @@ public sealed record DetectedField
             FieldKind.Checkbox => Washi.Core.Forms.FormFieldKind.Checkbox,
             _ => Washi.Core.Forms.FormFieldKind.Text,
         },
-        Rect, Name, MaxLen, Align, Label);
+        Rect, Name, MaxLen, Align, Label, FontSize, Color.Length > 0 ? Color : null,
+        Font switch { "serif" => Washi.Core.Forms.FormFontFace.Serif, "sans" => Washi.Core.Forms.FormFontFace.Sans, _ => Washi.Core.Forms.FormFontFace.Auto });
 }
 
 public static class FieldsJson

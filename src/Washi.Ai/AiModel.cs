@@ -13,7 +13,11 @@ public sealed record AiRequest(
     JsonElement? Schema = null,
     int MaxTokens = 16000);
 
-public sealed class AiException(string message) : Exception(message);
+public sealed class AiException(string message, string? key = null, params object[] args) : Exception(message), Washi.Core.Localization.ILocalizedError
+{
+    public string? Key { get; } = key;
+    public object[] Args { get; } = args;
+}
 
 /// <summary>
 /// The smallest surface Washi needs from a model. Each provider maps it onto its own API so

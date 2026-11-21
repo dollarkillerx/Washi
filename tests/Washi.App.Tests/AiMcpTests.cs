@@ -310,6 +310,41 @@ public sealed class AiMcpTests : IDisposable
         w.Close();
     }
 
+    [AvaloniaFact]
+    public async Task The_model_is_picked_from_the_providers_own_list()
+    {
+        var env = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", "sk-test");   // a key from the environment: no Keychain
+        try
+        {
+            var vm = new SettingsViewModel(_settings, AppServices.Instance, new FakeDialogs());
+            var asked = new List<(Washi.Ai.AiProvider, string?)>();
+            vm.ListModels = (ai, key, _) =>
+            {
+                asked.Add((ai.Provider, key));
+                return Task.FromResult<IReadOnlyList<string>>(["gpt-5.5", "gpt-5.5-mini"]);
+            };
+
+            vm.Provider = SettingsViewModel.Providers.Single(p => p.Value == Washi.Ai.AiProvider.OpenAI);
+            await WaitFor(() => vm.LoadingModels || vm.Models.Count == 0 ? null : "");
+            Assert.Equal((Washi.Ai.AiProvider.OpenAI, "sk-test"), Assert.Single(asked));
+            Assert.Equal(["gpt-5.5", "gpt-5.5-mini"], vm.Models);
+            Assert.Equal("", vm.Model);                 // another provider: Claude's model is not carried over
+            Assert.Contains("2", vm.ModelsStatus);
+
+            vm.Model = "gpt-4-old";
+            await vm.RefreshModelsCommand.ExecuteAsync(null);
+            Assert.Equal("gpt-4-old", vm.Model);        // typed text survives a refresh
+            Assert.Contains("gpt-4-old", vm.ModelsStatus);   // ...and is reported as not listed
+
+            vm.ListModels = (_, _, _) => throw new Washi.Ai.Chat.AiProviderException(Washi.Ai.Chat.AiErrorKind.Authentication, "401 invalid key");
+            await vm.RefreshModelsCommand.ExecuteAsync(null);
+            Assert.True(vm.ModelsStatusIsError);
+            Assert.Contains("401", vm.ModelsStatus);
+        }
+        finally { Environment.SetEnvironmentVariable("OPENAI_API_KEY", env); }
+    }
+
     // ------------------------------------------------------------------ helpers
 
     private static async Task<T> WaitFor<T>(Func<T?> probe) where T : class

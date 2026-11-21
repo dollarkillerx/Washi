@@ -24,6 +24,9 @@ public partial class MainWindow : Window
         // is awkward to name in XAML.
         KindBox.SelectedValueBinding = new Binding(nameof(Choice<int>.Value));
         AlignBox.SelectedValueBinding = new Binding(nameof(Choice<int>.Value));
+        SizeBox.SelectedValueBinding = new Binding(nameof(Choice<double>.Value));
+        ColorBox.SelectedValueBinding = new Binding(nameof(Choice<string>.Value));
+        FaceBox.SelectedValueBinding = new Binding(nameof(Choice<string>.Value));
         ViewModel = new MainViewModel(dialogs ?? new AvaloniaDialogs(this));
         DataContext = ViewModel;
 
@@ -63,6 +66,13 @@ public partial class MainWindow : Window
                                 or nameof(MainViewModel.ActiveTool) or nameof(MainViewModel.PdfPath))
                 EndEdit(commit: true);
         };
+        // a click in the list selects the field; a field that is not in the list (an empty one while filling) stays
+        // selected on the page, so the list never writes "nothing" back
+        FieldList.SelectionChanged += (_, _) =>
+        {
+            if (FieldList.SelectedItem is FieldViewModel picked && !ReferenceEquals(picked, ViewModel.SelectedField))
+                ViewModel.SelectedField = picked;
+        };
         // the field list follows the selection, so Tab through fields keeps the row in view
         ViewModel.PropertyChanged += (_, e) =>
         {
@@ -85,7 +95,10 @@ public partial class MainWindow : Window
         ed.Margin = new Thickness(f.X0 * z, f.Y0 * z, 0, 0);
         ed.Width = Math.Max(24, w);
         ed.Height = Math.Max(14, h);
-        ed.FontSize = Math.Max(8, f.Kind == FieldKind.Comb && f.MaxLen > 0 ? Math.Min(h * 0.62, w / f.MaxLen * 0.9) : Math.Min(h * 0.62, 12 * z));
+        double auto = f.Kind == FieldKind.Comb && f.MaxLen > 0 ? Math.Min(h * 0.62, w / f.MaxLen * 0.9) : Math.Min(h * 0.62, 12 * z);
+        ed.FontSize = Math.Max(8, f.FontSize > 0 ? Math.Min(f.FontSize * z, Math.Max(8, h - 4)) : auto);
+        ed.Foreground = Controls.FieldCanvas.TextBrush(f);
+        ed.FontFamily = Controls.FieldCanvas.TextFamily(f);
         ed.MaxLength = f.Kind == FieldKind.Comb ? Math.Max(1, f.MaxLen) : 0;
         ed.TextAlignment = f.Align switch { 1 => Avalonia.Media.TextAlignment.Center, 2 => Avalonia.Media.TextAlignment.Right, _ => Avalonia.Media.TextAlignment.Left };
         if (f.Kind == FieldKind.Comb && f.MaxLen > 0)

@@ -192,21 +192,36 @@ public sealed class FieldCanvas : Control
         if (f.Kind == FieldKind.Comb && f.MaxLen > 0)
         {
             double pitch = r.Width / f.MaxLen;
-            double size = Math.Min(r.Height * 0.62, pitch * 0.9);
+            double size = Math.Min(f.FontSize > 0 ? f.FontSize * Zoom : r.Height * 0.62, Math.Min(r.Height - 2, pitch) * 0.95);
             for (int i = 0; i < Math.Min(f.Value.Length, f.MaxLen); i++)
             {
-                var t = Text(f.Value[i].ToString(), typeface, size);
+                var t = Text(f.Value[i].ToString(), new Typeface(TextFamily(f)), size, TextBrush(f));
                 ctx.DrawText(t, new Point(r.X + pitch * i + (pitch - t.Width) / 2, r.Y + (r.Height - t.Height) / 2));
             }
             return;
         }
 
-        double fs = Math.Min(r.Height * 0.62, 12 * Zoom);
-        var text = Text(f.Value, typeface, fs);
-        text.MaxTextWidth = Math.Max(1, r.Width - 4 * Zoom);
+        // as the saved PDF draws it: the chosen size (or one from the field's height) is the most the text gets, and
+        // a value too long for the box is shrunk to fit rather than cut off
+        double pad = 2 * Zoom;
+        double fs = f.FontSize > 0 ? f.FontSize * Zoom : Math.Min(r.Height * 0.62, 12 * Zoom);
+        fs = Math.Min(fs, Math.Max(4 * Zoom, r.Height - 2 * Zoom));
+        var face = new Typeface(TextFamily(f));
+        var brush = TextBrush(f);
+        var text = Text(f.Value, face, fs, brush);
+        double room = Math.Max(1, r.Width - 2 * pad);
+        if (f.Y1 - f.Y0 > 24)
+        {
+            // tall fields wrap (as the saved PDF does); lines that still do not fit get smaller
+            for (text.MaxTextWidth = room; text.Height > r.Height - pad && fs > 4 * Zoom; text.MaxTextWidth = room)
+                text = Text(f.Value, face, fs = Math.Max(4 * Zoom, fs - 0.5 * Zoom), brush);
+            ctx.DrawText(text, new Point(r.X + pad, r.Y + pad / 2));
+            return;
+        }
+        if (text.Width > room) text = Text(f.Value, face, Math.Max(4 * Zoom, fs * room / text.Width), brush);
+        text.MaxTextWidth = Math.Max(1, r.Width - pad);
         text.MaxLineCount = 1;
         text.Trimming = TextTrimming.CharacterEllipsis;
-        double pad = 2 * Zoom;
         double x = f.Align switch
         {
             1 => r.X + (r.Width - text.Width) / 2,
@@ -216,8 +231,20 @@ public sealed class FieldCanvas : Control
         ctx.DrawText(text, new Point(Math.Max(r.X + 1, x), r.Y + (r.Height - text.Height) / 2));
     }
 
-    private static FormattedText Text(string s, Typeface typeface, double size) =>
-        new(s, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, typeface, Math.Max(1, size), Ink);
+    private static FormattedText Text(string s, Typeface typeface, double size, IBrush? brush = null) =>
+        new(s, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, typeface, Math.Max(1, size), brush ?? Ink);
+
+    /// <summary>The colour a field's value is drawn in (black unless one was chosen).</summary>
+    public static IBrush TextBrush(FieldViewModel f) =>
+        f.Color.Length == 7 && Color.TryParse(f.Color, out var c) ? new SolidColorBrush(c) : Ink;
+
+    /// <summary>Screen fonts close to what the PDF asks its viewer for: Mincho / Song for serif, Gothic / Hei for sans.</summary>
+    public static FontFamily TextFamily(FieldViewModel f) => f.Font switch
+    {
+        "serif" => new FontFamily("Hiragino Mincho ProN, Songti SC, Yu Mincho, MS Mincho, Times New Roman, serif"),
+        "sans" => new FontFamily("Hiragino Sans, PingFang SC, Yu Gothic, Meiryo, Helvetica Neue, Arial, sans-serif"),
+        _ => new FontFamily("Inter, Hiragino Sans, PingFang SC, Yu Gothic, sans-serif"),
+    };
 
     private static IEnumerable<Rect> Handles(Rect r)
     {

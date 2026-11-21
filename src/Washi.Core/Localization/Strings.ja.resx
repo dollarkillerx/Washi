@@ -101,8 +101,8 @@
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>AI に送信しますか？</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>送信</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>キャンセル</value></data>
-  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>ここには何かが印刷されています（文字ではなく図形として描かれています）。</value></data>
-  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>ここには文字が印刷されていますが、PDF の文字情報を読み取れません（フォントに Unicode の対応表がありません）。OCR なら読み取れます。</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>ここには何かが印刷されています（文字ではなく図形として描画）。下のボタンで読み取り、編集できる値にできます。</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>ここには文字が印刷されていますが、PDF の文字情報を読み取れません（フォントに Unicode 対応表がありません）。下のボタンで OCR により読み取り、編集できる値にできます。</value></data>
   <data name="Kind_text" xml:space="preserve"><value>テキスト</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>マス目</value></data>
@@ -308,5 +308,81 @@
   <data name="Erase_KeptLargeImage" xml:space="preserve"><value>大きな画像（スキャン？）がこの範囲を覆っています。画素は変更しません</value></data>
   <data name="Erase_KeptGrouped" xml:space="preserve"><value>グループ化された内容は消去しません</value></data>
   <data name="Erase_KeptColored" xml:space="preserve"><value>様式の色付き印刷は残します（上のオプション）</value></data>
+  <data name="Erase_KeptClips" xml:space="preserve"><value>ほかの内容の切り抜きに使われている文字は残します（消すと見え方が変わります）</value></data>
   <data name="Erase_KeptChained" xml:space="preserve"><value>同じ行の次の文字列とつながっています。両方を含むよう枠を広げてください</value></data>
+  <data name="Ui_AiModelWatermark" xml:space="preserve"><value>モデルを選ぶか入力</value></data>
+  <data name="Ui_AiModelsRefresh" xml:space="preserve"><value>モデル一覧を取得</value></data>
+  <data name="Ui_AiModelsLoading" xml:space="preserve"><value>プロバイダのモデル一覧を取得中…</value></data>
+  <data name="Ui_AiModelsLoaded" xml:space="preserve"><value>利用できるモデル {0} 個。一覧から選んでください。</value></data>
+  <data name="Ui_AiModelsNotListed" xml:space="preserve"><value>利用できるモデル {0} 個。「{1}」は含まれていません。</value></data>
+  <data name="Ui_AiModelsNone" xml:space="preserve"><value>プロバイダはモデルを返しませんでした。モデル ID を入力してください。</value></data>
+  <data name="Ui_AiModelsNeedKey" xml:space="preserve"><value>API キーを入れるとプロバイダのモデル一覧が表示されます。</value></data>
+  <data name="Ui_AiModelsNeedEndpoint" xml:space="preserve"><value>先にエンドポイントを入力してください（例: http://localhost:11434/v1）</value></data>
+  <data name="Ui_AiModelsTimeout" xml:space="preserve"><value>30 秒以内に応答がありません</value></data>
+  <data name="Ui_MovePrinted" xml:space="preserve"><value>印字を編集できる値にする</value></data>
+  <data name="Ui_MovePrintedTip" xml:space="preserve"><value>記入欄に印字された内容を消去し、編集できる値として記入欄に入れます</value></data>
+  <data name="Ui_MovePrintedNote" xml:space="preserve"><value>各記入欄の印字を読み取り（PDF の文字が読めない場合は OCR）、記入欄の値に入れて、コピー（&lt;名前&gt;_erased.pdf）から印字を消去します。プレビューで値を確認してください。</value></data>
+  <data name="Ui_MovingPrinted" xml:space="preserve"><value>印字を読み取って消去しています…</value></data>
+  <data name="Ui_MovedPrinted" xml:space="preserve"><value>{0} 個の記入欄に印字を編集できる値として入れました（{1} 個は OCR で読み取り。確認してください）。印字は {2} で消去しました。記入欄をクリックすると編集できます。</value></data>
+  <data name="Ui_EraseMakeEditable" xml:space="preserve"><value>消去後、各枠に編集できる記入欄を置く</value></data>
+  <data name="Ui_EraseMakeEditableNote" xml:space="preserve"><value>記入欄には元の印字（必要なら OCR で読み取り）が入るので、その場で書き換えられます。</value></data>
+  <data name="Ui_ErasedEditable" xml:space="preserve"><value>{0} を保存しました: {1} 件を消去し、{2} 個の枠に元の文字が入った編集できる記入欄を置きました。クリックして書き換えてください。</value></data>
+  <data name="Ui_MovePrintedField" xml:space="preserve"><value>この印字を編集できる値にする</value></data>
+  <data name="Err_AiNoModel" xml:space="preserve"><value>モデルが選ばれていません。「設定 → AI モデル」で選んでください。</value></data>
+  <data name="Err_AiNoKey" xml:space="preserve"><value>{0} の API キーがありません。「設定 → AI モデル」で追加してください（または {1} を設定）。</value></data>
+  <data name="Err_AiNoEndpoint" xml:space="preserve"><value>ローカル / OpenAI 互換のプロバイダにはエンドポイントが必要です（例: http://localhost:11434/v1）</value></data>
+  <data name="Err_AiCutOff" xml:space="preserve"><value>回答が途中で切れました（出力上限）。ページや記入欄を減らしてお試しください。</value></data>
+  <data name="Err_AiFiltered" xml:space="preserve"><value>プロバイダのコンテンツフィルタが回答を止めました。</value></data>
+  <data name="Err_AiNoVision" xml:space="preserve"><value>{0} はページ画像なしの設定です。OCR には画像を読めるモデルが必要です。</value></data>
+  <data name="Err_AiBadJson" xml:space="preserve"><value>モデルの回答が想定した形式ではありません。もう一度お試しください。</value></data>
+  <data name="Err_AiDeclined" xml:space="preserve"><value>モデルがこのリクエストを断りました。{0}</value></data>
+  <data name="Err_AiKeychainMacOnly" xml:space="preserve"><value>キーを保存できるのは今のところ macOS だけです。代わりに環境変数 {0} を設定してください。</value></data>
+  <data name="Err_AiKeychain" xml:space="preserve"><value>キーをキーチェーンに保存できませんでした: {0}</value></data>
+  <data name="Err_AiAuth" xml:space="preserve"><value>API キーが拒否されたか、ありません</value></data>
+  <data name="Err_AiRateLimited" xml:space="preserve"><value>リクエストが多すぎます。少し待ってからやり直してください</value></data>
+  <data name="Err_AiOverloaded" xml:space="preserve"><value>プロバイダが混み合っています。しばらくしてからやり直してください</value></data>
+  <data name="Err_AiInvalidRequest" xml:space="preserve"><value>プロバイダがリクエストを拒否しました（モデル名の誤りか未対応の設定）</value></data>
+  <data name="Err_AiNetwork" xml:space="preserve"><value>プロバイダに接続できません（ネットワーク、アドレス、タイムアウト）</value></data>
+  <data name="Err_AiMalformed" xml:space="preserve"><value>プロバイダの応答を解釈できませんでした</value></data>
+  <data name="Err_OcrNoEngine" xml:space="preserve"><value>この端末で使える OCR エンジンがありません。macOS では Xcode コマンドラインツール（xcode-select --install）、それ以外では tesseract をインストールしてください。</value></data>
+  <data name="Err_OcrVisionUnavailable" xml:space="preserve"><value>Apple Vision の OCR には、Xcode コマンドラインツール（xcode-select --install）を入れた macOS が必要です。</value></data>
+  <data name="Err_OcrVisionCompile" xml:space="preserve"><value>Vision OCR のヘルパーをビルドできませんでした: {0}</value></data>
+  <data name="Err_OcrTesseractMissing" xml:space="preserve"><value>tesseract が見つかりません。インストールしてください（macOS: brew install tesseract tesseract-lang）。</value></data>
+  <data name="Err_OcrTesseractLanguages" xml:space="preserve"><value>tesseract に言語 {0} が入っていません（インストール済み: {1}）。macOS: brew install tesseract-lang</value></data>
+  <data name="Err_OcrFailed" xml:space="preserve"><value>{0} の OCR に失敗しました: {1}</value></data>
+  <data name="Err_EraseNoArea" xml:space="preserve"><value>先に枠を描いてください。</value></data>
+  <data name="Err_EraseNothing" xml:space="preserve"><value>そこには消去できる印字がありません（現在のオプションで）。</value></data>
+  <data name="Err_EraseOnlyKept" xml:space="preserve"><value>何も消去できませんでした: {0}</value></data>
+  <data name="Err_EraseUnmatched" xml:space="preserve"><value>{0} ページは、Washi がまだ安全に消去できない構造です。何も変更していません。</value></data>
+  <data name="Err_EraseChanged" xml:space="preserve"><value>消去した範囲の外で元と違いが出たため（{0} 画素）、結果は破棄しました。</value></data>
+  <data name="Err_Exists" xml:space="preserve"><value>{0} はすでに存在します。Washi はファイルを上書きしません。</value></data>
+  <data name="Err_NoPage" xml:space="preserve"><value>{0} ページはありません（この PDF は {1} ページ）。</value></data>
+  <data name="Err_CannotOpen" xml:space="preserve"><value>{0} を開けませんでした。</value></data>
+  <data name="Err_PageUnreadable" xml:space="preserve"><value>{0} ページを読み取れませんでした。</value></data>
+  <data name="Err_ProtectedChanges" xml:space="preserve"><value>{0} は変更が許可されていません（権限設定）。Washi は保護を解除しません。</value></data>
+  <data name="Err_ProtectedReuse" xml:space="preserve"><value>{0} はページの再利用が許可されていません（権限設定）。Washi は保護を解除しません。</value></data>
+  <data name="Err_Password" xml:space="preserve"><value>{0} はパスワードで保護されています。Washi は保護を解除しません。</value></data>
+  <data name="Err_NothingToMerge" xml:space="preserve"><value>結合するものがありません。</value></data>
+  <data name="Err_RangeOutside" xml:space="preserve"><value>ページ範囲 {0} は 1〜{1} の外です。</value></data>
+  <data name="Err_BadRange" xml:space="preserve"><value>「{0}」はページ範囲ではありません（例: 1-3,5）。</value></data>
+  <data name="Ui_Value" xml:space="preserve"><value>値</value></data>
+  <data name="Ui_Ticked" xml:space="preserve"><value>チェックあり</value></data>
+  <data name="Ui_FilledOnPage" xml:space="preserve"><value>このページで記入済み: {0} / {1}</value></data>
+  <data name="Ui_FieldsOnPageCount" xml:space="preserve"><value>このページの記入欄（{0}）</value></data>
+  <data name="Ui_NothingFilled" xml:space="preserve"><value>このページはまだ何も記入されていません。ページ上の記入欄をクリックして入力してください。</value></data>
+  <data name="Ui_NoFieldsOnPage" xml:space="preserve"><value>このページにはまだ記入欄がありません。</value></data>
+  <data name="Ui_TextSize" xml:space="preserve"><value>文字サイズ</value></data>
+  <data name="Ui_SizeAuto" xml:space="preserve"><value>枠に合わせる</value></data>
+  <data name="Ui_TextColor" xml:space="preserve"><value>色</value></data>
+  <data name="Ui_ColorBlack" xml:space="preserve"><value>黒</value></data>
+  <data name="Ui_ColorBlue" xml:space="preserve"><value>青</value></data>
+  <data name="Ui_ColorRed" xml:space="preserve"><value>赤</value></data>
+  <data name="Ui_ColorGreen" xml:space="preserve"><value>緑</value></data>
+  <data name="Ui_ColorGrey" xml:space="preserve"><value>グレー</value></data>
+  <data name="Ui_TextFace" xml:space="preserve"><value>書体</value></data>
+  <data name="Ui_FaceAuto" xml:space="preserve"><value>様式の標準</value></data>
+  <data name="Ui_FaceSerif" xml:space="preserve"><value>明朝体（セリフ）</value></data>
+  <data name="Ui_FaceSans" xml:space="preserve"><value>ゴシック体（サンセリフ）</value></data>
+  <data name="Ui_StyleApplyAll" xml:space="preserve"><value>すべての記入欄に適用</value></data>
+  <data name="Ui_StyleApplied" xml:space="preserve"><value>サイズ・色・書体を {0} 個の記入欄に適用しました。</value></data>
 </root>

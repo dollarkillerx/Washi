@@ -275,7 +275,7 @@ public static class AiFeatures
         var s = answer.Trim();
         if (s.StartsWith("```")) s = s[(s.IndexOf('\n') + 1)..].TrimEnd('`', '\n', ' ');   // JSON mode models sometimes fence it
         try { return JsonDocument.Parse(s).RootElement.Clone(); }
-        catch (JsonException) { throw new AiException("the model did not answer with valid JSON"); }
+        catch (JsonException) { throw new AiException("the model did not answer with valid JSON", "Err_AiBadJson"); }
     }
 
     private static string Clean(string? name) =>

@@ -6,7 +6,11 @@ using Washi.Core.Forms;
 
 namespace Washi.Core.Pages;
 
-public sealed class PageAssemblyException(string message) : Exception(message);
+public sealed class PageAssemblyException(string message, string? key = null, params object[] args) : Exception(message), Washi.Core.Localization.ILocalizedError
+{
+    public string? Key { get; } = key;
+    public object[] Args { get; } = args;
+}
 
 public sealed record SplitPart(string Path, int FirstPage, int LastPage);
 
@@ -21,7 +25,7 @@ public static class PageAssembly
     /// <summary>Merges <paramref name="inputs"/> in order. Returns the number of pages written.</summary>
     public static int Merge(IReadOnlyList<string> inputs, string output)
     {
-        if (inputs.Count == 0) throw new PageAssemblyException("nothing to merge");
+        if (inputs.Count == 0) throw new PageAssemblyException("nothing to merge", "Err_NothingToMerge");
         var sources = inputs.Select(Open).ToList();     // all checked before anything is written
         using var target = new PdfDocument();
         foreach (var src in sources)
@@ -49,9 +53,9 @@ public static class PageAssembly
         foreach (var (from, to) in ranges)
         {
             if (from < 1 || to > src.PageCount || from > to)
-                throw new PageAssemblyException($"page range {from}-{to} is outside 1-{src.PageCount}");
+                throw new PageAssemblyException($"page range {from}-{to} is outside 1-{src.PageCount}", "Err_RangeOutside", $"{from}-{to}", src.PageCount);
             var target = Path.Combine(outputDir, PartName(stem, from, to));
-            if (File.Exists(target)) throw new PageAssemblyException($"{target} already exists; Washi never overwrites files");
+            if (File.Exists(target)) throw new PageAssemblyException($"{target} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(target));
         }
         foreach (var (from, to) in ranges)
         {
@@ -78,9 +82,9 @@ public static class PageAssembly
         {
             var ends = part.Split('-', StringSplitOptions.TrimEntries);
             if (!int.TryParse(ends[0], out var a) || (ends.Length > 1 && !int.TryParse(ends[1], out _)) || ends.Length > 2)
-                throw new PageAssemblyException($"bad page range '{part}' (use e.g. 1-3,5 or each)");
+                throw new PageAssemblyException($"bad page range '{part}' (use e.g. 1-3,5 or each)", "Err_BadRange", part);
             int b = ends.Length > 1 ? int.Parse(ends[1]) : a;
-            if (a < 1 || b > pageCount || a > b) throw new PageAssemblyException($"page range '{part}' is outside 1-{pageCount}");
+            if (a < 1 || b > pageCount || a > b) throw new PageAssemblyException($"page range '{part}' is outside 1-{pageCount}", "Err_RangeOutside", part, pageCount);
             ranges.Add((a, b));
         }
         return ranges;
@@ -105,7 +109,7 @@ public static class PageAssembly
         if (!d.SecuritySettings.PermitAssembleDocument)
         {
             d.Dispose();
-            throw new PageAssemblyException($"{Path.GetFileName(input)} does not allow its pages to be reused (its permissions forbid assembly); Washi does not remove protection");
+            throw new PageAssemblyException($"{Path.GetFileName(input)} does not allow its pages to be reused (its permissions forbid assembly); Washi does not remove protection", "Err_ProtectedReuse", Path.GetFileName(input));
         }
         return d;
     }

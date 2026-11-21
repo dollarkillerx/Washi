@@ -98,6 +98,66 @@ public sealed class FormWriterTests : IDisposable
     }
 
     [Fact]
+    public void A_field_keeps_its_size_colour_and_face_and_a_long_value_is_shrunk_to_fit()
+    {
+        var src = MakeForm();
+        var (_, detected) = Detect(src);
+        var text = detected.First(f => f.Kind == FieldKind.Text);
+        // 18 pt high: a one-line field (taller ones wrap their text instead)
+        var styled = text with { Name = "styled", FontSize = 14, Color = "#C0392B", Font = "sans",
+                                 Rect = new PdfRect(text.Rect.X0, text.Rect.Y0, text.Rect.X1, text.Rect.Y0 + 18) };
+        var plain = text with { Name = "plain", Rect = new PdfRect(text.Rect.X0, text.Rect.Y0 + 200, text.Rect.X1, text.Rect.Y1 + 200) };
+        var made = Path.Combine(_dir, "styled.pdf");
+        AcroFormWriter.Write(src, made, [styled.ToFormField(), plain.ToFormField()], FormScript.Japanese);
+
+        string Da(string pdf, string name)
+        {
+            using var d = PdfReader.Open(pdf, PdfDocumentOpenMode.Import);
+            var fields = d.AcroForm.Elements.GetArray("/Fields")!;
+            return fields.Elements.Select(e => (PdfDictionary)((PdfSharp.Pdf.Advanced.PdfReference)e).Value)
+                .Single(f => f.Elements.GetString("/T") == name).Elements.GetString("/DA");
+        }
+        Assert.Equal("/KozGo 14 Tf 0.753 0.224 0.169 rg", Da(made, "styled"));    // Gothic, 14 pt, the chosen red
+        Assert.Matches(@"^/KozMin \d+(\.\d+)? Tf 0 g$", Da(made, "plain"));       // defaults: Mincho, sized from the height, black
+
+        // a short value keeps the chosen size; one too long for the box is shrunk, never cut off
+        string Appearance(string value)
+        {
+            var filled = Path.Combine(_dir, $"filled_{value.Length}.pdf");
+            AcroFormFields.Fill(made, filled, new Dictionary<string, string> { ["styled"] = value });
+            using var d = PdfReader.Open(filled, PdfDocumentOpenMode.Import);
+            var field = d.AcroForm.Elements.GetArray("/Fields")!.Elements.Select(e => (PdfDictionary)((PdfSharp.Pdf.Advanced.PdfReference)e).Value)
+                .Single(f => f.Elements.GetString("/T") == "styled");
+            var ap = (PdfDictionary)((PdfSharp.Pdf.Advanced.PdfReference)field.Elements.GetDictionary("/AP")!.Elements["/N"]!).Value;
+            return System.Text.Encoding.ASCII.GetString(ap.Stream.UnfilteredValue);
+        }
+        double Size(string ap) => double.Parse(System.Text.RegularExpressions.Regex.Match(ap, @"/KozGo ([\d.]+) Tf").Groups[1].Value,
+                                               System.Globalization.CultureInfo.InvariantCulture);
+        var shortAp = Appearance("王 燁");
+        Assert.Equal(14, Size(shortAp));
+        Assert.Contains("0.753 0.224 0.169 rg", shortAp);
+        int many = (int)(text.Rect.Width / 6);                              // needs about 6 pt to fit: under 14, over the 4 pt floor
+        var longAp = Appearance(new string('神', many));
+        Assert.InRange(Size(longAp), 4, 13.9);
+        Assert.True(Size(longAp) * many <= text.Rect.Width, $"{many} full-width characters must fit the field's width");
+
+        // a tall field wraps; when even the wrapped lines do not fit its height, they are shrunk until they do
+        var tall = text with { Name = "tall", FontSize = 14 };
+        var tallPdf = Path.Combine(_dir, "tall.pdf");
+        AcroFormWriter.Write(src, tallPdf, [tall.ToFormField()], FormScript.Japanese);
+        var tallFilled = Path.Combine(_dir, "tall_filled.pdf");
+        AcroFormFields.Fill(tallPdf, tallFilled, new Dictionary<string, string> { ["tall"] = new string('神', (int)(text.Rect.Width / 14 * 4)) });
+        using var td = PdfReader.Open(tallFilled, PdfDocumentOpenMode.Import);
+        var tf = (PdfDictionary)((PdfSharp.Pdf.Advanced.PdfReference)td.AcroForm.Elements.GetArray("/Fields")!.Elements[0]).Value;
+        var tap = System.Text.Encoding.ASCII.GetString(((PdfDictionary)((PdfSharp.Pdf.Advanced.PdfReference)tf.Elements.GetDictionary("/AP")!.Elements["/N"]!).Value).Stream.UnfilteredValue);
+        double ts = double.Parse(System.Text.RegularExpressions.Regex.Match(tap, @"/KozMin ([\d.]+) Tf").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        // one "1 0 0 1 x y Tm" per glyph or per line: the lines are the distinct y values
+        int lines = System.Text.RegularExpressions.Regex.Matches(tap, @"1 0 0 1 [\d.\-]+ ([\d.\-]+) Tm").Select(m => m.Groups[1].Value).Distinct().Count();
+        Assert.True(lines >= 2 && ts < 14, $"{lines} lines at {ts} pt");
+        Assert.True(lines * ts * 1.15 <= text.Rect.Height, "every wrapped line stays inside the field");
+    }
+
+    [Fact]
     public void Comb_checkbox_and_names()
     {
         var src = MakeForm();

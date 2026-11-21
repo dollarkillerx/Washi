@@ -22,7 +22,7 @@ public sealed class VisionOcr : IOcrEngine
     private static readonly Lazy<string> Source = new(() =>
     {
         using var s = typeof(VisionOcr).Assembly.GetManifestResourceStream("Washi.Core.Ocr.vision-ocr.swift")
-                      ?? throw new OcrException("the Vision helper source is missing from this build");
+                      ?? throw new OcrException("the Vision helper source is missing from this build", "Err_OcrVisionUnavailable");
         return new StreamReader(s).ReadToEnd();
     });
 
@@ -49,7 +49,7 @@ public sealed class VisionOcr : IOcrEngine
             try
             {
                 var (code, _, err) = await OcrEngines.RunAsync("/usr/bin/xcrun", ["swiftc", "-O", "-o", tmp, src], ct);
-                if (code != 0) throw new OcrException("could not compile the Vision OCR helper: " + err.Trim());
+                if (code != 0) throw new OcrException("could not compile the Vision OCR helper: " + err.Trim(), "Err_OcrVisionCompile", err.Trim());
                 File.Move(tmp, path, overwrite: true);
             }
             finally
@@ -71,7 +71,7 @@ public sealed class VisionOcr : IOcrEngine
         {
             var langs = string.Join(',', languages.Select(OcrLanguages.Vision));
             var (code, output, err) = await OcrEngines.RunAsync(helper, [png, langs, "accurate"], ct);
-            if (code != 0) throw new OcrException("Vision OCR failed: " + err.Trim());
+            if (code != 0) throw new OcrException("Vision OCR failed: " + err.Trim(), "Err_OcrFailed", "Apple Vision", err.Trim());
             using var json = JsonDocument.Parse(output);
             var lines = new List<OcrLine>();
             foreach (var l in json.RootElement.GetProperty("lines").EnumerateArray())

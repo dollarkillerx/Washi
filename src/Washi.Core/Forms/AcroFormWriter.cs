@@ -29,7 +29,17 @@ public static class AcroFormWriter
     private const int FlagComb = 1 << 24;
     private const int AnnotPrint = 4;
 
-    private sealed record FontSpec(string Key, string BaseFont, string Encoding, string Ordering, int Supplement, string Widths);
+    private sealed record FontSpec(string Key, string BaseFont, string Encoding, string Ordering, int Supplement, string Widths, int Flags = 6);
+
+    /// <summary>Sans-serif (Gothic / Hei) faces, for fields that ask for <see cref="FormFontFace.Sans"/>. Flags 4:
+    /// symbolic without the serif bit, so viewers substitute a Gothic font.</summary>
+    private static readonly Dictionary<FormScript, FontSpec> CidSansFonts = new()
+    {
+        [FormScript.Japanese] = new("KozGo", "KozGoPr6N-Medium", "UniJIS-UTF16-H", "Japan1", 6, "1 632 500", 4),
+        [FormScript.ChineseSimplified] = new("STHeiti", "STHeiti-Regular", "UniGB-UTF16-H", "GB1", 4, "1 95 500", 4),
+        [FormScript.ChineseTraditional] = new("MHei", "MHei-Medium", "UniCNS-UTF16-H", "CNS1", 4, "1 95 500", 4),
+        [FormScript.Korean] = new("HYGoThic", "HYGoThic-Medium", "UniKS-UTF16-H", "Korea1", 2, "1 95 500", 4),
+    };
 
     private static readonly Dictionary<FormScript, FontSpec> CidFonts = new()
     {
@@ -55,6 +65,15 @@ public static class AcroFormWriter
     public const string EmbeddedKey = "Wingdings";
 
     public static string FontKey(FormScript script) => script == FormScript.Latin ? "Helv" : CidFonts[script].Key;
+
+    /// <summary>The /DR font name for a face: Auto and the script's usual face share one font.</summary>
+    public static string FontKey(FormScript script, FormFontFace face) => (script, face) switch
+    {
+        (FormScript.Latin, FormFontFace.Serif) => "TiRo",
+        (FormScript.Latin, _) => "Helv",
+        (_, FormFontFace.Sans) => CidSansFonts[script].Key,
+        _ => CidFonts[script].Key,
+    };
 
     /// <summary>Adds <paramref name="fields"/> to <paramref name="inputPath"/> and saves to <paramref name="outputPath"/>.</summary>
     public static AcroFormResult Write(string inputPath, string outputPath, IReadOnlyList<FormField> fields, FormScript script,
@@ -144,9 +163,11 @@ public static class AcroFormWriter
             }
             else
             {
-                double size = Math.Round(Math.Clamp(fh * 0.6, 5, 10), 1);
+                double size = f.FontSize > 0 ? Math.Round(Math.Clamp(f.FontSize, 3, 72), 1) : FormField.NominalSize(fh);
+                // an embedded font is the document's one font; otherwise the field may ask for a face
+                string font = embedFont is not null ? daFont : FontKey(script, f.Font);
                 widget.Elements.SetName("/FT", "/Tx");
-                widget.Elements.SetString("/DA", $"/{daFont} {N(size)} Tf 0 g");
+                widget.Elements.SetString("/DA", $"/{font} {N(size)} Tf {FormField.ColorOps(f.Color)}");
                 widget.Elements.SetInteger("/Q", Math.Clamp(f.Align, 0, 2));
                 if (f.Kind == FormFieldKind.Comb && f.MaxLen > 0)
                 {
@@ -250,6 +271,8 @@ public static class AcroFormWriter
         }
 
         Add("Helv", () => Simple(doc, "Helvetica", withEncoding: true));
+        Add("TiRo", () => Simple(doc, "Times-Roman", withEncoding: true));
+        foreach (var spec in CidSansFonts.Values) Add(spec.Key, () => Cid(doc, spec));
         Add("ZaDb", () => Simple(doc, "ZapfDingbats", withEncoding: false));
         foreach (var spec in CidFonts.Values) Add(spec.Key, () => Cid(doc, spec));
         if (!form.Elements.ContainsKey("/DA")) form.Elements.SetString("/DA", "/Helv 0 Tf 0 g");
@@ -271,7 +294,7 @@ public static class AcroFormWriter
         var fd = new PdfDictionary(doc);
         fd.Elements.SetName("/Type", "/FontDescriptor");
         fd.Elements.SetName("/FontName", "/" + s.BaseFont);
-        fd.Elements.SetInteger("/Flags", 6);
+        fd.Elements.SetInteger("/Flags", s.Flags);
         fd.Elements["/FontBBox"] = Numbers(doc, -200, -331, 1100, 1000);
         fd.Elements.SetInteger("/ItalicAngle", 0);
         fd.Elements.SetInteger("/Ascent", 880);

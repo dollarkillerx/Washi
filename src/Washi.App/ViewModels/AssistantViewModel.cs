@@ -116,7 +116,7 @@ public sealed partial class AssistantViewModel : ObservableObject
         var question = Input.Trim();
         (IChatProvider Provider, AiProviderConfig Config) p;
         try { p = ProviderFactory(); }
-        catch (AiException e) { Items.Add(new NoticeChatItem(L.F("Ai_Error", e.Message), true)); OnPropertyChanged(nameof(HasItems)); return; }
+        catch (AiException e) { Items.Add(new NoticeChatItem(L.F("Ai_Error", UiErrors.Text(e)), true)); OnPropertyChanged(nameof(HasItems)); return; }
 
         // Once per provider: what is sent, and where. Local endpoints keep everything on this machine.
         var key = $"{p.Config.Kind}:{p.Config.BaseUrl}";
@@ -144,7 +144,7 @@ public sealed partial class AssistantViewModel : ObservableObject
             Input = "";
             (IChatProvider Provider, AiProviderConfig Config) p;
             try { p = ProviderFactory(); }
-            catch (AiException e) { Items.Add(new NoticeChatItem(L.F("Ai_Error", e.Message), true)); return; }
+            catch (AiException e) { Items.Add(new NoticeChatItem(L.F("Ai_Error", UiErrors.Text(e)), true)); return; }
             await RunTurnAsync(p.Provider, p.Config, q);
         }
     }
@@ -246,7 +246,7 @@ public sealed partial class AssistantViewModel : ObservableObject
         AgentStop.MaxTokens => L.Get("Ui_AssistantMaxTokens"),
         AgentStop.Refusal => L.F("Ui_AssistantRefused", f.Detail ?? ""),
         AgentStop.StepLimit => L.Get("Ui_AssistantStepLimit"),
-        _ => L.F("Ai_Error", f.Detail ?? f.ErrorKind.ToString()),
+        _ => L.F("Ai_Error", UiErrors.Provider(f.ErrorKind, f.Detail)),
     };
 
     private bool OnApprovalRequested(ApprovalViewModel approval, Guid conversation)

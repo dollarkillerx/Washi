@@ -86,6 +86,92 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(KeyStatus), nameof(NeedsEndpoint), nameof(EndpointHint))]
     private Choice<AiProvider> _provider = null!;
+    [ObservableProperty] private bool _loadingModels;
+    [ObservableProperty] private string _modelsStatus = "";
+    [ObservableProperty] private bool _modelsStatusIsError;
+
+    /// <summary>Lists the provider's models (settings, key or null); tests replace it.</summary>
+    public Func<AiSettings, string?, CancellationToken, Task<IReadOnlyList<string>>> ListModels { get; set; } = async (ai, key, ct) =>
+    {
+        var provider = Washi.Ai.Chat.AiProviders.Create(ai.ToProviderConfig(), key, AppServices.Instance.Http);
+        var models = await provider.ListModelsAsync(ct);
+        // Anthropic lists the newest first: keep that order; other providers come unordered
+        return ai.Provider == AiProvider.Anthropic ? [.. models.Select(m => m.Id)] : [.. models.Select(m => m.Id).Order(StringComparer.Ordinal)];
+    };
+
+    /// <summary>Another provider: its saved model (or none yet), and its list is fetched when a key is at hand.</summary>
+    partial void OnProviderChanged(Choice<AiProvider> value)
+    {
+        if (_loading) return;
+        AiSettings? saved = null;
+        try { saved = AiSettings.Load(); } catch (Exception e) when (e is IOException or System.Text.Json.JsonException) { }
+        bool same = saved?.Provider == value.Value;
+        Models.Clear();            // before the text: an editable list may reset its text when its items go
+        Model = same ? saved!.Model : "";
+        Endpoint = same ? saved!.Endpoint?.ToString() ?? "" : "";
+        ApiKey = "";               // a key pasted for the other provider must not be tried (or saved) for this one
+        ModelsStatus = "";
+        SetAiStatus("", error: false);
+        _ = LoadModelsAsync(quiet: true);
+    }
+
+    /// <summary>The "refresh" button next to the model: fetches the models the provider offers right now.</summary>
+    [RelayCommand]
+    private Task RefreshModelsAsync() => LoadModelsAsync(quiet: false);
+
+    /// <summary>Called when the AI tab is shown: fills the list once, silently when there is no key yet.</summary>
+    public Task LoadModelsOnceAsync() => Models.Count > 0 || LoadingModels ? Task.CompletedTask : LoadModelsAsync(quiet: true);
+
+    private async Task LoadModelsAsync(bool quiet)
+    {
+        Uri? endpoint = null;
+        if (Endpoint.Trim().Length > 0 && !Uri.TryCreate(Endpoint.Trim(), UriKind.Absolute, out endpoint))
+        {
+            if (!quiet) { ModelsStatus = L.Get("Ui_AiBadEndpoint"); ModelsStatusIsError = true; }
+            return;
+        }
+        var p = Provider.Value;
+        string? key = ApiKey.Trim().Length > 0 ? ApiKey.Trim() : null;
+        if (key is null)
+        {
+            try { key = ApiKeys.Find(p); } catch (Exception e) when (e is IOException or System.ComponentModel.Win32Exception) { }
+        }
+        if (key is null && p != AiProvider.OpenAICompatible)
+        {
+            ModelsStatus = quiet ? L.Get("Ui_AiModelsNeedKey") : L.Get("Ui_AiKeyMissing");
+            ModelsStatusIsError = !quiet;
+            return;
+        }
+        if (p == AiProvider.OpenAICompatible && endpoint is null)
+        {
+            if (!quiet) { ModelsStatus = L.Get("Ui_AiModelsNeedEndpoint"); ModelsStatusIsError = true; }
+            return;
+        }
+        LoadingModels = true;
+        ModelsStatusIsError = false;
+        ModelsStatus = L.Get("Ui_AiModelsLoading");
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var ids = await ListModels(new AiSettings(p, Model.Trim().Length > 0 ? Model.Trim() : "-", endpoint), key, cts.Token);
+            if (Provider.Value != p) return;   // switched provider meanwhile
+            var current = Model;
+            Models.Clear();
+            foreach (var id in ids) Models.Add(id);
+            Model = current;                   // the editable list keeps what was typed
+            if (Model.Trim().Length == 0 && p == AiProvider.Anthropic && Models.Count > 0) Model = Models[0];
+            ModelsStatus = ids.Count == 0 ? L.Get("Ui_AiModelsNone")
+                : Model.Trim().Length > 0 && !ids.Contains(Model.Trim()) ? L.F("Ui_AiModelsNotListed", ids.Count, Model.Trim())
+                : L.F("Ui_AiModelsLoaded", ids.Count);
+            ModelsStatusIsError = false;
+        }
+        catch (Exception e) when (e is Washi.Ai.Chat.AiProviderException or AiException or HttpRequestException or OperationCanceledException)
+        {
+            ModelsStatus = L.F("Ai_Error", e is OperationCanceledException ? L.Get("Ui_AiModelsTimeout") : UiErrors.Text(e));
+            ModelsStatusIsError = true;
+        }
+        finally { LoadingModels = false; }
+    }
     [ObservableProperty] private string _model = "";
     [ObservableProperty] private string _endpoint = "";
     [ObservableProperty] private bool _vision = true;
@@ -126,7 +212,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         AiSettings ai;
         try { ai = AiSettings.Load(); }
         catch (Exception e) when (e is IOException or System.Text.Json.JsonException) { ai = AiSettings.DefaultClaude; }
+        var loading = _loading;
+        _loading = true;
         Provider = Providers.First(p => p.Value == ai.Provider);
+        _loading = loading;
         Model = ai.Model;
         Endpoint = ai.Endpoint?.ToString() ?? "";
         Vision = ai.Vision ?? true;
@@ -149,6 +238,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void SaveAi()
     {
         if (BuildAi() is not { } ai) return;
+        if (ai.Model.Length == 0) { SetAiStatus(L.Get("Err_AiNoModel"), error: true); return; }
         try
         {
             if (ApiKey.Trim().Length > 0)
@@ -164,7 +254,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         catch (Exception e) when (e is AiException or IOException or UnauthorizedAccessException)
         {
-            SetAiStatus(L.F("Ai_Error", e.Message), error: true);
+            SetAiStatus(L.F("Ai_Error", UiErrors.Text(e)), error: true);
         }
     }
 
@@ -188,8 +278,13 @@ public sealed partial class SettingsViewModel : ObservableObject
             var provider = ai.CreateChatProvider(_services?.Http ?? AppServices.Instance.Http);
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var result = await provider.ProbeAsync(ai.Model, cts.Token);
-            Models.Clear();
-            foreach (var m in result.Models.Select(m => m.Id).Order()) Models.Add(m);
+            if (result.Models.Count > 0)
+            {
+                var current = Model;
+                Models.Clear();
+                foreach (var m in result.Models.Select(m => m.Id)) Models.Add(m);
+                Model = current;
+            }
             if (result.Ok)
                 SetAiStatus(L.F("Ui_AiTestOk", ai.Model, result.Models.Count,
                     result.Detected.Tools ? L.Get("Ui_Yes") : L.Get("Ui_No")), error: false);
@@ -197,7 +292,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         catch (Exception e) when (e is AiException or OperationCanceledException or HttpRequestException)
         {
-            SetAiStatus(L.F("Ai_Error", e.Message), error: true);
+            SetAiStatus(L.F("Ai_Error", UiErrors.Text(e)), error: true);
         }
         finally { Testing = false; }
     }
