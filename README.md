@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/wordmark-on-dark.svg">
+    <img src="assets/brand/wordmark.svg" alt="Washi 和紙" height="72">
+  </picture>
+</p>
+
 # Washi 和紙
 
 Open-source PDF toolkit for desktop, CLI and AI agents. It auto-detects form
@@ -5,9 +12,10 @@ fields, fills them, and can OCR, redact and merge PDFs. It has built-in AI
 (Claude, GPT, DeepSeek or a local model) and an MCP server. Written in C# /
 Avalonia.
 
-> **Status: pre-alpha.** The solution layout and the core contracts are in
-> place. The form-field detector (Masume) works as a Python reference
-> implementation in [`prototype/`](prototype/) and is being ported to C#.
+> **Status: pre-alpha.** The Masume form-field detector is ported to C#
+> (`washi masume detect` / `eval`). Writing the fillable PDF, the MCP server,
+> the desktop app and the AI features are next. The Python reference
+> implementation lives in [`prototype/`](prototype/).
 
 ## Why
 
@@ -16,9 +24,21 @@ with prefilled data that is wrong. Making them fillable by hand means drawing
 every field. Washi's **Masume** engine (マス目, the grid of boxes on a form)
 finds the cells itself and suggests the fields. A person then reviews them.
 
-On three official 国税庁 年末調整 forms, the prototype recovers 78–84% of the
-hand-made fields, and 90–100% of its suggestions sit on a real field. See
-[`prototype/README.md`](prototype/README.md).
+Each 国税庁 年末調整 form below ships with fields made by hand. `washi masume
+eval` ignores them, detects fields on the flat page, then compares:
+
+| form | real fields | detected | recall (C#) | precision (C#) | Python prototype |
+|---|---|---|---|---|---|
+| 扶養控除等(異動)申告書 R9 | 193 | 130 | 78% | 100% | 78% / 100% |
+| 保険料控除申告書 R8 | 143 | 135 | 84% | 87% | 84% / 90% |
+| 基礎・配偶者・特定親族・所得金額調整 R8 | 83 | 78 | 83% | 88% | 83% / 90% |
+
+- **Recall**: the share of hand-made fields whose centre is covered by a detected field.
+- **Precision**: the share of detected fields that sit on a hand-made field.
+
+On 保険料控除, C# and Python detect the same 135 fields: same
+positions, same kinds. On the other two forms, PDFium's character boxes let the C# port find
+a few more □ checkboxes. Each form takes 1–2 s. Method: [`prototype/README.md`](prototype/README.md).
 
 ## Architecture
 
@@ -37,7 +57,7 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
 
 | project | role |
 |---|---|
-| `Washi.Core` | PDF reading, rendering and writing. Shared geometry (`PdfRect`, top-down points on the upright page) |
+| `Washi.Core` | PDF reading, rendering and writing (PDFium via PDFiumCore). Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
 | `Washi.Tools` | `IWashiTool` + `ToolRegistry`. Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | providers behind `Microsoft.Extensions.AI`'s `IChatClient`:<br>• **Claude** through the official Anthropic C# SDK<br>• **GPT** through the official OpenAI SDK<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints |
@@ -62,12 +82,14 @@ Requires the .NET 10 SDK.
 dotnet build Washi.slnx
 dotnet test Washi.slnx
 dotnet run --project src/Washi.Cli -- --version
+dotnet run --project src/Washi.Cli -- masume detect form.pdf -o out   # fields.json + overlay PNGs
+dotnet run --project src/Washi.Cli -- masume eval form.pdf -o out     # score against existing fields
 dotnet run --project src/Washi.App
 ```
 
 ## Roadmap
 
-1. Port Masume to C# (PDFium render, PdfPig letters, connected components) and reach the prototype's scores.
+1. ~~Port Masume to C# (PDFium render + text layer, managed connected components) and reach the prototype's scores.~~ Done.
 2. Write the AcroForm output (text, amount, comb, checkbox; Japanese font handling).
 3. First tools: `pdf_info`, `extract_text`, `render_page`, `detect_fields`, `fill_fields`.
 4. MCP server over the tool registry.
@@ -88,3 +110,6 @@ licence.
 Dependencies under MIT, BSD and Apache-2.0 (Avalonia, PDFium, PdfPig,
 PDFsharp, OpenCvSharp, the Anthropic, OpenAI and MCP SDKs) are compatible with
 this licence. AGPL engines such as MuPDF can be used too.
+
+The brand assets in [`assets/brand/`](assets/brand/) are part of this repository. Their lettering
+is outlined from IBM Plex (SIL Open Font License 1.1).
