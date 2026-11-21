@@ -13,6 +13,8 @@ usage:
   washi masume eval   &lt;in.pdf&gt; [-o out]   score detection against the PDF's existing fields
   washi form make     &lt;in.pdf&gt; [-o out.pdf] [--fields fields.json] [--lang auto|ja|zh-Hans|zh-Hant|ko|en|fr|de]
                                           make a fillable PDF (fields are detected unless --fields is given)
+                                          --embed-font &lt;font.ttf|.otf|.ttc&gt; [--font-index n]: embed a whole font
+                                          so rare characters show in every viewer (adds the font size to the file)
 
 The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to change it.</value></data>
   <data name="DetectSummary" xml:space="preserve"><value>{0}: {1} fields ({2}) -&gt; {3}/  [{4} s]</value></data>
@@ -28,6 +30,9 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Warning" xml:space="preserve"><value>  warning: {0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>Could not open {0}: {1}</value></data>
   <data name="ProtectedPdf" xml:space="preserve"><value>{0} is protected against changes (it needs the owner password). Washi does not remove protection: ask the author for an unprotected copy.</value></data>
+  <data name="FontEmbedded" xml:space="preserve"><value>  embedded font {0} ({1} MB): every viewer can show all of its characters</value></data>
+  <data name="FontNotAllowed" xml:space="preserve"><value>The licence of {0} does not allow embedding it in a PDF people can edit (OS/2 fsType {1}). Choose another font.</value></data>
+  <data name="FontNotSupported" xml:space="preserve"><value>{0} cannot be embedded: variable fonts and files that are not TrueType/OpenType fonts are not supported. Use a static .ttf, .otf or .ttc.</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>Unknown form language '{0}'. Use one of: auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
   <data name="Kind_text" xml:space="preserve"><value>text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>amount</value></data>

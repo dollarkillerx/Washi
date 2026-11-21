@@ -13,6 +13,8 @@ utilisation :
   washi masume eval   &lt;in.pdf&gt; [-o out]   note la détection par rapport aux champs déjà présents dans le PDF
   washi form make     &lt;in.pdf&gt; [-o out.pdf] [--fields fields.json] [--lang auto|ja|zh-Hans|zh-Hant|ko|en|fr|de]
                                           crée un PDF remplissable (champs détectés si --fields est absent)
+                                          --embed-font &lt;police.ttf|.otf|.ttc&gt; [--font-index n] : incorpore une police entière
+                                          pour que les caractères rares s’affichent partout (le fichier grossit d’autant)
 
 L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de, ja) pour la changer.</value></data>
   <data name="DetectSummary" xml:space="preserve"><value>{0} : {1} champs ({2}) -&gt; {3}/  [{4} s]</value></data>
@@ -28,6 +30,9 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Warning" xml:space="preserve"><value>  attention : {0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>Impossible d’ouvrir {0} : {1}</value></data>
   <data name="ProtectedPdf" xml:space="preserve"><value>{0} est protégé contre les modifications (mot de passe propriétaire requis). Washi ne retire pas la protection : demandez une copie non protégée à l’auteur.</value></data>
+  <data name="FontEmbedded" xml:space="preserve"><value>  police {0} incorporée ({1} Mo) : tous les lecteurs peuvent afficher tous ses caractères</value></data>
+  <data name="FontNotAllowed" xml:space="preserve"><value>La licence de {0} interdit de l’incorporer dans un PDF modifiable (OS/2 fsType {1}). Choisissez une autre police.</value></data>
+  <data name="FontNotSupported" xml:space="preserve"><value>Impossible d’incorporer {0} : les polices variables et les fichiers qui ne sont pas des polices TrueType/OpenType ne sont pas pris en charge. Utilisez un .ttf, .otf ou .ttc statique.</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>Langue de formulaire inconnue « {0} ». Valeurs possibles : auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
   <data name="Kind_text" xml:space="preserve"><value>texte</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>montant</value></data>

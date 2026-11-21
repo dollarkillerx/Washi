@@ -39,21 +39,42 @@ public static class AcroFormWriter
         [FormScript.Korean] = new("HYSMyeongJo", "HYSMyeongJo-Medium", "UniKS-UTF16-H", "Korea1", 2, "1 95 500"),
     };
 
+    /// <summary>
+    /// Resource name of an embedded font in the form's /DR (only a label: viewers use the font
+    /// object it points to, whose /BaseFont is the font's real PostScript name).
+    ///
+    /// Why this label: when PDFium (Chrome, Edge) edits a field, it files every CJK ideograph
+    /// under the Simplified Chinese charset and only tries the field's own font if that font's
+    /// charset matches. An embedded font gets the ANSI charset, so it is skipped and a GB2312
+    /// system font is used instead, which has no 燁, 陳 or 臺. PDFium gives the "symbol"
+    /// charset to a default font whose resource name is "Wingdings", and tries a symbol-charset
+    /// font first for every character. With this name PDFium therefore types with the embedded
+    /// font. Verified by typing into generated forms through PDFium's form API (tests and
+    /// README "Fonts").
+    /// </summary>
+    public const string EmbeddedKey = "Wingdings";
+
     public static string FontKey(FormScript script) => script == FormScript.Latin ? "Helv" : CidFonts[script].Key;
 
     /// <summary>Adds <paramref name="fields"/> to <paramref name="inputPath"/> and saves to <paramref name="outputPath"/>.</summary>
-    public static AcroFormResult Write(string inputPath, string outputPath, IReadOnlyList<FormField> fields, FormScript script, string? password = null)
+    public static AcroFormResult Write(string inputPath, string outputPath, IReadOnlyList<FormField> fields, FormScript script,
+                                       Fonts.OpenTypeFont? embedFont = null, string? password = null)
     {
         using var doc = password is null
             ? PdfReader.Open(inputPath, PdfDocumentOpenMode.Modify)
             : PdfReader.Open(inputPath, password, PdfDocumentOpenMode.Modify);
-        var result = Write(doc, fields, script);
+        var result = Write(doc, fields, script, embedFont);
         doc.Options.CompressContentStreams = true;
         doc.Save(outputPath);
         return result;
     }
 
-    public static AcroFormResult Write(PdfDocument doc, IReadOnlyList<FormField> fields, FormScript script)
+    /// <param name="embedFont">
+    /// Optional font embedded whole and used by every text field, so viewers that substitute
+    /// fonts (PDFium: Chrome, Edge) can still show rare characters. Adds the font's size to the file.
+    /// </param>
+    public static AcroFormResult Write(PdfDocument doc, IReadOnlyList<FormField> fields, FormScript script,
+                                       Fonts.OpenTypeFont? embedFont = null)
     {
         var warnings = new List<string>();
         int straightened = 0;
@@ -70,6 +91,13 @@ public static class AcroFormWriter
         var fieldArray = GetOrCreateArray(doc, form, "/Fields");
         var used = CollectFieldNames(fieldArray);
         string daFont = FontKey(script);
+        if (embedFont is not null)
+        {
+            // a PDF may already hold a real Wingdings: take the first symbol-charset name that is free
+            daFont = new[] { EmbeddedKey, "Wingdings2", "Wingdings3", "Webdings" }
+                         .FirstOrDefault(k => !fonts.Elements.ContainsKey("/" + k)) ?? "WashiFont";
+            fonts.Elements.SetReference("/" + daFont, Fonts.PdfFontEmbedder.Embed(doc, embedFont));
+        }
 
         foreach (var f in fields)
         {

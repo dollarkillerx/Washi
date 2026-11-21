@@ -69,10 +69,45 @@ washi form make form.pdf --fields out/form_fields.json   # ...then write the rev
   `auto` reads the page text. If the text is unreadable, it uses your system language.
 - **Protected PDFs** (an owner password forbids changes) are refused. Washi does not remove protection.
 
-The fonts are referenced, not embedded, the same way the 国税庁 forms do it, so
-files stay small. **Known limit:** viewers based on PDFium (Chrome, Edge) substitute
-a system font and can drop rare CJK characters (e.g. 燁, 陳, 臺 in our tests on
-macOS). Adobe Acrobat renders them. An option to embed a full font is planned.
+
+### Fonts: referenced or embedded
+
+**By default** fonts are referenced, not embedded, the way the 国税庁 forms do
+it, so files stay small. The viewer draws typed text with a local font. In
+viewers built on PDFium (Chrome, Edge), that means characters outside GB2312
+disappear: 燁, 陳 and 臺 vanished in our tests.
+
+**With `--embed-font`** the whole font goes into the PDF, and every text field
+uses it:
+
+```bash
+washi form make form.pdf --embed-font NotoSansJP-Regular.ttf
+washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc" --font-index 0
+```
+
+- **Formats**:
+  - TrueType or CFF outlines (`.ttf`, `.otf`)
+  - one face of a collection (`.ttc`, chosen with `--font-index`)
+  - variable fonts are refused: use a static weight
+- **Licence check**: Washi reads the font's OS/2 `fsType`. It only embeds fonts
+  marked installable (0) or editable (8), because a fillable form is a document
+  people edit. Restricted, preview-and-print and bitmap-only fonts are refused,
+  with a message in the UI language.
+- **Size**: the whole font is added (deflated), for example:
+
+  | font | adds |
+  |---|---|
+  | AppleSDGothicNeo | 2.2 MB |
+  | Hiragino Sans W3 | 5.9 MB |
+  | Arial Unicode | 15 MB |
+
+  Free OFL fonts that work well: Noto Sans JP / SC / TC / KR (static TTF or
+  OTF) and BIZ UDGothic.
+- **Tested**: we typed into generated forms through PDFium's own form-filling API
+  (the code path Chrome uses). The text was 王 燁 陳大文 臺北市 홍길동, Éloïse
+  Müller-Straße ç 张伟 and マイナンバー, and every character showed in the
+  embedded font. The resource name that makes PDFium use the embedded font is
+  explained in `AcroFormWriter.EmbeddedKey`.
 
 ## Languages
 

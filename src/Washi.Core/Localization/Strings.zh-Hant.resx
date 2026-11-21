@@ -13,6 +13,8 @@
   washi masume eval   &lt;in.pdf&gt; [-o out]   與 PDF 中既有的填寫欄比對，為辨識結果評分
   washi form make     &lt;in.pdf&gt; [-o out.pdf] [--fields fields.json] [--lang auto|ja|zh-Hans|zh-Hant|ko|en|fr|de]
                                           產生可填寫的 PDF（未指定 --fields 時自動辨識填寫欄）
+                                          --embed-font &lt;font.ttf|.otf|.ttc&gt; [--font-index n]：內嵌完整字型，
+                                          讓罕用字在任何閱讀器中都能顯示（檔案會增加字型大小）
 
 介面語言依照系統設定。若要變更，請設定 WASHI_LANG（例如 zh-Hant、ja、ko）。</value></data>
   <data name="DetectSummary" xml:space="preserve"><value>{0}: {1} 個填寫欄（{2}） -&gt; {3}/  [{4} 秒]</value></data>
@@ -28,6 +30,9 @@
   <data name="Warning" xml:space="preserve"><value>  注意：{0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>無法開啟 {0}：{1}</value></data>
   <data name="ProtectedPdf" xml:space="preserve"><value>{0} 設有禁止修改的保護（需要擁有者密碼）。Washi 不會解除保護，請向作者索取未加保護的檔案。</value></data>
+  <data name="FontEmbedded" xml:space="preserve"><value>  已內嵌字型 {0}（{1} MB），任何閱讀器都能顯示其中所有字元</value></data>
+  <data name="FontNotAllowed" xml:space="preserve"><value>{0} 的授權不允許內嵌到可編輯的 PDF 中（OS/2 fsType {1}）。請改用其他字型。</value></data>
+  <data name="FontNotSupported" xml:space="preserve"><value>無法內嵌 {0}：不支援可變字型，也不支援 TrueType/OpenType 以外的檔案。請使用固定字重的 .ttf、.otf 或 .ttc。</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>不支援的表單語言「{0}」。請使用：auto、ja、zh-Hans、zh-Hant、ko、en、fr、de</value></data>
   <data name="Kind_text" xml:space="preserve"><value>文字</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>

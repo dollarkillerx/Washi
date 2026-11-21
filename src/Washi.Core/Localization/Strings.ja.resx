@@ -13,6 +13,8 @@
   washi masume eval   &lt;in.pdf&gt; [-o out]   PDF にある既存の記入欄と比べて検出結果を採点
   washi form make     &lt;in.pdf&gt; [-o out.pdf] [--fields fields.json] [--lang auto|ja|zh-Hans|zh-Hant|ko|en|fr|de]
                                           記入できる PDF を作成（--fields がなければ記入欄を自動検出）
+                                          --embed-font &lt;font.ttf|.otf|.ttc&gt; [--font-index n]: フォント全体を埋め込み、
+                                          どのビューアでも難しい漢字まで表示（ファイルはフォントの分だけ大きくなります）
 
 表示言語はシステムの設定に従います。変更するには WASHI_LANG（例: ja, ko, fr）を設定してください。</value></data>
   <data name="DetectSummary" xml:space="preserve"><value>{0}: 記入欄 {1} 個（{2}） -&gt; {3}/  [{4} 秒]</value></data>
@@ -28,6 +30,9 @@
   <data name="Warning" xml:space="preserve"><value>  注意: {0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>{0} を開けませんでした: {1}</value></data>
   <data name="ProtectedPdf" xml:space="preserve"><value>{0} は変更できないよう保護されています（所有者パスワードが必要です）。Washi は保護を解除しません。作成者に保護のないファイルを依頼してください。</value></data>
+  <data name="FontEmbedded" xml:space="preserve"><value>  フォント {0} を埋め込みました（{1} MB）。どのビューアでもこのフォントの全文字を表示できます</value></data>
+  <data name="FontNotAllowed" xml:space="preserve"><value>{0} のライセンスでは、編集できる PDF への埋め込みが許可されていません（OS/2 fsType {1}）。別のフォントを選んでください。</value></data>
+  <data name="FontNotSupported" xml:space="preserve"><value>{0} は埋め込めません。可変フォントや TrueType/OpenType 以外のファイルには対応していません。固定ウェイトの .ttf / .otf / .ttc を使ってください。</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>フォームの言語 '{0}' は使えません。次のいずれかを指定してください: auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
   <data name="Kind_text" xml:space="preserve"><value>テキスト</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>

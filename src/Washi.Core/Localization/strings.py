@@ -20,6 +20,8 @@ usage:
   washi masume eval   <in.pdf> [-o out]   score detection against the PDF's existing fields
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           make a fillable PDF (fields are detected unless --fields is given)
+                                          --embed-font <font.ttf|.otf|.ttc> [--font-index n]: embed a whole font
+                                          so rare characters show in every viewer (adds the font size to the file)
 
 The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to change it.""",
         "ja": f"""washi {{0}} - オープンソースの PDF ツールキット（プレアルファ版）
@@ -30,6 +32,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi masume eval   <in.pdf> [-o out]   PDF にある既存の記入欄と比べて検出結果を採点
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           記入できる PDF を作成（--fields がなければ記入欄を自動検出）
+                                          --embed-font <font.ttf|.otf|.ttc> [--font-index n]: フォント全体を埋め込み、
+                                          どのビューアでも難しい漢字まで表示（ファイルはフォントの分だけ大きくなります）
 
 表示言語はシステムの設定に従います。変更するには WASHI_LANG（例: ja, ko, fr）を設定してください。""",
         "zh-Hans": f"""washi {{0}} - 开源 PDF 工具（预览版）
@@ -40,6 +44,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi masume eval   <in.pdf> [-o out]   与 PDF 里已有的填写栏对比，为识别结果打分
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           生成可填写的 PDF（不指定 --fields 时自动识别填写栏）
+                                          --embed-font <font.ttf|.otf|.ttc> [--font-index n]：嵌入完整字体，
+                                          让生僻字在任何阅读器里都能显示（文件会增加字体大小）
 
 界面语言跟随系统设置。要更改，请设置 WASHI_LANG（例如 zh-Hans、ja、ko）。""",
         "zh-Hant": f"""washi {{0}} - 開源 PDF 工具（預覽版）
@@ -50,6 +56,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi masume eval   <in.pdf> [-o out]   與 PDF 中既有的填寫欄比對，為辨識結果評分
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           產生可填寫的 PDF（未指定 --fields 時自動辨識填寫欄）
+                                          --embed-font <font.ttf|.otf|.ttc> [--font-index n]：內嵌完整字型，
+                                          讓罕用字在任何閱讀器中都能顯示（檔案會增加字型大小）
 
 介面語言依照系統設定。若要變更，請設定 WASHI_LANG（例如 zh-Hant、ja、ko）。""",
         "ko": f"""washi {{0}} - 오픈 소스 PDF 툴킷 (프리알파)
@@ -60,6 +68,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi masume eval   <in.pdf> [-o out]   PDF 에 있는 기존 입력란과 비교해 감지 결과 채점
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           작성 가능한 PDF 생성 (--fields 가 없으면 입력란을 자동 감지)
+                                          --embed-font <font.ttf|.otf|.ttc> [--font-index n]: 글꼴 전체를 포함해
+                                          어떤 뷰어에서도 드문 한자까지 표시 (파일이 글꼴 크기만큼 커집니다)
 
 인터페이스 언어는 시스템 설정을 따릅니다. 바꾸려면 WASHI_LANG (예: ko, ja, fr) 을 설정하세요.""",
         "fr": f"""washi {{0}} - boîte à outils PDF open source (pré-alpha)
@@ -70,6 +80,8 @@ utilisation :
   washi masume eval   <in.pdf> [-o out]   note la détection par rapport aux champs déjà présents dans le PDF
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           crée un PDF remplissable (champs détectés si --fields est absent)
+                                          --embed-font <police.ttf|.otf|.ttc> [--font-index n] : incorpore une police entière
+                                          pour que les caractères rares s’affichent partout (le fichier grossit d’autant)
 
 L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de, ja) pour la changer.""",
         "de": f"""washi {{0}} - Open-Source-PDF-Werkzeugkasten (Pre-Alpha)
@@ -80,6 +92,8 @@ Verwendung:
   washi masume eval   <in.pdf> [-o out]   Erkennung mit den vorhandenen Feldern des PDFs vergleichen
   washi form make     <in.pdf> [-o out.pdf] [--fields fields.json] [--lang {FORM_LANGS}]
                                           ausfüllbares PDF erstellen (ohne --fields werden Felder erkannt)
+                                          --embed-font <schrift.ttf|.otf|.ttc> [--font-index n]: bettet eine ganze Schrift ein,
+                                          damit seltene Zeichen überall erscheinen (die Datei wird um die Schrift größer)
 
 Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) lässt sie sich ändern.""",
     },
@@ -185,6 +199,33 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "ko": "{0} 은(는) 변경할 수 없도록 보호되어 있습니다 (소유자 암호 필요). Washi 는 보호를 해제하지 않습니다. 작성자에게 보호되지 않은 파일을 요청하세요.",
         "fr": "{0} est protégé contre les modifications (mot de passe propriétaire requis). Washi ne retire pas la protection : demandez une copie non protégée à l’auteur.",
         "de": "{0} ist gegen Änderungen geschützt (Besitzerkennwort erforderlich). Washi hebt keinen Schutz auf: Bitten Sie den Ersteller um eine ungeschützte Kopie.",
+    },
+    "FontEmbedded": {
+        "en": "  embedded font {0} ({1} MB): every viewer can show all of its characters",
+        "ja": "  フォント {0} を埋め込みました（{1} MB）。どのビューアでもこのフォントの全文字を表示できます",
+        "zh-Hans": "  已嵌入字体 {0}（{1} MB），任何阅读器都能显示其中所有字符",
+        "zh-Hant": "  已內嵌字型 {0}（{1} MB），任何閱讀器都能顯示其中所有字元",
+        "ko": "  글꼴 {0} 을(를) 포함했습니다 ({1} MB). 어떤 뷰어에서도 이 글꼴의 모든 문자를 표시할 수 있습니다",
+        "fr": "  police {0} incorporée ({1} Mo) : tous les lecteurs peuvent afficher tous ses caractères",
+        "de": "  Schrift {0} eingebettet ({1} MB): jeder Viewer kann alle ihre Zeichen anzeigen",
+    },
+    "FontNotAllowed": {
+        "en": "The licence of {0} does not allow embedding it in a PDF people can edit (OS/2 fsType {1}). Choose another font.",
+        "ja": "{0} のライセンスでは、編集できる PDF への埋め込みが許可されていません（OS/2 fsType {1}）。別のフォントを選んでください。",
+        "zh-Hans": "{0} 的授权不允许嵌入到可编辑的 PDF 中（OS/2 fsType {1}）。请换一个字体。",
+        "zh-Hant": "{0} 的授權不允許內嵌到可編輯的 PDF 中（OS/2 fsType {1}）。請改用其他字型。",
+        "ko": "{0} 의 라이선스는 편집 가능한 PDF 에 포함하는 것을 허용하지 않습니다 (OS/2 fsType {1}). 다른 글꼴을 선택하세요.",
+        "fr": "La licence de {0} interdit de l’incorporer dans un PDF modifiable (OS/2 fsType {1}). Choisissez une autre police.",
+        "de": "Die Lizenz von {0} erlaubt kein Einbetten in ein bearbeitbares PDF (OS/2 fsType {1}). Bitte eine andere Schrift wählen.",
+    },
+    "FontNotSupported": {
+        "en": "{0} cannot be embedded: variable fonts and files that are not TrueType/OpenType fonts are not supported. Use a static .ttf, .otf or .ttc.",
+        "ja": "{0} は埋め込めません。可変フォントや TrueType/OpenType 以外のファイルには対応していません。固定ウェイトの .ttf / .otf / .ttc を使ってください。",
+        "zh-Hans": "无法嵌入 {0}：不支持可变字体，也不支持 TrueType/OpenType 以外的文件。请使用固定字重的 .ttf、.otf 或 .ttc。",
+        "zh-Hant": "無法內嵌 {0}：不支援可變字型，也不支援 TrueType/OpenType 以外的檔案。請使用固定字重的 .ttf、.otf 或 .ttc。",
+        "ko": "{0} 을(를) 포함할 수 없습니다. 가변 글꼴과 TrueType/OpenType 이 아닌 파일은 지원하지 않습니다. 고정 굵기의 .ttf, .otf, .ttc 를 사용하세요.",
+        "fr": "Impossible d’incorporer {0} : les polices variables et les fichiers qui ne sont pas des polices TrueType/OpenType ne sont pas pris en charge. Utilisez un .ttf, .otf ou .ttc statique.",
+        "de": "{0} kann nicht eingebettet werden: variable Schriften und Dateien, die keine TrueType/OpenType-Schriften sind, werden nicht unterstützt. Bitte eine statische .ttf, .otf oder .ttc verwenden.",
     },
     "UnknownLanguage": {
         "en": f"Unknown form language '{{0}}'. Use one of: {FORM_LANGS.replace('|', ', ')}",

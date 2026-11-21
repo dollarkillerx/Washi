@@ -13,6 +13,8 @@
   washi masume eval   &lt;in.pdf&gt; [-o out]   与 PDF 里已有的填写栏对比，为识别结果打分
   washi form make     &lt;in.pdf&gt; [-o out.pdf] [--fields fields.json] [--lang auto|ja|zh-Hans|zh-Hant|ko|en|fr|de]
                                           生成可填写的 PDF（不指定 --fields 时自动识别填写栏）
+                                          --embed-font &lt;font.ttf|.otf|.ttc&gt; [--font-index n]：嵌入完整字体，
+                                          让生僻字在任何阅读器里都能显示（文件会增加字体大小）
 
 界面语言跟随系统设置。要更改，请设置 WASHI_LANG（例如 zh-Hans、ja、ko）。</value></data>
   <data name="DetectSummary" xml:space="preserve"><value>{0}: {1} 个填写栏（{2}） -&gt; {3}/  [{4} 秒]</value></data>
@@ -28,6 +30,9 @@
   <data name="Warning" xml:space="preserve"><value>  注意：{0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>无法打开 {0}：{1}</value></data>
   <data name="ProtectedPdf" xml:space="preserve"><value>{0} 设置了禁止修改的保护（需要所有者密码）。Washi 不会解除保护，请向作者索取未加保护的文件。</value></data>
+  <data name="FontEmbedded" xml:space="preserve"><value>  已嵌入字体 {0}（{1} MB），任何阅读器都能显示其中所有字符</value></data>
+  <data name="FontNotAllowed" xml:space="preserve"><value>{0} 的授权不允许嵌入到可编辑的 PDF 中（OS/2 fsType {1}）。请换一个字体。</value></data>
+  <data name="FontNotSupported" xml:space="preserve"><value>无法嵌入 {0}：不支持可变字体，也不支持 TrueType/OpenType 以外的文件。请使用固定字重的 .ttf、.otf 或 .ttc。</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>不支持的表单语言“{0}”。请使用：auto、ja、zh-Hans、zh-Hant、ko、en、fr、de</value></data>
   <data name="Kind_text" xml:space="preserve"><value>文本</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金额</value></data>

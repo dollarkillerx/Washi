@@ -163,8 +163,35 @@ static int MakeForm(string pdf, Dictionary<string, string> opt)
         source = L.Get("LangFromSystem");
     }
 
-    var result = AcroFormWriter.Write(pdf, output, fields.Select(f => f.ToFormField()).ToList(), script);
+    Washi.Core.Fonts.OpenTypeFont? font = null;
+    if (opt.TryGetValue("--embed-font", out var fontPath))
+    {
+        int face = opt.TryGetValue("--font-index", out var fi) && int.TryParse(fi, out var n) ? n : 0;
+        try
+        {
+            font = Washi.Core.Fonts.OpenTypeFont.Load(fontPath, face);
+        }
+        catch (Washi.Core.Fonts.FontNotUsableException e) when (e.Reason == "license")
+        {
+            Console.Error.WriteLine(L.F("FontNotAllowed", Path.GetFileName(fontPath), $"0x{e.FsType:X4}"));
+            return 1;
+        }
+        catch (Washi.Core.Fonts.FontNotUsableException)
+        {
+            Console.Error.WriteLine(L.F("FontNotSupported", fontPath));
+            return 1;
+        }
+        if (!font.EmbeddingAllowedForEditing)
+        {
+            Console.Error.WriteLine(L.F("FontNotAllowed", font.PostScriptName, $"0x{font.FsType:X4}"));
+            return 1;
+        }
+    }
+
+    var result = AcroFormWriter.Write(pdf, output, fields.Select(f => f.ToFormField()).ToList(), script, font);
     Console.WriteLine(L.F("FormMade", stem, result.FieldsWritten, output, FormScripts.LanguageTag(script), source));
+    if (font is not null)
+        Console.WriteLine(L.F("FontEmbedded", font.PostScriptName, (new FileInfo(output).Length / 1048576.0).ToString("F1", L.Culture)));
     if (result.PagesStraightened > 0) Console.WriteLine(L.F("PagesStraightened", result.PagesStraightened));
     foreach (var w in result.Warnings) Console.WriteLine(L.F("Warning", w));
     return 0;
