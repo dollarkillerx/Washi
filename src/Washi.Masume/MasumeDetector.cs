@@ -206,6 +206,12 @@ public static class MasumeDetector
         foreach (var b in boxes)
             fields.Add(new DetectedField { Page = pno, Kind = FieldKind.Checkbox, Rect = b, Notes = ["□ glyph"] });
 
+        // printed text the text layer cannot see: glyphs without a Unicode mapping never reach page.Chars, so a field
+        // printed in such a font looked empty (法人番号 digits on some e-Gov forms)
+        for (int i = 0; i < fields.Count; i++)
+            if (fields[i].Prefilled.Length == 0 && fields[i].Kind != FieldKind.Checkbox && UnmappedInk(page, g, fields[i].Rect, labelCol))
+                fields[i] = fields[i] with { Prefilled = UnreadableMarker };
+
         var named = NameFields(fields, cells, labels, readable, pno);
         if (!readable)
         {
@@ -291,6 +297,35 @@ public static class MasumeDetector
         List<PdfChar> labels = [], data = [];
         foreach (var c in chars) (ColorDistance(Rgb(c.Rgb), lc) > 0.35 ? data : labels).Add(c);
         return (labels, data, lc);
+    }
+
+    /// <summary>Dark pixels (3 pt² at <see cref="Scale"/>) that make a field count as printed.</summary>
+    private const int MinUnmappedInk = 48;
+
+    /// <summary>
+    /// Ink inside <paramref name="r"/> that only the full render has (so it is text), away from every character the
+    /// text layer knows and not in the labels' colour: text whose glyphs have no Unicode mapping.
+    /// </summary>
+    private static bool UnmappedInk(PageSnapshot page, Gray g, PdfRect r, (double, double, double) labelCol)
+    {
+        var known = page.Chars.Where(c => c.Rect.X1 > r.X0 && c.Rect.X0 < r.X1 && c.Rect.Y1 > r.Y0 && c.Rect.Y0 < r.Y1)
+            .Select(c => (X0: Px(c.Rect.X0) - 2, Y0: Px(c.Rect.Y0) - 2, X1: Px(c.Rect.X1) + 2, Y1: Px(c.Rect.Y1) + 2)).ToList();
+        var full = page.Full;
+        int x0 = Math.Max(0, Px(r.X0) + 2), y0 = Math.Max(0, Px(r.Y0) + 2);
+        int x1 = Math.Min(Math.Min(full.Width, g.W), Px(r.X1) - 2), y1 = Math.Min(Math.Min(full.Height, g.H), Px(r.Y1) - 2);
+        int ink = 0;
+        for (int y = y0; y < y1; y++)
+            for (int x = x0; x < x1; x++)
+            {
+                if (g.Px[y * g.W + x] < 200) continue;                     // a rule or tick of the form itself
+                int s = (y * full.Width + x) * 3;
+                byte cr = full.Pixels[s], cg = full.Pixels[s + 1], cb = full.Pixels[s + 2];
+                if ((cr * 299 + cg * 587 + cb * 114) / 1000 >= 128) continue;
+                if (ColorDistance((cr / 255.0, cg / 255.0, cb / 255.0), labelCol) <= 0.35) continue;
+                if (known.Any(k => x >= k.X0 && x < k.X1 && y >= k.Y0 && y < k.Y1)) continue;
+                if (++ink >= MinUnmappedInk) return true;
+            }
+        return false;
     }
 
     private static string JoinText(IEnumerable<PdfChar> chars) =>
