@@ -18,7 +18,7 @@ keeps its own licence. The licence texts come with each package (NuGet) or proje
 | CommunityToolkit.Mvvm | MIT | https://github.com/CommunityToolkit/dotnet |
 | Anthropic C# SDK | Apache-2.0 | https://github.com/anthropics/anthropic-sdk-csharp |
 | OpenAI .NET SDK | MIT | https://github.com/openai/openai-dotnet |
-| Model Context Protocol C# SDK (MCP server only) | Apache-2.0 | https://github.com/modelcontextprotocol/csharp-sdk |
+| Model Context Protocol C# SDK (MCP server, desktop app) | Apache-2.0 | https://github.com/modelcontextprotocol/csharp-sdk |
 
 ## Used if installed, not shipped
 

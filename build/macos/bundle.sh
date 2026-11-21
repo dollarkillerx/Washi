@@ -13,6 +13,9 @@ APP=build/out/Washi.app
 
 rm -rf "$APP" build/out/publish
 dotnet publish src/Washi.App -c "$CONFIG" -r "$RID" --self-contained false -o build/out/publish -p:UseAppHost=true
+# washi-mcp (stdio bridge for Claude Desktop, also the standalone MCP server) in its own folder
+rm -rf build/out/publish/mcp
+dotnet publish src/Washi.Mcp -c "$CONFIG" -r "$RID" --self-contained false -o build/out/publish/mcp -p:UseAppHost=true
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp -R build/out/publish/. "$APP/Contents/MacOS/"
 cp assets/brand/washi.icns "$APP/Contents/Resources/washi.icns"

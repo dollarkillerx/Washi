@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // washi-mcp: MCP server (stdio) exposing the Washi.Tools registry.
 //
-//   washi-mcp --allow ~/Documents/forms [--allow <dir> ...]
+//   washi-mcp --allow ~/Documents/forms [--allow <dir> ...]     standalone, no Washi window needed
+//   washi-mcp --app [--socket PATH] [--no-launch]               bridge to the running Washi app
 //
-// Only files inside the allowed folders can be read or written (fonts may also come from the
-// system font folders). Write tools create new files and never overwrite. Without --allow
-// (or WASHI_ALLOWED_DIRS), the current folder is the only allowed folder.
+// Standalone: only files inside the allowed folders can be read or written (fonts may also come
+// from the system font folders). Write tools create new files and never overwrite. Without
+// --allow (or WASHI_ALLOWED_DIRS), the current folder is the only allowed folder.
+// --app: the Washi window serves MCP (Settings → AI & MCP): its folders, approvals and open document.
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
@@ -18,12 +20,21 @@ using Washi.Tools;
 var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
 if (args is ["--version"]) { Console.WriteLine($"washi-mcp {version}"); return 0; }
 
+const string Usage = "Usage: washi-mcp --allow <folder> [--allow <folder> ...] | washi-mcp --app [--socket PATH] [--no-launch]";
+if (args is ["-h"] or ["--help"]) { Console.Error.WriteLine(Usage); return 0; }
 var roots = new List<string>();
+bool app = false, launch = true;
+string? socketPath = null;
 for (int i = 0; i < args.Length; i++)
 {
     if (args[i] == "--allow" && i + 1 < args.Length) roots.Add(args[++i]);
-    else { Console.Error.WriteLine($"washi-mcp: unknown argument '{args[i]}'. Usage: washi-mcp --allow <folder> [--allow <folder> ...]"); return 2; }
+    else if (args[i] == "--app") app = true;
+    else if (args[i] == "--socket" && i + 1 < args.Length) socketPath = args[++i];
+    else if (args[i] == "--no-launch") launch = false;
+    else { Console.Error.WriteLine($"washi-mcp: unknown argument '{args[i]}'. {Usage}"); return 2; }
 }
+if (app && roots.Count > 0) { Console.Error.WriteLine("washi-mcp: --app uses the folders set in the Washi app; drop --allow"); return 2; }
+if (app) return await Bridge.RunAsync(socketPath, launch);
 if (Environment.GetEnvironmentVariable("WASHI_ALLOWED_DIRS") is { Length: > 0 } env)
     roots.AddRange(env.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 if (roots.Count == 0) roots.Add(Directory.GetCurrentDirectory());

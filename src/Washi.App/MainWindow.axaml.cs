@@ -47,13 +47,12 @@ public partial class MainWindow : Window
             ViewModel.ViewportWidth = e.NewSize.Width;
             ViewModel.ViewportHeight = e.NewSize.Height;
         };
-        QuestionBox.KeyDown += (_, e) =>
+        // the Settings page gets its view model the first time it is shown
+        ViewModel.PropertyChanged += (_, e) =>
         {
-            if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift) && ViewModel.Ask.RunCommand.CanExecute(null))
-            {
-                ViewModel.Ask.RunCommand.Execute(null);
-                e.Handled = true;
-            }
+            // (until then it inherits the window's MainViewModel)
+            if (e.PropertyName == nameof(MainViewModel.ActiveTool) && ViewModel.IsSettingsTool && SettingsPage.DataContext is not SettingsViewModel)
+                SettingsPage.DataContext = ViewModel.Settings;
         };
         ViewModel.EditRequested += BeginEdit;
         FieldEditor.KeyDown += OnEditorKeyDown;
@@ -247,7 +246,15 @@ public partial class MainWindow : Window
         if (files.Count > 0) await ViewModel.DropAsync(files);
     }
 
-    private void OnSettingsClick(object? sender, RoutedEventArgs e) => (Application.Current as App)?.ShowSettings(about: false);
+    private void OnSettingsClick(object? sender, RoutedEventArgs e) => ShowSettings("general");
+
+    /// <summary>Opens the Settings page (in this window) at a section: "general", "ai", "mcp" or "about".</summary>
+    public void ShowSettings(string section)
+    {
+        ViewModel.ActiveTool = ViewModels.Tool.Settings;
+        if (SettingsPage.DataContext is not SettingsViewModel) SettingsPage.DataContext = ViewModel.Settings;
+        SettingsPage.ShowSection(section);
+    }
 
     private void OnThumbnailClick(object? sender, RoutedEventArgs e)
     {

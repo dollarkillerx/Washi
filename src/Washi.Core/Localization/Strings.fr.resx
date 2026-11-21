@@ -128,8 +128,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_LanguageCaption" xml:space="preserve"><value>LANGUE</value></data>
   <data name="Ui_LangSystem" xml:space="preserve"><value>Langue du système</value></data>
   <data name="Ui_LanguageNote" xml:space="preserve"><value>La fenêtre se rouvre dans la nouvelle langue ; le document ouvert le reste.</value></data>
-  <data name="Ui_AiModelCaption" xml:space="preserve"><value>MODÈLE D’IA</value></data>
-  <data name="Ui_AiModelNote" xml:space="preserve"><value>Changez-le en ligne de commande : washi ai config &lt;fournisseur&gt; &lt;modèle&gt;. Les clés d’API restent dans le trousseau.</value></data>
+  <data name="Ui_AiModelNote" xml:space="preserve"><value>Le modèle de l’assistant, du nommage des champs, du remplissage et de l’OCR par IA. Les clés d’API restent dans le trousseau macOS, jamais dans un fichier.</value></data>
   <data name="Ui_Version" xml:space="preserve"><value>Version {0}</value></data>
   <data name="Ui_Tagline" xml:space="preserve"><value>Boîte à outils PDF open source pour le bureau, la ligne de commande et les agents d’IA : formulaires remplissables, OCR, assemblage et division, IA intégrée et serveur MCP.</value></data>
   <data name="Ui_LicenseCaption" xml:space="preserve"><value>LICENCE</value></data>
@@ -155,7 +154,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_ToolOcr" xml:space="preserve"><value>OCR</value></data>
   <data name="Ui_ToolCombine" xml:space="preserve"><value>Assembler</value></data>
   <data name="Ui_ToolSplit" xml:space="preserve"><value>Diviser</value></data>
-  <data name="Ui_ToolAsk" xml:space="preserve"><value>Demander à l’IA</value></data>
+  <data name="Ui_ToolAsk" xml:space="preserve"><value>Assistant IA</value></data>
   <data name="Ui_FormTitle" xml:space="preserve"><value>Préparer un formulaire</value></data>
   <data name="Ui_FormLead" xml:space="preserve"><value>Washi trouve les cases à remplir. Vérifiez-les, corrigez, puis enregistrez un PDF remplissable.</value></data>
   <data name="Ui_FieldTotal" xml:space="preserve"><value>{0} champs : {1}</value></data>
@@ -204,8 +203,82 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} fichier(s) : {1}</value></data>
   <data name="Ui_SplitRun" xml:space="preserve"><value>Diviser dans un dossier…</value></data>
   <data name="Ui_SplitDone" xml:space="preserve"><value>{0} fichier(s) écrit(s) dans {1}</value></data>
-  <data name="Ui_AskTitle" xml:space="preserve"><value>Questions sur ce document</value></data>
-  <data name="Ui_AskLead" xml:space="preserve"><value>Le modèle d’IA lit le document et répond. Washi montre ce qui sera envoyé et demande d’abord.</value></data>
-  <data name="Ui_AskWatermark" xml:space="preserve"><value>ex. : Quelles cases dois-je remplir ?</value></data>
-  <data name="Ui_AskRun" xml:space="preserve"><value>Demander (Entrée)</value></data>
+  <data name="Ui_Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Ui_Copy" xml:space="preserve"><value>Copier</value></data>
+  <data name="Ui_Copied" xml:space="preserve"><value>Copié.</value></data>
+  <data name="Ui_Show" xml:space="preserve"><value>Afficher</value></data>
+  <data name="Ui_Yes" xml:space="preserve"><value>oui</value></data>
+  <data name="Ui_No" xml:space="preserve"><value>non</value></data>
+  <data name="Ui_AiTab" xml:space="preserve"><value>Modèle d’IA</value></data>
+  <data name="Ui_AiProvider" xml:space="preserve"><value>Fournisseur</value></data>
+  <data name="Ui_AiProviderLocal" xml:space="preserve"><value>Local / compatible OpenAI</value></data>
+  <data name="Ui_AiModel" xml:space="preserve"><value>Modèle</value></data>
+  <data name="Ui_AiEndpoint" xml:space="preserve"><value>Point d’accès</value></data>
+  <data name="Ui_AiEndpointNote" xml:space="preserve"><value>Laissez vide pour l’API du fournisseur. Un serveur local (Ollama, LM Studio) garde tout sur ce Mac.</value></data>
+  <data name="Ui_AiBadEndpoint" xml:space="preserve"><value>Le point d’accès n’est pas une URL valide.</value></data>
+  <data name="Ui_AiKey" xml:space="preserve"><value>Clé d’API</value></data>
+  <data name="Ui_AiKeyWatermark" xml:space="preserve"><value>Collez une nouvelle clé pour remplacer l’actuelle</value></data>
+  <data name="Ui_AiKeyRemove" xml:space="preserve"><value>Supprimer la clé</value></data>
+  <data name="Ui_AiKeyFromEnv" xml:space="preserve"><value>Clé de la variable d’environnement {0} (prioritaire sur le trousseau).</value></data>
+  <data name="Ui_AiKeyStored" xml:space="preserve"><value>Clé dans le trousseau : {0}</value></data>
+  <data name="Ui_AiKeyOptional" xml:space="preserve"><value>Aucune clé (un serveur local n’en a généralement pas besoin).</value></data>
+  <data name="Ui_AiKeyMissing" xml:space="preserve"><value>Pas encore de clé : collez-la ci-dessus et enregistrez.</value></data>
+  <data name="Ui_AiVision" xml:space="preserve"><value>Envoyer les images des pages (à désactiver pour les modèles texte seul)</value></data>
+  <data name="Ui_AiTest" xml:space="preserve"><value>Tester la connexion</value></data>
+  <data name="Ui_AiTesting" xml:space="preserve"><value>Test en cours…</value></data>
+  <data name="Ui_AiSaved" xml:space="preserve"><value>Enregistré.</value></data>
+  <data name="Ui_AiTestOk" xml:space="preserve"><value>{0} a répondu. {1} modèles disponibles ; appels d’outils : {2}.</value></data>
+  <data name="Ui_McpTab" xml:space="preserve"><value>IA et MCP</value></data>
+  <data name="Ui_AccessCaption" xml:space="preserve"><value>DOSSIERS ACCESSIBLES À L’IA</value></data>
+  <data name="Ui_AccessNote" xml:space="preserve"><value>L’assistant et les clients MCP (Claude Code, Claude Desktop…) n’accèdent qu’aux PDF de ces dossiers. Ils créent de nouveaux fichiers et n’écrasent jamais.</value></data>
+  <data name="Ui_AddFolder" xml:space="preserve"><value>Ajouter un dossier…</value></data>
+  <data name="Ui_AccessOpenDocument" xml:space="preserve"><value>Ainsi que le dossier du PDF ouvert dans Washi</value></data>
+  <data name="Ui_WritesCaption" xml:space="preserve"><value>Écriture de fichiers</value></data>
+  <data name="Ui_WritesAsk" xml:space="preserve"><value>Me demander à chaque fois (recommandé)</value></data>
+  <data name="Ui_WritesAllow" xml:space="preserve"><value>Autoriser sans demander</value></data>
+  <data name="Ui_WritesDeny" xml:space="preserve"><value>Lecture seule : jamais d’écriture</value></data>
+  <data name="Ui_WritesNote" xml:space="preserve"><value>Les demandes s’affichent dans la discussion de l’assistant, ou en carte au-dessus de la page pour les clients MCP. Sans réponse, elles sont refusées après 2 minutes.</value></data>
+  <data name="Ui_McpCaption" xml:space="preserve"><value>SERVEUR MCP</value></data>
+  <data name="Ui_McpOn" xml:space="preserve"><value>Activé</value></data>
+  <data name="Ui_McpOff" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="Ui_McpNote" xml:space="preserve"><value>Permet aux agents d’IA d’utiliser les outils PDF de Washi, les dossiers ci-dessus et le document ouvert ici, tant que Washi tourne. HTTP n’écoute que sur 127.0.0.1 et exige le jeton.</value></data>
+  <data name="Ui_McpClaudeCode" xml:space="preserve"><value>Claude Code (à lancer dans un terminal)</value></data>
+  <data name="Ui_McpClaudeDesktop" xml:space="preserve"><value>Claude Desktop (claude_desktop_config.json)</value></data>
+  <data name="Ui_McpOtherClients" xml:space="preserve"><value>Autres clients (Streamable HTTP)</value></data>
+  <data name="Ui_McpToken" xml:space="preserve"><value>Jeton</value></data>
+  <data name="Ui_McpRegenerate" xml:space="preserve"><value>Nouveau jeton</value></data>
+  <data name="Ui_McpTokenNote" xml:space="preserve"><value>Un nouveau jeton bloque tous les clients HTTP jusqu’à leur reconfiguration. washi-mcp (Claude Desktop) n’en a pas besoin.</value></data>
+  <data name="Ui_McpClients" xml:space="preserve"><value>Clients récents</value></data>
+  <data name="Ui_McpNoClients" xml:space="preserve"><value>Aucun client ne s’est encore connecté.</value></data>
+  <data name="Ui_McpDisconnect" xml:space="preserve"><value>Déconnecter</value></data>
+  <data name="Ui_McpClientDetail" xml:space="preserve"><value>{0} · {1} appels · dernier {2}</value></data>
+  <data name="Mcp_Off" xml:space="preserve"><value>Le serveur MCP est désactivé.</value></data>
+  <data name="Mcp_Starting" xml:space="preserve"><value>Démarrage…</value></data>
+  <data name="Mcp_Running" xml:space="preserve"><value>En marche. HTTP : {0} · socket local : {1}</value></data>
+  <data name="Mcp_ErrInstance" xml:space="preserve"><value>Un autre Washi fournit déjà MCP ({0}). Quittez-le ou désactivez son serveur MCP.</value></data>
+  <data name="Mcp_ErrStart" xml:space="preserve"><value>Le serveur MCP n’a pas pu démarrer : {0}</value></data>
+  <data name="Ui_ApprovalTitle" xml:space="preserve"><value>{0} veut écrire un fichier</value></data>
+  <data name="Ui_ApprovalAllow" xml:space="preserve"><value>Autoriser</value></data>
+  <data name="Ui_ApprovalDeny" xml:space="preserve"><value>Refuser</value></data>
+  <data name="Ui_ApprovalDetails" xml:space="preserve"><value>Détails</value></data>
+  <data name="Ui_ApprovalApproved" xml:space="preserve"><value>Autorisé.</value></data>
+  <data name="Ui_ApprovalDenied" xml:space="preserve"><value>Refusé.</value></data>
+  <data name="Ui_ApprovalTimedOut" xml:space="preserve"><value>Pas de réponse à temps : refusé.</value></data>
+  <data name="Ui_ApprovalCancelled" xml:space="preserve"><value>Annulé.</value></data>
+  <data name="Ui_AssistantTitle" xml:space="preserve"><value>Assistant IA</value></data>
+  <data name="Ui_AssistantEmpty" xml:space="preserve"><value>Posez des questions sur le PDF ouvert, ou demandez de remplir, fusionner, scinder ou océriser les PDF de vos dossiers. Mêmes outils que les clients MCP ; il demande avant d’écrire.</value></data>
+  <data name="Ui_AssistantWatermark" xml:space="preserve"><value>Message (Entrée pour envoyer, Maj+Entrée pour un retour à la ligne)</value></data>
+  <data name="Ui_AssistantSend" xml:space="preserve"><value>Envoyer</value></data>
+  <data name="Ui_AssistantStop" xml:space="preserve"><value>Arrêter</value></data>
+  <data name="Ui_AssistantNewChat" xml:space="preserve"><value>Nouvelle discussion</value></data>
+  <data name="Ui_AssistantThinking" xml:space="preserve"><value>Réflexion</value></data>
+  <data name="Ui_AssistantDocChip" xml:space="preserve"><value>📄 {0} · page {1}</value></data>
+  <data name="Ui_AssistantDocChipTip" xml:space="preserve"><value>Indique à l’assistant le document ouvert (cliquez pour l’exclure)</value></data>
+  <data name="Ui_AssistantNotice" xml:space="preserve"><value>Vos messages, ainsi que le texte et les images de pages que l’assistant lit avec ses outils, sont envoyés à {0} ({1}). Les identifiants dans les messages sont masqués.</value></data>
+  <data name="Ui_AssistantAccept" xml:space="preserve"><value>Continuer</value></data>
+  <data name="Ui_AssistantRedacted" xml:space="preserve"><value>{0} secret(s) masqué(s) avant l’envoi.</value></data>
+  <data name="Ui_AssistantStopped" xml:space="preserve"><value>Arrêté.</value></data>
+  <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>La réponse a été coupée (limite de sortie).</value></data>
+  <data name="Ui_AssistantRefused" xml:space="preserve"><value>Le modèle a refusé cette demande. {0}</value></data>
+  <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>Arrêté après trop d’étapes ; redemandez pour continuer.</value></data>
 </root>

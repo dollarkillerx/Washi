@@ -17,11 +17,13 @@ public sealed class PathPolicy
     public IReadOnlyList<string> Roots { get; }
     private readonly IReadOnlyList<string> _fontRoots;
 
-    public PathPolicy(IEnumerable<string> roots)
+    /// <param name="allowEmpty">The desktop app may have no folder enabled yet: every path is then refused.</param>
+    public PathPolicy(IEnumerable<string> roots, bool allowEmpty = false)
     {
-        Roots = roots.Select(r => Real(Path.GetFullPath(Environment.ExpandEnvironmentVariables(ExpandHome(r)))))
+        Roots = roots.Where(r => !string.IsNullOrWhiteSpace(r))
+                     .Select(r => Real(Path.GetFullPath(Environment.ExpandEnvironmentVariables(ExpandHome(r.Trim())))))
                      .Where(Directory.Exists).Distinct().ToList();
-        if (Roots.Count == 0) throw new ArgumentException("no allowed folder exists");
+        if (Roots.Count == 0 && !allowEmpty) throw new ArgumentException("no allowed folder exists");
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         _fontRoots = new[]
         {
@@ -83,6 +85,7 @@ public sealed class PathPolicy
     private string Resolve(string path)
     {
         if (string.IsNullOrWhiteSpace(path)) throw new ToolException("path is empty");
+        if (Roots.Count == 0) throw new ToolException("no folder is open to AI tools yet: the user can add one in Washi's settings (AI & MCP)");
         var p = ExpandHome(path.Trim());
         if (!Path.IsPathRooted(p)) p = Path.Combine(Roots[0], p);   // relative paths start in the first allowed folder
         return Real(Path.GetFullPath(p));

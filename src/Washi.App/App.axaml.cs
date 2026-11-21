@@ -25,7 +25,11 @@ public partial class App : Application
                 Platform.MacDock.SetIcon(ms.ToArray());
             }
             var window = new MainWindow();
+            window.ViewModel.LanguageChanged = () => Avalonia.Threading.Dispatcher.UIThread.Post(async () => await ReloadAsync(desktop));
             desktop.MainWindow = window;
+            // the MCP server, when the user left it on (never blocks start-up)
+            _ = Services.AppServices.Instance.Mcp.InitializeAsync();
+            desktop.ShutdownRequested += (_, _) => Services.AppServices.Instance.Mcp.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(3));
             // washi-app form.pdf opens the file straight away
             if (desktop.Args is [var path, ..] && File.Exists(path))
                 window.Opened += async (_, _) => await window.ViewModel.LoadAsync(Path.GetFullPath(path));
@@ -36,7 +40,7 @@ public partial class App : Application
                     if (e is Avalonia.Controls.ApplicationLifetimes.FileActivatedEventArgs files)
                     {
                         var paths = files.Files.Select(f => f.TryGetLocalPath()).OfType<string>().ToList();
-                        if (paths.Count > 0) await window.ViewModel.DropAsync(paths);
+                        if (paths.Count > 0 && desktop.MainWindow is MainWindow current) await current.ViewModel.DropAsync(paths);
                     }
                 };
         }
@@ -48,23 +52,17 @@ public partial class App : Application
 
     private void OnSettingsClick(object? sender, EventArgs e) => ShowSettings(about: false);
 
-    /// <summary>Settings (or its About tab), owned by the main window.</summary>
+    /// <summary>Settings (or its About section), as a page in the main window.</summary>
     public void ShowSettings(bool about)
     {
-        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime { MainWindow: MainWindow main } desktop) return;
-        var vm = new ViewModels.SettingsViewModel();
-        var dialog = new SettingsWindow(vm, about);
-        vm.LanguageChanged += () => Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
-        {
-            dialog.Close();
-            await ReloadAsync(desktop, main);
-        });
-        dialog.ShowDialog(main);
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: MainWindow main })
+            main.ShowSettings(about ? "about" : "general");
     }
 
     /// <summary>Rebuilds the main window in the new language, keeping the open document and tool.</summary>
-    private async Task ReloadAsync(IClassicDesktopStyleApplicationLifetime desktop, MainWindow old)
+    private async Task ReloadAsync(IClassicDesktopStyleApplicationLifetime desktop)
     {
+        if (desktop.MainWindow is not MainWindow old) return;
         // the application menu (macOS) belongs to the app, not the window: relabel it
         if (NativeMenu.GetMenu(this)?.Items is { } items)
         {
@@ -75,7 +73,9 @@ public partial class App : Application
         {
             Width = old.Width, Height = old.Height, Position = old.Position, WindowState = old.WindowState,
         };
-        fresh.ViewModel.ActiveTool = old.ViewModel.ActiveTool;
+        fresh.ViewModel.LanguageChanged = () => Avalonia.Threading.Dispatcher.UIThread.Post(async () => await ReloadAsync(desktop));
+        if (old.ViewModel.IsSettingsTool) fresh.ShowSettings("general");
+        else fresh.ViewModel.ActiveTool = old.ViewModel.ActiveTool;
         desktop.MainWindow = fresh;
         fresh.Show();
         old.Close();

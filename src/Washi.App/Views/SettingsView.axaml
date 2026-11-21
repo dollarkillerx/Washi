@@ -1,0 +1,243 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Washi.App.ViewModels"
+             xmlns:svc="using:Washi.App.Services"
+             xmlns:l="using:Washi.App.Localization"
+             x:Class="Washi.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <!-- The Settings page: opened from the bottom of the tool rail (or ⌘,), it takes the document's place. -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="Margin" Value="0,22,0,8" />
+        </Style>
+        <Style Selector="TextBlock.note">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,10,0,4" />
+        </Style>
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="#da1e28" />
+        </Style>
+        <Style Selector="TextBox.code">
+            <Setter Property="FontFamily" Value="Menlo, Consolas, monospace" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TabControl#Tabs > TabItem">
+            <Setter Property="FontSize" Value="15" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border Background="White">
+        <DockPanel Margin="40,24,40,0" MaxWidth="860" HorizontalAlignment="Left">
+            <TextBlock DockPanel.Dock="Top" Classes="title" Text="{l:Tr Ui_Settings}" FontSize="22" Margin="0,0,0,8" />
+            <TabControl x:Name="Tabs" Padding="0,8,0,0">
+                <!-- ===================================================== General -->
+                <TabItem Header="{l:Tr Ui_General}" x:Name="GeneralTab">
+                    <ScrollViewer>
+                        <StackPanel Margin="0,0,24,32">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_LanguageCaption}" />
+                            <ComboBox ItemsSource="{x:Static vm:SettingsViewModel.Languages}" SelectedItem="{Binding Language}"
+                                      Width="280" x:Name="LanguageBox" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LanguageNote}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===================================================== AI model -->
+                <TabItem Header="{l:Tr Ui_AiTab}" x:Name="AiTab">
+                    <ScrollViewer>
+                        <StackPanel Margin="0,0,24,32" MaxWidth="560" HorizontalAlignment="Left">
+                            <TextBlock Classes="note" Text="{l:Tr Ui_AiModelNote}" Margin="0,16,0,0" />
+
+                            <TextBlock Classes="label" Text="{l:Tr Ui_AiProvider}" />
+                            <ComboBox ItemsSource="{x:Static vm:SettingsViewModel.Providers}" SelectedItem="{Binding Provider}"
+                                      Width="280" x:Name="ProviderBox" />
+
+                            <TextBlock Classes="label" Text="{l:Tr Ui_AiModel}" />
+                            <AutoCompleteBox Text="{Binding Model}" ItemsSource="{Binding Models}" FilterMode="Contains"
+                                             MinimumPrefixLength="0" x:Name="ModelBox" />
+
+                            <TextBlock Classes="label" Text="{l:Tr Ui_AiEndpoint}" />
+                            <TextBox Text="{Binding Endpoint}" PlaceholderText="{Binding EndpointHint}" x:Name="EndpointBox" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_AiEndpointNote}" Margin="0,4,0,0" />
+
+                            <TextBlock Classes="label" Text="{l:Tr Ui_AiKey}" />
+                            <TextBox Text="{Binding ApiKey}" PasswordChar="•" PlaceholderText="{l:Tr Ui_AiKeyWatermark}" x:Name="KeyBox" />
+                            <DockPanel Margin="0,4,0,0">
+                                <Button DockPanel.Dock="Right" Content="{l:Tr Ui_AiKeyRemove}" Command="{Binding RemoveKeyCommand}" Padding="10,3" FontSize="12" />
+                                <TextBlock Classes="note" Text="{Binding KeyStatus}" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                            <CheckBox IsChecked="{Binding Vision}" Content="{l:Tr Ui_AiVision}" Margin="0,12,0,0" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,18,0,0">
+                                <Button Classes="accent" Content="{l:Tr Ui_Save}" Command="{Binding SaveAiCommand}" Padding="18,7" x:Name="SaveAiButton" />
+                                <Button Content="{l:Tr Ui_AiTest}" Command="{Binding TestAiCommand}" Padding="18,7" IsEnabled="{Binding !Testing}" />
+                                <ProgressBar IsIndeterminate="True" IsVisible="{Binding Testing}" Width="80" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <SelectableTextBlock Text="{Binding AiStatus}" TextWrapping="Wrap" Margin="0,10,0,0" FontSize="12"
+                                                 Classes.error="{Binding AiStatusIsError}" x:Name="AiStatusText" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===================================================== AI & MCP access -->
+                <TabItem Header="{l:Tr Ui_McpTab}" x:Name="McpTab">
+                    <ScrollViewer>
+                        <StackPanel Margin="0,0,24,32">
+                            <!-- what the tools may touch: shared by the assistant and MCP clients -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_AccessCaption}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_AccessNote}" />
+                            <ItemsControl ItemsSource="{Binding Folders}" Margin="0,10,0,0" x:Name="FolderList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:FolderRow">
+                                        <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                                            <DockPanel>
+                                                <Button DockPanel.Dock="Right" Content="{l:Tr Ui_Remove}" Command="{Binding Remove}"
+                                                        CommandParameter="{Binding Path}" Padding="10,3" FontSize="12" />
+                                                <TextBlock Text="{Binding Path}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Content="{l:Tr Ui_AddFolder}" Command="{Binding AddFolderCommand}" Margin="0,10,0,0" Padding="14,6" />
+                            <CheckBox IsChecked="{Binding OpenDocumentFolder}" Content="{l:Tr Ui_AccessOpenDocument}" Margin="0,10,0,0" />
+
+                            <TextBlock Classes="label" Text="{l:Tr Ui_WritesCaption}" Margin="0,14,0,4" />
+                            <ComboBox ItemsSource="{x:Static vm:SettingsViewModel.WriteChoices}" SelectedItem="{Binding Writes}" Width="360"
+                                      x:Name="WritesBox" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_WritesNote}" Margin="0,6,0,0" />
+
+                            <!-- the MCP server -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_McpCaption}" />
+                            <ToggleSwitch IsChecked="{Binding McpEnabled}" OnContent="{l:Tr Ui_McpOn}" OffContent="{l:Tr Ui_McpOff}" x:Name="McpSwitch" />
+                            <SelectableTextBlock Text="{Binding McpStatus}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                                                 Classes.error="{Binding McpStatusIsError}" x:Name="McpStatusText" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_McpNote}" Margin="0,6,0,0" />
+
+                            <StackPanel IsVisible="{Binding McpRunning}">
+                                <TextBlock Classes="label" Text="{l:Tr Ui_McpClaudeCode}" />
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_Copy}" Command="{Binding CopyCommand}"
+                                            CommandParameter="{Binding ClaudeCodeCommand}" Margin="8,0,0,0" VerticalAlignment="Top" />
+                                    <TextBox Classes="code" Text="{Binding ClaudeCodeCommand}" />
+                                </DockPanel>
+
+                                <StackPanel IsVisible="{Binding HasBridge}">
+                                    <TextBlock Classes="label" Text="{l:Tr Ui_McpClaudeDesktop}" />
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Content="{l:Tr Ui_Copy}" Command="{Binding CopyCommand}"
+                                                CommandParameter="{Binding ClaudeDesktopJson}" Margin="8,0,0,0" VerticalAlignment="Top" />
+                                        <TextBox Classes="code" Text="{Binding ClaudeDesktopJson}" />
+                                    </DockPanel>
+                                </StackPanel>
+
+                                <TextBlock Classes="label" Text="{l:Tr Ui_McpOtherClients}" />
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_Copy}" Command="{Binding CopyCommand}"
+                                            CommandParameter="{Binding HttpJson}" Margin="8,0,0,0" VerticalAlignment="Top" />
+                                    <TextBox Classes="code" Text="{Binding HttpJson}" />
+                                </DockPanel>
+
+                                <TextBlock Classes="label" Text="{l:Tr Ui_McpToken}" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding TokenText}" FontFamily="Menlo, Consolas, monospace" FontSize="12" VerticalAlignment="Center" />
+                                    <ToggleButton IsChecked="{Binding ShowToken}" Content="{l:Tr Ui_Show}" Padding="10,3" FontSize="12" />
+                                    <Button Content="{l:Tr Ui_McpRegenerate}" Command="{Binding RegenerateTokenCommand}" Padding="10,3" FontSize="12" />
+                                </StackPanel>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_McpTokenNote}" Margin="0,4,0,0" />
+
+                                <TextBlock Classes="label" Text="{l:Tr Ui_McpClients}" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_McpNoClients}" IsVisible="{Binding !HasMcpClients}" />
+                                <ItemsControl ItemsSource="{Binding McpClients}" x:Name="ClientList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="svc:McpClientRow">
+                                            <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                                                <DockPanel>
+                                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_McpDisconnect}" IsVisible="{Binding CanDisconnect}"
+                                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DisconnectCommand}"
+                                                            CommandParameter="{Binding Id}" Padding="10,3" FontSize="12" />
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                                        <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}" Text="{Binding Detail}" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===================================================== About -->
+                <TabItem Header="{l:Tr Ui_About}" x:Name="AboutTab">
+                    <ScrollViewer>
+                        <StackPanel Margin="0,12,24,32">
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <Viewbox Width="56" Height="56">
+                                    <Canvas Width="512" Height="512">
+                                        <Path Data="M0,0 H512 V512 H0 Z" Fill="{StaticResource WashiBlue}" />
+                                        <Path Data="M96,64 H320 L416,160 V448 H96 Z" Fill="White" />
+                                        <Path Data="M320,64 V160 H416 Z" Fill="#b1bff4" />
+                                        <Path Data="M144,224 h96 v80 h-96 Z M272,224 h96 v80 h-96 Z M144,336 h96 v80 h-96 Z" Fill="{StaticResource WashiBlue}" />
+                                        <Path Data="M272,336 h96 v80 h-96 Z" Fill="{StaticResource Vermilion}" />
+                                    </Canvas>
+                                </Viewbox>
+                                <StackPanel VerticalAlignment="Center" Spacing="2">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="Washi" FontSize="22" FontWeight="SemiBold" />
+                                        <TextBlock Text="和紙" FontSize="14" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,3" />
+                                    </StackPanel>
+                                    <TextBlock Classes="note" Text="{Binding Version}" />
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="{l:Tr Ui_Tagline}" TextWrapping="Wrap" Margin="0,14,0,0" />
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_LicenseCaption}" />
+                            <TextBlock Text="GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LicenseText}" Margin="0,6,0,0" />
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,0">
+                                <Button Classes="accent" Content="{l:Tr Ui_SourceCode}" Click="OnSourceClick" />
+                                <Button Content="{l:Tr Ui_ReadLicense}" Click="OnLicenseClick" />
+                            </StackPanel>
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_ThirdParty}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_ThirdPartyNote}" Margin="0,0,0,8" />
+                            <ItemsControl ItemsSource="{x:Static vm:SettingsViewModel.Components}" MaxWidth="640" HorizontalAlignment="Left">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:Component">
+                                        <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,0,1" Padding="0,7">
+                                            <Grid ColumnDefinitions="180,*,Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding License}" FontSize="12" />
+                                                    <TextBlock Text="{Binding Note}" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                                                               IsVisible="{Binding Note, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Content="↗" Click="OnComponentClick" Padding="10,4"
+                                                        ToolTip.Tip="{Binding Url}" Background="Transparent" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </Border>
+</UserControl>

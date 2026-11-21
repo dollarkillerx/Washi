@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Ask }
+public enum Tool { Form, Ocr, Combine, Split, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -38,30 +38,53 @@ public sealed partial class PageThumb(int index) : ObservableObject
 /// The field review editor: open a PDF, let Masume suggest fields, let a person correct them,
 /// then save fields.json or write the fillable PDF.
 /// </summary>
-public sealed partial class MainViewModel : ObservableObject
+public sealed partial class MainViewModel : ObservableObject, IEditorHost
 {
     /// <summary>Pixels per point of the page bitmap (the view scales it by Zoom).</summary>
     public const double RenderScale = 2.0;
 
     private readonly IDialogs _dialogs;
 
-    public MainViewModel(IDialogs dialogs)
+    private readonly AppServices _services;
+
+    public MainViewModel(IDialogs dialogs) : this(dialogs, AppServices.Instance) { }
+
+    public MainViewModel(IDialogs dialogs, AppServices services)
     {
         _dialogs = dialogs;
+        _services = services;
         Fields.CollectionChanged += OnFieldsChanged;
         Status = L.Get("Ui_StartHint");
         Ocr = new OcrToolViewModel(this);
         Combine = new CombineToolViewModel(this);
         Split = new SplitToolViewModel(this);
-        Ask = new AskToolViewModel(this);
+        Assistant = new AssistantViewModel(this, services);
+        services.Editor = this;
     }
+
+    internal AppServices Services => _services;
 
     internal IDialogs Dialogs => _dialogs;
 
     public OcrToolViewModel Ocr { get; }
     public CombineToolViewModel Combine { get; }
     public SplitToolViewModel Split { get; }
-    public AskToolViewModel Ask { get; }
+    public AssistantViewModel Assistant { get; }
+
+    /// <summary>The Settings page, created when first shown.</summary>
+    public SettingsViewModel Settings => _settings ??= CreateSettings();
+    private SettingsViewModel? _settings;
+
+    /// <summary>The app rebuilds the window in the new language (set by App).</summary>
+    public Action? LanguageChanged { get; set; }
+
+    private SettingsViewModel CreateSettings()
+    {
+        var vm = new SettingsViewModel(_services.SettingsPath, _services, _dialogs);
+        vm.LanguageChanged += () => LanguageChanged?.Invoke();
+        vm.AiChanged += Assistant.RefreshModel;
+        return vm;
+    }
 
     // ------------------------------------------------------------------ state
     public ObservableCollection<FieldViewModel> Fields { get; } = [];
@@ -70,20 +93,33 @@ public sealed partial class MainViewModel : ObservableObject
 
     // ------------------------------------------------------------------ tools and panels
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool),
-                                                  nameof(IsAskTool), nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools))]
+                                                  nameof(IsAskTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
+                                                  nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowPagesPanel), nameof(ShowFieldsPanel), nameof(ShowSidePanel))]
     private SidePanel _sidePanel = SidePanel.Fields;
 
     /// <summary>Clicking the active tool in the rail again hides its panel (more room for the page).</summary>
-    [ObservableProperty] private bool _toolPanelOpen = true;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowToolPanel))] private bool _toolPanelOpen = true;
 
     public bool IsFormTool { get => ActiveTool == Tool.Form; set { if (value) ActiveTool = Tool.Form; } }
     public bool IsOcrTool { get => ActiveTool == Tool.Ocr; set { if (value) ActiveTool = Tool.Ocr; } }
     public bool IsCombineTool { get => ActiveTool == Tool.Combine; set { if (value) ActiveTool = Tool.Combine; } }
     public bool IsSplitTool { get => ActiveTool == Tool.Split; set { if (value) ActiveTool = Tool.Split; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
+    public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
+
+    /// <summary>Settings is a page of its own: it takes the document's place (no tool panel, no side rails).</summary>
+    public bool IsDocumentView => !IsSettingsTool;
+    public bool ShowToolPanel => ToolPanelOpen && !IsSettingsTool;
+    public bool ShowRightRail => HasDocument && !IsSettingsTool;
+
+    /// <summary>The chat needs more room than the other tools' panels.</summary>
+    public double ToolPanelWidth => IsAskTool ? 380 : 296;
+
+    /// <summary>MCP calls waiting for the user (shown as cards over the page).</summary>
+    public System.Collections.ObjectModel.ObservableCollection<ApprovalViewModel> McpApprovals => _services.Approvals.Pending;
 
     /// <summary>Toggle buttons in the right rail: one panel at a time, a second click closes it.</summary>
     public bool ShowPagesPanel
@@ -98,7 +134,7 @@ public sealed partial class MainViewModel : ObservableObject
         set => SidePanel = value ? SidePanel.Fields : SidePanel == SidePanel.Fields ? SidePanel.None : SidePanel;
     }
 
-    public bool ShowSidePanel => HasDocument && (ShowPagesPanel || ShowFieldsPanel);
+    public bool ShowSidePanel => HasDocument && !IsSettingsTool && (ShowPagesPanel || ShowFieldsPanel);
 
     /// <summary>The floating select / draw / delete toolbar belongs to the form tool.</summary>
     public bool ShowEditTools => HasDocument && IsFormTool;
@@ -122,7 +158,7 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>After "fit width" the page follows the window and panels until the user zooms by hand.</summary>
     private bool _fitWidthMode = true;
     private const double PageMargin = 56;   // the page's margin on both sides, in the view
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasDocument), nameof(Title), nameof(FileName), nameof(ShowSidePanel), nameof(ShowEditTools))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasDocument), nameof(Title), nameof(FileName), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private string? _pdfPath;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PageText))] private int _pageCount;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PageText))] private int _pageIndex;
@@ -202,7 +238,29 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedField = null;
         foreach (var t in Thumbnails) t.IsCurrent = t.Index == value;
         _ = RenderPageAsync();
+        UpdateSnapshot();
     }
+
+    // ------------------------------------------------------------------ IEditorHost (app tools for the assistant and MCP)
+    private volatile DocumentSnapshot? _snapshot;
+
+    public DocumentSnapshot? Snapshot => _snapshot;
+
+    private void UpdateSnapshot()
+    {
+        _snapshot = PdfPath is { } p ? new DocumentSnapshot(p, PageIndex + 1, PageCount, Fields.Count) : null;
+        Assistant?.OnDocumentChanged();
+    }
+
+    partial void OnPdfPathChanged(string? value) => UpdateSnapshot();
+    partial void OnPageCountChanged(int value) => UpdateSnapshot();
+
+    public Task OpenAsync(string path, int? page) => Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+    {
+        if (IsSettingsTool) ActiveTool = Tool.Form;
+        if (PdfPath != path) await LoadAsync(path);
+        if (page is { } n && n >= 1 && n <= PageCount) PageIndex = n - 1;
+    });
 
     // ------------------------------------------------------------------ commands
     [RelayCommand]
@@ -234,7 +292,6 @@ public sealed partial class MainViewModel : ObservableObject
         if (!opened) return;
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
-        Ask.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
@@ -472,6 +529,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void OnFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        UpdateSnapshot();
         RefreshPageFields();
         var summary = Summary();
         FieldSummary = Fields.Count == 0 ? "" : L.F("Ui_FieldTotal", Fields.Count, summary);
