@@ -34,6 +34,45 @@
   <data name="FontNotAllowed" xml:space="preserve"><value>{0} のライセンスでは、編集できる PDF への埋め込みが許可されていません（OS/2 fsType {1}）。別のフォントを選んでください。</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} は埋め込めません。可変フォントや TrueType/OpenType 以外のファイルには対応していません。固定ウェイトの .ttf / .otf / .ttc を使ってください。</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>フォームの言語 '{0}' は使えません。次のいずれかを指定してください: auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
+  <data name="Ui_Open" xml:space="preserve"><value>PDF を開く…</value></data>
+  <data name="Ui_Detect" xml:space="preserve"><value>記入欄を検出</value></data>
+  <data name="Ui_Draw" xml:space="preserve"><value>記入欄を描く</value></data>
+  <data name="Ui_Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="Ui_LoadFields" xml:space="preserve"><value>fields.json を読み込む…</value></data>
+  <data name="Ui_SaveFields" xml:space="preserve"><value>fields.json を保存…</value></data>
+  <data name="Ui_MakeFillable" xml:space="preserve"><value>記入できる PDF を作成…</value></data>
+  <data name="Ui_FormLanguage" xml:space="preserve"><value>フォームの言語</value></data>
+  <data name="Ui_LangAuto" xml:space="preserve"><value>自動</value></data>
+  <data name="Ui_EmbedFont" xml:space="preserve"><value>フォントを埋め込む…</value></data>
+  <data name="Ui_NoFont" xml:space="preserve"><value>埋め込みなし</value></data>
+  <data name="Ui_Zoom" xml:space="preserve"><value>表示倍率</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>{0} / {1} ページ</value></data>
+  <data name="Ui_Field" xml:space="preserve"><value>記入欄</value></data>
+  <data name="Ui_FieldsOnPage" xml:space="preserve"><value>このページの記入欄</value></data>
+  <data name="Ui_Name" xml:space="preserve"><value>名前</value></data>
+  <data name="Ui_Type" xml:space="preserve"><value>種類</value></data>
+  <data name="Ui_Boxes" xml:space="preserve"><value>マス数</value></data>
+  <data name="Ui_Align" xml:space="preserve"><value>配置</value></data>
+  <data name="Ui_AlignLeft" xml:space="preserve"><value>左</value></data>
+  <data name="Ui_AlignCenter" xml:space="preserve"><value>中央</value></data>
+  <data name="Ui_AlignRight" xml:space="preserve"><value>右</value></data>
+  <data name="Ui_Label" xml:space="preserve"><value>印刷された見出し</value></data>
+  <data name="Ui_Prefilled" xml:space="preserve"><value>印刷済みの内容</value></data>
+  <data name="Ui_Position" xml:space="preserve"><value>位置 (pt): x {0}, y {1}, {2} × {3}</value></data>
+  <data name="Ui_NoSelection" xml:space="preserve"><value>ページ上かリストで記入欄を選んでください。</value></data>
+  <data name="Ui_Hint" xml:space="preserve"><value>ドラッグで移動、角をドラッグで大きさを変更。Delete で削除、矢印キーで微調整。</value></data>
+  <data name="Ui_DrawHint" xml:space="preserve"><value>ページ上をドラッグして新しい記入欄を描きます。</value></data>
+  <data name="Ui_StartHint" xml:space="preserve"><value>PDF を開いて始めましょう。</value></data>
+  <data name="Ui_Opened" xml:space="preserve"><value>{0}: {1} ページ</value></data>
+  <data name="Ui_Detecting" xml:space="preserve"><value>記入欄を検出しています…</value></data>
+  <data name="Ui_Detected" xml:space="preserve"><value>記入欄 {0} 個（{1}）</value></data>
+  <data name="Ui_Saved" xml:space="preserve"><value>{0} を保存しました</value></data>
+  <data name="Ui_Loaded" xml:space="preserve"><value>{1} から記入欄 {0} 個を読み込みました</value></data>
+  <data name="Ui_Made" xml:space="preserve"><value>記入できる PDF を書き出しました: {0}</value></data>
+  <data name="Ui_Error" xml:space="preserve"><value>エラー: {0}</value></data>
+  <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF ファイル</value></data>
+  <data name="Ui_JsonFiles" xml:space="preserve"><value>記入欄リスト (JSON)</value></data>
+  <data name="Ui_FontFiles" xml:space="preserve"><value>フォント</value></data>
   <data name="Kind_text" xml:space="preserve"><value>テキスト</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>マス目</value></data>

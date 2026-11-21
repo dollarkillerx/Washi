@@ -34,6 +34,45 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="FontNotAllowed" xml:space="preserve"><value>La licence de {0} interdit de l’incorporer dans un PDF modifiable (OS/2 fsType {1}). Choisissez une autre police.</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>Impossible d’incorporer {0} : les polices variables et les fichiers qui ne sont pas des polices TrueType/OpenType ne sont pas pris en charge. Utilisez un .ttf, .otf ou .ttc statique.</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>Langue de formulaire inconnue « {0} ». Valeurs possibles : auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
+  <data name="Ui_Open" xml:space="preserve"><value>Ouvrir un PDF…</value></data>
+  <data name="Ui_Detect" xml:space="preserve"><value>Détecter les champs</value></data>
+  <data name="Ui_Draw" xml:space="preserve"><value>Dessiner un champ</value></data>
+  <data name="Ui_Delete" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="Ui_LoadFields" xml:space="preserve"><value>Charger fields.json…</value></data>
+  <data name="Ui_SaveFields" xml:space="preserve"><value>Enregistrer fields.json…</value></data>
+  <data name="Ui_MakeFillable" xml:space="preserve"><value>Créer le PDF remplissable…</value></data>
+  <data name="Ui_FormLanguage" xml:space="preserve"><value>Langue du formulaire</value></data>
+  <data name="Ui_LangAuto" xml:space="preserve"><value>Automatique</value></data>
+  <data name="Ui_EmbedFont" xml:space="preserve"><value>Incorporer une police…</value></data>
+  <data name="Ui_NoFont" xml:space="preserve"><value>Aucune police incorporée</value></data>
+  <data name="Ui_Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>Page {0} / {1}</value></data>
+  <data name="Ui_Field" xml:space="preserve"><value>Champ</value></data>
+  <data name="Ui_FieldsOnPage" xml:space="preserve"><value>Champs de cette page</value></data>
+  <data name="Ui_Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Ui_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Ui_Boxes" xml:space="preserve"><value>Cases</value></data>
+  <data name="Ui_Align" xml:space="preserve"><value>Alignement</value></data>
+  <data name="Ui_AlignLeft" xml:space="preserve"><value>Gauche</value></data>
+  <data name="Ui_AlignCenter" xml:space="preserve"><value>Centré</value></data>
+  <data name="Ui_AlignRight" xml:space="preserve"><value>Droite</value></data>
+  <data name="Ui_Label" xml:space="preserve"><value>Libellé imprimé</value></data>
+  <data name="Ui_Prefilled" xml:space="preserve"><value>Déjà imprimé</value></data>
+  <data name="Ui_Position" xml:space="preserve"><value>Position (pt) : x {0}, y {1}, {2} × {3}</value></data>
+  <data name="Ui_NoSelection" xml:space="preserve"><value>Sélectionnez un champ sur la page ou dans la liste.</value></data>
+  <data name="Ui_Hint" xml:space="preserve"><value>Glissez un champ pour le déplacer, son coin pour le redimensionner. Suppr le retire, les flèches l’ajustent.</value></data>
+  <data name="Ui_DrawHint" xml:space="preserve"><value>Glissez sur la page pour dessiner un nouveau champ.</value></data>
+  <data name="Ui_StartHint" xml:space="preserve"><value>Ouvrez un PDF pour commencer.</value></data>
+  <data name="Ui_Opened" xml:space="preserve"><value>{0} : {1} pages</value></data>
+  <data name="Ui_Detecting" xml:space="preserve"><value>Détection des champs…</value></data>
+  <data name="Ui_Detected" xml:space="preserve"><value>{0} champs ({1})</value></data>
+  <data name="Ui_Saved" xml:space="preserve"><value>{0} enregistré</value></data>
+  <data name="Ui_Loaded" xml:space="preserve"><value>{0} champs chargés depuis {1}</value></data>
+  <data name="Ui_Made" xml:space="preserve"><value>PDF remplissable créé : {0}</value></data>
+  <data name="Ui_Error" xml:space="preserve"><value>Erreur : {0}</value></data>
+  <data name="Ui_PdfFiles" xml:space="preserve"><value>Fichiers PDF</value></data>
+  <data name="Ui_JsonFiles" xml:space="preserve"><value>Listes de champs (JSON)</value></data>
+  <data name="Ui_FontFiles" xml:space="preserve"><value>Polices</value></data>
   <data name="Kind_text" xml:space="preserve"><value>texte</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>montant</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>cases</value></data>

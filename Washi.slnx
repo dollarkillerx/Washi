@@ -9,6 +9,7 @@
     <Project Path="src/Washi.Tools/Washi.Tools.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Washi.App.Tests/Washi.App.Tests.csproj" />
     <Project Path="tests/Washi.Masume.Tests/Washi.Masume.Tests.csproj" />
   </Folder>
 </Solution>

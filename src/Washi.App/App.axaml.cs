@@ -16,7 +16,11 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            var window = new MainWindow();
+            desktop.MainWindow = window;
+            // washi-app form.pdf opens the file straight away
+            if (desktop.Args is [var path, ..] && File.Exists(path))
+                window.Opened += async (_, _) => await window.ViewModel.LoadAsync(Path.GetFullPath(path));
         }
 
         base.OnFrameworkInitializationCompleted();

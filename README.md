@@ -18,7 +18,10 @@ Avalonia.
 > - `washi-mcp` lets AI agents (Claude Desktop, Claude Code and other MCP clients)
 >   read, render, detect, make fillable and fill PDFs
 >
-> Next: the desktop app and the built-in AI. The Python reference
+> - the desktop editor (`Washi.App`) lets a person review and correct the
+>   detected fields before the fillable PDF is written
+>
+> Next: the built-in AI. The Python reference
 > implementation lives in [`prototype/`](prototype/).
 
 ## Why
@@ -113,6 +116,35 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   embedded font. The resource name that makes PDFium use the embedded font is
   explained in `AcroFormWriter.EmbeddedKey`.
 
+## Desktop editor
+
+`Washi.App` is the "human confirms" half of Masume.
+
+![Washi editor on a 国税庁 form: detected fields over the page, the selected comb field in the side panel](docs/editor.png)
+
+1. **Open** a PDF. Masume suggests fields, coloured by type over the page:
+   - blue: text
+   - purple: amount
+   - orange: comb
+   - green: checkbox
+   - red dashed outline: the cell already has printed data
+2. **Fix** the fields:
+   - drag a field to move it, drag a corner to resize it
+   - *Draw field* adds one
+   - Delete removes the selected field; the arrow keys nudge it (Shift = 5 pt)
+   - the side panel edits name, type, box count and alignment
+3. **Save** `fields.json`, the format the CLI and `make_fillable` read. Or write
+   the **fillable PDF** directly, with a form language and an optional embedded font.
+
+The interface follows the system language (en, ja, zh-Hans, zh-Hant, ko, fr, de).
+It currently uses a light theme only.
+
+**Tests.** The editor is tested headlessly with Avalonia's test platform and real
+Skia rendering. The tests cover opening a PDF, dragging, resizing, drawing a field,
+keyboard deletion and nudging, the `fields.json` round trip, and writing the PDF.
+`WASHI_SCREENSHOT_DIR=… dotnet test --project tests/Washi.App.Tests -- --filter-method "*Screenshot"`
+saves a screenshot for review.
+
 ## MCP server: PDFs for AI agents
 
 `washi-mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio.
@@ -193,7 +225,7 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
 | `Washi.Ai` | providers behind `Microsoft.Extensions.AI`'s `IChatClient`:<br>• **Claude** through the official Anthropic C# SDK<br>• **GPT** through the official OpenAI SDK<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints |
 | `Washi.Mcp` | `washi-mcp`, the MCP server over the tool registry (official C# MCP SDK, stdio) |
 | `Washi.Cli` | `washi` command line |
-| `Washi.App` | Avalonia desktop app: viewer, field review editor, AI panel |
+| `Washi.App` | Avalonia desktop app: field review editor (MVVM with CommunityToolkit.Mvvm; one `FieldCanvas` control draws the page and all fields). AI panel later |
 
 ### Privacy rules (by design)
 
@@ -210,11 +242,11 @@ Requires the .NET 10 SDK.
 
 ```bash
 dotnet build Washi.slnx
-dotnet test Washi.slnx
+dotnet test --solution Washi.slnx        # Microsoft.Testing.Platform (see global.json)
 dotnet run --project src/Washi.Cli -- --version
 dotnet run --project src/Washi.Cli -- masume detect form.pdf -o out   # fields.json + overlay PNGs
 dotnet run --project src/Washi.Cli -- masume eval form.pdf -o out     # score against existing fields
-dotnet run --project src/Washi.App
+dotnet run --project src/Washi.App -- form.pdf
 ```
 
 ## Roadmap
@@ -223,7 +255,7 @@ dotnet run --project src/Washi.App
 2. ~~Write the AcroForm output (text, amount, comb, checkbox; fonts per language; rotated pages).~~ Done.
 3. ~~Tools: `pdf_info`, `extract_text`, `render_page`, `list_fields`, `detect_fields`, `make_fillable`, `fill_fields`.~~ Done.
 4. ~~MCP server over the tool registry (stdio).~~ Done. Streamable HTTP is next.
-5. Avalonia field review editor.
+5. ~~Avalonia field review editor.~~ Done.
 6. Built-in AI: name and type fields from the page image, fill from a profile, chat with a document.
 7. OCR, redaction, merge and split.
 

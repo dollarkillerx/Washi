@@ -34,6 +34,45 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="FontNotAllowed" xml:space="preserve"><value>The licence of {0} does not allow embedding it in a PDF people can edit (OS/2 fsType {1}). Choose another font.</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} cannot be embedded: variable fonts and files that are not TrueType/OpenType fonts are not supported. Use a static .ttf, .otf or .ttc.</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>Unknown form language '{0}'. Use one of: auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
+  <data name="Ui_Open" xml:space="preserve"><value>Open PDF…</value></data>
+  <data name="Ui_Detect" xml:space="preserve"><value>Detect fields</value></data>
+  <data name="Ui_Draw" xml:space="preserve"><value>Draw field</value></data>
+  <data name="Ui_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Ui_LoadFields" xml:space="preserve"><value>Load fields.json…</value></data>
+  <data name="Ui_SaveFields" xml:space="preserve"><value>Save fields.json…</value></data>
+  <data name="Ui_MakeFillable" xml:space="preserve"><value>Make fillable PDF…</value></data>
+  <data name="Ui_FormLanguage" xml:space="preserve"><value>Form language</value></data>
+  <data name="Ui_LangAuto" xml:space="preserve"><value>Automatic</value></data>
+  <data name="Ui_EmbedFont" xml:space="preserve"><value>Embed font…</value></data>
+  <data name="Ui_NoFont" xml:space="preserve"><value>No embedded font</value></data>
+  <data name="Ui_Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>Page {0} / {1}</value></data>
+  <data name="Ui_Field" xml:space="preserve"><value>Field</value></data>
+  <data name="Ui_FieldsOnPage" xml:space="preserve"><value>Fields on this page</value></data>
+  <data name="Ui_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Ui_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Ui_Boxes" xml:space="preserve"><value>Boxes</value></data>
+  <data name="Ui_Align" xml:space="preserve"><value>Alignment</value></data>
+  <data name="Ui_AlignLeft" xml:space="preserve"><value>Left</value></data>
+  <data name="Ui_AlignCenter" xml:space="preserve"><value>Centre</value></data>
+  <data name="Ui_AlignRight" xml:space="preserve"><value>Right</value></data>
+  <data name="Ui_Label" xml:space="preserve"><value>Printed label</value></data>
+  <data name="Ui_Prefilled" xml:space="preserve"><value>Already printed</value></data>
+  <data name="Ui_Position" xml:space="preserve"><value>Position (pt): x {0}, y {1}, {2} × {3}</value></data>
+  <data name="Ui_NoSelection" xml:space="preserve"><value>Select a field on the page or in the list.</value></data>
+  <data name="Ui_Hint" xml:space="preserve"><value>Drag a field to move it, its corner to resize it. Delete removes it, arrow keys nudge it.</value></data>
+  <data name="Ui_DrawHint" xml:space="preserve"><value>Drag on the page to draw a new field.</value></data>
+  <data name="Ui_StartHint" xml:space="preserve"><value>Open a PDF to start.</value></data>
+  <data name="Ui_Opened" xml:space="preserve"><value>{0}: {1} pages</value></data>
+  <data name="Ui_Detecting" xml:space="preserve"><value>Detecting fields…</value></data>
+  <data name="Ui_Detected" xml:space="preserve"><value>{0} fields ({1})</value></data>
+  <data name="Ui_Saved" xml:space="preserve"><value>Saved {0}</value></data>
+  <data name="Ui_Loaded" xml:space="preserve"><value>Loaded {0} fields from {1}</value></data>
+  <data name="Ui_Made" xml:space="preserve"><value>Fillable PDF written: {0}</value></data>
+  <data name="Ui_Error" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF files</value></data>
+  <data name="Ui_JsonFiles" xml:space="preserve"><value>Field lists (JSON)</value></data>
+  <data name="Ui_FontFiles" xml:space="preserve"><value>Fonts</value></data>
   <data name="Kind_text" xml:space="preserve"><value>text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>amount</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>comb</value></data>

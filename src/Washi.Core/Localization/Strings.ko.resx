@@ -34,6 +34,45 @@
   <data name="FontNotAllowed" xml:space="preserve"><value>{0} 의 라이선스는 편집 가능한 PDF 에 포함하는 것을 허용하지 않습니다 (OS/2 fsType {1}). 다른 글꼴을 선택하세요.</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} 을(를) 포함할 수 없습니다. 가변 글꼴과 TrueType/OpenType 이 아닌 파일은 지원하지 않습니다. 고정 굵기의 .ttf, .otf, .ttc 를 사용하세요.</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>양식 언어 '{0}' 은(는) 지원되지 않습니다. 다음 중 하나를 사용하세요: auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
+  <data name="Ui_Open" xml:space="preserve"><value>PDF 열기…</value></data>
+  <data name="Ui_Detect" xml:space="preserve"><value>입력란 감지</value></data>
+  <data name="Ui_Draw" xml:space="preserve"><value>입력란 그리기</value></data>
+  <data name="Ui_Delete" xml:space="preserve"><value>삭제</value></data>
+  <data name="Ui_LoadFields" xml:space="preserve"><value>fields.json 불러오기…</value></data>
+  <data name="Ui_SaveFields" xml:space="preserve"><value>fields.json 저장…</value></data>
+  <data name="Ui_MakeFillable" xml:space="preserve"><value>작성 가능한 PDF 만들기…</value></data>
+  <data name="Ui_FormLanguage" xml:space="preserve"><value>양식 언어</value></data>
+  <data name="Ui_LangAuto" xml:space="preserve"><value>자동</value></data>
+  <data name="Ui_EmbedFont" xml:space="preserve"><value>글꼴 포함…</value></data>
+  <data name="Ui_NoFont" xml:space="preserve"><value>글꼴 포함 안 함</value></data>
+  <data name="Ui_Zoom" xml:space="preserve"><value>확대/축소</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>{0} / {1} 페이지</value></data>
+  <data name="Ui_Field" xml:space="preserve"><value>입력란</value></data>
+  <data name="Ui_FieldsOnPage" xml:space="preserve"><value>이 페이지의 입력란</value></data>
+  <data name="Ui_Name" xml:space="preserve"><value>이름</value></data>
+  <data name="Ui_Type" xml:space="preserve"><value>종류</value></data>
+  <data name="Ui_Boxes" xml:space="preserve"><value>칸 수</value></data>
+  <data name="Ui_Align" xml:space="preserve"><value>정렬</value></data>
+  <data name="Ui_AlignLeft" xml:space="preserve"><value>왼쪽</value></data>
+  <data name="Ui_AlignCenter" xml:space="preserve"><value>가운데</value></data>
+  <data name="Ui_AlignRight" xml:space="preserve"><value>오른쪽</value></data>
+  <data name="Ui_Label" xml:space="preserve"><value>인쇄된 레이블</value></data>
+  <data name="Ui_Prefilled" xml:space="preserve"><value>이미 인쇄된 내용</value></data>
+  <data name="Ui_Position" xml:space="preserve"><value>위치 (pt): x {0}, y {1}, {2} × {3}</value></data>
+  <data name="Ui_NoSelection" xml:space="preserve"><value>페이지나 목록에서 입력란을 선택하세요.</value></data>
+  <data name="Ui_Hint" xml:space="preserve"><value>드래그하면 이동, 모서리를 드래그하면 크기 조절. Delete 로 삭제, 화살표 키로 미세 조정.</value></data>
+  <data name="Ui_DrawHint" xml:space="preserve"><value>페이지에서 드래그해 새 입력란을 그립니다.</value></data>
+  <data name="Ui_StartHint" xml:space="preserve"><value>PDF 를 열어 시작하세요.</value></data>
+  <data name="Ui_Opened" xml:space="preserve"><value>{0}: {1}페이지</value></data>
+  <data name="Ui_Detecting" xml:space="preserve"><value>입력란을 감지하는 중…</value></data>
+  <data name="Ui_Detected" xml:space="preserve"><value>입력란 {0}개 ({1})</value></data>
+  <data name="Ui_Saved" xml:space="preserve"><value>{0} 저장됨</value></data>
+  <data name="Ui_Loaded" xml:space="preserve"><value>{1} 에서 입력란 {0}개를 불러왔습니다</value></data>
+  <data name="Ui_Made" xml:space="preserve"><value>작성 가능한 PDF 를 만들었습니다: {0}</value></data>
+  <data name="Ui_Error" xml:space="preserve"><value>오류: {0}</value></data>
+  <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF 파일</value></data>
+  <data name="Ui_JsonFiles" xml:space="preserve"><value>입력란 목록 (JSON)</value></data>
+  <data name="Ui_FontFiles" xml:space="preserve"><value>글꼴</value></data>
   <data name="Kind_text" xml:space="preserve"><value>텍스트</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>금액</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>칸 나눔</value></data>

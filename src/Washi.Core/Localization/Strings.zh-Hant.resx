@@ -34,6 +34,45 @@
   <data name="FontNotAllowed" xml:space="preserve"><value>{0} 的授權不允許內嵌到可編輯的 PDF 中（OS/2 fsType {1}）。請改用其他字型。</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>無法內嵌 {0}：不支援可變字型，也不支援 TrueType/OpenType 以外的檔案。請使用固定字重的 .ttf、.otf 或 .ttc。</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>不支援的表單語言「{0}」。請使用：auto、ja、zh-Hans、zh-Hant、ko、en、fr、de</value></data>
+  <data name="Ui_Open" xml:space="preserve"><value>開啟 PDF…</value></data>
+  <data name="Ui_Detect" xml:space="preserve"><value>辨識填寫欄</value></data>
+  <data name="Ui_Draw" xml:space="preserve"><value>繪製填寫欄</value></data>
+  <data name="Ui_Delete" xml:space="preserve"><value>刪除</value></data>
+  <data name="Ui_LoadFields" xml:space="preserve"><value>載入 fields.json…</value></data>
+  <data name="Ui_SaveFields" xml:space="preserve"><value>儲存 fields.json…</value></data>
+  <data name="Ui_MakeFillable" xml:space="preserve"><value>產生可填寫 PDF…</value></data>
+  <data name="Ui_FormLanguage" xml:space="preserve"><value>表單語言</value></data>
+  <data name="Ui_LangAuto" xml:space="preserve"><value>自動</value></data>
+  <data name="Ui_EmbedFont" xml:space="preserve"><value>內嵌字型…</value></data>
+  <data name="Ui_NoFont" xml:space="preserve"><value>不內嵌字型</value></data>
+  <data name="Ui_Zoom" xml:space="preserve"><value>縮放</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>第 {0} / {1} 頁</value></data>
+  <data name="Ui_Field" xml:space="preserve"><value>填寫欄</value></data>
+  <data name="Ui_FieldsOnPage" xml:space="preserve"><value>本頁的填寫欄</value></data>
+  <data name="Ui_Name" xml:space="preserve"><value>名稱</value></data>
+  <data name="Ui_Type" xml:space="preserve"><value>類型</value></data>
+  <data name="Ui_Boxes" xml:space="preserve"><value>格數</value></data>
+  <data name="Ui_Align" xml:space="preserve"><value>對齊</value></data>
+  <data name="Ui_AlignLeft" xml:space="preserve"><value>左</value></data>
+  <data name="Ui_AlignCenter" xml:space="preserve"><value>置中</value></data>
+  <data name="Ui_AlignRight" xml:space="preserve"><value>右</value></data>
+  <data name="Ui_Label" xml:space="preserve"><value>印在格內的標籤</value></data>
+  <data name="Ui_Prefilled" xml:space="preserve"><value>已印內容</value></data>
+  <data name="Ui_Position" xml:space="preserve"><value>位置 (pt)：x {0}，y {1}，{2} × {3}</value></data>
+  <data name="Ui_NoSelection" xml:space="preserve"><value>請在頁面或清單中選擇一個填寫欄。</value></data>
+  <data name="Ui_Hint" xml:space="preserve"><value>拖曳可移動填寫欄，拖曳角可調整大小。Delete 刪除，方向鍵微調。</value></data>
+  <data name="Ui_DrawHint" xml:space="preserve"><value>在頁面上拖曳即可繪製新的填寫欄。</value></data>
+  <data name="Ui_StartHint" xml:space="preserve"><value>開啟一個 PDF 開始。</value></data>
+  <data name="Ui_Opened" xml:space="preserve"><value>{0}：{1} 頁</value></data>
+  <data name="Ui_Detecting" xml:space="preserve"><value>正在辨識填寫欄…</value></data>
+  <data name="Ui_Detected" xml:space="preserve"><value>{0} 個填寫欄（{1}）</value></data>
+  <data name="Ui_Saved" xml:space="preserve"><value>已儲存 {0}</value></data>
+  <data name="Ui_Loaded" xml:space="preserve"><value>已從 {1} 載入 {0} 個填寫欄</value></data>
+  <data name="Ui_Made" xml:space="preserve"><value>已產生可填寫 PDF：{0}</value></data>
+  <data name="Ui_Error" xml:space="preserve"><value>錯誤：{0}</value></data>
+  <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF 檔案</value></data>
+  <data name="Ui_JsonFiles" xml:space="preserve"><value>填寫欄清單 (JSON)</value></data>
+  <data name="Ui_FontFiles" xml:space="preserve"><value>字型</value></data>
   <data name="Kind_text" xml:space="preserve"><value>文字</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>分格</value></data>

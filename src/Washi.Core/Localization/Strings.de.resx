@@ -34,6 +34,45 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="FontNotAllowed" xml:space="preserve"><value>Die Lizenz von {0} erlaubt kein Einbetten in ein bearbeitbares PDF (OS/2 fsType {1}). Bitte eine andere Schrift wählen.</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} kann nicht eingebettet werden: variable Schriften und Dateien, die keine TrueType/OpenType-Schriften sind, werden nicht unterstützt. Bitte eine statische .ttf, .otf oder .ttc verwenden.</value></data>
   <data name="UnknownLanguage" xml:space="preserve"><value>Unbekannte Formularsprache „{0}“. Möglich sind: auto, ja, zh-Hans, zh-Hant, ko, en, fr, de</value></data>
+  <data name="Ui_Open" xml:space="preserve"><value>PDF öffnen…</value></data>
+  <data name="Ui_Detect" xml:space="preserve"><value>Felder erkennen</value></data>
+  <data name="Ui_Draw" xml:space="preserve"><value>Feld zeichnen</value></data>
+  <data name="Ui_Delete" xml:space="preserve"><value>Löschen</value></data>
+  <data name="Ui_LoadFields" xml:space="preserve"><value>fields.json laden…</value></data>
+  <data name="Ui_SaveFields" xml:space="preserve"><value>fields.json speichern…</value></data>
+  <data name="Ui_MakeFillable" xml:space="preserve"><value>Ausfüllbares PDF erstellen…</value></data>
+  <data name="Ui_FormLanguage" xml:space="preserve"><value>Formularsprache</value></data>
+  <data name="Ui_LangAuto" xml:space="preserve"><value>Automatisch</value></data>
+  <data name="Ui_EmbedFont" xml:space="preserve"><value>Schrift einbetten…</value></data>
+  <data name="Ui_NoFont" xml:space="preserve"><value>Keine eingebettete Schrift</value></data>
+  <data name="Ui_Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>Seite {0} / {1}</value></data>
+  <data name="Ui_Field" xml:space="preserve"><value>Feld</value></data>
+  <data name="Ui_FieldsOnPage" xml:space="preserve"><value>Felder auf dieser Seite</value></data>
+  <data name="Ui_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Ui_Type" xml:space="preserve"><value>Typ</value></data>
+  <data name="Ui_Boxes" xml:space="preserve"><value>Kästchen</value></data>
+  <data name="Ui_Align" xml:space="preserve"><value>Ausrichtung</value></data>
+  <data name="Ui_AlignLeft" xml:space="preserve"><value>Links</value></data>
+  <data name="Ui_AlignCenter" xml:space="preserve"><value>Mitte</value></data>
+  <data name="Ui_AlignRight" xml:space="preserve"><value>Rechts</value></data>
+  <data name="Ui_Label" xml:space="preserve"><value>Gedruckte Beschriftung</value></data>
+  <data name="Ui_Prefilled" xml:space="preserve"><value>Bereits gedruckt</value></data>
+  <data name="Ui_Position" xml:space="preserve"><value>Position (pt): x {0}, y {1}, {2} × {3}</value></data>
+  <data name="Ui_NoSelection" xml:space="preserve"><value>Wählen Sie ein Feld auf der Seite oder in der Liste.</value></data>
+  <data name="Ui_Hint" xml:space="preserve"><value>Feld ziehen zum Verschieben, Ecke ziehen zum Ändern der Größe. Entf löscht, Pfeiltasten verschieben fein.</value></data>
+  <data name="Ui_DrawHint" xml:space="preserve"><value>Auf der Seite ziehen, um ein neues Feld zu zeichnen.</value></data>
+  <data name="Ui_StartHint" xml:space="preserve"><value>Öffnen Sie ein PDF, um zu beginnen.</value></data>
+  <data name="Ui_Opened" xml:space="preserve"><value>{0}: {1} Seiten</value></data>
+  <data name="Ui_Detecting" xml:space="preserve"><value>Felder werden erkannt…</value></data>
+  <data name="Ui_Detected" xml:space="preserve"><value>{0} Felder ({1})</value></data>
+  <data name="Ui_Saved" xml:space="preserve"><value>{0} gespeichert</value></data>
+  <data name="Ui_Loaded" xml:space="preserve"><value>{0} Felder aus {1} geladen</value></data>
+  <data name="Ui_Made" xml:space="preserve"><value>Ausfüllbares PDF geschrieben: {0}</value></data>
+  <data name="Ui_Error" xml:space="preserve"><value>Fehler: {0}</value></data>
+  <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF-Dateien</value></data>
+  <data name="Ui_JsonFiles" xml:space="preserve"><value>Feldlisten (JSON)</value></data>
+  <data name="Ui_FontFiles" xml:space="preserve"><value>Schriften</value></data>
   <data name="Kind_text" xml:space="preserve"><value>Text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>Betrag</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>Kästchen</value></data>
