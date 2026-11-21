@@ -13,6 +13,8 @@ public interface IDialogs
     Task<string?> SaveFieldsAsync(string suggestedName);
     Task<string?> SavePdfAsync(string suggestedName);
     Task<string?> OpenFontAsync();
+    /// <summary>Yes / no question; true only when the user chose the confirming button.</summary>
+    Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel);
 }
 
 public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
@@ -26,6 +28,30 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     public Task<string?> OpenFontAsync() => Open(Fonts);
     public Task<string?> SaveFieldsAsync(string suggestedName) => Save(Json, suggestedName, "json");
     public Task<string?> SavePdfAsync(string suggestedName) => Save(Pdf, suggestedName, "pdf");
+
+    public async Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel)
+    {
+        var yes = new Button { Content = confirm, Classes = { "accent" }, IsDefault = true };
+        var no = new Button { Content = cancel, IsCancel = true };
+        var dialog = new Window
+        {
+            Title = title, Width = 460, SizeToContent = SizeToContent.Height, CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(20), Spacing = 16,
+                Children =
+                {
+                    new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
+                    new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8,
+                                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right, Children = { no, yes } },
+                },
+            },
+        };
+        yes.Click += (_, _) => dialog.Close(true);
+        no.Click += (_, _) => dialog.Close(false);
+        return owner is Window w && await dialog.ShowDialog<bool>(w);
+    }
 
     private async Task<string?> Open(FilePickerFileType type)
     {

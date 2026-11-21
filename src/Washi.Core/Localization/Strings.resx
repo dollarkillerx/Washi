@@ -73,6 +73,33 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF files</value></data>
   <data name="Ui_JsonFiles" xml:space="preserve"><value>Field lists (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>Fonts</value></data>
+  <data name="UsageAi" xml:space="preserve"><value>AI (Claude by default; data is shown and confirmed before it is sent):
+  washi ai config [anthropic|openai|deepseek|local &lt;model&gt; [--endpoint url]]
+  washi ai key &lt;anthropic|openai|deepseek&gt;          store an API key in the macOS Keychain
+  washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
+  washi ai fill &lt;fillable.pdf&gt; --profile me.txt [-o out.pdf] [--embed-font f] [--yes]
+  washi ai ask &lt;in.pdf&gt; "question" [--yes]</value></data>
+  <data name="Ai_Config" xml:space="preserve"><value>AI model: {0}   API key: {1}   settings: {2}</value></data>
+  <data name="Ai_KeyFound" xml:space="preserve"><value>found</value></data>
+  <data name="Ai_KeyMissing" xml:space="preserve"><value>missing</value></data>
+  <data name="Ai_Saved" xml:space="preserve"><value>Saved {0}</value></data>
+  <data name="Ai_KeyPrompt" xml:space="preserve"><value>Paste the {0} API key (it is not shown): </value></data>
+  <data name="Ai_KeyStored" xml:space="preserve"><value>Stored in the macOS Keychain (service "washi", account "{0}").</value></data>
+  <data name="Ai_WillSend" xml:space="preserve"><value>This sends to {0}: {1}.</value></data>
+  <data name="Ai_Local" xml:space="preserve"><value>Local model {0}: nothing leaves this computer.</value></data>
+  <data name="Ai_Confirm" xml:space="preserve"><value>Send it? [y/N] </value></data>
+  <data name="Ai_NeedYes" xml:space="preserve"><value>Nothing was sent: add --yes to confirm when there is no terminal to ask.</value></data>
+  <data name="Ai_Cancelled" xml:space="preserve"><value>Cancelled. Nothing was sent.</value></data>
+  <data name="Ai_Working" xml:space="preserve"><value>Asking {0}…</value></data>
+  <data name="Ai_Named" xml:space="preserve"><value>{0}: {1} fields, {2} renamed, {3} types changed -&gt; {4}</value></data>
+  <data name="Ai_Filled" xml:space="preserve"><value>Filled {0} fields -&gt; {1}</value></data>
+  <data name="Ai_Note" xml:space="preserve"><value>  note: {0}</value></data>
+  <data name="Ai_Error" xml:space="preserve"><value>AI: {0}</value></data>
+  <data name="Ai_NoProfile" xml:space="preserve"><value>--profile &lt;file&gt; is required: a text or JSON file with the data to fill in.</value></data>
+  <data name="Ui_AiName" xml:space="preserve"><value>Name fields with AI</value></data>
+  <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>Send to the AI?</value></data>
+  <data name="Ui_Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Ui_Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Kind_text" xml:space="preserve"><value>text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>amount</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>comb</value></data>

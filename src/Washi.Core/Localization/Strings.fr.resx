@@ -73,6 +73,33 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_PdfFiles" xml:space="preserve"><value>Fichiers PDF</value></data>
   <data name="Ui_JsonFiles" xml:space="preserve"><value>Listes de champs (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>Polices</value></data>
+  <data name="UsageAi" xml:space="preserve"><value>IA (Claude par défaut ; les données sont montrées et confirmées avant l’envoi) :
+  washi ai config [anthropic|openai|deepseek|local &lt;modèle&gt; [--endpoint url]]
+  washi ai key &lt;anthropic|openai|deepseek&gt;          enregistre une clé d’API dans le trousseau macOS
+  washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
+  washi ai fill &lt;fillable.pdf&gt; --profile moi.txt [-o out.pdf] [--embed-font f] [--yes]
+  washi ai ask &lt;in.pdf&gt; "question" [--yes]</value></data>
+  <data name="Ai_Config" xml:space="preserve"><value>Modèle d’IA : {0}   clé d’API : {1}   réglages : {2}</value></data>
+  <data name="Ai_KeyFound" xml:space="preserve"><value>trouvée</value></data>
+  <data name="Ai_KeyMissing" xml:space="preserve"><value>absente</value></data>
+  <data name="Ai_Saved" xml:space="preserve"><value>{0} enregistré</value></data>
+  <data name="Ai_KeyPrompt" xml:space="preserve"><value>Collez la clé d’API {0} (elle reste masquée) : </value></data>
+  <data name="Ai_KeyStored" xml:space="preserve"><value>Enregistrée dans le trousseau macOS (service « washi », compte « {0} »).</value></data>
+  <data name="Ai_WillSend" xml:space="preserve"><value>Envoi à {0} : {1}.</value></data>
+  <data name="Ai_Local" xml:space="preserve"><value>Modèle local {0} : rien ne quitte cet ordinateur.</value></data>
+  <data name="Ai_Confirm" xml:space="preserve"><value>Envoyer ? [o/N] </value></data>
+  <data name="Ai_NeedYes" xml:space="preserve"><value>Rien n’a été envoyé : ajoutez --yes pour confirmer quand aucun terminal ne peut poser la question.</value></data>
+  <data name="Ai_Cancelled" xml:space="preserve"><value>Annulé. Rien n’a été envoyé.</value></data>
+  <data name="Ai_Working" xml:space="preserve"><value>Interrogation de {0}…</value></data>
+  <data name="Ai_Named" xml:space="preserve"><value>{0} : {1} champs, {2} renommés, {3} types modifiés -&gt; {4}</value></data>
+  <data name="Ai_Filled" xml:space="preserve"><value>{0} champs remplis -&gt; {1}</value></data>
+  <data name="Ai_Note" xml:space="preserve"><value>  remarque : {0}</value></data>
+  <data name="Ai_Error" xml:space="preserve"><value>IA : {0}</value></data>
+  <data name="Ai_NoProfile" xml:space="preserve"><value>--profile &lt;fichier&gt; est requis : un fichier texte ou JSON avec les données à remplir.</value></data>
+  <data name="Ui_AiName" xml:space="preserve"><value>Nommer avec l’IA</value></data>
+  <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>Envoyer à l’IA ?</value></data>
+  <data name="Ui_Send" xml:space="preserve"><value>Envoyer</value></data>
+  <data name="Ui_Cancel" xml:space="preserve"><value>Annuler</value></data>
   <data name="Kind_text" xml:space="preserve"><value>texte</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>montant</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>cases</value></data>

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Washi.Tools\Washi.Tools.csproj" />
     <ProjectReference Include="..\Washi.Masume\Washi.Masume.csproj" />
+    <ProjectReference Include="..\Washi.Ai\Washi.Ai.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

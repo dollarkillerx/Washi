@@ -73,6 +73,33 @@
   <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF ファイル</value></data>
   <data name="Ui_JsonFiles" xml:space="preserve"><value>記入欄リスト (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>フォント</value></data>
+  <data name="UsageAi" xml:space="preserve"><value>AI（既定は Claude。送信する内容を表示し、確認してから送ります）:
+  washi ai config [anthropic|openai|deepseek|local &lt;モデル&gt; [--endpoint url]]
+  washi ai key &lt;anthropic|openai|deepseek&gt;          API キーを macOS のキーチェーンに保存
+  washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
+  washi ai fill &lt;fillable.pdf&gt; --profile me.txt [-o out.pdf] [--embed-font f] [--yes]
+  washi ai ask &lt;in.pdf&gt; "質問" [--yes]</value></data>
+  <data name="Ai_Config" xml:space="preserve"><value>AI モデル: {0}   API キー: {1}   設定: {2}</value></data>
+  <data name="Ai_KeyFound" xml:space="preserve"><value>あり</value></data>
+  <data name="Ai_KeyMissing" xml:space="preserve"><value>なし</value></data>
+  <data name="Ai_Saved" xml:space="preserve"><value>{0} を保存しました</value></data>
+  <data name="Ai_KeyPrompt" xml:space="preserve"><value>{0} の API キーを貼り付けてください（表示されません）: </value></data>
+  <data name="Ai_KeyStored" xml:space="preserve"><value>macOS のキーチェーンに保存しました（サービス "washi"、アカウント "{0}"）。</value></data>
+  <data name="Ai_WillSend" xml:space="preserve"><value>{0} に送信します: {1}</value></data>
+  <data name="Ai_Local" xml:space="preserve"><value>ローカルモデル {0}: このコンピュータの外には何も送られません。</value></data>
+  <data name="Ai_Confirm" xml:space="preserve"><value>送信しますか？ [y/N] </value></data>
+  <data name="Ai_NeedYes" xml:space="preserve"><value>送信していません。確認できる端末がないときは --yes を付けてください。</value></data>
+  <data name="Ai_Cancelled" xml:space="preserve"><value>キャンセルしました。何も送信していません。</value></data>
+  <data name="Ai_Working" xml:space="preserve"><value>{0} に問い合わせています…</value></data>
+  <data name="Ai_Named" xml:space="preserve"><value>{0}: 記入欄 {1} 個、名前変更 {2}、種類変更 {3} -&gt; {4}</value></data>
+  <data name="Ai_Filled" xml:space="preserve"><value>記入欄 {0} 個に記入しました -&gt; {1}</value></data>
+  <data name="Ai_Note" xml:space="preserve"><value>  メモ: {0}</value></data>
+  <data name="Ai_Error" xml:space="preserve"><value>AI: {0}</value></data>
+  <data name="Ai_NoProfile" xml:space="preserve"><value>--profile &lt;ファイル&gt; が必要です。記入するデータを書いたテキストか JSON ファイルです。</value></data>
+  <data name="Ui_AiName" xml:space="preserve"><value>AI で名前を付ける</value></data>
+  <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>AI に送信しますか？</value></data>
+  <data name="Ui_Send" xml:space="preserve"><value>送信</value></data>
+  <data name="Ui_Cancel" xml:space="preserve"><value>キャンセル</value></data>
   <data name="Kind_text" xml:space="preserve"><value>テキスト</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>マス目</value></data>

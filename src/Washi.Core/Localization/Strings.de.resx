@@ -73,6 +73,33 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF-Dateien</value></data>
   <data name="Ui_JsonFiles" xml:space="preserve"><value>Feldlisten (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>Schriften</value></data>
+  <data name="UsageAi" xml:space="preserve"><value>KI (standardmäßig Claude; Daten werden vor dem Senden gezeigt und bestätigt):
+  washi ai config [anthropic|openai|deepseek|local &lt;Modell&gt; [--endpoint url]]
+  washi ai key &lt;anthropic|openai|deepseek&gt;          API-Schlüssel im macOS-Schlüsselbund speichern
+  washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
+  washi ai fill &lt;fillable.pdf&gt; --profile ich.txt [-o out.pdf] [--embed-font f] [--yes]
+  washi ai ask &lt;in.pdf&gt; "Frage" [--yes]</value></data>
+  <data name="Ai_Config" xml:space="preserve"><value>KI-Modell: {0}   API-Schlüssel: {1}   Einstellungen: {2}</value></data>
+  <data name="Ai_KeyFound" xml:space="preserve"><value>gefunden</value></data>
+  <data name="Ai_KeyMissing" xml:space="preserve"><value>fehlt</value></data>
+  <data name="Ai_Saved" xml:space="preserve"><value>{0} gespeichert</value></data>
+  <data name="Ai_KeyPrompt" xml:space="preserve"><value>{0}-API-Schlüssel einfügen (wird nicht angezeigt): </value></data>
+  <data name="Ai_KeyStored" xml:space="preserve"><value>Im macOS-Schlüsselbund gespeichert (Dienst „washi“, Konto „{0}“).</value></data>
+  <data name="Ai_WillSend" xml:space="preserve"><value>Wird an {0} gesendet: {1}.</value></data>
+  <data name="Ai_Local" xml:space="preserve"><value>Lokales Modell {0}: nichts verlässt diesen Computer.</value></data>
+  <data name="Ai_Confirm" xml:space="preserve"><value>Senden? [j/N] </value></data>
+  <data name="Ai_NeedYes" xml:space="preserve"><value>Nichts gesendet: ohne Terminal zum Nachfragen mit --yes bestätigen.</value></data>
+  <data name="Ai_Cancelled" xml:space="preserve"><value>Abgebrochen. Nichts wurde gesendet.</value></data>
+  <data name="Ai_Working" xml:space="preserve"><value>{0} wird gefragt…</value></data>
+  <data name="Ai_Named" xml:space="preserve"><value>{0}: {1} Felder, {2} umbenannt, {3} Typen geändert -&gt; {4}</value></data>
+  <data name="Ai_Filled" xml:space="preserve"><value>{0} Felder ausgefüllt -&gt; {1}</value></data>
+  <data name="Ai_Note" xml:space="preserve"><value>  Hinweis: {0}</value></data>
+  <data name="Ai_Error" xml:space="preserve"><value>KI: {0}</value></data>
+  <data name="Ai_NoProfile" xml:space="preserve"><value>--profile &lt;Datei&gt; ist erforderlich: eine Text- oder JSON-Datei mit den Daten.</value></data>
+  <data name="Ui_AiName" xml:space="preserve"><value>Mit KI benennen</value></data>
+  <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>An die KI senden?</value></data>
+  <data name="Ui_Send" xml:space="preserve"><value>Senden</value></data>
+  <data name="Ui_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
   <data name="Kind_text" xml:space="preserve"><value>Text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>Betrag</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>Kästchen</value></data>

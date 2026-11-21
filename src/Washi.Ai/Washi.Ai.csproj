@@ -4,6 +4,11 @@
     <ProjectReference Include="..\Washi.Tools\Washi.Tools.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Anthropic" Version="13.12.0" />
+    <PackageReference Include="OpenAI" Version="2.15.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

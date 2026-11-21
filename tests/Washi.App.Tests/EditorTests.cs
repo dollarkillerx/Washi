@@ -38,6 +38,13 @@ internal sealed class FakeDialogs : IDialogs
     public Task<string?> SaveFieldsAsync(string suggestedName) => Task.FromResult(SaveJson);
     public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult(SavePdf);
     public Task<string?> OpenFontAsync() => Task.FromResult(Font);
+    public bool ConfirmAnswer = true;
+    public string? LastConfirm;
+    public Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel)
+    {
+        LastConfirm = message;
+        return Task.FromResult(ConfirmAnswer);
+    }
 }
 
 public sealed class EditorTests : IDisposable
@@ -208,5 +215,71 @@ public sealed class EditorTests : IDisposable
         vm.SelectedField = vm.PageFields.FirstOrDefault(f => f.Kind == FieldKind.Comb) ?? vm.PageFields.FirstOrDefault();
         Dispatcher.UIThread.RunJobs();
         w.CaptureRenderedFrame()!.Save(Path.Combine(outDir, $"editor_{Washi.Core.Localization.L.Culture.Name}.png"));
+    }
+}
+
+public sealed class EditorAiTests : IDisposable
+{
+    private readonly string _dir = Directory.CreateTempSubdirectory("washi-app-ai-").FullName;
+    public void Dispose() => Directory.Delete(_dir, recursive: true);
+
+    private sealed class Model(bool offDevice) : Washi.Ai.IAiModel
+    {
+        public int Calls;
+        public string Describe => "fake";
+        public bool SendsDataOffDevice => offDevice;
+        public bool AcceptsImages => true;
+        public Task<string> CompleteAsync(Washi.Ai.AiRequest r, CancellationToken ct = default)
+        {
+            Calls++;
+            var json = r.Prompt[(r.Prompt.IndexOf("Boxes:\n", StringComparison.Ordinal) + 7)..];
+            var ids = System.Text.Json.JsonDocument.Parse(json).RootElement.EnumerateArray().Select(b => b.GetProperty("id").GetInt32());
+            return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                fields = ids.Select(id => new { id, name = $"AI_{id}", kind = "text", max_len = 0 }),
+            }));
+        }
+    }
+
+    private async Task<(MainViewModel Vm, FakeDialogs Dialogs)> Open()
+    {
+        var path = Path.Combine(_dir, "form.pdf");
+        var doc = new PdfDocument();
+        var page = doc.AddPage();
+        using (var g = XGraphics.FromPdfPage(page)) g.DrawRectangle(new XPen(XColors.Black, 1), 40, 40, 300, 30);
+        doc.Save(path);
+        var dialogs = new FakeDialogs();
+        var w = new MainWindow(dialogs);
+        w.Show();
+        await w.ViewModel.LoadAsync(path);
+        return (w.ViewModel, dialogs);
+    }
+
+    [AvaloniaFact]
+    public async Task Cloud_models_ask_first_and_cancel_sends_nothing()
+    {
+        var (vm, dialogs) = await Open();
+        var model = new Model(offDevice: true);
+        vm.ModelFactory = () => model;
+        dialogs.ConfirmAnswer = false;
+        await vm.NameWithAiCommand.ExecuteAsync(null);
+        Assert.Equal(0, model.Calls);
+        Assert.Contains("fake", dialogs.LastConfirm);
+        Assert.DoesNotContain(vm.Fields, f => f.Name.StartsWith("AI_"));
+
+        dialogs.ConfirmAnswer = true;
+        await vm.NameWithAiCommand.ExecuteAsync(null);
+        Assert.Equal(1, model.Calls);
+        Assert.All(vm.Fields, f => Assert.StartsWith("AI_", f.Name));
+    }
+
+    [AvaloniaFact]
+    public async Task Local_models_do_not_need_a_confirmation()
+    {
+        var (vm, dialogs) = await Open();
+        vm.ModelFactory = () => new Model(offDevice: false);
+        await vm.NameWithAiCommand.ExecuteAsync(null);
+        Assert.Null(dialogs.LastConfirm);
+        Assert.All(vm.Fields, f => Assert.StartsWith("AI_", f.Name));
     }
 }

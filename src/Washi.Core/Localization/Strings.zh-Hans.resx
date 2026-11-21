@@ -73,6 +73,33 @@
   <data name="Ui_PdfFiles" xml:space="preserve"><value>PDF 文件</value></data>
   <data name="Ui_JsonFiles" xml:space="preserve"><value>填写栏列表 (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>字体</value></data>
+  <data name="UsageAi" xml:space="preserve"><value>AI（默认用 Claude；发送前会列出内容并请你确认）：
+  washi ai config [anthropic|openai|deepseek|local &lt;模型&gt; [--endpoint url]]
+  washi ai key &lt;anthropic|openai|deepseek&gt;          把 API key 存进 macOS 钥匙串
+  washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
+  washi ai fill &lt;fillable.pdf&gt; --profile me.txt [-o out.pdf] [--embed-font f] [--yes]
+  washi ai ask &lt;in.pdf&gt; "问题" [--yes]</value></data>
+  <data name="Ai_Config" xml:space="preserve"><value>AI 模型：{0}   API key：{1}   设置：{2}</value></data>
+  <data name="Ai_KeyFound" xml:space="preserve"><value>已找到</value></data>
+  <data name="Ai_KeyMissing" xml:space="preserve"><value>未设置</value></data>
+  <data name="Ai_Saved" xml:space="preserve"><value>已保存 {0}</value></data>
+  <data name="Ai_KeyPrompt" xml:space="preserve"><value>请粘贴 {0} 的 API key（不会显示）：</value></data>
+  <data name="Ai_KeyStored" xml:space="preserve"><value>已存入 macOS 钥匙串（服务 "washi"，账户 "{0}"）。</value></data>
+  <data name="Ai_WillSend" xml:space="preserve"><value>将发送给 {0}：{1}。</value></data>
+  <data name="Ai_Local" xml:space="preserve"><value>本地模型 {0}：不会有任何数据离开这台电脑。</value></data>
+  <data name="Ai_Confirm" xml:space="preserve"><value>要发送吗？[y/N] </value></data>
+  <data name="Ai_NeedYes" xml:space="preserve"><value>未发送：没有可以询问的终端时，请加上 --yes 确认。</value></data>
+  <data name="Ai_Cancelled" xml:space="preserve"><value>已取消，没有发送任何内容。</value></data>
+  <data name="Ai_Working" xml:space="preserve"><value>正在询问 {0}…</value></data>
+  <data name="Ai_Named" xml:space="preserve"><value>{0}：{1} 个填写栏，改名 {2} 个，改类型 {3} 个 -&gt; {4}</value></data>
+  <data name="Ai_Filled" xml:space="preserve"><value>已填写 {0} 个栏位 -&gt; {1}</value></data>
+  <data name="Ai_Note" xml:space="preserve"><value>  说明：{0}</value></data>
+  <data name="Ai_Error" xml:space="preserve"><value>AI：{0}</value></data>
+  <data name="Ai_NoProfile" xml:space="preserve"><value>需要 --profile &lt;文件&gt;：写有要填写内容的文本或 JSON 文件。</value></data>
+  <data name="Ui_AiName" xml:space="preserve"><value>用 AI 命名</value></data>
+  <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>发送给 AI？</value></data>
+  <data name="Ui_Send" xml:space="preserve"><value>发送</value></data>
+  <data name="Ui_Cancel" xml:space="preserve"><value>取消</value></data>
   <data name="Kind_text" xml:space="preserve"><value>文本</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金额</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>分格</value></data>

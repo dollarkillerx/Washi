@@ -19,6 +19,7 @@ try
         ["masume", "detect", var pdf, .. var rest] => Detect(pdf, Options(rest)),
         ["masume", "eval", var pdf, .. var rest] => Eval(pdf, Options(rest)),
         ["form", "make", var pdf, .. var rest] => MakeForm(pdf, Options(rest)),
+        ["ai", .. var rest] => AiCommands.Run(rest).GetAwaiter().GetResult(),
         _ => Usage(),
     };
 }
@@ -36,6 +37,8 @@ catch (Exception e) when (e is IOException or InvalidOperationException or PdfSh
 int Usage()
 {
     Console.Error.WriteLine(L.F("Usage", version!));
+    Console.Error.WriteLine();
+    Console.Error.WriteLine(L.Get("UsageAi"));
     return args.Length == 0 ? 0 : 2;
 }
 

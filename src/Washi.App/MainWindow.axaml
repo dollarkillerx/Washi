@@ -44,6 +44,7 @@
                 <WrapPanel Orientation="Horizontal">
                     <Button Content="{l:Tr Ui_Open}" Command="{Binding OpenCommand}" Margin="0,0,4,0" />
                     <Button Content="{l:Tr Ui_Detect}" Command="{Binding DetectCommand}" IsEnabled="{Binding HasDocument}" Margin="0,0,4,0" />
+                    <Button Content="{l:Tr Ui_AiName}" Command="{Binding NameWithAiCommand}" IsEnabled="{Binding HasDocument}" Margin="0,0,4,0" />
                     <Rectangle Classes="sep" />
                     <ToggleButton Content="{l:Tr Ui_Draw}" IsChecked="{Binding DrawMode}" IsEnabled="{Binding HasDocument}" Margin="0,0,4,0" />
                     <Button Content="{l:Tr Ui_Delete}" Command="{Binding DeleteSelectedCommand}" IsEnabled="{Binding HasSelection}" Margin="0,0,4,0" />

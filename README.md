@@ -20,8 +20,10 @@ Avalonia.
 >
 > - the desktop editor (`Washi.App`) lets a person review and correct the
 >   detected fields before the fillable PDF is written
+> - the built-in AI (Claude, GPT, DeepSeek or a local model) names fields from the
+>   page image, fills a form from your profile and answers questions about a PDF
 >
-> Next: the built-in AI. The Python reference
+> Next: OCR, redaction, merge and split. The Python reference
 > implementation lives in [`prototype/`](prototype/).
 
 ## Why
@@ -145,6 +147,30 @@ keyboard deletion and nudging, the `fields.json` round trip, and writing the PDF
 `WASHI_SCREENSHOT_DIR=… dotnet test --project tests/Washi.App.Tests -- --filter-method "*Screenshot"`
 saves a screenshot for review.
 
+## Built-in AI
+
+```bash
+washi ai config                                   # default: claude-opus-5-5 (Anthropic)
+washi ai key anthropic                            # paste the key; stored in the macOS Keychain
+washi ai config deepseek deepseek-chat            # or: openai <model> / local <model> --endpoint http://localhost:11434/v1
+
+washi ai name-fields form.pdf -o form_fields.json # Masume finds the boxes, the AI names them from the page image
+washi form make form.pdf --fields form_fields.json
+washi ai fill form_fillable.pdf --profile me.txt  # the AI decides what goes where; Washi writes and draws the values
+washi ai ask contract.pdf "When does the contract end?"
+```
+
+- **Naming.** The AI sees the page image and the detected boxes in a 0–1000 grid. It returns a
+  name, a type and a box count for each field. Made-up ids are ignored and names are made unique.
+  This is what turns `p1_text_001` into `世帯主の氏名`, even when the PDF's text layer is garbled.
+- **Filling.** The AI sees the fields (name, type, position, options) and the page images, plus
+  the profile with long numbers masked. It returns values only where the profile holds the
+  answer, and notes for the rest. Unknown fields and invalid options are dropped.
+- **Asking.** A readable text layer goes as text. A scanned or garbled one goes as page images.
+- **Claude** gets structured outputs, which force the JSON shape, and server-side refusal
+  fallback. **DeepSeek**'s chat models are text-only, so they get the page text instead of images.
+- The editor's **Name fields with AI** button runs the same naming step, after a confirmation dialog.
+
 ## MCP server: PDFs for AI agents
 
 `washi-mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio.
@@ -222,17 +248,23 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
 | `Washi.Tools` | the 7 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
-| `Washi.Ai` | providers behind `Microsoft.Extensions.AI`'s `IChatClient`:<br>• **Claude** through the official Anthropic C# SDK<br>• **GPT** through the official OpenAI SDK<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints |
+| `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`, the MCP server over the tool registry (official C# MCP SDK, stdio) |
 | `Washi.Cli` | `washi` command line |
-| `Washi.App` | Avalonia desktop app: field review editor (MVVM with CommunityToolkit.Mvvm; one `FieldCanvas` control draws the page and all fields). AI panel later |
+| `Washi.App` | Avalonia desktop app: field review editor (MVVM with CommunityToolkit.Mvvm; one `FieldCanvas` control draws the page and all fields). "Name fields with AI" button |
 
 ### Privacy rules (by design)
 
-- A document is sent to a cloud model only after the user consents for that document.
-- Sensitive numbers (マイナンバー, bank accounts) can be masked before sending.
-- With a local model (OpenAI-compatible endpoint on loopback), nothing leaves the machine.
-- API keys are kept in the OS keychain, never in plain config files.
+- **Consent first.** Before anything goes to a cloud model, Washi says what will be sent (page
+  images, field descriptions, profile lines, masked numbers) and waits for yes. In the CLI that
+  is a prompt or `--yes`; in the editor it is a dialog.
+- **Long numbers never leave the machine.** In a profile, マイナンバー, account, card and phone
+  numbers (8 or more digits; dates are kept) become `{{SECRET_n}}` placeholders. The model only
+  learns "a 12-digit number". The real digits are put back locally, and the CLI prints them as ••••.
+- **Local models stay local.** With an OpenAI-compatible endpoint on loopback (e.g. Ollama),
+  nothing leaves the machine and nothing is asked.
+- **API keys** come from the environment or the macOS Keychain (`washi ai key …`), never
+  from the settings file. Windows and Linux use environment variables for now.
 - `Write` and `Destructive` tools need the user's confirmation when the AI calls them.
 - The MCP server writes copies by default, and only inside folders the user allows.
 
@@ -256,7 +288,7 @@ dotnet run --project src/Washi.App -- form.pdf
 3. ~~Tools: `pdf_info`, `extract_text`, `render_page`, `list_fields`, `detect_fields`, `make_fillable`, `fill_fields`.~~ Done.
 4. ~~MCP server over the tool registry (stdio).~~ Done. Streamable HTTP is next.
 5. ~~Avalonia field review editor.~~ Done.
-6. Built-in AI: name and type fields from the page image, fill from a profile, chat with a document.
+6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done.
 7. OCR, redaction, merge and split.
 
 ## License

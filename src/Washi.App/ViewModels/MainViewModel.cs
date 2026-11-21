@@ -184,6 +184,42 @@ public sealed partial class MainViewModel : ObservableObject
         });
     }
 
+    /// <summary>Builds the AI model; tests replace it.</summary>
+    public Func<Washi.Ai.IAiModel> ModelFactory { get; set; } = () => Washi.Ai.AiSettings.Load().CreateModel();
+
+    [RelayCommand]
+    private async Task NameWithAiAsync()
+    {
+        if (PdfPath is not { } pdf || Fields.Count == 0) return;
+        Washi.Ai.IAiModel model;
+        try { model = ModelFactory(); }
+        catch (Washi.Ai.AiException e) { Status = L.F("Ai_Error", e.Message); return; }
+
+        var fields = Fields.Select(f => f.ToDetected()).ToList();
+        var payload = Washi.Ai.AiFeatures.DescribeNaming(model, fields);
+        if (payload.OffDevice && !await _dialogs.ConfirmAsync(L.Get("Ui_AiConfirmTitle"),
+                L.F("Ai_WillSend", payload.Model, payload.Summary()), L.Get("Ui_Send"), L.Get("Ui_Cancel")))
+        {
+            Status = L.Get("Ai_Cancelled");
+            return;
+        }
+        await Run(async () =>
+        {
+            Status = L.F("Ai_Working", model.Describe);
+            try
+            {
+                var r = await Washi.Ai.AiFeatures.NameFieldsAsync(model, pdf, fields);
+                ReplaceFields(r.Fields);
+                Status = L.F("Ai_Named", Path.GetFileName(pdf), r.Fields.Count, r.Renamed, r.KindsChanged, model.Describe);
+            }
+            catch (Exception e) when (e is Washi.Ai.AiException or HttpRequestException or System.ClientModel.ClientResultException
+                                          or Anthropic.Exceptions.AnthropicException or TaskCanceledException)
+            {
+                Status = L.F("Ai_Error", e.Message);
+            }
+        });
+    }
+
     [RelayCommand]
     private void DeleteSelected()
     {
