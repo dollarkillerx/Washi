@@ -22,8 +22,10 @@ Avalonia.
 >   detected fields before the fillable PDF is written
 > - the built-in AI (Claude, GPT, DeepSeek or a local model) names fields from the
 >   page image, fills a form from your profile and answers questions about a PDF
+> - `washi ocr` makes scanned pages searchable (Apple Vision on the Mac, Tesseract,
+>   or an AI model), and `washi pdf merge|split` keeps form fields fillable
 >
-> Next: OCR, redaction, merge and split. The Python reference
+> Next: redaction. The Python reference
 > implementation lives in [`prototype/`](prototype/).
 
 ## Why
@@ -178,6 +180,50 @@ washi ai ask contract.pdf "When does the contract end?"
   worse, which is why the editor keeps the human review step.
 - The editor's **Name fields with AI** button runs the same naming step, after a confirmation dialog.
 
+## OCR: searchable scans
+
+```bash
+washi ocr scan.pdf                         # -> scan_ocr.pdf
+washi ocr scan.pdf --lang ja,en --text scan.txt
+washi ocr scan.pdf --engine ai --yes       # the configured AI model reads the page images
+```
+
+- **What it does**: pages without readable text (scans, or PDFs whose fonts have no Unicode
+  mapping) are rendered at 300 dpi and recognised. Washi then adds an **invisible text
+  layer**, so the page looks exactly the same but can be searched, selected and copied.
+  Pages that already have text are skipped (`--force` recognises them too). Running it
+  again on the output does nothing, since Washi marks the pages it has made searchable.
+- **Engines**:
+  - `vision` (default on macOS): Apple's Vision framework, on the device. A small Swift helper
+    ships as source and is compiled once with the Xcode command line tools, then cached.
+  - `tesseract`: the Tesseract CLI, on the device. Each language needs its traineddata
+    (`brew install tesseract-lang`); missing languages are skipped and reported.
+  - `ai`: the configured AI model reads the page images. It is good at handwriting, but its
+    boxes are approximate. It asks before sending pages, like the other AI features.
+- **The text layer**: every line uses text render mode 3 (invisible), stretched to the width
+  the engine measured. The font is a tiny embedded TrueType font whose character codes are
+  the UTF-16 values, so Japanese, Chinese, Korean and Latin text all copy correctly.
+  Rotated pages (`/Rotate`) get the layer where the user sees the text.
+- **Tested**: on an image-only scan of the 扶養控除 form, Vision found 205 lines in about 3 s
+  per page (王燁, the address, the 13-digit company number). Both PDFium and macOS PDFKit
+  (Preview) find the text at the right spots.
+
+## Merge and split
+
+```bash
+washi pdf merge a.pdf b.pdf c.pdf -o all.pdf
+washi pdf split all.pdf --pages 1-2,5 -o parts     # parts/all_p1-2.pdf, parts/all_p5.pdf
+washi pdf split all.pdf                            # one file per page
+```
+
+- **Form fields stay fillable**: the copied pages' fields are registered in the new file's
+  AcroForm, with the fonts their appearances use. When two inputs have a field with the
+  same name, the second gets `_2`, so filling one does not fill the other. Merging the three
+  filled 年末調整 forms kept all 405 fields and their values.
+- **Protected files**: if a file's permissions forbid reusing its pages (as the 国税庁 PDFs
+  do), Washi refuses it. Washi does not remove protection.
+- `split` never overwrites existing parts.
+
 ## MCP server: PDFs for AI agents
 
 `washi-mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio.
@@ -191,6 +237,9 @@ washi ai ask contract.pdf "When does the contract end?"
 | `detect_fields` | Masume field suggestions as fields.json, optional review image | no |
 | `make_fillable` | new fillable PDF from a flat one (`lang`, `embed_font`, or reviewed `fields`) | writes a **new** file |
 | `fill_fields` | new PDF with values filled in. Washi draws each value itself, so it looks the same everywhere | writes a **new** file |
+| `merge_pdfs` | new PDF with the pages of several PDFs; form fields kept | writes a **new** file |
+| `split_pdf` | new PDFs, one per page range | writes **new** files |
+| `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 
 **Safety:**
 - **Folders:** the server only touches files inside the folders you pass with
@@ -252,9 +301,9 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 7 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 10 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`, the MCP server over the tool registry (official C# MCP SDK, stdio) |
 | `Washi.Cli` | `washi` command line |
@@ -285,6 +334,7 @@ dotnet test --solution Washi.slnx        # Microsoft.Testing.Platform (see globa
 dotnet run --project src/Washi.Cli -- --version
 dotnet run --project src/Washi.Cli -- masume detect form.pdf -o out   # fields.json + overlay PNGs
 dotnet run --project src/Washi.Cli -- masume eval form.pdf -o out     # score against existing fields
+dotnet run --project src/Washi.Cli -- ocr scan.pdf                    # searchable PDF (macOS: needs the Xcode command line tools)
 dotnet run --project src/Washi.App -- form.pdf
 ```
 
@@ -296,7 +346,8 @@ dotnet run --project src/Washi.App -- form.pdf
 4. ~~MCP server over the tool registry (stdio).~~ Done. Streamable HTTP is next.
 5. ~~Avalonia field review editor.~~ Done.
 6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done.
-7. OCR, redaction, merge and split.
+7. ~~OCR (Apple Vision, Tesseract, AI), merge and split.~~ Done.
+8. Redaction: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.
 
 ## License
 

@@ -216,7 +216,7 @@ public static class AcroFormWriter
     }
 
     // ------------------------------------------------------------------ objects
-    private static PdfDictionary GetOrCreateAcroForm(PdfDocument doc)
+    internal static PdfDictionary GetOrCreateAcroForm(PdfDocument doc)
     {
         var catalog = doc.Internals.Catalog;
         if (catalog.Elements.GetDictionary("/AcroForm") is { } existing) return existing;
@@ -226,7 +226,7 @@ public static class AcroFormWriter
         return form;
     }
 
-    private static PdfArray GetOrCreateArray(PdfDocument doc, PdfDictionary owner, string key)
+    internal static PdfArray GetOrCreateArray(PdfDocument doc, PdfDictionary owner, string key)
     {
         if (owner.Elements.GetArray(key) is { } arr) return arr;
         var created = new PdfArray(doc);
@@ -234,7 +234,7 @@ public static class AcroFormWriter
         return created;
     }
 
-    private static PdfDictionary EnsureFonts(PdfDocument doc, PdfDictionary form)
+    internal static PdfDictionary EnsureFonts(PdfDocument doc, PdfDictionary form)
     {
         var dr = form.Elements.GetDictionary("/DR");
         if (dr is null) { dr = new PdfDictionary(doc); form.Elements["/DR"] = dr; }

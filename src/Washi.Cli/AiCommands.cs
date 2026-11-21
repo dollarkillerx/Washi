@@ -137,7 +137,7 @@ internal static class AiCommands
 
     // ------------------------------------------------------------------ consent
     /// <summary>Shows what will leave the machine and asks; a local model needs no question.</summary>
-    private static bool Confirm(AiPayload payload, Dictionary<string, string> opt)
+    internal static bool Confirm(AiPayload payload, Dictionary<string, string> opt)
     {
         if (!payload.OffDevice)
         {

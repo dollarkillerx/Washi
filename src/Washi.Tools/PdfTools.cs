@@ -6,6 +6,8 @@ using Washi.Core;
 using Washi.Core.Fonts;
 using Washi.Core.Forms;
 using Washi.Core.Localization;
+using Washi.Core.Ocr;
+using Washi.Core.Pages;
 using Washi.Core.Pdfium;
 using Washi.Masume;
 
@@ -21,7 +23,10 @@ public static class WashiTools
         .Add(new ListFieldsTool(policy))
         .Add(new DetectFieldsTool(policy))
         .Add(new MakeFillableTool(policy))
-        .Add(new FillFieldsTool(policy));
+        .Add(new FillFieldsTool(policy))
+        .Add(new MergePdfsTool(policy))
+        .Add(new SplitPdfTool(policy))
+        .Add(new OcrPdfTool(policy));
 
     internal static readonly JsonSerializerOptions Json = new()
     {
@@ -44,12 +49,15 @@ public abstract class PdfTool(PathPolicy policy) : IWashiTool
 
     public async Task<ToolResult> InvokeAsync(JsonElement arguments, CancellationToken cancellationToken = default)
     {
-        await PdfiumDocument.Gate.WaitAsync(cancellationToken);
+        bool locked = HoldsPdfiumLock;
+        if (locked) await PdfiumDocument.Gate.WaitAsync(cancellationToken);
         try
         {
-            return Run(arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement);
+            return await RunAsync(arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement, cancellationToken);
         }
         catch (ToolException e) { return ToolResult.Error(e.Message); }
+        catch (PageAssemblyException e) { return ToolResult.Error(e.Message); }
+        catch (OcrException e) { return ToolResult.Error(e.Message); }
         catch (FontNotUsableException e) when (e.Reason == "license")
         {
             return ToolResult.Error($"the font's licence does not allow embedding it in an editable PDF (OS/2 fsType 0x{e.FsType:X4}); choose another font");
@@ -65,11 +73,16 @@ public abstract class PdfTool(PathPolicy policy) : IWashiTool
         }
         finally
         {
-            PdfiumDocument.Gate.Release();
+            if (locked) PdfiumDocument.Gate.Release();
         }
     }
 
-    protected abstract ToolResult Run(JsonElement a);
+    /// <summary>False for tools that take the PDFium lock themselves around shorter sections (long OCR runs).</summary>
+    protected virtual bool HoldsPdfiumLock => true;
+
+    protected virtual Task<ToolResult> RunAsync(JsonElement a, CancellationToken ct) => Task.FromResult(Run(a));
+
+    protected virtual ToolResult Run(JsonElement a) => throw new NotSupportedException();
 
     protected static string Str(JsonElement a, string key) =>
         a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String && v.GetString() is { Length: > 0 } s
@@ -133,7 +146,7 @@ public sealed class ExtractTextTool(PathPolicy p) : PdfTool(p)
     public override string Name => "extract_text";
     public override ToolRisk Risk => ToolRisk.ReadOnly;
     public override string Description =>
-        "Text of a PDF, page by page. Garbled output means the PDF's fonts have no Unicode mapping: use render_page and read the image instead.";
+        "Text of a PDF, page by page. Empty or garbled output means a scan or fonts without a Unicode mapping: run ocr_pdf (on-device OCR) or read render_page images instead.";
     protected override string Schema => """
         {"type":"object","properties":{
           "path":{"type":"string","description":"PDF file"},
@@ -392,4 +405,126 @@ public sealed class FillFieldsTool(PathPolicy p) : PdfTool(p)
             hint = r.UnknownNames.Count > 0 ? "call list_fields for the exact names" : null,
         }), IsError: r.Filled == 0 && values.Count > 0);
     }
+}
+
+// ---------------------------------------------------------------------- pages and OCR
+public sealed class MergePdfsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "merge_pdfs";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW PDF with all pages of the given PDFs in order. Form fields are kept and stay fillable; fields whose names " +
+        "would clash get a suffix (_2, _3). Files whose permissions forbid reusing pages are refused. " +
+        "Never overwrites: output defaults to <first name>_merged.pdf and must not exist.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "paths":{"type":"array","items":{"type":"string"},"minItems":2,"description":"PDF files, in order"},
+          "output":{"type":"string","description":"New PDF path (default: <first name>_merged.pdf next to the first input)"}},
+         "required":["paths"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        if (!a.TryGetProperty("paths", out var arr) || arr.ValueKind != JsonValueKind.Array || arr.GetArrayLength() < 2)
+            throw new ToolException("'paths' must list at least two PDF files");
+        var inputs = arr.EnumerateArray().Select(x => Policy.Input(x.GetString() ?? "")).ToList();
+        var output = Policy.Output(OptStr(a, "output"), inputs[0], "_merged");
+        int pages = PageAssembly.Merge(inputs, output);
+        return new ToolResult(ToJson(new { output, pages, form_fields = AcroFormFields.List(output).Count }));
+    }
+}
+
+public sealed class SplitPdfTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "split_pdf";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes NEW PDFs, one per page range (\"1-3,5\" makes two files; \"each\" one file per page), named <name>_p1-3.pdf etc. " +
+        "in output_dir (default <name>_split next to the input; created if missing). Form fields on the copied pages are kept. " +
+        "Never overwrites existing files.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "pages":{"type":"string","description":"Ranges, e.g. \"1-3,5\", or \"each\" (default)"},
+          "output_dir":{"type":"string","description":"Folder for the parts (default <name>_split next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var dir = Policy.OutputFolder(OptStr(a, "output_dir"), path, "_split");
+        var ranges = PageAssembly.ParseRanges(OptStr(a, "pages"), PageAssembly.PageCount(path));
+        var parts = PageAssembly.Split(path, ranges, dir);
+        return new ToolResult(ToJson(new
+        {
+            output_dir = dir,
+            files = parts.Select(x => new { path = x.Path, first_page = x.FirstPage, last_page = x.LastPage }),
+        }));
+    }
+}
+
+public sealed class OcrPdfTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "ocr_pdf";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "On-device OCR (Apple Vision on macOS, else Tesseract): recognises pages that have no readable text and writes a NEW " +
+        "searchable PDF (an invisible text layer; the page image is unchanged). Returns the recognised text per page. " +
+        "Pages that already have text are skipped unless force is true. Nothing leaves the machine. " +
+        "Never overwrites: output defaults to <name>_ocr.pdf and must not exist. Takes a few seconds per page.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file (a scan, or a PDF whose text is garbled)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_ocr.pdf next to the input)"},
+          "engine":{"type":"string","enum":["auto","vision","tesseract"],"description":"OCR engine (default auto)"},
+          "lang":{"type":"string","description":"Languages, comma-separated: ja, zh-Hans, zh-Hant, ko, en, fr, de (default: the engine detects)"},
+          "pages":{"type":"string","description":"1-based pages, e.g. \"1-3,5\". Default: all"},
+          "force":{"type":"boolean","description":"Also recognise pages that already have text (default false)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    // OCR takes seconds per page: PDFium is locked only while pages are rendered, not while they are read.
+    protected override bool HoldsPdfiumLock => false;
+
+    protected override async Task<ToolResult> RunAsync(JsonElement a, CancellationToken ct)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var output = Policy.Output(OptStr(a, "output"), path, "_ocr");
+        var options = new OcrOptions
+        {
+            Languages = OcrLanguages.Parse(OptStr(a, "lang")),
+            Force = a.TryGetProperty("force", out var f) && f.ValueKind == JsonValueKind.True,
+            Pages = OptStr(a, "pages") is { Length: > 0 } spec
+                ? PageAssembly.ParseRanges(spec, PageAssembly.PageCount(path)).SelectMany(r => Enumerable.Range(r.From, r.To - r.From + 1)).ToHashSet()
+                : null,
+        };
+        var engine = OcrEngines.Create(OptStr(a, "engine") ?? "auto");
+        var r = await OcrPipeline.RunAsync(path, output, engine, options, ct: ct);
+        const int MaxChars = 30000;
+        int budget = MaxChars;
+        return new ToolResult(ToJson(new
+        {
+            output = r.Output,
+            engine = r.Engine,
+            pages_recognized = r.Recognized,
+            missing_languages = engine is TesseractOcr { Missing.Count: > 0 } t ? t.Missing : null,
+            pages = r.Pages.Where(x => x.Status != OcrPageStatus.NotSelected).Select(x =>
+            {
+                var text = x.Text;
+                if (text.Length > budget) text = text[..Math.Max(0, budget)] + "…(truncated; use extract_text on the output)";
+                budget -= text.Length;
+                return new { page = x.Page, status = Snake(x.Status), text = x.Status == OcrPageStatus.Recognized ? text : null };
+            }),
+            note = r.Output is null ? "no page needed OCR, so no file was written (set force to recognise pages that have text)" : null,
+        }));
+    }
+
+    private static string Snake(OcrPageStatus s) => s switch
+    {
+        OcrPageStatus.Recognized => "recognized",
+        OcrPageStatus.HasText => "has_text",
+        OcrPageStatus.AlreadySearchable => "already_searchable",
+        _ => "not_selected",
+    };
 }

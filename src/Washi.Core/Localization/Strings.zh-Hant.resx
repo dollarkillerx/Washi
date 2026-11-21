@@ -107,4 +107,18 @@
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>分格</value></data>
   <data name="Kind_checkbox" xml:space="preserve"><value>核取方塊</value></data>
+  <data name="UsagePdf" xml:space="preserve"><value>頁面與 OCR：
+  washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      合併檔案（保留表單欄位）
+  washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
+  washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
+                                          讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）</value></data>
+  <data name="Pdf_Merged" xml:space="preserve"><value>已將 {0} 個檔案合併為 {1}：{2} 頁，{3} 個表單欄位</value></data>
+  <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  （第 {1}-{2} 頁）</value></data>
+  <data name="Pdf_Failed" xml:space="preserve"><value>washi：{0}</value></data>
+  <data name="Ocr_Engine" xml:space="preserve"><value>使用 {0} 進行 OCR：需辨識 {1} 頁</value></data>
+  <data name="Ocr_Progress" xml:space="preserve"><value>  已完成 {0}/{1} 頁</value></data>
+  <data name="Ocr_Done" xml:space="preserve"><value>已讓 {0} 頁可以搜尋：{1}</value></data>
+  <data name="Ocr_Nothing" xml:space="preserve"><value>沒有需要 OCR 的頁面：每頁都已有文字或 Washi 文字層（如仍要辨識，請加 --force）。</value></data>
+  <data name="Ocr_TextWritten" xml:space="preserve"><value>辨識出的文字：{0}</value></data>
+  <data name="Ocr_MissingLangs" xml:space="preserve"><value>tesseract：以下語言未安裝，已略過：{0}（macOS：brew install tesseract-lang）</value></data>
 </root>

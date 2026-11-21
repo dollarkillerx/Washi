@@ -68,6 +68,18 @@ public sealed class PathPolicy
         return full;
     }
 
+    /// <summary>A folder to write new files into: inside the allowed folders; created if missing.</summary>
+    public string OutputFolder(string? path, string input, string suffix)
+    {
+        var target = string.IsNullOrWhiteSpace(path)
+            ? Path.Combine(Path.GetDirectoryName(input)!, Path.GetFileNameWithoutExtension(input) + suffix)
+            : path;
+        var full = Resolve(target);
+        if (!Inside(full, Roots)) throw new ToolException($"{target} is outside the folders Washi may use ({string.Join(", ", Roots)})");
+        if (File.Exists(full)) throw new ToolException($"{target} is a file, not a folder");
+        return full;
+    }
+
     private string Resolve(string path)
     {
         if (string.IsNullOrWhiteSpace(path)) throw new ToolException("path is empty");

@@ -20,23 +20,29 @@ try
         ["masume", "eval", var pdf, .. var rest] => Eval(pdf, Options(rest)),
         ["form", "make", var pdf, .. var rest] => MakeForm(pdf, Options(rest)),
         ["ai", .. var rest] => AiCommands.Run(rest).GetAwaiter().GetResult(),
+        ["pdf", .. var rest] => PageCommands.Pdf(rest),
+        ["ocr", .. var rest] => PageCommands.Ocr(rest).GetAwaiter().GetResult(),
         _ => Usage(),
     };
 }
 catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("owner password", StringComparison.OrdinalIgnoreCase))
 {
-    Console.Error.WriteLine(L.F("ProtectedPdf", args.Length > 2 ? args[2] : "?"));
+    Console.Error.WriteLine(L.F("ProtectedPdf", FileArg()));
     return 1;
 }
 catch (Exception e) when (e is IOException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException or UnauthorizedAccessException)
 {
-    Console.Error.WriteLine(L.F("OpenFailed", args.Length > 2 ? args[2] : "?", e.Message));
+    Console.Error.WriteLine(L.F("OpenFailed", FileArg(), e.Message));
     return 1;
 }
+
+string FileArg() => args.FirstOrDefault(a => a.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) ?? "?";
 
 int Usage()
 {
     Console.Error.WriteLine(L.F("Usage", version!));
+    Console.Error.WriteLine();
+    Console.Error.WriteLine(L.Get("UsagePdf"));
     Console.Error.WriteLine();
     Console.Error.WriteLine(L.Get("UsageAi"));
     return args.Length == 0 ? 0 : 2;
