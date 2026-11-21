@@ -166,6 +166,29 @@ public class MasumeDetectorTests
             .Snapshot(Ch("税", 90, 16), Ch("務", 98, 16), Ch("署", 106, 16), Ch("長", 114, 16))));
     }
 
+    /// <summary>A right-aligned number ending at x = 48 on the line at y (a wage-bracket table cell, 6 pt digits).</summary>
+    private static IEnumerable<PdfChar> Flush(string s, double y) => s.Select((ch, i) => Ch(ch.ToString(), 48 - 6 * (s.Length - i), y, 6));
+
+    [Fact]
+    public void A_column_of_printed_values_is_a_table_not_a_field()
+    {
+        // four lines: before, the right-aligned stack read as "＿税務署長" and the whole cell became a field
+        var four = new[] { "$375", "$385", "$395", "$405" }.SelectMany((v, i) => Flush(v, 12 + 10 * i)).ToArray();
+        Assert.Empty(MasumeDetector.Detect(new Canvas(600, 400).Rect(10, 10, 50, 56).Snapshot(four)));
+        // three short lines: before, the empty left part became a field ("a few marks scattered")
+        var three = new[] { "$0", "$1", "$3" }.SelectMany((v, i) => Flush(v, 12 + 10 * i)).ToArray();
+        Assert.Empty(MasumeDetector.Detect(new Canvas(600, 400).Rect(10, 10, 50, 46).Snapshot(three)));
+    }
+
+    [Fact]
+    public void Marks_on_two_lines_that_do_not_end_together_still_leave_a_field()
+    {
+        // "3＋4" mid-cell and the row number "5" in the bottom-right corner (国税庁 総額 cell): a real blank
+        var c = new Canvas(600, 400).Rect(10, 10, 86, 48);
+        var f = Assert.Single(MasumeDetector.Detect(c.Snapshot(Ch("3", 36, 22), Ch("＋", 44, 22), Ch("4", 52, 22), Ch("5", 77, 38))));
+        Assert.Equal(FieldKind.Text, f.Kind);
+    }
+
     [Fact]
     public void Small_square_cell_is_a_checkbox()
     {

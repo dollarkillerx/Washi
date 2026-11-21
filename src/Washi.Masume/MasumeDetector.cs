@@ -169,6 +169,14 @@ public static class MasumeDetector
                     sub = new PdfRect(r.X0, lab.Y1 + 0.5, r.X1, r.Y1);          // B: note along the top
                 else if (lab.Y0 >= r.Y0 + 0.55 * h && lab.Y0 - r.Y0 >= 8)
                     sub = new PdfRect(r.X0, r.Y0, r.X1, lab.Y0 - 0.5);          // C: note along the bottom
+                else if (ValueColumn(c.LabelChars))
+                {
+                    // printed values stacked flush right ($375 / $385 / $395 in a wage-bracket table): a table of
+                    // data, not a blank with marks, so D and E below must not turn the cell into a field
+                    c.Kind = "label";
+                    c.Text = JoinText(c.LabelChars);
+                    continue;
+                }
                 else if (c.Boxes.Count == 0 && lab.X0 - r.X0 >= 0.25 * w && r.X1 - lab.X1 <= 0.2 * w && h >= 7)
                     sub = r;                                                    // D: ＿年＿月＿日 / ＿税務署長
                 else if (c.Boxes.Count == 0 && c.LabelChars.Count <= 6 && h >= 7)
@@ -368,6 +376,30 @@ public static class MasumeDetector
                 if (++ink >= MinUnmappedInk) return true;
             }
         return false;
+    }
+
+    /// <summary>The chars grouped into text lines: chars whose vertical centres are within half a glyph share one.</summary>
+    internal static List<List<PdfChar>> Lines(IReadOnlyList<PdfChar> chars)
+    {
+        var lines = new List<List<PdfChar>>();
+        foreach (var ch in chars.OrderBy(c => c.Rect.Center.Y))
+        {
+            var last = lines.Count > 0 ? lines[^1][0].Rect : default;
+            if (lines.Count > 0 && Math.Abs(ch.Rect.Center.Y - last.Center.Y) < 0.5 * Math.Max(Math.Max(ch.Rect.Height, last.Height), 1))
+                lines[^1].Add(ch);
+            else
+                lines.Add([ch]);
+        }
+        return lines;
+    }
+
+    /// <summary>Two or more lines that end at the same x: a right-aligned column of printed values.</summary>
+    internal static bool ValueColumn(IReadOnlyList<PdfChar> chars)
+    {
+        var lines = Lines(chars);
+        if (lines.Count < 2) return false;
+        var ends = lines.Select(l => l.Max(c => c.Rect.X1)).ToList();
+        return ends.Max() - ends.Min() < 1.5;
     }
 
     private static string JoinText(IEnumerable<PdfChar> chars) =>
