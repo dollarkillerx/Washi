@@ -25,6 +25,8 @@ public static class MasumeDetector
     private const int InkLum = 210;      // graphics raster: darker = ink
     private const int MaxTickPx = 6;     // 1.5 pt at Scale: wider ink is a shape, not a divider line
     private const int ShadedLum = 238;   // cell interior median darker = shaded, not for input
+    private const int CoreLum = 150;     // ink pixels this dark carry the ink's own colour, not anti-aliasing
+    private const double SameInk = 0.2;  // InkDirection distance below this: the same ink, only lighter or darker
 
     private sealed class Cell(PdfRect rect)
     {
@@ -35,6 +37,7 @@ public static class MasumeDetector
         public bool Shaded;
         public bool GraphicFill;
         public bool GraphicLabel;
+        public bool FormInk;
         public string Kind = "?";
         public string Text = "";
     }
@@ -49,6 +52,8 @@ public static class MasumeDetector
         var g = new Gray(page.GraphicsOnly.ToGray(), page.GraphicsOnly.Width, page.GraphicsOnly.Height);
         var full = new Gray(page.Full.ToGray(), page.Full.Width, page.Full.Height);
         var (labels, data, labelCol) = SplitLabelData(page.Chars);
+        // the form's own ink: its text colour, or, when every word is drawn as outlines, the page's commonest ink
+        var formInk = page.Chars.Count > 0 ? InkDirection(labelCol) : DominantInk(g, page.GraphicsOnly);
         bool readable = Readable(string.Concat(page.Chars.Select(c => c.Text)));
         int pno = page.PageIndex;
 
@@ -75,6 +80,10 @@ public static class MasumeDetector
             cell.GraphicFill = innerInk > 0.02;
             // drawn glyphs in the form's own colour are labels (row numbers, headings)
             cell.GraphicLabel = cell.GraphicFill && inkCol is { } ic && ColorDistance(ic, labelCol) < 0.3;
+            // the same test, but blind to how dark the ink looks: thin outlined glyphs come out grey once
+            // anti-aliased, so a black heading reads as (0.25, 0.25, 0.25) and must still count as the form's own
+            cell.FormInk = cell.GraphicFill && inkCol is { } fc && InkDirection(fc) is { } d && formInk is { } fd
+                           && Distance(d, fd) < SameInk;
             cells.Add(cell);
         }
 
@@ -121,7 +130,7 @@ public static class MasumeDetector
             var c = cells[i];
             var r = c.Rect;
             var pre = JoinText(c.DataChars);
-            if (pre.Length == 0 && c.GraphicFill && CountTicks(g, r) == 0) pre = DrawnMarker;
+            if (pre.Length == 0 && c.GraphicFill && !c.FormInk && CountTicks(g, r) == 0) pre = DrawnMarker;
             if (c.Shaded) { c.Kind = "shaded"; continue; }
             if (c.GraphicLabel && c.DataChars.Count == 0 && CountTicks(g, r) == 0) { c.Kind = "label"; continue; }
 
@@ -287,6 +296,39 @@ public static class MasumeDetector
     private static double ColorDistance((double R, double G, double B) a, (double R, double G, double B) b) =>
         Math.Sqrt((a.R - b.R) * (a.R - b.R) + (a.G - b.G) * (a.G - b.G) + (a.B - b.B) * (a.B - b.B));
 
+    private static double Distance((double X, double Y, double Z) a, (double X, double Y, double Z) b) =>
+        Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y) + (a.Z - b.Z) * (a.Z - b.Z));
+
+    /// <summary>
+    /// The hue of an ink, whatever its strength: how much of each channel it takes away from white, scaled to unit
+    /// length. Black, a grey anti-aliased black stroke and a 60% tint all point the same way; red or blue does not.
+    /// Null for (near) white.
+    /// </summary>
+    private static (double X, double Y, double Z)? InkDirection((double R, double G, double B) c)
+    {
+        double x = 1 - c.R, y = 1 - c.G, z = 1 - c.B, n = Math.Sqrt(x * x + y * y + z * z);
+        return n < 0.05 ? null : (x / n, y / n, z / n);
+    }
+
+    /// <summary>The commonest ink hue on the page (rulings and outlined headings): the form's own colour.</summary>
+    private static (double X, double Y, double Z)? DominantInk(Gray g, RgbImage rgb)
+    {
+        var bins = new Dictionary<int, (long N, double X, double Y, double Z)>();
+        var px = rgb.Pixels;
+        for (int i = 0; i < g.Px.Length; i++)
+        {
+            if (g.Px[i] >= CoreLum) continue;
+            if (InkDirection((px[i * 3] / 255.0, px[i * 3 + 1] / 255.0, px[i * 3 + 2] / 255.0)) is not { } d) continue;
+            int key = (int)Math.Round(d.X * 10) * 400 + (int)Math.Round(d.Y * 10) * 20 + (int)Math.Round(d.Z * 10);
+            var b = bins.GetValueOrDefault(key);
+            bins[key] = (b.N + 1, b.X + d.X, b.Y + d.Y, b.Z + d.Z);
+        }
+        if (bins.Count == 0) return null;
+        var top = bins.Values.MaxBy(b => b.N);
+        double n = Math.Sqrt(top.X * top.X + top.Y * top.Y + top.Z * top.Z);
+        return (top.X / n, top.Y / n, top.Z / n);
+    }
+
     /// <summary>Dominant colour = form labels. A clearly different colour = prefilled data.</summary>
     private static (List<PdfChar> Labels, List<PdfChar> Data, (double, double, double) LabelColor) SplitLabelData(IReadOnlyList<PdfChar> chars)
     {
@@ -424,7 +466,7 @@ public static class MasumeDetector
             double innerInk = holeCount / (double)solid;
             (double, double, double)? col = null;
             if (holeCount > 0)
-                col = MeanColor(150) ?? MeanColor(InkLum);
+                col = MeanColor(CoreLum) ?? MeanColor(InkLum);
             cells.Add((new PdfRect((c.X0 - 1) / Scale, (c.Y0 - 1) / Scale, (c.X1 + 1) / Scale, (c.Y1 + 1) / Scale), innerInk, col));
 
             // core pixels only: anti-aliased edges wash the colour out
