@@ -24,6 +24,11 @@ public sealed partial class AssistantChatItem : ChatItem
     [ObservableProperty] private string _text = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(HasThinking))] private string _thinking = "";
     public bool HasThinking => Thinking.Length > 0;
+
+    /// <summary>Reasoning stays folded behind a small toggle (after MySSH); the answer is what the user reads.</summary>
+    [ObservableProperty] private bool _isThinkingExpanded;
+
+    [RelayCommand] private void ToggleThinking() => IsThinkingExpanded = !IsThinkingExpanded;
 }
 
 public sealed partial class ToolChatItem(string id, string name) : ChatItem
