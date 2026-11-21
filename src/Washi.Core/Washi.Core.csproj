@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="PDFiumCore" Version="157.0.8100" />
+  </ItemGroup>
+
 </Project>
