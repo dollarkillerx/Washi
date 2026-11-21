@@ -44,6 +44,81 @@ public sealed class PdfiumDocument : IDisposable
 
     public int PageCount => fpdfview.FPDF_GetPageCount(_doc);
 
+    /// <summary>True when the file is encrypted (it may still open with an empty user password).</summary>
+    public bool IsEncrypted => fpdfview.FPDF_GetSecurityHandlerRevision(_doc) != -1;
+
+    /// <summary>One process-wide lock: PDFium must never run on two threads at once.</summary>
+    public static readonly SemaphoreSlim Gate = new(1, 1);
+
+    public readonly record struct PageInfo(double Width, double Height, int Rotation);
+
+    /// <summary>Upright size in points (rotation applied) and the page's /Rotate in degrees.</summary>
+    public PageInfo GetPageInfo(int pageIndex)
+    {
+        var page = fpdfview.FPDF_LoadPage(_doc, pageIndex);
+        try
+        {
+            return new PageInfo(fpdfview.FPDF_GetPageWidthF(page), fpdfview.FPDF_GetPageHeightF(page),
+                                fpdf_edit.FPDFPageGetRotation(page) * 90);
+        }
+        finally
+        {
+            fpdfview.FPDF_ClosePage(page);
+        }
+    }
+
+    /// <summary>The page text in reading order as PDFium sees it, with line breaks.</summary>
+    public string GetPageText(int pageIndex)
+    {
+        var page = fpdfview.FPDF_LoadPage(_doc, pageIndex);
+        var tp = fpdf_text.FPDFTextLoadPage(page);
+        try
+        {
+            int n = fpdf_text.FPDFTextCountChars(tp);
+            var sb = new System.Text.StringBuilder(n);
+            for (int i = 0; i < n; i++)
+            {
+                uint u = fpdf_text.FPDFTextGetUnicode(tp, i);
+                if (u == 0 || u == 0xFFFE || u == 0xFFFF || u > 0x10FFFF || u is >= 0xD800 and <= 0xDFFF) continue;
+                sb.Append(char.ConvertFromUtf32((int)u));
+            }
+            return sb.ToString().Replace("\r\n", "\n");
+        }
+        finally
+        {
+            fpdf_text.FPDFTextClosePage(tp);
+            fpdfview.FPDF_ClosePage(page);
+        }
+    }
+
+    private FPDF_FORMFILLINFO? _formInfo;   // kept alive as long as the form handle
+    private FpdfFormHandleT? _form;
+
+    /// <summary>Renders the page as the user sees it, including form fields and other annotations.</summary>
+    public RgbImage RenderPage(int pageIndex, double scale)
+    {
+        if (_form is null)
+        {
+            _formInfo = new FPDF_FORMFILLINFO { Version = 2 };
+            _form = fpdf_formfill.FPDFDOC_InitFormFillEnvironment(_doc, _formInfo);
+        }
+        var page = fpdfview.FPDF_LoadPage(_doc, pageIndex);
+        fpdf_formfill.FORM_OnAfterLoadPage(page, _form);
+        try
+        {
+            // widgets are drawn by the form layer (FFLDraw), other annotations by the page renderer
+            return Render(page, fpdfview.FPDF_GetPageWidthF(page), fpdfview.FPDF_GetPageHeightF(page), scale, FlagAnnotations,
+                          (bmp, pw, ph) => fpdf_formfill.FPDF_FFLDraw(_form, bmp, page, 0, 0, pw, ph, 0, FlagAnnotations));
+        }
+        finally
+        {
+            fpdf_formfill.FORM_OnBeforeClosePage(page, _form);
+            fpdfview.FPDF_ClosePage(page);
+        }
+    }
+
+    private const int FlagAnnotations = 0x01;   // FPDF_ANNOT
+
     /// <summary>
     /// Collects the text layer, a full render and a graphics-only render (all text objects
     /// removed in memory, so lines drawn as paths or as tiny images both survive). Page
@@ -170,14 +245,16 @@ public sealed class PdfiumDocument : IDisposable
         }
     }
 
-    private static RgbImage Render(FpdfPageT page, double w, double h, double scale)
+    private static RgbImage Render(FpdfPageT page, double w, double h, double scale, int flags = 0,
+                                   Action<FpdfBitmapT, int, int>? drawOver = null)
     {
         int pw = (int)Math.Round(w * scale), ph = (int)Math.Round(h * scale);
         var bmp = fpdfview.FPDFBitmapCreate(pw, ph, 0);
         try
         {
             fpdfview.FPDFBitmapFillRect(bmp, 0, 0, pw, ph, 0xFFFFFFFF);
-            fpdfview.FPDF_RenderPageBitmap(bmp, page, 0, 0, pw, ph, 0, 0);
+            fpdfview.FPDF_RenderPageBitmap(bmp, page, 0, 0, pw, ph, 0, flags);
+            drawOver?.Invoke(bmp, pw, ph);
             int stride = fpdfview.FPDFBitmapGetStride(bmp);
             var src = new byte[stride * ph];
             Marshal.Copy(fpdfview.FPDFBitmapGetBuffer(bmp), src, 0, src.Length);
@@ -223,6 +300,7 @@ public sealed class PdfiumDocument : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        if (_form is not null) fpdf_formfill.FPDFDOC_ExitFormFillEnvironment(_form);
         fpdfview.FPDF_CloseDocument(_doc);
     }
 }

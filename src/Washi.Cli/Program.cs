@@ -113,9 +113,8 @@ static int Eval(string pdf, Dictionary<string, string> opt)
 
 static int MakeForm(string pdf, Dictionary<string, string> opt)
 {
-    string[] allowed = ["auto", "ja", "zh-Hans", "zh-Hant", "ko", "en", "fr", "de"];
     var lang = opt.GetValueOrDefault("--lang", "auto");
-    if (!allowed.Contains(lang, StringComparer.OrdinalIgnoreCase))
+    if (!Washi.Tools.FormPipeline.Languages.Contains(lang, StringComparer.OrdinalIgnoreCase))
     {
         Console.Error.WriteLine(L.F("UnknownLanguage", lang));
         return 2;
@@ -145,23 +144,13 @@ static int MakeForm(string pdf, Dictionary<string, string> opt)
         text = sb.ToString();
     }
 
-    FormScript script;
-    string source;
-    if (!lang.Equals("auto", StringComparison.OrdinalIgnoreCase))
+    var (script, from) = Washi.Tools.FormPipeline.ChooseScript(lang, text, L.Culture);
+    string source = L.Get(from switch
     {
-        script = FormScripts.FromLanguage(lang);
-        source = L.Get("LangFromOption");
-    }
-    else if (MasumeDetector.Readable(text) && FormScripts.Detect(text) is { } detected)
-    {
-        script = detected;
-        source = L.Get("LangFromText");
-    }
-    else
-    {
-        script = FormScripts.FromCulture(L.Culture);
-        source = L.Get("LangFromSystem");
-    }
+        Washi.Tools.FormPipeline.ScriptSource.Option => "LangFromOption",
+        Washi.Tools.FormPipeline.ScriptSource.PageText => "LangFromText",
+        _ => "LangFromSystem",
+    });
 
     Washi.Core.Fonts.OpenTypeFont? font = null;
     if (opt.TryGetValue("--embed-font", out var fontPath))

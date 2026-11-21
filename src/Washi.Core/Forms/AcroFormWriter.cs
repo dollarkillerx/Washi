@@ -33,7 +33,7 @@ public static class AcroFormWriter
 
     private static readonly Dictionary<FormScript, FontSpec> CidFonts = new()
     {
-        [FormScript.Japanese] = new("KozMin", "KozMinPr6N-Regular", "UniJIS-UTF16-H", "Japan1", 6, "1 230 500"),
+        [FormScript.Japanese] = new("KozMin", "KozMinPr6N-Regular", "UniJIS-UTF16-H", "Japan1", 6, "1 632 500"),
         [FormScript.ChineseSimplified] = new("STSong", "STSong-Light", "UniGB-UTF16-H", "GB1", 4, "1 95 500"),
         [FormScript.ChineseTraditional] = new("MSung", "MSung-Light", "UniCNS-UTF16-H", "CNS1", 4, "1 95 500"),
         [FormScript.Korean] = new("HYSMyeongJo", "HYSMyeongJo-Medium", "UniKS-UTF16-H", "Korea1", 2, "1 95 500"),

@@ -1,0 +1,395 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using System.Globalization;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using Washi.Core;
+using Washi.Core.Fonts;
+using Washi.Core.Forms;
+using Washi.Core.Localization;
+using Washi.Core.Pdfium;
+using Washi.Masume;
+
+namespace Washi.Tools;
+
+public static class WashiTools
+{
+    /// <summary>Every PDF tool, bound to one folder policy.</summary>
+    public static ToolRegistry CreateRegistry(PathPolicy policy) => new ToolRegistry()
+        .Add(new PdfInfoTool(policy))
+        .Add(new ExtractTextTool(policy))
+        .Add(new RenderPageTool(policy))
+        .Add(new ListFieldsTool(policy))
+        .Add(new DetectFieldsTool(policy))
+        .Add(new MakeFillableTool(policy))
+        .Add(new FillFieldsTool(policy));
+
+    internal static readonly JsonSerializerOptions Json = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,   // keep 燁 readable for the model
+        WriteIndented = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
+}
+
+/// <summary>Shared plumbing: argument parsing, the PDFium lock, error mapping.</summary>
+public abstract class PdfTool(PathPolicy policy) : IWashiTool
+{
+    protected PathPolicy Policy { get; } = policy;
+    public abstract string Name { get; }
+    public abstract string Description { get; }
+    public abstract ToolRisk Risk { get; }
+    protected abstract string Schema { get; }
+    public JsonElement InputSchema => JsonDocument.Parse(Schema).RootElement.Clone();
+
+    public async Task<ToolResult> InvokeAsync(JsonElement arguments, CancellationToken cancellationToken = default)
+    {
+        await PdfiumDocument.Gate.WaitAsync(cancellationToken);
+        try
+        {
+            return Run(arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement);
+        }
+        catch (ToolException e) { return ToolResult.Error(e.Message); }
+        catch (FontNotUsableException e) when (e.Reason == "license")
+        {
+            return ToolResult.Error($"the font's licence does not allow embedding it in an editable PDF (OS/2 fsType 0x{e.FsType:X4}); choose another font");
+        }
+        catch (FontNotUsableException) { return ToolResult.Error("the font cannot be embedded: use a static TrueType/OpenType font (.ttf, .otf, .ttc)"); }
+        catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("owner password", StringComparison.OrdinalIgnoreCase))
+        {
+            return ToolResult.Error("the PDF is protected against changes (owner password); Washi does not remove protection");
+        }
+        catch (Exception e) when (e is IOException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException or UnauthorizedAccessException)
+        {
+            return ToolResult.Error($"could not process the PDF: {e.Message}");
+        }
+        finally
+        {
+            PdfiumDocument.Gate.Release();
+        }
+    }
+
+    protected abstract ToolResult Run(JsonElement a);
+
+    protected static string Str(JsonElement a, string key) =>
+        a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String && v.GetString() is { Length: > 0 } s
+            ? s : throw new ToolException($"'{key}' is required");
+
+    protected static string? OptStr(JsonElement a, string key) =>
+        a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    protected static double? OptNum(JsonElement a, string key) =>
+        a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : null;
+
+    protected static string ToJson(object o) => JsonSerializer.Serialize(o, WashiTools.Json);
+
+    protected OpenTypeFont? FontArg(JsonElement a) =>
+        OptStr(a, "embed_font") is { } f ? OpenTypeFont.Load(Policy.Font(f), (int)(OptNum(a, "font_index") ?? 0)) : null;
+
+    protected static object Rect(PdfRect r) => new[] { Math.Round(r.X0, 1), Math.Round(r.Y0, 1), Math.Round(r.X1, 1), Math.Round(r.Y1, 1) };
+}
+
+// ---------------------------------------------------------------------- read-only
+
+public sealed class PdfInfoTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "pdf_info";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Overview of a PDF: page count and sizes (points, upright), rotation, encryption, number of existing form fields, " +
+        "whether the text layer is readable and which writing system it uses. Start here.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        using var doc = PdfiumDocument.Open(path);
+        var sizes = Enumerable.Range(0, doc.PageCount).Select(i =>
+        {
+            var info = doc.GetPageInfo(i);
+            return new { page = i + 1, width_pt = Math.Round(info.Width, 1), height_pt = Math.Round(info.Height, 1), rotation = info.Rotation };
+        }).ToList();
+        var text = string.Concat(Enumerable.Range(0, Math.Min(3, doc.PageCount)).Select(doc.GetPageText));
+        int fields;
+        try { fields = AcroFormFields.List(path).Count; } catch (Exception) { fields = -1; }
+        bool readable = MasumeDetector.Readable(text);
+        return new ToolResult(ToJson(new
+        {
+            file = path,
+            pages = doc.PageCount,
+            encrypted = doc.IsEncrypted,
+            page_sizes = sizes,
+            form_fields = fields,
+            text_readable = readable,
+            text_language = readable && FormScripts.Detect(text) is { } s ? FormScripts.LanguageTag(s) : null,
+        }));
+    }
+}
+
+public sealed class ExtractTextTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "extract_text";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Text of a PDF, page by page. Garbled output means the PDF's fonts have no Unicode mapping: use render_page and read the image instead.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "pages":{"type":"string","description":"1-based pages, e.g. \"1-3,5\". Default: all"},
+          "max_chars":{"type":"integer","description":"Stop after this many characters (default 40000)","minimum":100,"maximum":200000}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        int max = (int)Math.Clamp(OptNum(a, "max_chars") ?? 40000, 100, 200000);
+        using var doc = PdfiumDocument.Open(path);
+        var pages = FormPipeline.ParsePages(OptStr(a, "pages"), doc.PageCount);
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < doc.PageCount && sb.Length < max; i++)
+        {
+            if (pages is not null && !pages.Contains(i)) continue;
+            sb.Append("=== page ").Append(i + 1).Append(" ===\n").Append(doc.GetPageText(i).Trim()).Append("\n\n");
+        }
+        var text = sb.ToString();
+        if (text.Length > max) text = text[..max] + $"\n[truncated at {max} characters]";
+        if (!MasumeDetector.Readable(text)) text += "\n[note: this text looks garbled; the PDF's fonts have no Unicode mapping. Use render_page.]";
+        return new ToolResult(text);
+    }
+}
+
+public sealed class RenderPageTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "render_page";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Renders one page as a PNG image, form fields and their values included. Use it to read scanned or garbled pages and to check a filled form.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "page":{"type":"integer","description":"1-based page number","minimum":1},
+          "dpi":{"type":"number","description":"Resolution, 36-200 (default 110)","minimum":36,"maximum":200}},
+         "required":["path","page"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        int page = (int)(OptNum(a, "page") ?? throw new ToolException("'page' is required"));
+        double dpi = Math.Clamp(OptNum(a, "dpi") ?? 110, 36, 200);
+        using var doc = PdfiumDocument.Open(path);
+        if (page < 1 || page > doc.PageCount) throw new ToolException($"page must be 1-{doc.PageCount}");
+        var info = doc.GetPageInfo(page - 1);
+        double scale = Math.Min(dpi / 72, 4000 / Math.Max(info.Width, info.Height));
+        var img = doc.RenderPage(page - 1, scale);
+        using var ms = new MemoryStream();
+        PngWriter.Write(img, ms);
+        return new ToolResult($"page {page} of {doc.PageCount}, {img.Width}x{img.Height} px ({Math.Round(scale * 72)} dpi)",
+                              [new ToolImage("image/png", ms.ToArray())]);
+    }
+}
+
+public sealed class ListFieldsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_fields";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Form fields already in a PDF: full name, type (text, checkbox, radio, choice, signature, button), current value, page (1-based), " +
+        "rect [x0,y0,x1,y1] in points from the top-left of the upright page, max_len/comb for boxed digits, options or checkbox states, tooltip. " +
+        "Call this before fill_fields to learn the names.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var fields = AcroFormFields.List(path);
+        if (fields.Count == 0)
+            return new ToolResult("this PDF has no form fields; use detect_fields / make_fillable to add them");
+        return new ToolResult(ToJson(fields.Select(f => new
+        {
+            name = f.Name,
+            type = f.Type,
+            value = f.Value,
+            page = f.Page + 1,
+            rect = Rect(f.Rect),
+            max_len = f.MaxLen > 0 ? f.MaxLen : (int?)null,
+            comb = f.Comb ? true : (bool?)null,
+            multiline = f.Multiline ? true : (bool?)null,
+            read_only = f.ReadOnly ? true : (bool?)null,
+            options = f.Options.Count > 0 ? f.Options : null,
+            tooltip = f.Tooltip.Length > 0 ? f.Tooltip : null,
+        })));
+    }
+}
+
+public sealed class DetectFieldsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "detect_fields";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Finds where a flat (non-fillable) PDF form expects input, using Masume's table-cell detection: text, amount (right-aligned, " +
+        "next to a unit like 円), comb (one character per box) and checkbox fields. Returns fields.json items " +
+        "(page is 0-based there; rect in points, top-left origin). Set overlay_page to also get a colour-coded review image. " +
+        "Edit the list if needed and pass it to make_fillable.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "pages":{"type":"string","description":"1-based pages, e.g. \"1-2\". Default: all"},
+          "overlay_page":{"type":"integer","description":"1-based page to return as a review image","minimum":1}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        int overlay = (int)(OptNum(a, "overlay_page") ?? 0);
+        using var doc = PdfiumDocument.Open(path);
+        var pages = FormPipeline.ParsePages(OptStr(a, "pages"), doc.PageCount);
+        var all = new List<DetectedField>();
+        var images = new List<ToolImage>();
+        for (int i = 0; i < doc.PageCount; i++)
+        {
+            if (pages is not null && !pages.Contains(i) && i != overlay - 1) continue;
+            var snap = doc.Snapshot(i, MasumeDetector.Scale);
+            var fields = MasumeDetector.Detect(snap, out var cells);
+            if (pages is null || pages.Contains(i)) all.AddRange(fields);
+            if (i == overlay - 1)
+            {
+                using var ms = new MemoryStream();
+                PngWriter.Write(Half(MasumeOverlay.Draw(snap, fields, cells)), ms);
+                images.Add(new ToolImage("image/png", ms.ToArray()));
+            }
+        }
+        var counts = string.Join(", ", all.GroupBy(f => f.Kind.ToString().ToLowerInvariant()).Select(g => $"{g.Count()} {g.Key}"));
+        int pre = all.Count(f => f.Prefilled.Length > 0);
+        var head = $"{all.Count} fields ({counts}); {pre} already contain printed data." +
+                   (images.Count > 0 ? " Overlay: blue text, purple amount, orange comb, green checkbox, red dashed = printed data." : "");
+        return new ToolResult(head + "\n" + FieldsJson.Serialize(all), images);
+    }
+
+    /// <summary>2x box downscale: the 4 px/pt detection raster is larger than a model needs.</summary>
+    private static RgbImage Half(RgbImage s)
+    {
+        int w = s.Width / 2, h = s.Height / 2;
+        var px = new byte[w * h * 3];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                for (int c = 0; c < 3; c++)
+                {
+                    int i0 = ((2 * y) * s.Width + 2 * x) * 3 + c, i1 = i0 + s.Width * 3;
+                    px[(y * w + x) * 3 + c] = (byte)((s.Pixels[i0] + s.Pixels[i0 + 3] + s.Pixels[i1] + s.Pixels[i1 + 3]) / 4);
+                }
+        return new RgbImage(w, h, px);
+    }
+}
+
+// ---------------------------------------------------------------------- writing new files
+
+public sealed class MakeFillableTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "make_fillable";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW fillable PDF from a flat one: detects the fields (or uses the given fields.json items) and adds a real AcroForm. " +
+        "Rotated pages are straightened. 'lang' picks the font viewers use for typed text (auto reads the page). " +
+        "Set embed_font to a .ttf/.otf/.ttc to embed it whole, so rare CJK characters (e.g. 燁) show in every viewer; this adds the font's size. " +
+        "Never overwrites: output defaults to <name>_fillable.pdf and must not exist.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"Flat PDF form"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_fillable.pdf next to the input)"},
+          "lang":{"type":"string","enum":["auto","ja","zh-Hans","zh-Hant","ko","en","fr","de"],"description":"Form language (default auto)"},
+          "embed_font":{"type":"string","description":"Font file to embed (allowed folders or system font folders)"},
+          "font_index":{"type":"integer","description":"Face index inside a .ttc collection (default 0)","minimum":0},
+          "fields":{"type":"array","description":"fields.json items from detect_fields (edited or not). Default: detect now","items":{"type":"object"}}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var output = Policy.Output(OptStr(a, "output"), path, "_fillable");
+        var lang = OptStr(a, "lang") ?? "auto";
+        if (!FormPipeline.Languages.Contains(lang, StringComparer.OrdinalIgnoreCase))
+            throw new ToolException($"lang must be one of {string.Join(", ", FormPipeline.Languages)}");
+        var font = FontArg(a);
+
+        IReadOnlyList<DetectedField> fields;
+        string text;
+        if (a.TryGetProperty("fields", out var f) && f.ValueKind == JsonValueKind.Array)
+        {
+            try { fields = FieldsJson.Parse(f.GetRawText()); }
+            catch (JsonException e) { throw new ToolException($"fields: {e.Message}"); }
+            text = FormPipeline.Text(path);
+        }
+        else
+        {
+            (fields, text) = FormPipeline.Detect(path);
+        }
+        var (script, source) = FormPipeline.ChooseScript(lang, text, L.Culture);
+        var r = AcroFormWriter.Write(path, output, fields.Select(x => x.ToFormField()).ToList(), script, font);
+        return new ToolResult(ToJson(new
+        {
+            output,
+            fields_written = r.FieldsWritten,
+            pages_straightened = r.PagesStraightened,
+            form_language = FormScripts.LanguageTag(script),
+            language_source = source.ToString(),
+            embedded_font = font?.PostScriptName,
+            size_mb = Math.Round(new FileInfo(output).Length / 1048576.0, 2),
+            warnings = r.Warnings,
+        }));
+    }
+}
+
+public sealed class FillFieldsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "fill_fields";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW PDF with form fields filled in. 'values' maps full field names (from list_fields) to values: text as strings, " +
+        "checkboxes as true/false, radio groups and choices as one of their options. Washi draws each value itself, so it looks the " +
+        "same in every viewer. Set embed_font to embed a font for characters the form's font lacks. " +
+        "Never overwrites: output defaults to <name>_filled.pdf and must not exist. Check the result with render_page.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"Fillable PDF"},
+          "values":{"type":"object","description":"field name -> value","additionalProperties":{"type":["string","boolean","number"]}},
+          "output":{"type":"string","description":"New PDF path (default: <name>_filled.pdf next to the input)"},
+          "embed_font":{"type":"string","description":"Font file to embed and use for the filled text"},
+          "font_index":{"type":"integer","description":"Face index inside a .ttc collection (default 0)","minimum":0}},
+         "required":["path","values"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (!a.TryGetProperty("values", out var v) || v.ValueKind != JsonValueKind.Object)
+            throw new ToolException("'values' must be an object of field name -> value");
+        var values = new Dictionary<string, string>();
+        foreach (var prop in v.EnumerateObject())
+            values[prop.Name] = prop.Value.ValueKind switch
+            {
+                JsonValueKind.String => prop.Value.GetString()!,
+                JsonValueKind.True => "true",
+                JsonValueKind.False => "false",
+                JsonValueKind.Number => prop.Value.GetRawText(),
+                _ => throw new ToolException($"value of '{prop.Name}' must be a string, boolean or number"),
+            };
+        var output = Policy.Output(OptStr(a, "output"), path, "_filled");
+        var r = AcroFormFields.Fill(path, output, values, FontArg(a));
+        return new ToolResult(ToJson(new
+        {
+            output,
+            filled = r.Filled,
+            unknown_names = r.UnknownNames,
+            notes = r.Notes,
+            hint = r.UnknownNames.Count > 0 ? "call list_fields for the exact names" : null,
+        }), IsError: r.Filled == 0 && values.Count > 0);
+    }
+}

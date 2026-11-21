@@ -12,10 +12,14 @@ fields, fills them, and can OCR, redact and merge PDFs. It has built-in AI
 (Claude, GPT, DeepSeek or a local model) and an MCP server. Written in C# /
 Avalonia.
 
-> **Status: pre-alpha.** `washi form make` turns a flat PDF into a fillable one:
-> it detects the fields (Masume) and writes a real AcroForm. The MCP server, the
-> desktop app and the AI features are next. The Python reference implementation
-> lives in [`prototype/`](prototype/).
+> **Status: pre-alpha.** Working today:
+>
+> - `washi form make` turns a flat PDF into a fillable one
+> - `washi-mcp` lets AI agents (Claude Desktop, Claude Code and other MCP clients)
+>   read, render, detect, make fillable and fill PDFs
+>
+> Next: the desktop app and the built-in AI. The Python reference
+> implementation lives in [`prototype/`](prototype/).
 
 ## Why
 
@@ -109,6 +113,55 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   embedded font. The resource name that makes PDFium use the embedded font is
   explained in `AcroFormWriter.EmbeddedKey`.
 
+## MCP server: PDFs for AI agents
+
+`washi-mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio.
+
+| tool | does | changes files |
+|---|---|---|
+| `pdf_info` | pages, sizes, rotation, encryption, existing fields, text language | no |
+| `extract_text` | text page by page (flags garbled text layers) | no |
+| `render_page` | one page as PNG, filled fields included | no |
+| `list_fields` | existing fields: name, type, value, page, rect, options | no |
+| `detect_fields` | Masume field suggestions as fields.json, optional review image | no |
+| `make_fillable` | new fillable PDF from a flat one (`lang`, `embed_font`, or reviewed `fields`) | writes a **new** file |
+| `fill_fields` | new PDF with values filled in. Washi draws each value itself, so it looks the same everywhere | writes a **new** file |
+
+**Safety:**
+- **Folders:** the server only touches files inside the folders you pass with
+  `--allow` (or `WASHI_ALLOWED_DIRS`). Symlinks are resolved first, so they
+  cannot lead outside. Fonts may also be read from the system font folders.
+- **Never overwrites:** the write tools create new files only; an existing
+  output path is refused.
+- **Tool hints:** every tool is tagged with `readOnlyHint` / `destructiveHint`,
+  so clients can ask before writing.
+
+```bash
+dotnet publish src/Washi.Mcp -c Release -o ~/.local/share/washi
+```
+
+Claude Code:
+
+```bash
+claude mcp add washi -- dotnet ~/.local/share/washi/washi-mcp.dll --allow ~/Documents/forms
+```
+
+Claude Desktop (`claude_desktop_config.json`), and most other MCP clients use the same shape:
+
+```json
+{
+  "mcpServers": {
+    "washi": {
+      "command": "dotnet",
+      "args": ["/Users/you/.local/share/washi/washi-mcp.dll", "--allow", "/Users/you/Documents/forms"]
+    }
+  }
+}
+```
+
+Then ask, for example: *"Make ~/Documents/forms/application.pdf fillable and fill in my name 王燁"*.
+The agent calls `pdf_info` → `make_fillable` → `list_fields` → `fill_fields` → `render_page` to check.
+
 ## Languages
 
 The interface speaks English, 日本語, 简体中文, 繁體中文, 한국어, Français and Deutsch. It
@@ -136,9 +189,9 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | `IWashiTool` + `ToolRegistry`. Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 7 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | providers behind `Microsoft.Extensions.AI`'s `IChatClient`:<br>• **Claude** through the official Anthropic C# SDK<br>• **GPT** through the official OpenAI SDK<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints |
-| `Washi.Mcp` | MCP server that exposes the tool registry (official C# MCP SDK) |
+| `Washi.Mcp` | `washi-mcp`, the MCP server over the tool registry (official C# MCP SDK, stdio) |
 | `Washi.Cli` | `washi` command line |
 | `Washi.App` | Avalonia desktop app: viewer, field review editor, AI panel |
 
@@ -168,8 +221,8 @@ dotnet run --project src/Washi.App
 
 1. ~~Port Masume to C# (PDFium render + text layer, managed connected components) and reach the prototype's scores.~~ Done.
 2. ~~Write the AcroForm output (text, amount, comb, checkbox; fonts per language; rotated pages).~~ Done.
-3. First tools: `pdf_info`, `extract_text`, `render_page`, `detect_fields`, `fill_fields`.
-4. MCP server over the tool registry.
+3. ~~Tools: `pdf_info`, `extract_text`, `render_page`, `list_fields`, `detect_fields`, `make_fillable`, `fill_fields`.~~ Done.
+4. ~~MCP server over the tool registry (stdio).~~ Done. Streamable HTTP is next.
 5. Avalonia field review editor.
 6. Built-in AI: name and type fields from the page image, fill from a profile, chat with a document.
 7. OCR, redaction, merge and split.
