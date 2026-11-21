@@ -70,6 +70,20 @@ public sealed class PdfiumDocument : IDisposable
         }
     }
 
+    /// <summary>The page's text layer only (no rendering).</summary>
+    public IReadOnlyList<PdfChar> ReadChars(int pageIndex)
+    {
+        var page = fpdfview.FPDF_LoadPage(_doc, pageIndex);
+        try
+        {
+            return ReadChars(page, new PageMapper(page, fpdfview.FPDF_GetPageWidthF(page), fpdfview.FPDF_GetPageHeightF(page)));
+        }
+        finally
+        {
+            fpdfview.FPDF_ClosePage(page);
+        }
+    }
+
     private static List<PdfChar> ReadChars(FpdfPageT page, PageMapper map)
     {
         var list = new List<PdfChar>();

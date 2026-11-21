@@ -28,6 +28,17 @@ public sealed record DetectedField
     public string Prefilled { get; init; } = "";
     public string Label { get; init; } = "";
     public IReadOnlyList<string> Notes { get; init; } = [];
+
+    public Washi.Core.Forms.FormField ToFormField() => new(
+        Page,
+        Kind switch
+        {
+            FieldKind.Amount => Washi.Core.Forms.FormFieldKind.Amount,
+            FieldKind.Comb => Washi.Core.Forms.FormFieldKind.Comb,
+            FieldKind.Checkbox => Washi.Core.Forms.FormFieldKind.Checkbox,
+            _ => Washi.Core.Forms.FormFieldKind.Text,
+        },
+        Rect, Name, MaxLen, Align, Label);
 }
 
 public static class FieldsJson
