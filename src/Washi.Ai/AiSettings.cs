@@ -23,7 +23,8 @@ public enum AiProvider
 /// Model ids are settings, not constants: providers rename and retire models.
 /// API keys come from the environment or the macOS Keychain, never from this file.
 /// </summary>
-public sealed record AiSettings(AiProvider Provider, string Model, Uri? Endpoint = null)
+/// <param name="Vision">Whether page images are sent (default yes). Set false for text-only models.</param>
+public sealed record AiSettings(AiProvider Provider, string Model, Uri? Endpoint = null, bool? Vision = null)
 {
     public static AiSettings DefaultClaude { get; } = new(AiProvider.Anthropic, "claude-opus-5-5");
 
@@ -61,6 +62,28 @@ public sealed record AiSettings(AiProvider Provider, string Model, Uri? Endpoint
         AiProvider.DeepSeek => "DEEPSEEK_API_KEY",
         _ => "WASHI_AI_API_KEY",
     };
+
+    public bool AcceptsImages => Vision ?? true;
+
+    /// <summary>The model ids the provider offers right now (to check a model name).</summary>
+    public async Task<IReadOnlyList<string>> ListModelsAsync(CancellationToken ct = default)
+    {
+        var key = ApiKeys.Find(Provider) ?? "";
+        if (key.Length == 0 && Provider != AiProvider.OpenAICompatible)
+            throw new AiException($"no API key for {Provider}: set {KeyVariable(Provider)} or run: washi ai key {Provider.ToString().ToLowerInvariant()}");
+        if (Provider == AiProvider.Anthropic)
+        {
+            var client = new Anthropic.AnthropicClient { ApiKey = key };
+            var page = await client.Models.List(cancellationToken: ct);
+            return [.. page.Items.Select(m => m.ID)];
+        }
+        var options = new OpenAI.OpenAIClientOptions();
+        var endpoint = Endpoint ?? (Provider == AiProvider.DeepSeek ? DeepSeekEndpoint : null);
+        if (endpoint is not null) options.Endpoint = endpoint;
+        var models = new OpenAI.Models.OpenAIModelClient(new System.ClientModel.ApiKeyCredential(key.Length > 0 ? key : "local"), options);
+        var list = await models.GetModelsAsync(ct);
+        return [.. list.Value.Select(m => m.Id).Order()];
+    }
 
     /// <summary>Builds the model client. Throws <see cref="AiException"/> when it cannot.</summary>
     public IAiModel CreateModel()

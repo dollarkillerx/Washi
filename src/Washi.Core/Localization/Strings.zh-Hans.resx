@@ -74,8 +74,9 @@
   <data name="Ui_JsonFiles" xml:space="preserve"><value>填写栏列表 (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>字体</value></data>
   <data name="UsageAi" xml:space="preserve"><value>AI（默认用 Claude；发送前会列出内容并请你确认）：
-  washi ai config [anthropic|openai|deepseek|local &lt;模型&gt; [--endpoint url]]
+  washi ai config [anthropic|openai|deepseek|local &lt;模型&gt; [--endpoint url] [--vision yes|no]]
   washi ai key &lt;anthropic|openai|deepseek&gt;          把 API key 存进 macOS 钥匙串
+  washi ai models                                   列出提供方的模型
   washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
   washi ai fill &lt;fillable.pdf&gt; --profile me.txt [-o out.pdf] [--embed-font f] [--yes]
   washi ai ask &lt;in.pdf&gt; "问题" [--yes]</value></data>

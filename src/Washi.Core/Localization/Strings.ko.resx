@@ -74,8 +74,9 @@
   <data name="Ui_JsonFiles" xml:space="preserve"><value>입력란 목록 (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>글꼴</value></data>
   <data name="UsageAi" xml:space="preserve"><value>AI (기본값 Claude, 보내기 전에 내용을 보여 주고 확인을 받습니다):
-  washi ai config [anthropic|openai|deepseek|local &lt;모델&gt; [--endpoint url]]
+  washi ai config [anthropic|openai|deepseek|local &lt;모델&gt; [--endpoint url] [--vision yes|no]]
   washi ai key &lt;anthropic|openai|deepseek&gt;          API 키를 macOS 키체인에 저장
+  washi ai models                                   제공자의 모델 목록
   washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
   washi ai fill &lt;fillable.pdf&gt; --profile me.txt [-o out.pdf] [--embed-font f] [--yes]
   washi ai ask &lt;in.pdf&gt; "질문" [--yes]</value></data>

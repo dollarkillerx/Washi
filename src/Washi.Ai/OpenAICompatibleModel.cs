@@ -8,7 +8,8 @@ namespace Washi.Ai;
 /// <summary>
 /// OpenAI GPT models, DeepSeek and local OpenAI-compatible servers (e.g. Ollama) through the
 /// official OpenAI .NET SDK. OpenAI gets strict JSON-schema output; DeepSeek and local servers
-/// get JSON mode with the schema spelled out in the instructions.
+/// get JSON mode with the schema spelled out in the instructions. Images are sent unless the
+/// settings say the model is text-only.
 /// </summary>
 public sealed class OpenAICompatibleModel : IAiModel
 {
@@ -18,7 +19,13 @@ public sealed class OpenAICompatibleModel : IAiModel
     public OpenAICompatibleModel(AiSettings settings, string apiKey)
     {
         _settings = settings;
-        var options = new OpenAIClientOptions();
+        var options = new OpenAIClientOptions
+        {
+            // a page image plus a long JSON answer can take minutes; one retry at most so a slow
+            // request is not paid for four times
+            NetworkTimeout = TimeSpan.FromMinutes(5),
+            RetryPolicy = new System.ClientModel.Primitives.ClientRetryPolicy(maxRetries: 1),
+        };
         if (settings.Endpoint is { } e) options.Endpoint = e;
         _client = new ChatClient(settings.Model, new ApiKeyCredential(apiKey.Length > 0 ? apiKey : "local"), options);
     }
@@ -26,8 +33,8 @@ public sealed class OpenAICompatibleModel : IAiModel
     public string Describe => $"{_settings.Model} ({_settings.Provider}{(_settings.Endpoint is { } e ? ", " + e.Host : "")})";
     public bool SendsDataOffDevice => _settings.SendsDataOffDevice;
 
-    // DeepSeek's chat models are text-only.
-    public bool AcceptsImages => _settings.Provider != AiProvider.DeepSeek;
+    // On by default (deepseek-flash reads page images); washi ai config … --vision no for text-only models.
+    public bool AcceptsImages => _settings.AcceptsImages;
 
     public async Task<string> CompleteAsync(AiRequest request, CancellationToken cancellationToken = default)
     {

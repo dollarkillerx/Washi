@@ -213,7 +213,7 @@ public sealed partial class MainViewModel : ObservableObject
                 Status = L.F("Ai_Named", Path.GetFileName(pdf), r.Fields.Count, r.Renamed, r.KindsChanged, model.Describe);
             }
             catch (Exception e) when (e is Washi.Ai.AiException or HttpRequestException or System.ClientModel.ClientResultException
-                                          or Anthropic.Exceptions.AnthropicException or TaskCanceledException)
+                                          or Anthropic.Exceptions.AnthropicException or OperationCanceledException or TimeoutException)
             {
                 Status = L.F("Ai_Error", e.Message);
             }

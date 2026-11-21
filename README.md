@@ -152,7 +152,8 @@ saves a screenshot for review.
 ```bash
 washi ai config                                   # default: claude-opus-5-5 (Anthropic)
 washi ai key anthropic                            # paste the key; stored in the macOS Keychain
-washi ai config deepseek deepseek-chat            # or: openai <model> / local <model> --endpoint http://localhost:11434/v1
+washi ai config deepseek deepseek-flash           # or: openai <model> / local <model> --endpoint http://localhost:11434/v1 [--vision no]
+washi ai models                                   # the provider's current model ids
 
 washi ai name-fields form.pdf -o form_fields.json # Masume finds the boxes, the AI names them from the page image
 washi form make form.pdf --fields form_fields.json
@@ -168,7 +169,13 @@ washi ai ask contract.pdf "When does the contract end?"
   answer, and notes for the rest. Unknown fields and invalid options are dropped.
 - **Asking.** A readable text layer goes as text. A scanned or garbled one goes as page images.
 - **Claude** gets structured outputs, which force the JSON shape, and server-side refusal
-  fallback. **DeepSeek**'s chat models are text-only, so they get the page text instead of images.
+  fallback. **DeepSeek** (`deepseek-flash`) and local servers get JSON mode. Page images are
+  sent by default; for a text-only model, `washi ai config … --vision no` sends the page text
+  instead. `washi ai models` lists the provider's current model ids.
+- **Tested live** with `deepseek-flash` on the 国税庁 基礎控除 form: 78 fields on 2 pages in
+  about 2.5 minutes, 59 renamed and 3 types corrected. Most names improved; for example,
+  フリガナ and 氏名 rows were split and `所得金額_3` became `合計所得金額の見積額`. A few got
+  worse, which is why the editor keeps the human review step.
 - The editor's **Name fields with AI** button runs the same naming step, after a confirmation dialog.
 
 ## MCP server: PDFs for AI agents

@@ -18,7 +18,8 @@ internal static class AiCommands
             return pos switch
             {
                 ["config"] => ShowConfig(),
-                ["config", var provider, var model] => SaveConfig(provider, model, opt.GetValueOrDefault("--endpoint")),
+                ["config", var provider, var model] => SaveConfig(provider, model, opt.GetValueOrDefault("--endpoint"), opt.GetValueOrDefault("--vision")),
+                ["models"] => await Models(),
                 ["key", var provider] => StoreKey(provider),
                 ["name-fields", var pdf] => await NameFields(pdf, opt),
                 ["fill", var pdf] => await Fill(pdf, opt),
@@ -27,7 +28,7 @@ internal static class AiCommands
             };
         }
         catch (Exception e) when (e is AiException or HttpRequestException or System.ClientModel.ClientResultException
-                                      or Anthropic.Exceptions.AnthropicException or TaskCanceledException)
+                                      or Anthropic.Exceptions.AnthropicException or OperationCanceledException or TimeoutException)
         {
             Console.Error.WriteLine(L.F("Ai_Error", e.Message));
             return 1;
@@ -45,14 +46,21 @@ internal static class AiCommands
     {
         var s = AiSettings.Load();
         var key = s.Provider == AiProvider.OpenAICompatible ? "-" : ApiKeys.Find(s.Provider) is null ? L.Get("Ai_KeyMissing") : L.Get("Ai_KeyFound");
-        Console.WriteLine(L.F("Ai_Config", $"{s.Model} ({s.Provider}{(s.Endpoint is { } e ? ", " + e : "")})", key, AiSettings.ConfigPath));
+        Console.WriteLine(L.F("Ai_Config", $"{s.Model} ({s.Provider}{(s.Endpoint is { } e ? ", " + e : "")}, images {(s.AcceptsImages ? "on" : "off")})", key, AiSettings.ConfigPath));
         return 0;
     }
 
-    private static int SaveConfig(string provider, string model, string? endpoint)
+    private static async Task<int> Models()
+    {
+        foreach (var id in await AiSettings.Load().ListModelsAsync()) Console.WriteLine(id);
+        return 0;
+    }
+
+    private static int SaveConfig(string provider, string model, string? endpoint, string? vision)
     {
         var p = ProviderOf(provider);
-        var s = new AiSettings(p, model, endpoint is { Length: > 0 } ? new Uri(endpoint) : null);
+        bool? v = vision?.ToLowerInvariant() switch { "yes" or "true" or "on" => true, "no" or "false" or "off" => false, _ => null };
+        var s = new AiSettings(p, model, endpoint is { Length: > 0 } ? new Uri(endpoint) : null, v);
         s.Save();
         Console.WriteLine(L.F("Ai_Saved", AiSettings.ConfigPath));
         return ShowConfig();

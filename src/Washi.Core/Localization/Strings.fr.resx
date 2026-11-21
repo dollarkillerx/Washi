@@ -74,8 +74,9 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_JsonFiles" xml:space="preserve"><value>Listes de champs (JSON)</value></data>
   <data name="Ui_FontFiles" xml:space="preserve"><value>Polices</value></data>
   <data name="UsageAi" xml:space="preserve"><value>IA (Claude par défaut ; les données sont montrées et confirmées avant l’envoi) :
-  washi ai config [anthropic|openai|deepseek|local &lt;modèle&gt; [--endpoint url]]
+  washi ai config [anthropic|openai|deepseek|local &lt;modèle&gt; [--endpoint url] [--vision yes|no]]
   washi ai key &lt;anthropic|openai|deepseek&gt;          enregistre une clé d’API dans le trousseau macOS
+  washi ai models                                   liste les modèles du fournisseur
   washi ai name-fields &lt;in.pdf&gt; [--fields f.json] [-o out.json] [--yes]
   washi ai fill &lt;fillable.pdf&gt; --profile moi.txt [-o out.pdf] [--embed-font f] [--yes]
   washi ai ask &lt;in.pdf&gt; "question" [--yes]</value></data>
