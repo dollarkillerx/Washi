@@ -26,7 +26,10 @@ Avalonia.
 > - `washi ocr` makes scanned pages searchable (Apple Vision on the Mac, Tesseract,
 >   or an AI model), and `washi pdf merge|split` keeps form fields fillable
 >
-> Next: redaction. The Python reference
+> - `washi pdf erase` and the editor's **Erase** tool remove text, images and marks that are
+>   already printed on a page (wrong data on a form), for real, before you fill it again
+>
+> The Python reference
 > implementation lives in [`prototype/`](prototype/).
 
 ## Why
@@ -124,7 +127,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -292,6 +295,38 @@ washi pdf split all.pdf                            # one file per page
   do), Washi refuses it. Washi does not remove protection.
 - `split` never overwrites existing parts.
 
+## Erasing printed text
+
+Forms sometimes arrive with data already printed on them, and some of it is wrong. Making the form
+fillable only adds fields on top, so new text lands over the old. **Erase** removes the old text first:
+
+```bash
+washi pdf erase form.pdf --box 1:183,44,336,76 --box 1:390,44,531,76   # page:x0,y0,x1,y1 in points, top-left origin
+```
+
+In the editor: choose **Erase**, drag boxes over the printed values (what will go turns red,
+what stays is outlined in amber), then *Erase and save a copy*. Agents use the `erase_content`
+tool; a field's `rect` from `list_fields` / `detect_fields` is a good box.
+
+- **Removed, not covered.** The text, image and drawing operators are cut out of the page's content
+  stream; image streams nothing uses any more are dropped from the file; the old content stream is
+  not saved. Nothing is painted over with white.
+- **Nothing else moves.** Only the operators that draw the erased objects change; every other
+  byte of the page content is copied as it was. PDFium picks the objects (position and ink), and
+  each one is matched to its operator with a type-by-type check, or the page is left alone.
+- **Checked before it is kept.** Washi extracts the text again (no characters may remain where
+  text was erased) and renders both versions (no pixel may change outside the boxes). If the
+  check fails, the copy is deleted.
+- **The form stays.** Official forms print the template in colour and the data in black, so by
+  default only black and grey ink is erased (`--all-ink` to erase everything). Thin long lines
+  (table rules, comb dividers) stay unless `--rules`.
+- **Kept and said so:** a text line that runs outside the box, a text run joined to the next one
+  on its line (erasing it alone would shift the rest), and big images such as a scanned page
+  (their pixels are not edited).
+- Tested on a 扶養控除等申告書 whose printed data mixes text, ~770 glyph images and black strokes:
+  the payer, name, furigana, numbers and addresses were removed (37 objects, 22 image streams
+  dropped), with 0 characters left and 0 pixels changed outside the boxes.
+
 ## MCP server: PDFs for AI agents
 
 There are two ways to run it:
@@ -318,6 +353,7 @@ There are two ways to run it:
 | `merge_pdfs` | new PDF with the pages of several PDFs; form fields kept | writes a **new** file |
 | `split_pdf` | new PDFs, one per page range | writes **new** files |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
+| `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
 **Safety:**
 - **Folders:** the server only touches files inside the folders you pass with
@@ -409,7 +445,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
 | `Washi.Tools` | the 10 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
@@ -459,7 +495,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 5. ~~Avalonia field review editor.~~ Done.
 6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done. ~~AI assistant with tool calls.~~ Done.
 7. ~~OCR (Apple Vision, Tesseract, AI), merge and split.~~ Done.
-8. Redaction: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.
+8. ~~Erase printed content: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.~~ Done (`washi pdf erase`, the Erase tool, `erase_content`).
 
 ## License
 

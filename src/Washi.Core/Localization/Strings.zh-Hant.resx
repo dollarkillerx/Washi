@@ -111,7 +111,11 @@
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      合併檔案（保留表單欄位）
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
-                                          讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）</value></data>
+                                          讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）
+  washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
+                                          真正刪除框內已印的文字和影像（單位為點，左上角為原點；彩色的表格印刷保留）</value></data>
+  <data name="Pdf_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了文字 {1} 段、影像 {2} 個、圖形 {3} 個。檢查：刪除處剩餘文字 {4} 個，其他地方變化的像素 {5} 個。</value></data>
+  <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 頁保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已將 {0} 個檔案合併為 {1}：{2} 頁，{3} 個表單欄位</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  （第 {1}-{2} 頁）</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi：{0}</value></data>
@@ -281,4 +285,28 @@
   <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>回答被截斷（輸出上限）。</value></data>
   <data name="Ui_AssistantRefused" xml:space="preserve"><value>模型拒絕了這個請求。{0}</value></data>
   <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>工具步驟過多，已停止；再問一次即可繼續。</value></data>
+  <data name="Ui_ToolErase" xml:space="preserve"><value>刪除印字</value></data>
+  <data name="Ui_EraseTitle" xml:space="preserve"><value>刪除已印文字</value></data>
+  <data name="Ui_EraseLead" xml:space="preserve"><value>在頁面上已印好的內容（例如表單中錯誤的資料）上拖出框。Washi 會從 PDF 中真正刪除，而不只是蓋住。</value></data>
+  <data name="Ui_EraseBoxes" xml:space="preserve"><value>框</value></data>
+  <data name="Ui_EraseNoBoxes" xml:space="preserve"><value>在頁面上拖曳以畫框。</value></data>
+  <data name="Ui_EraseBoxLabel" xml:space="preserve"><value>第 {0} 頁 · {1} × {2} pt</value></data>
+  <data name="Ui_EraseClear" xml:space="preserve"><value>清除所有框</value></data>
+  <data name="Ui_ErasePlan" xml:space="preserve"><value>將刪除 {0} 段文字、{1} 個影像、{2} 個圖形。</value></data>
+  <data name="Ui_EraseKeptNote" xml:space="preserve"><value>{0} 項保留：{1}</value></data>
+  <data name="Ui_EraseLegendRemove" xml:space="preserve"><value>刪除</value></data>
+  <data name="Ui_EraseLegendKeep" xml:space="preserve"><value>保留</value></data>
+  <data name="Ui_EraseOptions" xml:space="preserve"><value>選項</value></data>
+  <data name="Ui_EraseKeepColored" xml:space="preserve"><value>保留彩色印刷</value></data>
+  <data name="Ui_EraseKeepColoredNote" xml:space="preserve"><value>官方表單用彩色印刷表單本身、用黑色印刷資料：只刪除黑色和灰色的印字。</value></data>
+  <data name="Ui_EraseRules" xml:space="preserve"><value>也刪除細線（表格線、格子分隔線）</value></data>
+  <data name="Ui_EraseRun" xml:space="preserve"><value>刪除並另存副本</value></data>
+  <data name="Ui_EraseRunNote" xml:space="preserve"><value>在原檔案旁寫入 &lt;名稱&gt;_erased.pdf 並開啟。原檔案不會被修改。</value></data>
+  <data name="Ui_EraseFailed" xml:space="preserve"><value>無法刪除：{0}</value></data>
+  <data name="Ui_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了 {1} 項；檢查：刪除處剩餘文字 {2} 個，從檔案中移除影像 {3} 個。</value></data>
+  <data name="Erase_KeptRunsOutside" xml:space="preserve"><value>有文字超出框外：請把框拉大</value></data>
+  <data name="Erase_KeptLargeImage" xml:space="preserve"><value>這裡被一張大圖（掃描檔？）覆蓋，不會修改其像素</value></data>
+  <data name="Erase_KeptGrouped" xml:space="preserve"><value>成組的內容不會刪除</value></data>
+  <data name="Erase_KeptColored" xml:space="preserve"><value>表單的彩色印刷會保留（見上方選項）</value></data>
+  <data name="Erase_KeptChained" xml:space="preserve"><value>與同一行的下一段文字相連：請把框拉大到包含兩段</value></data>
 </root>

@@ -111,7 +111,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      Dateien zusammenfügen (Formularfelder bleiben erhalten)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o Ordner]
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
-                                          gescannte Seiten durchsuchbar machen (unsichtbare Textebene; das Seitenbild bleibt unverändert)</value></data>
+                                          gescannte Seiten durchsuchbar machen (unsichtbare Textebene; das Seitenbild bleibt unverändert)
+  washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
+                                          gedruckten Text und Bilder in Rahmen wirklich entfernen (Punkte, Ursprung oben links; farbiger Formulardruck bleibt)</value></data>
+  <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
+  <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} Datei(en) zu {1} zusammengefügt: {2} Seite(n), {3} Formularfeld(er)</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  (Seiten {1}-{2})</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi: {0}</value></data>
@@ -281,4 +285,28 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>Die Antwort wurde abgeschnitten (Ausgabelimit).</value></data>
   <data name="Ui_AssistantRefused" xml:space="preserve"><value>Das Modell hat die Anfrage abgelehnt. {0}</value></data>
   <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>Nach zu vielen Werkzeugschritten gestoppt; erneut fragen, um fortzufahren.</value></data>
+  <data name="Ui_ToolErase" xml:space="preserve"><value>Löschen</value></data>
+  <data name="Ui_EraseTitle" xml:space="preserve"><value>Gedruckten Text löschen</value></data>
+  <data name="Ui_EraseLead" xml:space="preserve"><value>Ziehen Sie Rahmen über bereits Gedrucktes, etwa falsche Angaben auf einem Formular. Washi löscht es wirklich aus dem PDF; nichts wird nur abgedeckt.</value></data>
+  <data name="Ui_EraseBoxes" xml:space="preserve"><value>RAHMEN</value></data>
+  <data name="Ui_EraseNoBoxes" xml:space="preserve"><value>Auf der Seite ziehen, um einen Rahmen zu zeichnen.</value></data>
+  <data name="Ui_EraseBoxLabel" xml:space="preserve"><value>Seite {0} · {1} × {2} pt</value></data>
+  <data name="Ui_EraseClear" xml:space="preserve"><value>Rahmen entfernen</value></data>
+  <data name="Ui_ErasePlan" xml:space="preserve"><value>Entfernt {0} Text(e), {1} Bild(er), {2} Zeichnung(en).</value></data>
+  <data name="Ui_EraseKeptNote" xml:space="preserve"><value>{0} Element(e) bleiben: {1}</value></data>
+  <data name="Ui_EraseLegendRemove" xml:space="preserve"><value>entfernt</value></data>
+  <data name="Ui_EraseLegendKeep" xml:space="preserve"><value>bleibt</value></data>
+  <data name="Ui_EraseOptions" xml:space="preserve"><value>OPTIONEN</value></data>
+  <data name="Ui_EraseKeepColored" xml:space="preserve"><value>Farbigen Druck behalten</value></data>
+  <data name="Ui_EraseKeepColoredNote" xml:space="preserve"><value>Amtliche Formulare drucken das Formular farbig und die Angaben schwarz: nur schwarze und graue Farbe wird gelöscht.</value></data>
+  <data name="Ui_EraseRules" xml:space="preserve"><value>Auch dünne Linien löschen (Tabellenlinien, Kästchentrenner)</value></data>
+  <data name="Ui_EraseRun" xml:space="preserve"><value>Löschen und Kopie speichern</value></data>
+  <data name="Ui_EraseRunNote" xml:space="preserve"><value>Schreibt &lt;Name&gt;_erased.pdf neben das Original und öffnet es. Das Original bleibt unverändert.</value></data>
+  <data name="Ui_EraseFailed" xml:space="preserve"><value>Löschen nicht möglich: {0}</value></data>
+  <data name="Ui_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Element(e) entfernt; Prüfung: {2} Zeichen in den gelöschten Bereichen übrig, {3} Bild(er) aus der Datei entfernt.</value></data>
+  <data name="Erase_KeptRunsOutside" xml:space="preserve"><value>eine Textzeile reicht über den Rahmen hinaus: Rahmen vergrößern</value></data>
+  <data name="Erase_KeptLargeImage" xml:space="preserve"><value>ein großes Bild (Scan?) bedeckt diesen Bereich; seine Pixel bleiben</value></data>
+  <data name="Erase_KeptGrouped" xml:space="preserve"><value>gruppierter Inhalt wird nicht gelöscht</value></data>
+  <data name="Erase_KeptColored" xml:space="preserve"><value>farbiger Formulardruck bleibt (Option oben)</value></data>
+  <data name="Erase_KeptChained" xml:space="preserve"><value>Text hängt am nächsten auf der Zeile: Rahmen so vergrößern, dass beide drin sind</value></data>
 </root>

@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -58,6 +58,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Ocr = new OcrToolViewModel(this);
         Combine = new CombineToolViewModel(this);
         Split = new SplitToolViewModel(this);
+        Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
     }
@@ -69,6 +70,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public OcrToolViewModel Ocr { get; }
     public CombineToolViewModel Combine { get; }
     public SplitToolViewModel Split { get; }
+    public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
     /// <summary>The Settings page, created when first shown.</summary>
@@ -93,7 +95,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     // ------------------------------------------------------------------ tools and panels
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool),
-                                                  nameof(IsAskTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
+                                                  nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
 
@@ -108,6 +110,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsCombineTool { get => ActiveTool == Tool.Combine; set { if (value) ActiveTool = Tool.Combine; } }
     public bool IsSplitTool { get => ActiveTool == Tool.Split; set { if (value) ActiveTool = Tool.Split; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
+    public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
 
     /// <summary>Settings is a page of its own: it takes the document's place (no tool panel, no side rails).</summary>
@@ -292,6 +295,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (!opened) return;
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
+        Erase.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
@@ -309,6 +313,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     [RelayCommand]
     private void CloseDocument()
     {
+        Erase.Reset();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();

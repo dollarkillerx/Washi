@@ -225,6 +225,34 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Erase_tool_shows_what_goes_then_saves_a_copy_and_opens_it()
+    {
+        var pdf = Form("e.pdf");
+        var (w, vm) = await Open(pdf, new FakeDialogs());
+        vm.ActiveTool = Tool.Erase;
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(vm.Erase.CanErase);
+
+        await vm.Erase.AddBoxAsync(new Washi.Core.PdfRect(34, 134, 54, 154));   // around the small black square
+        Assert.True(vm.Erase.CanErase);
+        Assert.Equal(Washi.Core.Pages.EraseKind.Drawing, Assert.Single(vm.Erase.Targets).Kind);
+        Assert.Contains("1", vm.Erase.PlanText);
+        Assert.True(w.FindControl<Avalonia.Controls.Button>("EraseButton")!.IsEffectivelyEnabled);
+
+        await vm.Erase.EraseCommand.ExecuteAsync(null);
+        Assert.Equal(Path.Combine(_dir, "e_erased.pdf"), vm.PdfPath);       // the copy is opened; the original stays
+        Assert.True(File.Exists(pdf));
+        Assert.Empty(vm.Erase.Boxes);
+        Assert.Contains("e_erased.pdf", vm.Status);
+
+        // a second erase of the same original never overwrites the first copy
+        await vm.LoadAsync(pdf);
+        await vm.Erase.AddBoxAsync(new Washi.Core.PdfRect(34, 134, 54, 154));
+        await vm.Erase.EraseCommand.ExecuteAsync(null);
+        Assert.Equal(Path.Combine(_dir, "e_erased_2.pdf"), vm.PdfPath);
+    }
+
+    [AvaloniaFact]
     public async Task Pinch_zoom_is_free_but_clamped_and_ends_fit_width()
     {
         var (w, vm) = await Open(Form("a.pdf"), new FakeDialogs());
