@@ -7,7 +7,11 @@ public sealed record OcrImage(byte[] Png, int Width, int Height);
 /// <summary>One recognised line. The box is in image pixels (engines) or upright page points (results), top-left origin.</summary>
 public sealed record OcrLine(string Text, PdfRect Box, double Confidence);
 
-public sealed class OcrException(string message) : Exception(message);
+public sealed class OcrException(string message, string? key = null, params object[] args) : Exception(message), Washi.Core.Localization.ILocalizedError
+{
+    public string? Key { get; } = key;
+    public object[] Args { get; } = args;
+}
 
 public interface IOcrEngine
 {
@@ -75,14 +79,14 @@ public static class OcrEngines
         {
             case "vision":
                 return VisionOcr.IsAvailable ? new VisionOcr()
-                    : throw new OcrException("Apple Vision OCR needs macOS with the Xcode command line tools (xcode-select --install)");
+                    : throw new OcrException("Apple Vision OCR needs macOS with the Xcode command line tools (xcode-select --install)", "Err_OcrVisionUnavailable");
             case "tesseract":
                 return TesseractOcr.Find() is { } t ? new TesseractOcr(t)
-                    : throw new OcrException("tesseract was not found; install it (macOS: brew install tesseract tesseract-lang)");
+                    : throw new OcrException("tesseract was not found; install it (macOS: brew install tesseract tesseract-lang)", "Err_OcrTesseractMissing");
             case "auto":
                 if (VisionOcr.IsAvailable) return new VisionOcr();
                 if (TesseractOcr.Find() is { } path) return new TesseractOcr(path);
-                throw new OcrException("no on-device OCR engine: on macOS install the Xcode command line tools, elsewhere install tesseract");
+                throw new OcrException("no on-device OCR engine: on macOS install the Xcode command line tools, elsewhere install tesseract", "Err_OcrNoEngine");
             case "ai":
                 throw new OcrException("the AI engine is created by Washi.Ai (it needs a model and your consent)");
             default:

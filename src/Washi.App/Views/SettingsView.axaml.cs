@@ -11,6 +11,11 @@ public partial class SettingsView : UserControl
     public SettingsView()
     {
         InitializeComponent();
+        // the model list is fetched the first time the AI tab is shown
+        Tabs.SelectionChanged += (_, _) =>
+        {
+            if (ReferenceEquals(Tabs.SelectedItem, AiTab) && DataContext is SettingsViewModel m) _ = m.LoadModelsOnceAsync();
+        };
         DataContextChanged += (_, _) =>
         {
             if (DataContext is SettingsViewModel vm)

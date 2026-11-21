@@ -22,6 +22,7 @@ public sealed class EraseTests : IDisposable
     private string Form(string name = "form.pdf")
     {
         const string content = """
+            5 5 m S
             0 0.5 0.3 RG 1 w 20 200 360 60 re S
             BT /F1 12 Tf 0 0.5 0.3 rg 30 240 Td (LABEL) Tj ET
             BT /F1 12 Tf 0 0 0 rg 30 215 Td (SECRET) Tj ET
@@ -30,6 +31,7 @@ public sealed class EraseTests : IDisposable
             0 0 0 RG 0.5 w 30 120 m 370 120 l S
             BT /F1 12 Tf 0 0 0 rg 30 80 Td (KEEPME) Tj ET
             BT /F1 12 Tf 0 0 0 rg 200 80 Td (AA) Tj (BB) Tj ET
+            q BT /F1 12 Tf 7 Tr 300 30 Td (CLIP) Tj ET Q
             """;
         var objects = new List<byte[]>
         {
@@ -156,6 +158,45 @@ public sealed class EraseTests : IDisposable
         Assert.Equal(0, report.ChangedPixelsOutside);
         Assert.DoesNotContain("AA", Text(output));
         Assert.Contains("KEEPME", Text(output));
+    }
+
+    [Fact]
+    public void Touching_boxes_each_get_their_own_content()
+    {
+        // two cells side by side, as on a form: SECRET lies in the right one and only grazes the left one's edge
+        var pdf = Form();
+        var left = new EraseRegion(0, new PdfRect(5, 70, 29.5, 90));
+        var right = new EraseRegion(0, new PdfRect(29.5, 70, 120, 90));
+        var (targets, _) = PdfEraser.Plan(pdf, [left, right]);
+        Assert.Equal("SECRET", Assert.Single(targets).Text);
+    }
+
+    [Fact]
+    public void Text_used_as_a_clip_is_kept_and_every_page_of_the_sample_matches()
+    {
+        var pdf = Form();
+        Assert.All(PdfEraser.Check(pdf), c => Assert.True(c.Matches, $"page {c.Page + 1}: {c.Objects} objects, {c.Operators} operators"));
+        var clip = new EraseRegion(0, new PdfRect(295, 255, 340, 275));    // around CLIP (user y 30)
+        var (targets, kept) = PdfEraser.Plan(pdf, [clip], new EraseOptions(KeepColored: false));
+        Assert.Empty(targets);
+        Assert.Equal(EraseKeptWhy.Clips, Assert.Single(kept).Why);
+    }
+
+    [Fact]
+    public void Errors_have_text_in_the_ui_languages()
+    {
+        var before = Washi.Core.Localization.L.Culture;
+        try
+        {
+            Washi.Core.Localization.L.Culture = System.Globalization.CultureInfo.GetCultureInfo("zh-Hans");
+            var ex = Assert.Throws<EraseException>(() => PdfEraser.Erase(Form(), Path.Combine(_dir, "n.pdf"), [new EraseRegion(0, new PdfRect(380, 280, 395, 295))]));
+            Assert.Contains("nothing to erase", ex.Message);                         // English for logs and agents
+            Assert.Contains("没有可删除", Washi.Core.Localization.Errors.Text(ex));   // the app shows this
+            var ai = new Washi.Ai.AiSettings(Washi.Ai.AiProvider.DeepSeek, "");
+            var noModel = Assert.Throws<Washi.Ai.AiException>(() => ai.CreateChatProvider(new HttpClient()));
+            Assert.Contains("还没有选择模型", Washi.Core.Localization.Errors.Text(noModel));
+        }
+        finally { Washi.Core.Localization.L.Culture = before; }
     }
 
     [Fact]

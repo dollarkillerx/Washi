@@ -101,8 +101,8 @@
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>AI 에 보낼까요?</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>보내기</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>취소</value></data>
-  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>여기에 무언가 인쇄되어 있습니다 (텍스트가 아닌 그래픽으로 그려짐).</value></data>
-  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>여기에 글자가 인쇄되어 있지만 PDF 의 텍스트 레이어를 읽을 수 없습니다 (글꼴에 유니코드 매핑이 없음). OCR 로 읽을 수 있습니다.</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>여기에 무언가 인쇄되어 있습니다(텍스트가 아닌 그래픽). 아래 버튼으로 읽어 편집 가능한 값으로 바꿀 수 있습니다.</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>여기에 글자가 인쇄되어 있지만 PDF 의 텍스트 레이어를 읽을 수 없습니다(글꼴에 Unicode 매핑 없음). 아래 버튼으로 OCR 로 읽어 편집 가능한 값으로 바꿀 수 있습니다.</value></data>
   <data name="Kind_text" xml:space="preserve"><value>텍스트</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>금액</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>칸 나눔</value></data>
@@ -308,5 +308,81 @@
   <data name="Erase_KeptLargeImage" xml:space="preserve"><value>큰 이미지(스캔?)가 이 영역을 덮고 있어 픽셀은 바꾸지 않습니다</value></data>
   <data name="Erase_KeptGrouped" xml:space="preserve"><value>그룹으로 묶인 내용은 지우지 않습니다</value></data>
   <data name="Erase_KeptColored" xml:space="preserve"><value>양식의 색상 인쇄는 유지됩니다(위 옵션)</value></data>
+  <data name="Erase_KeptClips" xml:space="preserve"><value>다른 내용을 오려 내는 데 쓰이는 글자는 유지합니다(지우면 보이는 모습이 바뀝니다)</value></data>
   <data name="Erase_KeptChained" xml:space="preserve"><value>같은 줄의 다음 글자와 이어져 있습니다. 둘 다 들어가게 상자를 넓히세요</value></data>
+  <data name="Ui_AiModelWatermark" xml:space="preserve"><value>모델을 고르거나 입력</value></data>
+  <data name="Ui_AiModelsRefresh" xml:space="preserve"><value>모델 목록 가져오기</value></data>
+  <data name="Ui_AiModelsLoading" xml:space="preserve"><value>제공자의 모델 목록을 가져오는 중…</value></data>
+  <data name="Ui_AiModelsLoaded" xml:space="preserve"><value>사용 가능한 모델 {0}개. 목록에서 고르세요.</value></data>
+  <data name="Ui_AiModelsNotListed" xml:space="preserve"><value>사용 가능한 모델 {0}개. '{1}'은(는) 목록에 없습니다.</value></data>
+  <data name="Ui_AiModelsNone" xml:space="preserve"><value>제공자가 모델을 돌려주지 않았습니다. 모델 ID 를 입력하세요.</value></data>
+  <data name="Ui_AiModelsNeedKey" xml:space="preserve"><value>API 키를 넣으면 제공자의 모델 목록이 보입니다.</value></data>
+  <data name="Ui_AiModelsNeedEndpoint" xml:space="preserve"><value>먼저 엔드포인트를 입력하세요(예: http://localhost:11434/v1)</value></data>
+  <data name="Ui_AiModelsTimeout" xml:space="preserve"><value>30초 안에 응답이 없습니다</value></data>
+  <data name="Ui_MovePrinted" xml:space="preserve"><value>인쇄된 글자를 편집 가능하게</value></data>
+  <data name="Ui_MovePrintedTip" xml:space="preserve"><value>입력란에 인쇄된 내용을 지우고 편집할 수 있는 값으로 넣습니다</value></data>
+  <data name="Ui_MovePrintedNote" xml:space="preserve"><value>각 입력란에 인쇄된 내용을 읽어(PDF 글자를 읽을 수 없으면 OCR) 입력란 값으로 넣고, 사본(&lt;이름&gt;_erased.pdf)에서 인쇄를 지웁니다. 미리보기에서 값을 확인하세요.</value></data>
+  <data name="Ui_MovingPrinted" xml:space="preserve"><value>인쇄된 값을 읽고 지우는 중…</value></data>
+  <data name="Ui_MovedPrinted" xml:space="preserve"><value>입력란 {0}개의 인쇄된 글자를 편집 가능한 값으로 넣었습니다({1}개는 OCR, 확인하세요). 인쇄는 {2} 에서 지웠습니다. 입력란을 클릭해 고치세요.</value></data>
+  <data name="Ui_EraseMakeEditable" xml:space="preserve"><value>지운 뒤 각 상자에 편집 가능한 입력란 넣기</value></data>
+  <data name="Ui_EraseMakeEditableNote" xml:space="preserve"><value>입력란에 원래 인쇄된 글자(필요하면 OCR)가 들어가 그 자리에서 고칠 수 있습니다.</value></data>
+  <data name="Ui_ErasedEditable" xml:space="preserve"><value>{0} 저장: {1}개를 지우고, 상자 {2}개에 원래 글자가 든 편집 가능한 입력란을 넣었습니다. 클릭해 고치세요.</value></data>
+  <data name="Ui_MovePrintedField" xml:space="preserve"><value>이 인쇄 글자를 편집 가능하게</value></data>
+  <data name="Err_AiNoModel" xml:space="preserve"><value>모델이 선택되지 않았습니다. '설정 → AI 모델'에서 고르세요.</value></data>
+  <data name="Err_AiNoKey" xml:space="preserve"><value>{0} 의 API 키가 없습니다. '설정 → AI 모델'에서 추가하세요(또는 {1} 설정).</value></data>
+  <data name="Err_AiNoEndpoint" xml:space="preserve"><value>로컬 / OpenAI 호환 제공자는 엔드포인트가 필요합니다(예: http://localhost:11434/v1)</value></data>
+  <data name="Err_AiCutOff" xml:space="preserve"><value>답변이 잘렸습니다(출력 한도). 페이지나 입력란 수를 줄여 보세요.</value></data>
+  <data name="Err_AiFiltered" xml:space="preserve"><value>제공자의 콘텐츠 필터가 답변을 중단했습니다.</value></data>
+  <data name="Err_AiNoVision" xml:space="preserve"><value>{0} 은(는) 페이지 이미지 없이 설정되어 있습니다. OCR 에는 이미지를 읽는 모델이 필요합니다.</value></data>
+  <data name="Err_AiBadJson" xml:space="preserve"><value>모델이 예상한 형식으로 답하지 않았습니다. 다시 시도하세요.</value></data>
+  <data name="Err_AiDeclined" xml:space="preserve"><value>모델이 이 요청을 거절했습니다. {0}</value></data>
+  <data name="Err_AiKeychainMacOnly" xml:space="preserve"><value>지금은 macOS 에서만 키를 저장할 수 있습니다. 대신 환경 변수 {0} 을(를) 설정하세요.</value></data>
+  <data name="Err_AiKeychain" xml:space="preserve"><value>키를 키체인에 저장할 수 없습니다: {0}</value></data>
+  <data name="Err_AiAuth" xml:space="preserve"><value>API 키가 거부되었거나 없습니다</value></data>
+  <data name="Err_AiRateLimited" xml:space="preserve"><value>요청이 너무 많습니다. 잠시 후 다시 시도하세요</value></data>
+  <data name="Err_AiOverloaded" xml:space="preserve"><value>제공자가 과부하 상태입니다. 잠시 후 다시 시도하세요</value></data>
+  <data name="Err_AiInvalidRequest" xml:space="preserve"><value>제공자가 요청을 거부했습니다(알 수 없는 모델 또는 지원하지 않는 옵션)</value></data>
+  <data name="Err_AiNetwork" xml:space="preserve"><value>제공자에 연결할 수 없습니다(네트워크, 주소 또는 시간 초과)</value></data>
+  <data name="Err_AiMalformed" xml:space="preserve"><value>제공자의 응답을 해석할 수 없습니다</value></data>
+  <data name="Err_OcrNoEngine" xml:space="preserve"><value>기기에서 쓸 OCR 엔진이 없습니다. macOS 는 Xcode 명령줄 도구(xcode-select --install), 그 밖에는 tesseract 를 설치하세요.</value></data>
+  <data name="Err_OcrVisionUnavailable" xml:space="preserve"><value>Apple Vision OCR 은 Xcode 명령줄 도구(xcode-select --install)가 설치된 macOS 가 필요합니다.</value></data>
+  <data name="Err_OcrVisionCompile" xml:space="preserve"><value>Vision OCR 도우미를 빌드할 수 없습니다: {0}</value></data>
+  <data name="Err_OcrTesseractMissing" xml:space="preserve"><value>tesseract 를 찾을 수 없습니다. 설치하세요(macOS: brew install tesseract tesseract-lang).</value></data>
+  <data name="Err_OcrTesseractLanguages" xml:space="preserve"><value>tesseract 에 언어 {0} 이(가) 설치되어 있지 않습니다(설치됨: {1}). macOS: brew install tesseract-lang</value></data>
+  <data name="Err_OcrFailed" xml:space="preserve"><value>{0} OCR 실패: {1}</value></data>
+  <data name="Err_EraseNoArea" xml:space="preserve"><value>먼저 상자를 그리세요.</value></data>
+  <data name="Err_EraseNothing" xml:space="preserve"><value>거기에는 지울 인쇄 내용이 없습니다(현재 옵션 기준).</value></data>
+  <data name="Err_EraseOnlyKept" xml:space="preserve"><value>아무것도 지울 수 없었습니다: {0}</value></data>
+  <data name="Err_EraseUnmatched" xml:space="preserve"><value>{0}쪽은 Washi 가 아직 안전하게 지울 수 없는 구조입니다. 아무것도 바꾸지 않았습니다.</value></data>
+  <data name="Err_EraseChanged" xml:space="preserve"><value>지운 영역 밖에서 원본과 달라져({0}픽셀) 결과를 보관하지 않았습니다.</value></data>
+  <data name="Err_Exists" xml:space="preserve"><value>{0} 이(가) 이미 있습니다. Washi 는 파일을 덮어쓰지 않습니다.</value></data>
+  <data name="Err_NoPage" xml:space="preserve"><value>{0}쪽은 없습니다(이 PDF 는 {1}쪽).</value></data>
+  <data name="Err_CannotOpen" xml:space="preserve"><value>{0} 을(를) 열 수 없습니다.</value></data>
+  <data name="Err_PageUnreadable" xml:space="preserve"><value>{0}쪽을 읽을 수 없습니다.</value></data>
+  <data name="Err_ProtectedChanges" xml:space="preserve"><value>{0} 은(는) 변경이 허용되지 않습니다(권한 설정). Washi 는 보호를 해제하지 않습니다.</value></data>
+  <data name="Err_ProtectedReuse" xml:space="preserve"><value>{0} 은(는) 페이지 재사용이 허용되지 않습니다(권한 설정). Washi 는 보호를 해제하지 않습니다.</value></data>
+  <data name="Err_Password" xml:space="preserve"><value>{0} 은(는) 암호로 보호되어 있습니다. Washi 는 보호를 해제하지 않습니다.</value></data>
+  <data name="Err_NothingToMerge" xml:space="preserve"><value>합칠 파일이 없습니다.</value></data>
+  <data name="Err_RangeOutside" xml:space="preserve"><value>페이지 범위 {0} 이(가) 1-{1} 밖입니다.</value></data>
+  <data name="Err_BadRange" xml:space="preserve"><value>'{0}' 은(는) 페이지 범위가 아닙니다(예: 1-3,5).</value></data>
+  <data name="Ui_Value" xml:space="preserve"><value>값</value></data>
+  <data name="Ui_Ticked" xml:space="preserve"><value>체크됨</value></data>
+  <data name="Ui_FilledOnPage" xml:space="preserve"><value>이 페이지에서 작성됨: {0} / {1}</value></data>
+  <data name="Ui_FieldsOnPageCount" xml:space="preserve"><value>이 페이지의 입력란 ({0})</value></data>
+  <data name="Ui_NothingFilled" xml:space="preserve"><value>이 페이지는 아직 작성된 내용이 없습니다. 페이지의 입력란을 클릭해 입력하세요.</value></data>
+  <data name="Ui_NoFieldsOnPage" xml:space="preserve"><value>이 페이지에는 아직 입력란이 없습니다.</value></data>
+  <data name="Ui_TextSize" xml:space="preserve"><value>글자 크기</value></data>
+  <data name="Ui_SizeAuto" xml:space="preserve"><value>칸에 맞춤</value></data>
+  <data name="Ui_TextColor" xml:space="preserve"><value>색</value></data>
+  <data name="Ui_ColorBlack" xml:space="preserve"><value>검정</value></data>
+  <data name="Ui_ColorBlue" xml:space="preserve"><value>파랑</value></data>
+  <data name="Ui_ColorRed" xml:space="preserve"><value>빨강</value></data>
+  <data name="Ui_ColorGreen" xml:space="preserve"><value>초록</value></data>
+  <data name="Ui_ColorGrey" xml:space="preserve"><value>회색</value></data>
+  <data name="Ui_TextFace" xml:space="preserve"><value>글꼴</value></data>
+  <data name="Ui_FaceAuto" xml:space="preserve"><value>양식 기본</value></data>
+  <data name="Ui_FaceSerif" xml:space="preserve"><value>명조 (세리프)</value></data>
+  <data name="Ui_FaceSans" xml:space="preserve"><value>고딕 (산세리프)</value></data>
+  <data name="Ui_StyleApplyAll" xml:space="preserve"><value>모든 입력란에 적용</value></data>
+  <data name="Ui_StyleApplied" xml:space="preserve"><value>크기, 색, 글꼴을 입력란 {0}개에 적용했습니다.</value></data>
 </root>

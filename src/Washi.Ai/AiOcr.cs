@@ -18,7 +18,7 @@ public sealed class AiOcrEngine : IOcrEngine
     public AiOcrEngine(IAiModel model)
     {
         if (!model.AcceptsImages)
-            throw new AiException($"{model.Describe} is set up without images (vision off); OCR needs a model that reads images");
+            throw new AiException($"{model.Describe} is set up without images (vision off); OCR needs a model that reads images", "Err_AiNoVision", model.Describe);
         _model = model;
     }
 
@@ -61,7 +61,7 @@ public sealed class AiOcrEngine : IOcrEngine
         if (s.StartsWith("```")) s = s[(s.IndexOf('\n') + 1)..].TrimEnd('`', '\n', ' ');
         JsonElement root;
         try { root = JsonDocument.Parse(s).RootElement.Clone(); }
-        catch (JsonException) { throw new AiException("the model did not answer with valid JSON"); }
+        catch (JsonException) { throw new AiException("the model did not answer with valid JSON", "Err_AiBadJson"); }
         var lines = new List<OcrLine>();
         if (!root.TryGetProperty("lines", out var arr) || arr.ValueKind != JsonValueKind.Array) return lines;
         foreach (var l in arr.EnumerateArray())

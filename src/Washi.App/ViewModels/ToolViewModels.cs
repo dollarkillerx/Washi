@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Washi.Ai;
+using Washi.App.Services;
 using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
@@ -61,7 +62,7 @@ public sealed partial class OcrToolViewModel(MainViewModel main) : ObservableObj
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException)
         {
-            PlanText = e.Message;
+            PlanText = Errors.Text(e);
         }
     }
 
@@ -88,7 +89,7 @@ public sealed partial class OcrToolViewModel(MainViewModel main) : ObservableObj
         }
         catch (Exception e) when (e is AiException or OcrException)
         {
-            main.Status = L.F("Ui_Error", e.Message);
+            main.Status = L.F("Ui_Error", Errors.Text(e));
             return;
         }
 
@@ -112,7 +113,7 @@ public sealed partial class OcrToolViewModel(MainViewModel main) : ObservableObj
             catch (Exception e) when (e is AiException or HttpRequestException or System.ClientModel.ClientResultException
                                           or Anthropic.Exceptions.AnthropicException or OperationCanceledException or TimeoutException)
             {
-                main.Status = L.F("Ai_Error", e.Message);
+                main.Status = L.F("Ai_Error", UiErrors.Text(e));
             }
             finally
             {
@@ -245,7 +246,7 @@ public sealed partial class SplitToolViewModel(MainViewModel main) : ObservableO
         error = null;
         if (main.PageCount == 0) return null;
         try { return PageAssembly.ParseRanges(Ranges, main.PageCount); }
-        catch (PageAssemblyException e) { error = e.Message; return null; }
+        catch (PageAssemblyException e) { error = Errors.Text(e); return null; }
     }
 
     public bool CanSplit => Parsed(out _) is { Count: > 0 };
@@ -291,6 +292,9 @@ public sealed partial class EraseToolViewModel(MainViewModel main) : ObservableO
 
     [ObservableProperty] private bool _keepColored = true;
     [ObservableProperty] private bool _rules;
+
+    /// <summary>After erasing, put an editable field in each box, holding the text that was printed there.</summary>
+    [ObservableProperty] private bool _makeEditable = true;
     [ObservableProperty] private string _planText = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(CanErase))] private int _planned;
 
@@ -337,11 +341,7 @@ public sealed partial class EraseToolViewModel(MainViewModel main) : ObservableO
     }
 
     [RelayCommand]
-    private async Task ClearAsync()
-    {
-        Reset();
-        await Task.CompletedTask;
-    }
+    private void Clear() => Reset();
 
     public async Task RefreshPlanAsync()
     {
@@ -365,39 +365,88 @@ public sealed partial class EraseToolViewModel(MainViewModel main) : ObservableO
         catch (Exception e) when (e is EraseException or IOException)
         {
             Targets = []; Kept = []; Planned = 0;
-            PlanText = e.Message;
+            PlanText = Errors.Text(e);
         }
         Changed?.Invoke();
     }
 
-    /// <summary>Writes &lt;name&gt;_erased.pdf (or _erased_2, … : nothing is overwritten) and opens it.</summary>
+    /// <summary>
+    /// Writes &lt;name&gt;_erased.pdf (or _erased_2, … : nothing is overwritten) and opens it. With
+    /// <see cref="MakeEditable"/>, each box then holds a field with the text that was printed there (read from the PDF,
+    /// or by OCR of the erased ink), shown in Preview so it can be edited in place.
+    /// </summary>
     [RelayCommand]
     private async Task EraseAsync()
     {
         if (main.PdfPath is not { } path || Boxes.Count == 0) return;
-        var output = FreeName(path);
-        var regions = Boxes.Select(b => new EraseRegion(b.Page, b.Rect)).ToList();
+        var (output, replace) = main.WorkingCopy(path);
+        var boxes = Boxes.ToList();
+        var regions = boxes.Select(b => new EraseRegion(b.Page, b.Rect)).ToList();
         EraseReport? report = null;
+        PrintedResult? printed = null;
         await main.Run(async () =>
         {
             try
             {
-                report = await MainViewModel.Pdfium(() => PdfEraser.Erase(path, output, regions, Options));
+                if (MakeEditable)
+                {
+                    var cells = boxes.Select((b, i) => new PrintedCell(i.ToString(System.Globalization.CultureInfo.InvariantCulture), b.Page, b.Rect)).ToList();
+                    printed = await PrintedText.MoveIntoFieldsAsync(path, output, cells, main.OcrFactory, main.OcrLanguageOrder, Options);
+                    report = printed.Erase;
+                }
+                else report = await MainViewModel.Pdfium(() => PdfEraser.Erase(path, output, regions, Options));
             }
             catch (EraseException e)
             {
-                main.Status = L.F("Ui_EraseFailed", e.Message);
+                main.Status = L.F("Ui_EraseFailed", Errors.Text(e));
+            }
+            catch (OcrException e)
+            {
+                main.Status = L.F("Ui_EraseFailed", Errors.Text(e));
             }
         });
         if (report is null) return;
+        output = main.Commit(output, replace);
         var page = main.PageIndex;
         Reset();
-        await main.LoadAsync(output);
-        if (page < main.PageCount) main.PageIndex = page;
-        main.Status = L.F("Ui_Erased", Path.GetFileName(output), report.Removed, report.RemainingChars, report.ImagesDropped);
+        // fields the user already has (names, values, corrections) stay; only a document without fields is opened anew
+        if (main.Fields.Count > 0)
+        {
+            await main.SwapDocumentAsync(output);
+            foreach (var f in main.Fields.Where(f => boxes.Any(b => b.Page == f.Page && b.Rect.Intersect(f.Rect).Area > f.Rect.Area * 0.5)))
+                f.Prefilled = "";   // its print is gone
+        }
+        else
+        {
+            if (printed is not null) main.ActiveTool = Tool.Form;   // the copy's fields are found, then the boxes join them
+            await main.LoadAsync(output);
+            if (page < main.PageCount) main.PageIndex = page;
+        }
+        if (printed is null)
+        {
+            main.Status = L.F("Ui_Erased", Path.GetFileName(output), report.Removed, report.RemainingChars, report.ImagesDropped);
+            return;
+        }
+        int placed = 0;
+        FieldViewModel? last = null;
+        foreach (var v in printed.Values.Where(v => v.Text.Length > 0))
+        {
+            var box = boxes[int.Parse(v.Key, System.Globalization.CultureInfo.InvariantCulture)];
+            // a field at that spot takes the value (unless the user already typed one); otherwise a new text field the size of the box
+            var (cx, cy) = box.Rect.Center;
+            var field = main.Fields.Where(f => f.Page == box.Page && f.Kind != Washi.Masume.FieldKind.Checkbox && f.Rect.Contains(cx, cy))
+                                   .OrderByDescending(f => f.Rect.IoU(box.Rect)).FirstOrDefault()
+                        ?? main.AddField(box.Rect, box.Page);
+            if (field.Value.Length == 0) { field.Value = v.Text; placed++; }
+            last = field;
+        }
+        main.ActiveTool = Tool.Form;
+        main.PreviewMode = true;
+        if (last is not null) main.SelectedField = last;
+        main.Status = L.F("Ui_ErasedEditable", Path.GetFileName(output), report.Removed, placed);
     }
 
-    private static string FreeName(string input)
+    internal static string FreeName(string input)
     {
         var dir = Path.GetDirectoryName(input)!;
         var stem = Path.GetFileNameWithoutExtension(input);

@@ -23,6 +23,7 @@ public static class MasumeDetector
     /// <summary>Prefilled marker: printed text whose font has no Unicode mapping (garbled text layer).</summary>
     public const string UnreadableMarker = "(text, unreadable)";
     private const int InkLum = 210;      // graphics raster: darker = ink
+    private const int MaxTickPx = 6;     // 1.5 pt at Scale: wider ink is a shape, not a divider line
     private const int ShadedLum = 238;   // cell interior median darker = shaded, not for input
 
     private sealed class Cell(PdfRect rect)
@@ -139,6 +140,20 @@ public static class MasumeDetector
                         Page = pno, Kind = FieldKind.Amount, Rect = new PdfRect(r.X0, r.Y0, lab.X0 - 0.5, r.Y1),
                         Align = 2, Prefilled = pre, Label = JoinText(c.LabelChars),
                     });
+                    continue;
+                }
+                if (c.Boxes.Count == 0 && h >= 7 && SplitAtMarks(r, c.LabelChars) is { } blanks)
+                {
+                    // D2: ＿年＿月＿日 — lone marks in one row, each with a blank before it: one field per blank, so
+                    // a value never has to be spaced by hand to land between the printed marks
+                    c.Kind = "text";
+                    foreach (var (blank, mark) in blanks)
+                        fields.Add(new DetectedField
+                        {
+                            Page = pno, Kind = FieldKind.Text, Rect = blank, Align = 2,
+                            Prefilled = JoinText(c.DataChars.Where(ch => Contains(blank, ch.Rect.Center))) is { Length: > 0 } t0 ? t0 : pre == DrawnMarker ? pre : "",
+                            Label = readable ? mark : "", Notes = ["blank before a mark"],
+                        });
                     continue;
                 }
                 if (lab.Y1 <= r.Y0 + 0.45 * h && r.Y1 - lab.Y1 >= 8)
@@ -396,6 +411,33 @@ public static class MasumeDetector
     }
 
     /// <summary>Short vertical marks inside a cell that do not reach both walls (comb dividers).</summary>
+    /// <summary>
+    /// The blanks of a "＿年＿月＿日" cell: two or three lone marks of one size on one line, the first well inside the
+    /// cell, the last near its right end, each with at least 10 pt (and 1.5 marks) of blank before it. Geometry only,
+    /// so it also works when the text layer cannot be read. Null when the cell is not of that kind (a spaced-out
+    /// heading such as 氏　名 starts at the left; a word such as 税務署長 has no blanks between its characters).
+    /// </summary>
+    private static List<(PdfRect Blank, string Mark)>? SplitAtMarks(PdfRect r, List<PdfChar> labelChars)
+    {
+        if (labelChars.Count is < 2 or > 3) return null;
+        var marks = labelChars.OrderBy(ch => ch.Rect.X0).ToList();
+        double size = marks.Average(m => m.Rect.Width);
+        if (marks.Any(m => Math.Abs(m.Rect.Width - size) > 0.35 * size)) return null;
+        double mid = marks.Average(m => m.Rect.Center.Y);
+        if (marks.Any(m => Math.Abs(m.Rect.Center.Y - mid) > 0.3 * size)) return null;
+        if (marks[0].Rect.X0 - r.X0 < 0.2 * r.Width || r.X1 - marks[^1].Rect.X1 > 0.2 * r.Width) return null;
+        var parts = new List<(PdfRect, string)>();
+        double left = r.X0;
+        foreach (var m in marks)
+        {
+            double blank = m.Rect.X0 - left;
+            if (blank < Math.Max(10, 1.5 * size)) return null;
+            parts.Add((new PdfRect(left + (parts.Count == 0 ? 0 : 0.5), r.Y0, m.Rect.X0 - 0.5, r.Y1), m.Text));
+            left = m.Rect.X1;
+        }
+        return parts;
+    }
+
     private static int CountTicks(Gray g, PdfRect r)
     {
         int x0 = Px(r.X0) + 3, x1 = Px(r.X1) - 3, y0 = Px(r.Y0) + 2, y1 = Px(r.Y1) - 2;
@@ -403,16 +445,41 @@ public static class MasumeDetector
         if (sub.Length == 0) return 0;
         int sw = g.SliceWidth(x0, x1), sh = sub.Length / sw;
         var xs = new List<double>();
-        var cur = new List<int>();
+        var cur = new List<int>();     // a run of columns with ink
+        var full = new List<bool>();   // ... and whether each one is ink from top to bottom
         for (int x = 0; x < sw; x++)
         {
             int inkCount = 0;
             for (int y = 0; y < sh; y++) if (sub[y * sw + x] < InkLum) inkCount++;
             double frac = inkCount / (double)sh;
-            if (frac > 0.12 && frac < 0.97) cur.Add(x);
-            else if (cur.Count > 0) { xs.Add(cur.Average()); cur.Clear(); }
+            if (frac > 0.12) { cur.Add(x); full.Add(frac >= 0.97); }
+            else if (cur.Count > 0) Flush();
         }
-        if (cur.Count > 0) xs.Add(cur.Average());
+        if (cur.Count > 0) Flush();
+
+        void Flush()
+        {
+            if (full.Contains(true) && cur.Count <= MaxTickPx)
+            {
+                // a thin line as tall as the row is a divider too: digit groups are often separated by full-height
+                // lines (法人番号: 1 + 4 + 4 + 4 boxes)
+                xs.Add(cur.Average());
+            }
+            else
+            {
+                // short ticks; inside a wide solid block only its soft edges count (as before)
+                var part = new List<int>();
+                for (int k = 0; k < cur.Count; k++)
+                {
+                    if (!full[k]) { part.Add(cur[k]); continue; }
+                    if (part.Count > 0) { xs.Add(part.Average()); part.Clear(); }
+                }
+                if (part.Count > 0) xs.Add(part.Average());
+            }
+            cur.Clear();
+            full.Clear();
+        }
+
         if (xs.Count < 3) return 0;
         var pts = new List<double> { 0 };
         pts.AddRange(xs);

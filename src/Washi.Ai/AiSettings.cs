@@ -70,7 +70,7 @@ public sealed record AiSettings(AiProvider Provider, string Model, Uri? Endpoint
     {
         var key = ApiKeys.Find(Provider) ?? "";
         if (key.Length == 0 && Provider != AiProvider.OpenAICompatible)
-            throw new AiException($"no API key for {Provider}: set {KeyVariable(Provider)} or run: washi ai key {Provider.ToString().ToLowerInvariant()}");
+            throw new AiException($"no API key for {Provider}: set {KeyVariable(Provider)} or run: washi ai key {Provider.ToString().ToLowerInvariant()}", "Err_AiNoKey", Provider.ToString(), KeyVariable(Provider));
         if (Provider == AiProvider.Anthropic)
         {
             var client = new Anthropic.AnthropicClient { ApiKey = key };
@@ -102,27 +102,27 @@ public sealed record AiSettings(AiProvider Provider, string Model, Uri? Endpoint
     /// <summary>The assistant's provider. Throws <see cref="AiException"/> when no model or key is set.</summary>
     public Chat.IChatProvider CreateChatProvider(HttpClient http)
     {
-        if (string.IsNullOrWhiteSpace(Model)) throw new AiException("no model is set: choose one in Settings → AI");
+        if (string.IsNullOrWhiteSpace(Model)) throw new AiException("no model is set: choose one in Settings → AI", "Err_AiNoModel");
         var key = ApiKeys.Find(Provider) ?? "";
         if (key.Length == 0 && Provider != AiProvider.OpenAICompatible)
-            throw new AiException($"no API key for {Provider}: add it in Settings → AI, or set {KeyVariable(Provider)}");
+            throw new AiException($"no API key for {Provider}: add it in Settings → AI, or set {KeyVariable(Provider)}", "Err_AiNoKey", Provider.ToString(), KeyVariable(Provider));
         if (Provider == AiProvider.OpenAICompatible && Endpoint is null)
-            throw new AiException("an OpenAI-compatible provider needs an endpoint, e.g. http://localhost:11434/v1");
+            throw new AiException("an OpenAI-compatible provider needs an endpoint, e.g. http://localhost:11434/v1", "Err_AiNoEndpoint");
         return Chat.AiProviders.Create(ToProviderConfig(), key.Length > 0 ? key : null, http);
     }
 
     /// <summary>Builds the model client. Throws <see cref="AiException"/> when it cannot.</summary>
     public IAiModel CreateModel()
     {
-        if (string.IsNullOrWhiteSpace(Model)) throw new AiException("no model is set; run: washi ai config <provider> <model>");
+        if (string.IsNullOrWhiteSpace(Model)) throw new AiException("no model is set; run: washi ai config <provider> <model>", "Err_AiNoModel");
         var key = ApiKeys.Find(Provider) ?? "";
         if (key.Length == 0 && Provider != AiProvider.OpenAICompatible)
-            throw new AiException($"no API key for {Provider}: set {KeyVariable(Provider)} or run: washi ai key {Provider.ToString().ToLowerInvariant()}");
+            throw new AiException($"no API key for {Provider}: set {KeyVariable(Provider)} or run: washi ai key {Provider.ToString().ToLowerInvariant()}", "Err_AiNoKey", Provider.ToString(), KeyVariable(Provider));
         return Provider switch
         {
             AiProvider.Anthropic => new ClaudeModel(key, Model),
             AiProvider.DeepSeek => new OpenAICompatibleModel(this with { Endpoint = Endpoint ?? DeepSeekEndpoint }, key),
-            AiProvider.OpenAICompatible when Endpoint is null => throw new AiException("an OpenAI-compatible provider needs an endpoint, e.g. http://localhost:11434/v1"),
+            AiProvider.OpenAICompatible when Endpoint is null => throw new AiException("an OpenAI-compatible provider needs an endpoint, e.g. http://localhost:11434/v1", "Err_AiNoEndpoint"),
             _ => new OpenAICompatibleModel(this, key),
         };
     }
@@ -145,9 +145,9 @@ public static class ApiKeys
     public static void Store(AiProvider provider, string key)
     {
         if (!OperatingSystem.IsMacOS())
-            throw new AiException($"the keychain is only supported on macOS for now; set {AiSettings.KeyVariable(provider)} instead");
+            throw new AiException($"the keychain is only supported on macOS for now; set {AiSettings.KeyVariable(provider)} instead", "Err_AiKeychainMacOnly", AiSettings.KeyVariable(provider));
         var (code, output) = Security("add-generic-password", "-U", "-s", Service, "-a", Account(provider), "-l", $"Washi {provider} API key", "-w", key);
-        if (code != 0) throw new AiException($"could not store the key in the Keychain: {output.Trim()}");
+        if (code != 0) throw new AiException($"could not store the key in the Keychain: {output.Trim()}", "Err_AiKeychain", output.Trim());
     }
 
     /// <summary>Another secret of Washi's (e.g. "mcp-token"): the macOS Keychain, or a 0600 file elsewhere.</summary>
@@ -167,7 +167,7 @@ public static class ApiKeys
         if (OperatingSystem.IsMacOS())
         {
             var (code, output) = Security("add-generic-password", "-U", "-s", Service, "-a", account, "-l", label, "-w", value);
-            if (code != 0) throw new AiException($"could not store the secret in the Keychain: {output.Trim()}");
+            if (code != 0) throw new AiException($"could not store the secret in the Keychain: {output.Trim()}", "Err_AiKeychain", output.Trim());
             return;
         }
         var file = SecretFile(account);

@@ -101,8 +101,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>Envoyer à l’IA ?</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>Envoyer</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>Annuler</value></data>
-  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>Quelque chose est imprimé ici (dessiné en graphisme, pas en texte).</value></data>
-  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>Du texte est imprimé ici, mais la couche texte du PDF est illisible (ses polices n’ont pas de correspondance Unicode). L’OCR peut le lire.</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>Quelque chose est imprimé ici (dessiné en graphisme, pas en texte). Le bouton ci-dessous le lit et en fait une valeur modifiable.</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>Du texte est imprimé ici, mais la couche texte du PDF est illisible (polices sans correspondance Unicode). Le bouton ci-dessous le lit par OCR et en fait une valeur modifiable.</value></data>
   <data name="Kind_text" xml:space="preserve"><value>texte</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>montant</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>cases</value></data>
@@ -308,5 +308,81 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Erase_KeptLargeImage" xml:space="preserve"><value>une grande image (un scan ?) couvre cette zone ; ses pixels ne sont pas modifiés</value></data>
   <data name="Erase_KeptGrouped" xml:space="preserve"><value>le contenu groupé n’est pas effacé</value></data>
   <data name="Erase_KeptColored" xml:space="preserve"><value>l’impression en couleur du formulaire est conservée (option ci-dessus)</value></data>
+  <data name="Erase_KeptClips" xml:space="preserve"><value>le texte servant de masque à d’autres contenus est conservé (l’effacer changerait ce qui apparaît)</value></data>
   <data name="Erase_KeptChained" xml:space="preserve"><value>texte lié au suivant sur sa ligne : agrandissez le cadre pour inclure les deux</value></data>
+  <data name="Ui_AiModelWatermark" xml:space="preserve"><value>Choisir ou saisir un modèle</value></data>
+  <data name="Ui_AiModelsRefresh" xml:space="preserve"><value>Charger les modèles</value></data>
+  <data name="Ui_AiModelsLoading" xml:space="preserve"><value>Chargement des modèles du fournisseur…</value></data>
+  <data name="Ui_AiModelsLoaded" xml:space="preserve"><value>{0} modèles disponibles : choisissez-en un dans la liste.</value></data>
+  <data name="Ui_AiModelsNotListed" xml:space="preserve"><value>{0} modèles disponibles ; « {1} » n’en fait pas partie.</value></data>
+  <data name="Ui_AiModelsNone" xml:space="preserve"><value>Le fournisseur n’a listé aucun modèle ; saisissez son identifiant.</value></data>
+  <data name="Ui_AiModelsNeedKey" xml:space="preserve"><value>Ajoutez la clé d’API pour voir les modèles du fournisseur.</value></data>
+  <data name="Ui_AiModelsNeedEndpoint" xml:space="preserve"><value>Saisissez d’abord le point d’accès, p. ex. http://localhost:11434/v1</value></data>
+  <data name="Ui_AiModelsTimeout" xml:space="preserve"><value>pas de réponse en 30 secondes</value></data>
+  <data name="Ui_MovePrinted" xml:space="preserve"><value>Rendre le texte imprimé modifiable</value></data>
+  <data name="Ui_MovePrintedTip" xml:space="preserve"><value>Efface ce qui est imprimé dans les champs et le place dans les champs comme valeurs modifiables</value></data>
+  <data name="Ui_MovePrintedNote" xml:space="preserve"><value>Washi lit ce qui est imprimé dans chaque champ (OCR si le texte du PDF est illisible), le met comme valeur du champ et efface l’impression dans une copie (&lt;nom&gt;_erased.pdf). Vérifiez les valeurs dans l’aperçu.</value></data>
+  <data name="Ui_MovingPrinted" xml:space="preserve"><value>Lecture et effacement des valeurs imprimées…</value></data>
+  <data name="Ui_MovedPrinted" xml:space="preserve"><value>{0} champ(s) contiennent maintenant leur texte imprimé comme valeur modifiable ({1} lu(s) par OCR : vérifiez-les). L’impression a été effacée dans {2} ; cliquez sur un champ pour le modifier.</value></data>
+  <data name="Ui_EraseMakeEditable" xml:space="preserve"><value>Puis placer un champ modifiable dans chaque cadre</value></data>
+  <data name="Ui_EraseMakeEditableNote" xml:space="preserve"><value>Le champ reprend le texte imprimé (par OCR si besoin) : modifiez-le sur place.</value></data>
+  <data name="Ui_ErasedEditable" xml:space="preserve"><value>{0} enregistré : {1} élément(s) effacé(s) ; {2} cadre(s) contiennent un champ modifiable avec l’ancien texte. Cliquez pour le changer.</value></data>
+  <data name="Ui_MovePrintedField" xml:space="preserve"><value>Rendre ce texte imprimé modifiable</value></data>
+  <data name="Err_AiNoModel" xml:space="preserve"><value>Aucun modèle choisi : sélectionnez-en un dans Réglages → Modèle d’IA.</value></data>
+  <data name="Err_AiNoKey" xml:space="preserve"><value>Pas de clé d’API pour {0} : ajoutez-la dans Réglages → Modèle d’IA (ou définissez {1}).</value></data>
+  <data name="Err_AiNoEndpoint" xml:space="preserve"><value>Un fournisseur local / compatible OpenAI a besoin d’un point d’accès, p. ex. http://localhost:11434/v1</value></data>
+  <data name="Err_AiCutOff" xml:space="preserve"><value>La réponse a été coupée (limite de sortie) ; essayez avec moins de pages ou de champs.</value></data>
+  <data name="Err_AiFiltered" xml:space="preserve"><value>Le filtre de contenu du fournisseur a interrompu la réponse.</value></data>
+  <data name="Err_AiNoVision" xml:space="preserve"><value>{0} est configuré sans images de page ; l’OCR exige un modèle qui lit les images.</value></data>
+  <data name="Err_AiBadJson" xml:space="preserve"><value>Le modèle n’a pas répondu au format attendu ; réessayez.</value></data>
+  <data name="Err_AiDeclined" xml:space="preserve"><value>Le modèle a refusé cette demande. {0}</value></data>
+  <data name="Err_AiKeychainMacOnly" xml:space="preserve"><value>Les clés ne peuvent être enregistrées que sur macOS pour l’instant ; définissez plutôt la variable {0}.</value></data>
+  <data name="Err_AiKeychain" xml:space="preserve"><value>La clé n’a pas pu être enregistrée dans le trousseau : {0}</value></data>
+  <data name="Err_AiAuth" xml:space="preserve"><value>Clé d’API refusée ou absente</value></data>
+  <data name="Err_AiRateLimited" xml:space="preserve"><value>Trop de requêtes : patientez puis réessayez</value></data>
+  <data name="Err_AiOverloaded" xml:space="preserve"><value>Le fournisseur est surchargé : réessayez dans un instant</value></data>
+  <data name="Err_AiInvalidRequest" xml:space="preserve"><value>Le fournisseur a rejeté la requête (modèle inconnu ou option non prise en charge)</value></data>
+  <data name="Err_AiNetwork" xml:space="preserve"><value>Fournisseur injoignable (réseau, adresse ou délai dépassé)</value></data>
+  <data name="Err_AiMalformed" xml:space="preserve"><value>La réponse du fournisseur est incompréhensible</value></data>
+  <data name="Err_OcrNoEngine" xml:space="preserve"><value>Aucun moteur d’OCR local : sur macOS, installez les outils en ligne de commande Xcode (xcode-select --install) ; ailleurs, installez tesseract.</value></data>
+  <data name="Err_OcrVisionUnavailable" xml:space="preserve"><value>L’OCR Apple Vision exige macOS avec les outils en ligne de commande Xcode (xcode-select --install).</value></data>
+  <data name="Err_OcrVisionCompile" xml:space="preserve"><value>L’assistant d’OCR Vision n’a pas pu être compilé : {0}</value></data>
+  <data name="Err_OcrTesseractMissing" xml:space="preserve"><value>tesseract est introuvable ; installez-le (macOS : brew install tesseract tesseract-lang).</value></data>
+  <data name="Err_OcrTesseractLanguages" xml:space="preserve"><value>tesseract n’a aucune des langues {0} (installées : {1}). macOS : brew install tesseract-lang</value></data>
+  <data name="Err_OcrFailed" xml:space="preserve"><value>Échec de l’OCR {0} : {1}</value></data>
+  <data name="Err_EraseNoArea" xml:space="preserve"><value>Tracez d’abord un cadre.</value></data>
+  <data name="Err_EraseNothing" xml:space="preserve"><value>Rien d’imprimé à effacer à cet endroit (avec les options actuelles).</value></data>
+  <data name="Err_EraseOnlyKept" xml:space="preserve"><value>Rien n’a pu être effacé : {0}</value></data>
+  <data name="Err_EraseUnmatched" xml:space="preserve"><value>La page {0} est construite d’une façon que Washi ne sait pas encore effacer sans risque ; rien n’a été modifié.</value></data>
+  <data name="Err_EraseChanged" xml:space="preserve"><value>Le résultat différait de l’original hors des zones effacées ({0} pixels) ; il n’a pas été conservé.</value></data>
+  <data name="Err_Exists" xml:space="preserve"><value>{0} existe déjà ; Washi n’écrase jamais de fichier.</value></data>
+  <data name="Err_NoPage" xml:space="preserve"><value>La page {0} n’existe pas (le PDF en a {1}).</value></data>
+  <data name="Err_CannotOpen" xml:space="preserve"><value>Impossible d’ouvrir {0}.</value></data>
+  <data name="Err_PageUnreadable" xml:space="preserve"><value>La page {0} est illisible.</value></data>
+  <data name="Err_ProtectedChanges" xml:space="preserve"><value>{0} n’autorise pas les modifications (ses permissions l’interdisent) ; Washi ne retire pas la protection.</value></data>
+  <data name="Err_ProtectedReuse" xml:space="preserve"><value>{0} n’autorise pas la réutilisation de ses pages (permissions) ; Washi ne retire pas la protection.</value></data>
+  <data name="Err_Password" xml:space="preserve"><value>{0} est protégé par mot de passe ; Washi ne retire pas la protection.</value></data>
+  <data name="Err_NothingToMerge" xml:space="preserve"><value>Rien à fusionner.</value></data>
+  <data name="Err_RangeOutside" xml:space="preserve"><value>La plage de pages {0} sort de 1-{1}.</value></data>
+  <data name="Err_BadRange" xml:space="preserve"><value>« {0} » n’est pas une plage de pages (p. ex. 1-3,5).</value></data>
+  <data name="Ui_Value" xml:space="preserve"><value>Valeur</value></data>
+  <data name="Ui_Ticked" xml:space="preserve"><value>Coché</value></data>
+  <data name="Ui_FilledOnPage" xml:space="preserve"><value>Remplis sur cette page : {0} sur {1}</value></data>
+  <data name="Ui_FieldsOnPageCount" xml:space="preserve"><value>Champs de cette page ({0})</value></data>
+  <data name="Ui_NothingFilled" xml:space="preserve"><value>Rien de rempli sur cette page pour l’instant. Cliquez sur un champ de la page et saisissez.</value></data>
+  <data name="Ui_NoFieldsOnPage" xml:space="preserve"><value>Aucun champ sur cette page pour l’instant.</value></data>
+  <data name="Ui_TextSize" xml:space="preserve"><value>Taille du texte</value></data>
+  <data name="Ui_SizeAuto" xml:space="preserve"><value>Ajuster au champ</value></data>
+  <data name="Ui_TextColor" xml:space="preserve"><value>Couleur</value></data>
+  <data name="Ui_ColorBlack" xml:space="preserve"><value>Noir</value></data>
+  <data name="Ui_ColorBlue" xml:space="preserve"><value>Bleu</value></data>
+  <data name="Ui_ColorRed" xml:space="preserve"><value>Rouge</value></data>
+  <data name="Ui_ColorGreen" xml:space="preserve"><value>Vert</value></data>
+  <data name="Ui_ColorGrey" xml:space="preserve"><value>Gris</value></data>
+  <data name="Ui_TextFace" xml:space="preserve"><value>Police</value></data>
+  <data name="Ui_FaceAuto" xml:space="preserve"><value>Par défaut du formulaire</value></data>
+  <data name="Ui_FaceSerif" xml:space="preserve"><value>Mincho / Song (serif)</value></data>
+  <data name="Ui_FaceSans" xml:space="preserve"><value>Gothique / Hei (sans serif)</value></data>
+  <data name="Ui_StyleApplyAll" xml:space="preserve"><value>Appliquer à tous les champs</value></data>
+  <data name="Ui_StyleApplied" xml:space="preserve"><value>Taille, couleur et police appliquées à {0} champ(s).</value></data>
 </root>

@@ -57,9 +57,9 @@ public sealed class OpenAICompatibleModel : IAiModel
         ChatCompletion completion = await _client.CompleteChatAsync(
             [new SystemChatMessage(system), new UserChatMessage(parts)], options, cancellationToken);
         if (completion.FinishReason == ChatFinishReason.Length)
-            throw new AiException("the answer was cut off (length limit); try fewer pages or fields at once");
+            throw new AiException("the answer was cut off (length limit); try fewer pages or fields at once", "Err_AiCutOff");
         if (completion.FinishReason == ChatFinishReason.ContentFilter)
-            throw new AiException("the provider's content filter stopped the answer");
+            throw new AiException("the provider's content filter stopped the answer", "Err_AiFiltered");
         return StripThinking(string.Concat(completion.Content.Select(c => c.Text)));
     }
 

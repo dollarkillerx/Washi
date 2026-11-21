@@ -8,7 +8,11 @@ using Washi.Core.Pdfium;
 
 namespace Washi.Core.Pages;
 
-public sealed class EraseException(string message) : Exception(message);
+public sealed class EraseException(string message, string? key = null, params object[] args) : Exception(message), Washi.Core.Localization.ILocalizedError
+{
+    public string? Key { get; } = key;
+    public object[] Args { get; } = args;
+}
 
 /// <summary>A box to erase: 0-based page, upright top-down points (the same space as fields).</summary>
 public sealed record EraseRegion(int Page, PdfRect Rect);
@@ -30,7 +34,7 @@ public enum EraseKind { Text, Image, Drawing }
 public sealed record EraseTarget(int Page, EraseKind Kind, PdfRect Rect, string? Text);
 
 /// <summary>Why something inside a box was left alone.</summary>
-public enum EraseKeptWhy { RunsOutside, LargeImage, Grouped, Colored, Chained }
+public enum EraseKeptWhy { RunsOutside, LargeImage, Grouped, Colored, Chained, Clips }
 
 /// <summary>Something inside a box that was left alone, and why (<see cref="Reason"/> in English, for agents).</summary>
 public sealed record EraseKept(int Page, EraseKind Kind, PdfRect Rect, EraseKeptWhy Why)
@@ -41,6 +45,7 @@ public sealed record EraseKept(int Page, EraseKind Kind, PdfRect Rect, EraseKept
         EraseKeptWhy.LargeImage => "a large image (a scan?) covers this area; its pixels are not changed",
         EraseKeptWhy.Grouped => "grouped content (a form XObject) is not erased",
         EraseKeptWhy.Colored => "coloured text (the form's own printing) is kept; turn off 'keep coloured printing' to erase it",
+        EraseKeptWhy.Clips => "text that other content is clipped to: erasing it would change what shows through",
         _ => "a text run joined to the next one on its line: widen the box to erase both",
     };
 }
@@ -97,13 +102,40 @@ public static class PdfEraser
         finally { fpdfview.FPDF_CloseDocument(doc); }
     }
 
+    /// <summary>
+    /// Per page (0-based): whether its drawing commands can be matched one to one with the objects PDFium sees, which
+    /// is what erasing needs. Pages that do not match are refused by <see cref="Erase"/> (nothing is changed).
+    /// </summary>
+    public static IReadOnlyList<(int Page, bool Matches, int Objects, int Operators)> Check(string input)
+    {
+        PdfiumDocument.EnsureInit();
+        var types = new List<List<int>>();
+        var doc = Load(input);
+        try
+        {
+            int pages = fpdfview.FPDF_GetPageCount(doc);
+            for (int i = 0; i < pages; i++)
+                WithPage(doc, i, (page, _) => types.Add([.. Enumerable.Range(0, fpdf_edit.FPDFPageCountObjects(page))
+                    .Select(k => fpdf_edit.FPDFPageObjGetType(fpdf_edit.FPDFPageGetObject(page, k)))]));
+        }
+        finally { fpdfview.FPDF_CloseDocument(doc); }
+        using var d = PdfReader.Open(input, PdfDocumentOpenMode.Import);
+        var result = new List<(int, bool, int, int)>();
+        for (int i = 0; i < types.Count && i < d.PageCount; i++)
+        {
+            var painters = Painters(new ContentStream(ReadContents(d.Pages[i])), Resources(d.Pages[i]));
+            result.Add((i, painters.Select(p => p.Type).SequenceEqual(types[i]), types[i].Count, painters.Count));
+        }
+        return result;
+    }
+
     /// <summary>Writes <paramref name="output"/> (a new file) with the content under <paramref name="regions"/> removed.</summary>
     /// <exception cref="EraseException">Nothing could be erased safely; no file is left behind.</exception>
     public static EraseReport Erase(string input, string output, IReadOnlyList<EraseRegion> regions, EraseOptions? options = null)
     {
         options ??= EraseOptions.Default;
-        if (regions.Count == 0) throw new EraseException("no area to erase");
-        if (File.Exists(output)) throw new EraseException($"{Path.GetFileName(output)} already exists; Washi never overwrites files");
+        if (regions.Count == 0) throw new EraseException("no area to erase", "Err_EraseNoArea");
+        if (File.Exists(output)) throw new EraseException($"{Path.GetFileName(output)} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(output));
         CheckPermissions(input);
         PdfiumDocument.EnsureInit();
 
@@ -114,7 +146,7 @@ public static class PdfEraser
         {
             int pages = fpdfview.FPDF_GetPageCount(doc);
             foreach (var r in regions)
-                if (r.Page < 0 || r.Page >= pages) throw new EraseException($"page {r.Page + 1} does not exist (the PDF has {pages})");
+                if (r.Page < 0 || r.Page >= pages) throw new EraseException($"page {r.Page + 1} does not exist (the PDF has {pages})", "Err_NoPage", r.Page + 1, pages);
             foreach (var group in regions.GroupBy(r => r.Page))
                 WithPage(doc, group.Key, (page, map) =>
                 {
@@ -128,7 +160,10 @@ public static class PdfEraser
         // 2. the matching operators are cut out of the page's content stream; every other byte stays as it was
         var kept = new List<EraseKept>();
         var removed = new List<EraseTarget>();
+        var cutXObjects = new List<(PdfPage Page, string Name)>();
         int dropped;
+        try
+        {
         using (var d = PdfReader.Open(input, PdfDocumentOpenMode.Modify))
         {
             int before = CountImages(d);
@@ -141,7 +176,7 @@ public static class PdfEraser
                 var content = new ContentStream(ReadContents(page));
                 var painters = Painters(content, Resources(page));
                 if (!painters.Select(p => p.Type).SequenceEqual(types))
-                    throw new EraseException($"page {pageIndex + 1}: its drawing commands could not be matched one to one; nothing was changed");
+                    throw new EraseException($"page {pageIndex + 1}: its drawing commands could not be matched one to one; nothing was changed", "Err_EraseUnmatched", pageIndex + 1);
                 var edits = new List<(int Start, int End, string With)>();
                 var cut = new HashSet<int>();   // operator indexes removed
                 foreach (var (opIndex, _, objIndex) in painters.Select((p, i) => (p.Op, p.Type, i)))
@@ -166,24 +201,28 @@ public static class PdfEraser
                     });
                     removed.Add(c.Target!);
                 }
+                foreach (var e in edits)
+                {
+                    var op = content.Ops.First(o => o.Start == e.Start);
+                    if (op.Name == "Do" && op.Names.Count > 0) cutXObjects.Add((page, "/" + op.Names[^1]));
+                }
                 if (edits.Count > 0) WriteContents(d, page, Apply(content.Bytes, edits));
             }
             if (removed.Count == 0)
-                throw new EraseException(kept.Count > 0
-                    ? "nothing could be erased: " + string.Join("; ", kept.Select(k => k.Reason).Distinct())
-                    : "nothing to erase inside the box (with the current options)");
-            DropUnusedXObjects(d);
+                throw kept.Count > 0
+                    ? new EraseException("nothing could be erased: " + string.Join("; ", kept.Select(k => k.Reason).Distinct()), "Err_EraseOnlyKept",
+                        string.Join("; ", kept.Select(k => Washi.Core.Localization.L.Get("Erase_Kept" + k.Why)).Distinct()))
+                    : new EraseException("nothing to erase inside the box (with the current options)", "Err_EraseNothing");
+            DropUnusedXObjects(d, cutXObjects);
             d.Save(output);
             using var check = PdfReader.Open(output, PdfDocumentOpenMode.Import);
             dropped = Math.Max(0, before - CountImages(check));
         }
 
-        // 3. proof: no text left where it was erased, and nothing else on the page moved
-        try
-        {
+            // 3. proof: no text left where it was erased, and nothing else on the page moved
             var (remaining, changed) = Verify(input, output, regions, removed);
             if (changed > 0)
-                throw new EraseException($"the erased copy differs from the original outside the erased areas ({changed} pixels); it was not kept");
+                throw new EraseException($"the erased copy differs from the original outside the erased areas ({changed} pixels); it was not kept", "Err_EraseChanged", changed);
             return new EraseReport(removed.Count(t => t.Kind == EraseKind.Text), removed.Count(t => t.Kind == EraseKind.Image),
                 removed.Count(t => t.Kind == EraseKind.Drawing), kept, remaining, changed, dropped);
         }
@@ -218,9 +257,15 @@ public static class PdfEraser
                 float l = 0, b = 0, r = 0, t = 0;
                 if (fpdf_edit.FPDFPageObjGetBounds(obj, ref l, ref b, ref r, ref t) == 0) continue;
                 var rect = map.ToDevice(l, t, r, b);
-                var box = boxes.FirstOrDefault(x => Overlap(rect, Grow(x)) > 0);
-                if (box == default) continue;
-                double share = Share(rect, Grow(box));
+                // the box that holds most of it (cells of a form touch: the first box it grazes is not the right one)
+                double share = 0;
+                PdfRect box = default;
+                foreach (var x in boxes)
+                {
+                    double sh = Share(rect, Grow(x));
+                    if (sh > share) { share = sh; box = x; }
+                }
+                if (share <= 0) continue;
 
                 if (k == EraseKind.Text && !o.Text || k == EraseKind.Image && !o.Images || k == EraseKind.Drawing && !o.Drawings) continue;
 
@@ -247,6 +292,12 @@ public static class PdfEraser
                     continue;
                 }
                 string? s = null;
+                if (k == EraseKind.Text && (int)fpdf_edit.FPDFTextObjGetTextRenderMode(obj) >= 4)
+                {
+                    // render modes 4-7 add the glyphs to the clipping path: later content shows only through them
+                    list.Add(new(i, null, new(pageIndex, k, rect, EraseKeptWhy.Clips)));
+                    continue;
+                }
                 if (k == EraseKind.Text)
                 {
                     textPage ??= fpdf_text.FPDFTextLoadPage(page);
@@ -345,14 +396,14 @@ public static class PdfEraser
     {
         var doc = fpdfview.FPDF_LoadDocument(path, "");
         if (doc is null || doc.__Instance == IntPtr.Zero)
-            throw new EraseException($"could not open {Path.GetFileName(path)} (PDFium error {fpdfview.FPDF_GetLastError()})");
+            throw new EraseException($"could not open {Path.GetFileName(path)} (PDFium error {fpdfview.FPDF_GetLastError()})", "Err_CannotOpen", Path.GetFileName(path));
         return doc;
     }
 
     private static void WithPage(FpdfDocumentT doc, int index, Action<FpdfPageT, PdfiumDocument.PageMapper> action)
     {
         var page = fpdfview.FPDF_LoadPage(doc, index);
-        if (page is null || page.__Instance == IntPtr.Zero) throw new EraseException($"page {index + 1} could not be read");
+        if (page is null || page.__Instance == IntPtr.Zero) throw new EraseException($"page {index + 1} could not be read", "Err_PageUnreadable", index + 1);
         try { action(page, new PdfiumDocument.PageMapper(page, fpdfview.FPDF_GetPageWidthF(page), fpdfview.FPDF_GetPageHeightF(page))); }
         finally { fpdfview.FPDF_ClosePage(page); }
     }
@@ -419,18 +470,24 @@ public static class PdfEraser
     {
         var xobjects = resources is null ? null : Deref(resources.Elements["/XObject"]) as PdfDictionary;
         var list = new List<(int, int)>();
-        bool path = false;
+        int points = 0;            // points of the path being built
+        bool lastMove = false;     // a moveto right after a moveto replaces it
         for (int k = 0; k < content.Ops.Count; k++)
         {
             var op = content.Ops[k];
             switch (op.Name)
             {
-                case "m" or "l" or "c" or "v" or "y" or "h" or "re": path = true; break;
+                case "m": if (!lastMove) points++; lastMove = true; break;
+                case "l": points++; lastMove = false; break;
+                case "c" or "v" or "y": points += 3; lastMove = false; break;
+                case "re": points += 4; lastMove = false; break;
+                case "h": Close(); break;
                 case "S" or "s" or "f" or "F" or "f*" or "B" or "B*" or "b" or "b*":
-                    if (path) list.Add((k, 2));
-                    path = false;
+                    if (op.Name is "s" or "b" or "b*") Close();   // these close the path first
+                    if (points >= 2) list.Add((k, 2));   // a lone point paints nothing: PDFium makes no object
+                    points = 0; lastMove = false;
                     break;
-                case "n": path = false; break;
+                case "n": points = 0; lastMove = false; break;
                 case "Tj" or "TJ" or "'" or "\"":
                     if (op.Strings.Any(x => x.Length > 0)) list.Add((k, 1));
                     break;
@@ -445,6 +502,9 @@ public static class PdfEraser
             }
         }
         return list;
+
+        // closing a path that is only a moveto gives it a second point (seen on 厚労省 forms: "0 0 m s" is an object)
+        void Close() { if (points == 1) points = 2; lastMove = false; }
     }
 
     /// <summary>
@@ -468,20 +528,29 @@ public static class PdfEraser
         return false;
     }
 
-    /// <summary>Removes XObject entries that no page content uses any more (the erased images).</summary>
-    private static void DropUnusedXObjects(PdfDocument d)
+    /// <summary>
+    /// Removes the XObject entries of erased images when no page sharing that dictionary draws them any more. Only
+    /// names this run cut are touched: other entries may be used in ways a content scan cannot see.
+    /// </summary>
+    private static void DropUnusedXObjects(PdfDocument d, IReadOnlyList<(PdfPage Page, string Name)> cut)
     {
-        var used = new Dictionary<PdfDictionary, HashSet<string>>(ReferenceEqualityComparer.Instance);
+        var candidates = new Dictionary<PdfDictionary, HashSet<string>>(ReferenceEqualityComparer.Instance);
+        foreach (var (page, name) in cut)
+        {
+            if (Resources(page) is not { } res || Deref(res.Elements["/XObject"]) is not PdfDictionary xobjects) continue;
+            if (!candidates.TryGetValue(xobjects, out var names)) candidates[xobjects] = names = new HashSet<string>(StringComparer.Ordinal);
+            names.Add(name);
+        }
+        if (candidates.Count == 0) return;
         foreach (var page in d.Pages)
         {
             if (Resources(page) is not { } res || Deref(res.Elements["/XObject"]) is not PdfDictionary xobjects) continue;
-            if (!used.TryGetValue(xobjects, out var names)) used[xobjects] = names = new HashSet<string>(StringComparer.Ordinal);
+            if (!candidates.TryGetValue(xobjects, out var names) || names.Count == 0) continue;
             foreach (var op in new ContentStream(ReadContents(page)).Ops)
-                if (op.Name == "Do" && op.Names.Count > 0) names.Add("/" + op.Names[^1]);
+                if (op.Name == "Do" && op.Names.Count > 0) names.Remove("/" + op.Names[^1]);   // still drawn somewhere
         }
-        foreach (var (xobjects, names) in used)
-            foreach (var key in xobjects.Elements.Keys.ToList())
-                if (!names.Contains(key)) xobjects.Elements.Remove(key);
+        foreach (var (xobjects, names) in candidates)
+            foreach (var name in names) xobjects.Elements.Remove(name);
     }
 
     private static int CountImages(PdfDocument d) =>
@@ -497,15 +566,49 @@ public static class PdfEraser
         {
             using var d = PdfReader.Open(input, PdfDocumentOpenMode.Import);
             if (!d.SecuritySettings.PermitModifyDocument)
-                throw new EraseException($"{Path.GetFileName(input)} does not allow changes (its permissions forbid them); Washi does not remove protection");
+                throw new EraseException($"{Path.GetFileName(input)} does not allow changes (its permissions forbid them); Washi does not remove protection", "Err_ProtectedChanges", Path.GetFileName(input));
         }
         catch (PdfReaderException e) when (e.Message.Contains("password", StringComparison.OrdinalIgnoreCase))
         {
-            throw new EraseException($"{Path.GetFileName(input)} is protected with a password; Washi does not remove protection");
+            throw new EraseException($"{Path.GetFileName(input)} is protected with a password; Washi does not remove protection", "Err_Password", Path.GetFileName(input));
         }
     }
 
-    /// <summary>Text left inside the boxes, and pixels that changed outside them (both should be 0).</summary>
+    /// <summary>
+    /// Characters of text objects that still sit exactly where an erased text object was (same box). Text of the
+    /// form that merely overlaps an erased spot (a kept label under the data) does not count.
+    /// </summary>
+    private static int StillThere(string output, int pageIndex, IReadOnlyList<EraseTarget> erasedText)
+    {
+        if (erasedText.Count == 0) return 0;
+        int count = 0;
+        var doc = Load(output);
+        try
+        {
+            WithPage(doc, pageIndex, (page, map) =>
+            {
+                var textPage = fpdf_text.FPDFTextLoadPage(page);
+                try
+                {
+                    int n = fpdf_edit.FPDFPageCountObjects(page);
+                    for (int i = 0; i < n; i++)
+                    {
+                        var obj = fpdf_edit.FPDFPageGetObject(page, i);
+                        if (fpdf_edit.FPDFPageObjGetType(obj) != 1) continue;
+                        float l = 0, b = 0, r = 0, t = 0;
+                        if (fpdf_edit.FPDFPageObjGetBounds(obj, ref l, ref b, ref r, ref t) == 0) continue;
+                        var rect = map.ToDevice(l, t, r, b);
+                        if (erasedText.Any(e => e.Rect.IoU(rect) > 0.95)) count += Math.Max(1, TextOf(obj, textPage).Length);
+                    }
+                }
+                finally { fpdf_text.FPDFTextClosePage(textPage); }
+            });
+        }
+        finally { fpdfview.FPDF_CloseDocument(doc); }
+        return count;
+    }
+
+    /// <summary>Text left where it was erased, and pixels that changed outside the boxes (both should be 0).</summary>
     private static (int Remaining, long ChangedOutside) Verify(string before, string after, IReadOnlyList<EraseRegion> regions,
                                                                IReadOnlyList<EraseTarget> removed)
     {
@@ -517,21 +620,26 @@ public static class PdfEraser
         {
             var erased = removed.Where(t => t.Page == group.Key).Select(t => Grow(t.Rect)).ToList();
             var boxes = group.Select(g => Grow(g.Rect)).Concat(erased).ToList();
-            // characters still sitting where erased text was
-            remaining += b.ReadChars(group.Key).Count(c => erased.Any(x => x.Contains(c.Rect.Center.X, c.Rect.Center.Y)));
+            remaining += StillThere(after, group.Key, [.. removed.Where(t => t.Page == group.Key && t.Kind == EraseKind.Text)]);
             const double scale = 1.0;
             var ia = a.RenderPage(group.Key, scale);
             var ib = b.RenderPage(group.Key, scale);
             if (ia.Width != ib.Width || ia.Height != ib.Height) { changed += (long)ia.Width * ia.Height; continue; }
-            for (int y = 0; y < ia.Height; y++)
-                for (int x = 0; x < ia.Width; x++)
-                {
-                    // one pixel of slack around each box for anti-aliasing at its edge
-                    if (boxes.Any(r => x >= r.X0 * scale - 1 && x <= r.X1 * scale + 1 && y >= r.Y0 * scale - 1 && y <= r.Y1 * scale + 1)) continue;
-                    int p = (y * ia.Width + x) * 3;
-                    if (Math.Abs(ia.Pixels[p] - ib.Pixels[p]) + Math.Abs(ia.Pixels[p + 1] - ib.Pixels[p + 1]) + Math.Abs(ia.Pixels[p + 2] - ib.Pixels[p + 2]) > 24)
-                        changed++;
-                }
+            // where change is expected: the boxes and the erased objects, with one pixel of slack for anti-aliasing
+            var allowed = new bool[ia.Width * ia.Height];
+            foreach (var r in boxes)
+            {
+                int x0 = Math.Max(0, (int)Math.Floor(r.X0 * scale) - 1), x1 = Math.Min(ia.Width - 1, (int)Math.Ceiling(r.X1 * scale) + 1);
+                int y0 = Math.Max(0, (int)Math.Floor(r.Y0 * scale) - 1), y1 = Math.Min(ia.Height - 1, (int)Math.Ceiling(r.Y1 * scale) + 1);
+                for (int y = y0; y <= y1; y++)
+                    for (int x = x0; x <= x1; x++) allowed[y * ia.Width + x] = true;
+            }
+            for (int i = 0, p = 0; i < allowed.Length; i++, p += 3)
+            {
+                if (allowed[i]) continue;
+                if (Math.Abs(ia.Pixels[p] - ib.Pixels[p]) + Math.Abs(ia.Pixels[p + 1] - ib.Pixels[p + 1]) + Math.Abs(ia.Pixels[p + 2] - ib.Pixels[p + 2]) > 24)
+                    changed++;
+            }
         }
         return (remaining, changed);
     }

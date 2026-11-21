@@ -93,6 +93,39 @@ public class MasumeDetectorTests
     }
 
     [Fact]
+    public void Digit_groups_split_by_tall_lines_are_still_one_comb()
+    {
+        // 法人番号 on the 扶養控除等申告書: a note along the top, then 13 boxes in groups of 1 + 4 + 4 + 4. The group
+        // separators are as tall as the row under the note; the other dividers are short ticks.
+        var c = new Canvas(600, 400).Rect(10, 10, 140, 40);
+        for (int i = 1; i <= 12; i++) c.VLine(10 + i * 10, i is 1 or 5 or 9 ? 16 : 32, 40);
+
+        var f = Assert.Single(MasumeDetector.Detect(c.Snapshot(Ch("※", 12, 11, 4), Ch("記", 17, 11, 4))));
+
+        Assert.Equal(FieldKind.Comb, f.Kind);
+        Assert.Equal(13, f.MaxLen);
+    }
+
+    [Fact]
+    public void A_date_cell_gets_one_field_before_each_mark()
+    {
+        // ＿＿年＿＿月＿＿日: a value typed into one wide field would land on the printed marks
+        var c = new Canvas(600, 400).Rect(10, 10, 130, 30);
+        var fields = MasumeDetector.Detect(c.Snapshot(Ch("年", 50, 16), Ch("月", 85, 16), Ch("日", 118, 16)));
+
+        Assert.Equal(3, fields.Count);
+        Assert.All(fields, f => Assert.Equal(FieldKind.Text, f.Kind));
+        Assert.Equal(["年", "月", "日"], fields.OrderBy(f => f.Rect.X0).Select(f => f.Label));
+        Assert.All(fields, f => Assert.Equal(2, f.Align));                       // the value sits next to its mark
+        Assert.True(fields.OrderBy(f => f.Rect.X0).First().Rect.X1 <= 50);      // and ends before it
+
+        // a spaced-out heading is not split at its characters, and a word at the right end is one field as before
+        Assert.True(MasumeDetector.Detect(new Canvas(600, 400).Rect(10, 10, 130, 30).Snapshot(Ch("氏", 20, 16), Ch("名", 110, 16))).Count <= 1);
+        Assert.Single(MasumeDetector.Detect(new Canvas(600, 400).Rect(10, 10, 130, 30)
+            .Snapshot(Ch("税", 90, 16), Ch("務", 98, 16), Ch("署", 106, 16), Ch("長", 114, 16))));
+    }
+
+    [Fact]
     public void Small_square_cell_is_a_checkbox()
     {
         var page = new Canvas(600, 400).Rect(20, 20, 28, 28).Snapshot();

@@ -42,7 +42,7 @@ public sealed class TesseractOcr(string executable) : IOcrEngine
         var use = wanted.Where(installed.Contains).ToList();
         foreach (var m in wanted.Except(use)) if (!Missing.Contains(m)) Missing.Add(m);
         if (use.Count == 0)
-            throw new OcrException($"tesseract has none of the languages {string.Join("+", wanted)} installed (installed: {string.Join(", ", installed)}); macOS: brew install tesseract-lang");
+            throw new OcrException($"tesseract has none of the languages {string.Join("+", wanted)} installed (installed: {string.Join(", ", installed)}); macOS: brew install tesseract-lang", "Err_OcrTesseractLanguages", string.Join("+", wanted), string.Join(", ", installed));
 
         var png = Path.Combine(Path.GetTempPath(), $"washi-ocr-{Guid.NewGuid():N}.png");
         await File.WriteAllBytesAsync(png, image.Png, ct);
@@ -50,7 +50,7 @@ public sealed class TesseractOcr(string executable) : IOcrEngine
         {
             var (code, output, err) = await OcrEngines.RunAsync(executable,
                 [png, "stdout", "-l", string.Join('+', use), "--psm", "3", "--dpi", Dpi.ToString(CultureInfo.InvariantCulture), "tsv"], ct);
-            if (code != 0) throw new OcrException("tesseract failed: " + err.Trim());
+            if (code != 0) throw new OcrException("tesseract failed: " + err.Trim(), "Err_OcrFailed", "Tesseract", err.Trim());
             return ParseTsv(output, cjk: use.Any(l => l is "jpn" or "chi_sim" or "chi_tra" or "kor"));
         }
         finally { File.Delete(png); }

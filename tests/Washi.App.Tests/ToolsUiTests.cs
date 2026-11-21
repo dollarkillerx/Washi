@@ -224,11 +224,108 @@ public sealed class ToolsUiTests : IDisposable
         Assert.False(vm.Ocr.CanRun);                        // already searchable
     }
 
+    /// <summary>Reads every image as one line of text.</summary>
+    private sealed class StubOcr(string text) : Washi.Core.Ocr.IOcrEngine
+    {
+        public int Calls;
+        public string Name => "stub";
+        public string Describe => "stub";
+        public bool SendsDataOffDevice => false;
+        public int Dpi => 150;
+        public Task<IReadOnlyList<Washi.Core.Ocr.OcrLine>> RecognizeAsync(Washi.Core.Ocr.OcrImage image, IReadOnlyList<string> languages, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult<IReadOnlyList<Washi.Core.Ocr.OcrLine>>([new(text, new Washi.Core.PdfRect(0, 0, image.Width, image.Height), 1)]);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Printed_values_become_editable_field_values()
+    {
+        // a cell with something printed in it (drawn, as on many official forms), and an empty cell
+        var pdf = Path.Combine(_dir, "printed.pdf");
+        using (var doc = new PdfDocument())
+        {
+            var page = doc.AddPage();
+            page.Width = XUnit.FromPoint(842);
+            page.Height = XUnit.FromPoint(595);
+            using var g = XGraphics.FromPdfPage(page);
+            var pen = new XPen(XColors.Black, 1);
+            g.DrawRectangle(pen, 40, 40, 400, 30);
+            g.DrawRectangle(pen, 40, 100, 400, 30);
+            // the "printed value": a small image of dark glyph-like marks, as forms that print data as pictures do
+            int iw = 80, ih = 20;
+            var px = new byte[iw * ih * 3];
+            Array.Fill(px, (byte)255);
+            for (int y = 4; y < 16; y++) for (int x = 6; x < 74; x++) if ((x / 6) % 2 == 0) px[(y * iw + x) * 3] = px[(y * iw + x) * 3 + 1] = px[(y * iw + x) * 3 + 2] = 0;
+            var png = Path.Combine(_dir, "value.png");
+            using (var fs = File.Create(png)) PngWriter.Write(new RgbImage(iw, ih, px), fs);
+            g.DrawImage(XImage.FromFile(png), 60, 50, 40, 10);
+            doc.Save(pdf);
+        }
+        var (_, vm) = await Open(pdf, new FakeDialogs());
+        Assert.True(vm.Fields.Count >= 2, string.Join("; ", vm.Fields.Select(f => $"{f.Name} {f.X0},{f.Y0},{f.X1},{f.Y1}")) + " | " + vm.Status);
+        int fields = vm.Fields.Count;
+        var ocr = new StubOcr("王 燁");
+        vm.OcrFactory = () => ocr;
+        var typed = vm.Fields.First(f => f.Y0 > 90);                     // the empty cell: the user typed here already
+        typed.Value = "入力済み";
+
+        await vm.MovePrintedCommand.ExecuteAsync(null);
+        Assert.Equal("入力済み", typed.Value);                            // typed values are never replaced
+
+        Assert.Equal(1, ocr.Calls);                                  // one OCR call for the whole document
+        Assert.Equal(Path.Combine(_dir, "printed_erased.pdf"), vm.PdfPath);
+        Assert.Equal(fields, vm.Fields.Count);                       // the fields are kept
+        var filled = Assert.Single(vm.Fields, f => f.Value.Length > 0 && !ReferenceEquals(f, typed));
+        Assert.Equal("王 燁", filled.Value);
+        Assert.InRange(filled.Y0, 35, 45);                            // the cell that held the print
+        Assert.True(vm.PreviewMode);
+        // a second conversion (one field, from its panel) updates the same copy: no _erased_erased.pdf
+        await vm.MovePrintedCommand.ExecuteAsync(typed);                // nothing printed there: nothing to erase
+        Assert.Equal(Path.Combine(_dir, "printed_erased.pdf"), vm.PdfPath);
+        Assert.False(File.Exists(Path.Combine(_dir, "printed_erased_erased.pdf")));
+        Assert.Single(Directory.GetFiles(_dir, "printed_erased*.pdf"));
+
+        using var d = Washi.Core.Pdfium.PdfiumDocument.Open(vm.PdfPath!);
+        var img = d.RenderPage(0, 1);
+        int dark = 0;
+        for (int y = 51; y < 60; y++) for (int x = 60; x < 93; x++) if (img.Pixels[(y * img.Width + x) * 3] < 128) dark++;
+        Assert.Equal(0, dark);                                       // the print is gone from the copy
+    }
+
+    [AvaloniaFact]
+    public async Task The_field_list_shows_what_is_in_the_fields_and_only_filled_ones_while_filling()
+    {
+        var (w, vm) = await Open(Form("l.pdf"), new FakeDialogs());
+        var text = vm.Fields.First(f => f.Kind == Washi.Masume.FieldKind.Text);
+        Assert.Equal(vm.PageFields, vm.ListFields);                 // preparing the form: every field
+        Assert.Equal(text.Name, text.Display);                      // nothing better to show yet
+        Assert.False(text.ShowName);
+
+        text.Value = "王 燁";
+        Assert.Equal("王 燁", text.Display);                         // the value, with the name small under it
+        Assert.True(text.ShowName);
+
+        vm.PreviewMode = true;                                      // filling: an overview of what is filled in
+        Assert.Same(text, Assert.Single(vm.ListFields));
+        Assert.Contains("1", vm.ListCaption);
+        var empty = vm.Fields.First(f => !f.HasValue);
+        vm.SelectedField = empty;                                   // not in the list: it must stay selected
+        Dispatcher.UIThread.RunJobs();
+        Assert.Same(empty, vm.SelectedField);
+        empty.Value = empty.Kind == Washi.Masume.FieldKind.Checkbox ? "true" : "x";
+        Assert.Equal(2, vm.ListFields.Count);
+        Assert.False(w.FindControl<TextBox>("FieldNameBox")!.IsEffectivelyVisible);    // no design-time properties while filling
+    }
+
     [AvaloniaFact]
     public async Task Erase_tool_shows_what_goes_then_saves_a_copy_and_opens_it()
     {
         var pdf = Form("e.pdf");
         var (w, vm) = await Open(pdf, new FakeDialogs());
+        vm.OcrFactory = () => new StubOcr("x");
+        vm.Erase.MakeEditable = false;                                       // erase only
         vm.ActiveTool = Tool.Erase;
         Dispatcher.UIThread.RunJobs();
         Assert.False(vm.Erase.CanErase);
@@ -250,6 +347,35 @@ public sealed class ToolsUiTests : IDisposable
         await vm.Erase.AddBoxAsync(new Washi.Core.PdfRect(34, 134, 54, 154));
         await vm.Erase.EraseCommand.ExecuteAsync(null);
         Assert.Equal(Path.Combine(_dir, "e_erased_2.pdf"), vm.PdfPath);
+    }
+
+    [AvaloniaFact]
+    public async Task A_box_drawn_by_hand_becomes_an_editable_field_with_the_old_text()
+    {
+        var pdf = Form("h.pdf");
+        var (_, vm) = await Open(pdf, new FakeDialogs());
+        var ocr = new StubOcr("旧住所");
+        vm.OcrFactory = () => ocr;
+        // what the user already did to the fields must survive the erase
+        var mine = vm.Fields.First(f => f.Kind == Washi.Masume.FieldKind.Text);
+        mine.Name = "申請者氏名";
+        mine.Value = "山田 太郎";
+        int before = vm.Fields.Count;
+        vm.ActiveTool = Tool.Erase;
+        Assert.True(vm.Erase.MakeEditable);                                   // on by default
+        var box = new Washi.Core.PdfRect(34, 134, 54, 154);                  // around the small black square
+        await vm.Erase.AddBoxAsync(box);
+        await vm.Erase.EraseCommand.ExecuteAsync(null);
+
+        Assert.Equal(Path.Combine(_dir, "h_erased.pdf"), vm.PdfPath);
+        Assert.Equal(Tool.Form, vm.ActiveTool);
+        Assert.True(vm.PreviewMode);
+        Assert.Same(mine, vm.Fields.Single(x => x.Name == "申請者氏名"));      // same fields, not detected anew
+        Assert.Equal("山田 太郎", mine.Value);
+        Assert.InRange(vm.Fields.Count, before, before + 1);
+        var f = Assert.Single(vm.Fields, x => x.Value == "旧住所");
+        Assert.True(f.Rect.Contains(44, 144));                               // in place of the erased print
+        Assert.Equal(1, ocr.Calls);
     }
 
     [AvaloniaFact]

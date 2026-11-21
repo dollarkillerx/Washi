@@ -208,14 +208,20 @@ public static class AcroFormFields
         var r = widget.Elements.GetArray("/Rect")!;
         double w = Math.Abs(Num(r, 2) - Num(r, 0)), h = Math.Abs(Num(r, 3) - Num(r, 1));
         const double pad = 2;
-        if (size <= 0)   // auto size
+        if (size <= 0) size = Math.Clamp(multiline ? 10 : h * 0.66, 4, 12);   // auto size
+        // The size is the most the text gets: a value too long for its box is shrunk to fit instead of being cut
+        // off (a viewer would scroll it, a printed form cannot), and a comb character never outgrows its cell.
+        if (comb > 0) size = Math.Max(3, Math.Min(size, Math.Min(h - 2, w / comb) * 0.95));
+        else if (!multiline)
         {
-            size = Math.Clamp(multiline ? 10 : h * 0.66, 4, 12);
-            if (!multiline && comb == 0)
-            {
-                double tw = enc.Width(value, 1);
-                if (tw > 0) size = Math.Max(4, Math.Min(size, (w - 2 * pad) / tw));
-            }
+            double tw = enc.Width(value.Replace("\r", "").Replace('\n', ' '), 1);
+            if (tw > 0) size = Math.Max(4, Math.Min(size, (w - 2 * pad) / tw));
+            size = Math.Min(size, Math.Max(4, h - 2));
+        }
+        else
+        {
+            // wrapped text that still runs out of the box gets smaller until every line is inside
+            while (size > 4 && Wrap(value, enc, size, w - 2 * pad).Count() * size * 1.15 > h - pad) size = Math.Max(4, size - 0.5);
         }
         var sb = new StringBuilder();
         sb.Append(CultureInfo.InvariantCulture, $"/Tx BMC q 1 1 {N(w - 2)} {N(h - 2)} re W n BT /{key} {N(size)} Tf {color} ");

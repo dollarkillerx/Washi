@@ -53,9 +53,10 @@ public sealed class ClaudeModel(string apiKey, string model) : IAiModel
 
         var response = await _client.Beta.Messages.Create(parameters, cancellationToken);
         if (response.StopReason == "refusal")
-            throw new AiException($"the model declined this request{(response.StopDetails is { } d ? $" ({d.Category}: {d.Explanation})" : "")}");
+            throw new AiException($"the model declined this request{(response.StopDetails is { } d ? $" ({d.Category}: {d.Explanation})" : "")}",
+                "Err_AiDeclined", response.StopDetails is { } sd ? $"{sd.Category}: {sd.Explanation}" : "");
         if (response.StopReason == "max_tokens")
-            throw new AiException("the answer was cut off (max_tokens); try fewer pages or fields at once");
+            throw new AiException("the answer was cut off (max_tokens); try fewer pages or fields at once", "Err_AiCutOff");
 
         var text = string.Concat(response.Content.Select(b => b.TryPickText(out var t) ? t.Text : ""));
         return text;

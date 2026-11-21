@@ -323,6 +323,18 @@ tool; a field's `rect` from `list_fields` / `detect_fields` is a good box.
 - **Kept and said so:** a text line that runs outside the box, a text run joined to the next one
   on its line (erasing it alone would shift the rest), and big images such as a scanned page
   (their pixels are not edited).
+- **Make printed text editable** (Form tool, or the button under *Already printed* for one field):
+  the print under the fields is erased into `<name>_erased.pdf` and its text becomes each field's
+  value, read from the PDF or, when its text layer is garbled, by on-device OCR of just the erased
+  ink. Values you already typed are kept. Only text and images are moved here: on a black-printed
+  form the boxes of a comb are drawings too, and they are the form. In the Erase tool, *put an
+  editable field in each box* does the same for boxes you draw.
+- **Generality.** Run over 53 PDFs: 国税庁, IRS, USCIS and CRA forms, two LaTeX papers, a 71-page
+  IRS publication, Chrome and Quartz output, and 31 pdf.js test files (inline images, Type 3 fonts,
+  clips, shadings, vertical and Arabic text, scans). 52 matched on every page and no run crashed;
+  every erased copy passed the pixel check. What is refused, by design: files whose permissions
+  forbid changes (the blank 国税庁 forms are protected that way), a page PDFium cannot parse, and
+  text used as a clipping path (it is kept).
 - Tested on a 扶養控除等申告書 whose printed data mixes text, ~770 glyph images and black strokes:
   the payer, name, furigana, numbers and addresses were removed (37 objects, 22 image streams
   dropped), with 0 characters left and 0 pixels changed outside the boxes.
