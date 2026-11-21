@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>Washi contributors</Authors>
+    <Product>Washi</Product>
+    <Description>Open-source PDF toolkit for desktop, CLI and AI agents.</Description>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dollarkillerx/Washi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dollarkillerx/Washi</RepositoryUrl>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Washi.Ai/Washi.Ai.csproj" />
+    <Project Path="src/Washi.App/Washi.App.csproj" />
+    <Project Path="src/Washi.Cli/Washi.Cli.csproj" />
+    <Project Path="src/Washi.Core/Washi.Core.csproj" />
+    <Project Path="src/Washi.Masume/Washi.Masume.csproj" />
+    <Project Path="src/Washi.Mcp/Washi.Mcp.csproj" />
+    <Project Path="src/Washi.Tools/Washi.Tools.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Washi.Masume.Tests/Washi.Masume.Tests.csproj" />
+  </Folder>
+</Solution>
