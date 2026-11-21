@@ -105,7 +105,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnActiveToolChanged(Tool value)
     {
-        if (value != Tool.Form) DrawMode = false;
+        if (value != Tool.Form) { DrawMode = false; PreviewMode = false; }
         if (value == Tool.Form && PdfPath is { } p && _detectedFor != p) _ = DetectAsync();
         if (value == Tool.Ocr) _ = Ocr.RefreshPlanAsync();
         if (value == Tool.Combine) Combine.OfferCurrentDocument();
@@ -132,6 +132,13 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DisplayWidth), nameof(DisplayHeight), nameof(ZoomText))] private double _zoom = 1.0;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(HasSelection))] private FieldViewModel? _selectedField;
     [ObservableProperty] private bool _drawMode;
+
+    /// <summary>Preview: try the form as a viewer would. Click a field to type into it, a checkbox to tick it.</summary>
+    [ObservableProperty] private bool _previewMode;
+
+    public int FilledCount => Fields.Count(f => f.Value.Length > 0);
+
+    public bool IsSelectMode => !DrawMode && !PreviewMode;
     [ObservableProperty] private bool _busy;
     [ObservableProperty] private string _status = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(FontText))] private string? _embedFontPath;
@@ -148,21 +155,46 @@ public sealed partial class MainViewModel : ObservableObject
     public string FileName => PdfPath is null ? "" : Path.GetFileName(PdfPath);
     public string FontText => EmbedFontPath is null ? L.Get("Ui_NoFont") : Path.GetFileName(EmbedFontPath);
 
-    public static IReadOnlyList<Choice<string>> Languages { get; } =
+    public static IReadOnlyList<Choice<string>> Languages =>
     [
         new("auto", L.Get("Ui_LangAuto")), new("ja", "日本語"), new("zh-Hans", "简体中文"), new("zh-Hant", "繁體中文"),
         new("ko", "한국어"), new("en", "English"), new("fr", "Français"), new("de", "Deutsch"),
     ];
 
-    public static IReadOnlyList<Choice<FieldKind>> Kinds { get; } =
+    public static IReadOnlyList<Choice<FieldKind>> Kinds =>
         [.. Enum.GetValues<FieldKind>().Select(k => new Choice<FieldKind>(k, L.Get("Kind_" + k.ToString().ToLowerInvariant())))];
 
-    public static IReadOnlyList<Choice<int>> Alignments { get; } =
+    public static IReadOnlyList<Choice<int>> Alignments =>
         [new(0, L.Get("Ui_AlignLeft")), new(1, L.Get("Ui_AlignCenter")), new(2, L.Get("Ui_AlignRight"))];
 
-    public string Hint => L.Get(DrawMode ? "Ui_DrawHint" : "Ui_Hint");
+    public string Hint => L.Get(PreviewMode ? "Ui_PreviewHint" : DrawMode ? "Ui_DrawHint" : "Ui_Hint");
 
-    partial void OnDrawModeChanged(bool value) => OnPropertyChanged(nameof(Hint));
+    partial void OnDrawModeChanged(bool value)
+    {
+        if (value) PreviewMode = false;
+        OnPropertyChanged(nameof(Hint));
+        OnPropertyChanged(nameof(IsSelectMode));
+    }
+
+    partial void OnPreviewModeChanged(bool value)
+    {
+        if (value) DrawMode = false;
+        OnPropertyChanged(nameof(Hint));
+        OnPropertyChanged(nameof(IsSelectMode));
+    }
+
+    /// <summary>Raised when a text field should get the inline editor (Preview); the view places it.</summary>
+    public event Action<FieldViewModel>? EditRequested;
+
+    /// <summary>Preview click on a field: a checkbox toggles, anything else opens the inline editor.</summary>
+    public void ActivateField(FieldViewModel f)
+    {
+        SelectedField = f;
+        if (f.Kind == FieldKind.Checkbox) f.Value = f.IsChecked ? "" : "true";
+        else EditRequested?.Invoke(f);
+    }
+
+    [RelayCommand] private void TogglePreview() { if (HasDocument && IsFormTool) PreviewMode = !PreviewMode; }
 
     partial void OnPageIndexChanged(int value)
     {
@@ -228,6 +260,7 @@ public sealed partial class MainViewModel : ObservableObject
         FieldSummary = "";
         SelectedField = null;
         DrawMode = false;
+        PreviewMode = false;
         Status = L.Get("Ui_StartHint");
     }
 
@@ -295,17 +328,35 @@ public sealed partial class MainViewModel : ObservableObject
         await Run(async () =>
         {
             var fields = Fields.Select(f => f.ToDetected().ToFormField()).ToList();
+            // what was typed in Preview goes into the file (by field name)
+            var values = new Dictionary<string, string>();
+            foreach (var f in Fields.Where(f => f.Value.Length > 0)) values[f.Name] = f.Value;
             var font = EmbedFontPath is { } fp ? await Task.Run(() => OpenTypeFont.Load(fp)) : null;
-            await Pdfium(() =>
+            int filled = await Pdfium(() =>
             {
                 var text = FormPipeline.Text(pdf);
                 var (script, _) = FormPipeline.ChooseScript(FormLanguage.Value, text, L.Culture);
                 var tmp = output + ".tmp";
-                AcroFormWriter.Write(pdf, tmp, fields, script, font);
-                File.Move(tmp, output, overwrite: true);   // the save dialog already asked about overwriting
-                return 0;
+                var tmp2 = output + ".fill.tmp";
+                try
+                {
+                    AcroFormWriter.Write(pdf, tmp, fields, script, font);
+                    int n = 0;
+                    if (values.Count > 0)
+                    {
+                        n = AcroFormFields.Fill(tmp, tmp2, values, font).Filled;
+                        File.Move(tmp2, tmp, overwrite: true);
+                    }
+                    File.Move(tmp, output, overwrite: true);   // the save dialog already asked about overwriting
+                    return n;
+                }
+                finally
+                {
+                    if (File.Exists(tmp)) File.Delete(tmp);
+                    if (File.Exists(tmp2)) File.Delete(tmp2);
+                }
             });
-            Status = L.F("Ui_Made", Path.GetFileName(output));
+            Status = filled > 0 ? L.F("Ui_MadeFilled", Path.GetFileName(output), filled) : L.F("Ui_Made", Path.GetFileName(output));
         });
     }
 
@@ -383,8 +434,9 @@ public sealed partial class MainViewModel : ObservableObject
         Zoom = Math.Clamp(Math.Floor(k * 100) / 100, 0.25, 4);
     }
 
-    [RelayCommand] private void SelectMode() => DrawMode = false;
+    [RelayCommand] private void SelectMode() { DrawMode = false; PreviewMode = false; }
     [RelayCommand] private void DrawFieldMode() { if (HasDocument && IsFormTool) DrawMode = true; }
+    [RelayCommand] private void PreviewModeOn() { if (HasDocument && IsFormTool) PreviewMode = true; }
 
     /// <summary>Tab / Shift+Tab: the next field in reading order on this page.</summary>
     public void SelectNextField(bool backwards)

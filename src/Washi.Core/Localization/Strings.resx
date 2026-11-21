@@ -139,6 +139,9 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_ThirdParty" xml:space="preserve"><value>OPEN-SOURCE COMPONENTS</value></data>
   <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi is built on these projects, each under its own license. Thank you to their authors.</value></data>
   <data name="Ui_NotBundled" xml:space="preserve"><value>optional, installed separately</value></data>
+  <data name="Ui_PreviewTip" xml:space="preserve"><value>Preview: try filling the form (P)</value></data>
+  <data name="Ui_PreviewHint" xml:space="preserve"><value>Click a field to type, a box to tick it. Tab moves on, Delete clears. What you type is saved into the PDF you make.</value></data>
+  <data name="Ui_MadeFilled" xml:space="preserve"><value>Saved {0} with {1} filled field(s).</value></data>
   <data name="Ui_MenuFile" xml:space="preserve"><value>File</value></data>
   <data name="Ui_MenuView" xml:space="preserve"><value>View</value></data>
   <data name="Ui_Close" xml:space="preserve"><value>Close</value></data>
@@ -159,7 +162,7 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_SectionFind" xml:space="preserve"><value>FIND FIELDS</value></data>
   <data name="Ui_SectionEdit" xml:space="preserve"><value>EDIT</value></data>
   <data name="Ui_SectionOutput" xml:space="preserve"><value>OUTPUT</value></data>
-  <data name="Ui_EditKeys" xml:space="preserve"><value>V select · F draw a field · Tab next field · Enter rename · Delete remove · arrows nudge (Shift: 5 pt)</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V select · F draw a field · P preview · Tab next field · Enter rename · Delete remove · arrows nudge (Shift: 5 pt)</value></data>
   <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>Embedded font</value></data>
   <data name="Ui_EmbedFontNote" xml:space="preserve"><value>Optional. Embeds a whole font so rare characters (e.g. 燁) show in every viewer.</value></data>
   <data name="Ui_LoadShort" xml:space="preserve"><value>Load…</value></data>

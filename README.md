@@ -143,11 +143,15 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
    The selected field is vermilion.
 2. **Fix** the fields:
    - drag a field to move it, drag a corner to resize it
-   - **V** selects, **F** draws a new field
+   - **V** selects, **F** draws a new field, **P** previews
    - **Tab** / **Shift+Tab** walks through the fields; **Enter** jumps to the name box
    - **Delete** removes the field; the arrow keys nudge it (Shift = 5 pt)
-3. **Save** `fields.json`, or write the **fillable PDF** (⌘S), with a form language and
-   an optional embedded font.
+3. **Preview** (**P**, the third floating button) lets you try the form as a viewer
+   would: click a field and type right on the page (comb fields put one character in
+   each printed box), click a checkbox to tick it. Tab moves to the next field, Delete
+   clears a value.
+4. **Save** `fields.json`, or write the **fillable PDF** (⌘S), with a form language and
+   an optional embedded font. Whatever you typed in Preview is filled in.
 
 **The other tools:**
 - **OCR** makes a scan searchable. It shows how many pages need it, and you pick the
@@ -181,6 +185,8 @@ Skia rendering. The tests cover:
 - opening a PDF; dragging, resizing and drawing fields; keyboard deletion and nudging
 - the `fields.json` round trip and writing the PDF
 - switching tools, field navigation, fit width and pinch zoom
+- Preview: typing into fields, ticking boxes, and saving those values; lists that follow
+  a language switch
 - Combine (including protected files), Split, OCR with the AI engine (consent first)
   and Ask AI
 - the language setting

@@ -20,7 +20,7 @@ public sealed partial class LanguageOption(string code, string text, bool select
 /// <summary>Make a scan searchable: recognise pages and add the invisible text layer.</summary>
 public sealed partial class OcrToolViewModel(MainViewModel main) : ObservableObject
 {
-    public static IReadOnlyList<Choice<string>> Engines { get; } =
+    public static IReadOnlyList<Choice<string>> Engines =>
     [
         new("auto", L.Get("Ui_EngineAuto")), new("vision", "Apple Vision"), new("tesseract", "Tesseract"), new("ai", L.Get("Ui_EngineAi")),
     ];

@@ -139,6 +139,9 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_ThirdParty" xml:space="preserve"><value>COMPOSANTS OPEN SOURCE</value></data>
   <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi repose sur ces projets, chacun sous sa propre licence. Merci à leurs auteurs.</value></data>
   <data name="Ui_NotBundled" xml:space="preserve"><value>facultatif, installé à part</value></data>
+  <data name="Ui_PreviewTip" xml:space="preserve"><value>Aperçu : essayer de remplir (P)</value></data>
+  <data name="Ui_PreviewHint" xml:space="preserve"><value>Cliquez sur un champ pour saisir, sur une case pour la cocher. Tab passe au suivant, Suppr efface. La saisie est enregistrée dans le PDF créé.</value></data>
+  <data name="Ui_MadeFilled" xml:space="preserve"><value>{0} enregistré, {1} champ(s) rempli(s).</value></data>
   <data name="Ui_MenuFile" xml:space="preserve"><value>Fichier</value></data>
   <data name="Ui_MenuView" xml:space="preserve"><value>Présentation</value></data>
   <data name="Ui_Close" xml:space="preserve"><value>Fermer</value></data>
@@ -159,7 +162,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_SectionFind" xml:space="preserve"><value>TROUVER LES CHAMPS</value></data>
   <data name="Ui_SectionEdit" xml:space="preserve"><value>MODIFIER</value></data>
   <data name="Ui_SectionOutput" xml:space="preserve"><value>SORTIE</value></data>
-  <data name="Ui_EditKeys" xml:space="preserve"><value>V sélection · F dessiner un champ · Tab champ suivant · Entrée renommer · Suppr retirer · flèches ajuster (Maj : 5 pt)</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V sélection · F dessiner un champ · P aperçu · Tab champ suivant · Entrée renommer · Suppr retirer · flèches ajuster (Maj : 5 pt)</value></data>
   <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>Police incorporée</value></data>
   <data name="Ui_EmbedFontNote" xml:space="preserve"><value>Facultatif. Incorpore une police entière pour que les caractères rares (ex. 燁) s’affichent partout.</value></data>
   <data name="Ui_LoadShort" xml:space="preserve"><value>Charger…</value></data>

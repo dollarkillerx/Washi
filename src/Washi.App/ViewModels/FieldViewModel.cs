@@ -21,6 +21,13 @@ public sealed partial class FieldViewModel : ObservableObject
     [ObservableProperty] private string _label = "";
     [ObservableProperty] private string _prefilled = "";
 
+    /// <summary>What the user typed in Preview ("true" for a ticked checkbox). Written into the saved PDF.</summary>
+    [ObservableProperty] private string _value = "";
+
+    public bool IsChecked => Value == "true";
+
+    partial void OnValueChanged(string value) => OnPropertyChanged(nameof(IsChecked));
+
     public PdfRect Rect => new(X0, Y0, X1, Y1);
 
     public string KindText => L.Get("Kind_" + Kind.ToString().ToLowerInvariant());
@@ -47,6 +54,7 @@ public sealed partial class FieldViewModel : ObservableObject
 
     partial void OnKindChanged(FieldKind value)
     {
+        Value = "";   // a value of one type means nothing for another
         if (value == FieldKind.Comb && MaxLen <= 0) MaxLen = 10;
         Align = value switch { FieldKind.Amount => 2, FieldKind.Comb => 1, _ => Align == 2 ? 0 : Align };
         OnPropertyChanged(nameof(KindText));

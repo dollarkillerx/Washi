@@ -139,6 +139,9 @@
   <data name="Ui_ThirdParty" xml:space="preserve"><value>开源组件</value></data>
   <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi 构建于以下项目之上，各自采用其许可证。感谢它们的作者。</value></data>
   <data name="Ui_NotBundled" xml:space="preserve"><value>可选，需另行安装</value></data>
+  <data name="Ui_PreviewTip" xml:space="preserve"><value>预览：试着填写表单（P）</value></data>
+  <data name="Ui_PreviewHint" xml:space="preserve"><value>点击栏位输入，点击复选框打勾。Tab 到下一个，Delete 清除。输入的内容会保存到生成的 PDF 中。</value></data>
+  <data name="Ui_MadeFilled" xml:space="preserve"><value>已保存 {0}（已填写 {1} 个栏位）。</value></data>
   <data name="Ui_MenuFile" xml:space="preserve"><value>文件</value></data>
   <data name="Ui_MenuView" xml:space="preserve"><value>视图</value></data>
   <data name="Ui_Close" xml:space="preserve"><value>关闭</value></data>
@@ -159,7 +162,7 @@
   <data name="Ui_SectionFind" xml:space="preserve"><value>查找栏位</value></data>
   <data name="Ui_SectionEdit" xml:space="preserve"><value>编辑</value></data>
   <data name="Ui_SectionOutput" xml:space="preserve"><value>输出</value></data>
-  <data name="Ui_EditKeys" xml:space="preserve"><value>V 选择 · F 画栏位 · Tab 下一个栏位 · Enter 改名 · Delete 删除 · 方向键 微调（Shift：5 pt）</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V 选择 · F 画栏位 · P 预览 · Tab 下一个栏位 · Enter 改名 · Delete 删除 · 方向键 微调（Shift：5 pt）</value></data>
   <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>嵌入字体</value></data>
   <data name="Ui_EmbedFontNote" xml:space="preserve"><value>可选。嵌入整套字体，让生僻字（如 燁）在任何阅读器中都能显示。</value></data>
   <data name="Ui_LoadShort" xml:space="preserve"><value>载入…</value></data>

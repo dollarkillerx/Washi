@@ -234,6 +234,16 @@ public sealed class EditorTests : IDisposable
         vm.SelectedField = vm.PageFields.FirstOrDefault(f => f.Kind == FieldKind.Comb) ?? vm.PageFields.FirstOrDefault();
         Shot(w, "editor");
 
+        // Preview: a filled comb (dummy digits), a ticked box, and the inline editor open on another comb
+        var combs = vm.PageFields.Where(f => f.Kind == FieldKind.Comb).ToList();
+        vm.PreviewMode = true;
+        if (combs.Count > 0) combs[0].Value = "123456789012";
+        if (vm.PageFields.FirstOrDefault(f => f.Kind == FieldKind.Checkbox) is { } tick) tick.Value = "true";
+        if (vm.PageFields.FirstOrDefault(f => f.Kind == FieldKind.Text) is { } name) name.Value = "サンプル 太郎";
+        if (combs.Count > 1) { vm.ActivateField(combs[1]); Dispatcher.UIThread.RunJobs(); w.FindControl<TextBox>("FieldEditor")!.Text = "4020"; }
+        Shot(w, "preview");
+        vm.PreviewMode = false;
+
         vm.ShowPagesPanel = true;
         await Task.Delay(1500);   // thumbnails render in the background
         Shot(w, "pages");

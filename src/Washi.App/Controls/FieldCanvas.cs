@@ -75,7 +75,7 @@ public sealed class FieldCanvas : Control
     private void OnEditorChanged(object? s, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(MainViewModel.SelectedField) or nameof(MainViewModel.PageIndex) or nameof(MainViewModel.DrawMode)
-                           or nameof(MainViewModel.ActiveTool)
+                           or nameof(MainViewModel.ActiveTool) or nameof(MainViewModel.PreviewMode)
                            or nameof(MainViewModel.PageImage) or nameof(MainViewModel.PageWidth) or nameof(MainViewModel.PageHeight))
             InvalidateVisual();
     }
@@ -116,6 +116,11 @@ public sealed class FieldCanvas : Control
             ctx.DrawImage(page, new Rect(0, 0, page.PixelSize.Width, page.PixelSize.Height), new Rect(0, 0, ed.PageWidth * Zoom, ed.PageHeight * Zoom));
         var selected = Editor?.SelectedField;
         var typeface = new Typeface("Inter");
+        if (Editor is { PreviewMode: true })
+        {
+            foreach (var f in PageFields) RenderPreview(ctx, f, ReferenceEquals(f, selected), typeface);
+            return;
+        }
         foreach (var f in PageFields)
         {
             var c = KindColors[f.Kind];
@@ -147,6 +152,64 @@ public sealed class FieldCanvas : Control
                     ctx.DrawRectangle(Brushes.White, new Pen(new SolidColorBrush(Active), 1.5), h);
         }
     }
+
+    private static readonly Color Blue = Color.FromRgb(31, 73, 224);
+    private static readonly IBrush Ink = new SolidColorBrush(Color.FromRgb(22, 22, 22));
+
+    /// <summary>A field as a PDF viewer shows it: a light box with its value, no name or handles.</summary>
+    private void RenderPreview(DrawingContext ctx, FieldViewModel f, bool selected, Typeface typeface)
+    {
+        var r = Screen(f);
+        ctx.DrawRectangle(new SolidColorBrush(Blue, selected ? 0.12 : 0.06),
+                          new Pen(new SolidColorBrush(selected ? Active : Blue, selected ? 1 : 0.35), selected ? 1.5 : 0.75), r);
+        if (f.Value.Length == 0) return;
+
+        if (f.Kind == FieldKind.Checkbox)
+        {
+            if (!f.IsChecked) return;
+            var s = Math.Min(r.Width, r.Height);
+            var c = r.Center;
+            var tick = new StreamGeometry();
+            using (var g = tick.Open())
+            {
+                g.BeginFigure(new Point(c.X - s * 0.32, c.Y), false);
+                g.LineTo(new Point(c.X - s * 0.08, c.Y + s * 0.25));
+                g.LineTo(new Point(c.X + s * 0.34, c.Y - s * 0.28));
+                g.EndFigure(false);
+            }
+            ctx.DrawGeometry(null, new Pen(Ink, Math.Max(1, s * 0.13), lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), tick);
+            return;
+        }
+
+        if (f.Kind == FieldKind.Comb && f.MaxLen > 0)
+        {
+            double pitch = r.Width / f.MaxLen;
+            double size = Math.Min(r.Height * 0.62, pitch * 0.9);
+            for (int i = 0; i < Math.Min(f.Value.Length, f.MaxLen); i++)
+            {
+                var t = Text(f.Value[i].ToString(), typeface, size);
+                ctx.DrawText(t, new Point(r.X + pitch * i + (pitch - t.Width) / 2, r.Y + (r.Height - t.Height) / 2));
+            }
+            return;
+        }
+
+        double fs = Math.Min(r.Height * 0.62, 12 * Zoom);
+        var text = Text(f.Value, typeface, fs);
+        text.MaxTextWidth = Math.Max(1, r.Width - 4 * Zoom);
+        text.MaxLineCount = 1;
+        text.Trimming = TextTrimming.CharacterEllipsis;
+        double pad = 2 * Zoom;
+        double x = f.Align switch
+        {
+            1 => r.X + (r.Width - text.Width) / 2,
+            2 => r.Right - pad - text.Width,
+            _ => r.X + pad,
+        };
+        ctx.DrawText(text, new Point(Math.Max(r.X + 1, x), r.Y + (r.Height - text.Height) / 2));
+    }
+
+    private static FormattedText Text(string s, Typeface typeface, double size) =>
+        new(s, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, typeface, Math.Max(1, size), Ink);
 
     private static IEnumerable<Rect> Handles(Rect r)
     {
@@ -180,6 +243,14 @@ public sealed class FieldCanvas : Control
         Focus();
         var screen = e.GetPosition(this);
         _start = ToPage(screen);
+
+        if (vm.PreviewMode)
+        {
+            if (HitField(screen) is { } target) vm.ActivateField(target);
+            else vm.SelectedField = null;
+            e.Handled = true;
+            return;
+        }
 
         if (vm.SelectedField is { } sel && HitHandle(sel, screen) is { } corner)
         {
@@ -265,6 +336,9 @@ public sealed class FieldCanvas : Control
         StandardCursorType type = StandardCursorType.Arrow;
         if (vm.SelectedField is { } sel && HitHandle(sel, screen) is { } c)
             type = c.Left == c.Top ? StandardCursorType.TopLeftCorner : StandardCursorType.TopRightCorner;
+        else if (vm.PreviewMode && HitField(screen) is { } over)
+            type = over.Kind == FieldKind.Checkbox ? StandardCursorType.Hand : StandardCursorType.Ibeam;
+        else if (vm.PreviewMode) type = StandardCursorType.Arrow;
         else if (vm.DrawMode) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
@@ -275,6 +349,18 @@ public sealed class FieldCanvas : Control
     {
         base.OnKeyDown(e);
         if (Editor is not { } vm || vm.SelectedField is not { } f) return;
+        if (vm.PreviewMode)
+        {
+            switch (e.Key)
+            {
+                case Key.Delete or Key.Back: f.Value = ""; break;              // clears the value, keeps the field
+                case Key.Space or Key.Enter: vm.ActivateField(f); break;
+                case Key.Escape: vm.SelectedField = null; break;
+                default: return;
+            }
+            e.Handled = true;
+            return;
+        }
         double step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 5 : 0.5;
         switch (e.Key)
         {

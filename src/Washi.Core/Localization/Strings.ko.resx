@@ -139,6 +139,9 @@
   <data name="Ui_ThirdParty" xml:space="preserve"><value>오픈 소스 구성 요소</value></data>
   <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi 는 다음 프로젝트 위에 만들어졌으며 각각 고유한 라이선스를 따릅니다. 작성자분들께 감사드립니다.</value></data>
   <data name="Ui_NotBundled" xml:space="preserve"><value>선택 사항, 별도 설치</value></data>
+  <data name="Ui_PreviewTip" xml:space="preserve"><value>미리 보기: 양식을 직접 채워 보기 (P)</value></data>
+  <data name="Ui_PreviewHint" xml:space="preserve"><value>입력란을 클릭해 입력하고 체크박스는 클릭해 체크합니다. Tab 은 다음, Delete 는 지우기. 입력한 내용은 만드는 PDF 에 저장됩니다.</value></data>
+  <data name="Ui_MadeFilled" xml:space="preserve"><value>{0} 을(를) 저장했습니다 (채운 입력란 {1}개).</value></data>
   <data name="Ui_MenuFile" xml:space="preserve"><value>파일</value></data>
   <data name="Ui_MenuView" xml:space="preserve"><value>보기</value></data>
   <data name="Ui_Close" xml:space="preserve"><value>닫기</value></data>
@@ -159,7 +162,7 @@
   <data name="Ui_SectionFind" xml:space="preserve"><value>입력란 찾기</value></data>
   <data name="Ui_SectionEdit" xml:space="preserve"><value>편집</value></data>
   <data name="Ui_SectionOutput" xml:space="preserve"><value>출력</value></data>
-  <data name="Ui_EditKeys" xml:space="preserve"><value>V 선택 · F 입력란 그리기 · Tab 다음 입력란 · Enter 이름 변경 · Delete 삭제 · 화살표 미세 조정 (Shift: 5 pt)</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V 선택 · F 입력란 그리기 · P 미리 보기 · Tab 다음 입력란 · Enter 이름 변경 · Delete 삭제 · 화살표 미세 조정 (Shift: 5 pt)</value></data>
   <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>포함할 글꼴</value></data>
   <data name="Ui_EmbedFontNote" xml:space="preserve"><value>선택 사항. 글꼴 전체를 포함해 드문 한자(예: 燁)도 모든 뷰어에서 보이게 합니다.</value></data>
   <data name="Ui_LoadShort" xml:space="preserve"><value>불러오기…</value></data>

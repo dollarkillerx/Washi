@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using System.Text.Json;
+using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using PdfSharp.Drawing;
@@ -287,5 +289,78 @@ public sealed class ToolsUiTests : IDisposable
         var path = Path.Combine(_dir, "settings.json");
         File.WriteAllText(path, "{ not json");
         Assert.Null(Washi.App.Services.AppSettings.Load(path).Language);
+    }
+
+    [AvaloniaFact]
+    public void Translated_lists_follow_a_language_switch()
+    {
+        var before = Washi.Core.Localization.L.Culture;
+        try
+        {
+            Washi.Core.Localization.L.Culture = System.Globalization.CultureInfo.GetCultureInfo("ja");
+            Assert.Equal("テキスト", MainViewModel.Kinds[0].Text);
+            Washi.Core.Localization.L.Culture = System.Globalization.CultureInfo.GetCultureInfo("zh-Hans");
+            Assert.Equal("文本", MainViewModel.Kinds[0].Text);
+            Assert.DoesNotContain(OcrToolViewModel.Engines, e => e.Text.Contains("コンピュータ"));
+        }
+        finally { Washi.Core.Localization.L.Culture = before; }
+    }
+
+    [AvaloniaFact]
+    public async Task Preview_types_into_fields_ticks_boxes_and_saves_the_values()
+    {
+        var output = Path.Combine(_dir, "filled.pdf");
+        var (w, vm) = await Open(Form("a.pdf"), new FakeDialogs { SavePdf = output });
+        var canvas = w.FindControl<Washi.App.Controls.FieldCanvas>("Canvas")!;
+        var editor = w.FindControl<Avalonia.Controls.TextBox>("FieldEditor")!;
+        var text = vm.Fields.First(f => f.Kind == Washi.Masume.FieldKind.Text);
+        var box = vm.Fields.First(f => f.Kind == Washi.Masume.FieldKind.Checkbox);
+
+        vm.PreviewModeOnCommand.Execute(null);
+        Assert.True(vm.PreviewMode);
+        Assert.False(vm.IsSelectMode);
+
+        // a checkbox toggles
+        vm.ActivateField(box);
+        Assert.True(box.IsChecked);
+        vm.ActivateField(box);
+        Assert.False(box.IsChecked);
+        vm.ActivateField(box);
+
+        // a text field opens the inline editor over the field; leaving it keeps the text
+        vm.ActivateField(text);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(editor.IsVisible);
+        Assert.Equal(text.X0 * vm.Zoom, editor.Margin.Left, 1);
+        editor.Text = "王 燁";
+        canvas.Focus();
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(editor.IsVisible);
+        Assert.Equal("王 燁", text.Value);
+
+        // Delete clears the value in Preview; the field stays
+        vm.SelectedField = text;
+        canvas.Focus();
+        w.KeyPress(Avalonia.Input.Key.Delete, Avalonia.Input.RawInputModifiers.None, Avalonia.Input.PhysicalKey.Delete, null);
+        Assert.Equal("", text.Value);
+        Assert.Contains(text, vm.Fields);
+        text.Value = "王 燁";
+
+        // the values go into the saved PDF
+        await vm.MakeFillableCommand.ExecuteAsync(null);
+        var written = AcroFormFields.List(output).ToDictionary(f => f.Name, f => f.Value);
+        Assert.Equal("王 燁", written[text.Name]);
+        Assert.Equal("Yes", written[box.Name]);
+        Assert.Contains("2", vm.Status);
+    }
+
+    [AvaloniaFact]
+    public async Task Changing_a_fields_type_clears_its_value()
+    {
+        var (_, vm) = await Open(Form("a.pdf"), new FakeDialogs());
+        var f = vm.Fields.First(x => x.Kind == Washi.Masume.FieldKind.Text);
+        f.Value = "abc";
+        f.Kind = Washi.Masume.FieldKind.Checkbox;
+        Assert.Equal("", f.Value);
     }
 }

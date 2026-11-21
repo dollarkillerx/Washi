@@ -57,6 +57,7 @@
         <StreamGeometry x:Key="I.Detect">M2,6 L2,2 L6,2 M14,2 L18,2 L18,6 M18,14 L18,18 L14,18 M6,18 L2,18 L2,14 M6,7 L14,7 L14,13 L6,13 Z</StreamGeometry>
         <StreamGeometry x:Key="I.Font">M4,17 L9,3 L11,3 L16,17 M6,12 L14,12</StreamGeometry>
         <StreamGeometry x:Key="I.Settings">M10,6.5 A3.5,3.5 0 1 1 9.99,6.5 Z M10,1 L10,4 M10,16 L10,19 M1,10 L4,10 M16,10 L19,10 M3.6,3.6 L5.8,5.8 M14.2,14.2 L16.4,16.4 M3.6,16.4 L5.8,14.2 M14.2,5.8 L16.4,3.6</StreamGeometry>
+        <StreamGeometry x:Key="I.Preview">M3,3 L17,3 L17,17 L3,17 Z M6,8 L9,8 M6,12 L8,12 M10.5,12.5 L12,14 L15,10</StreamGeometry>
         <StreamGeometry x:Key="I.Json">M7,3 L5,3 L5,8 L3,10 L5,12 L5,17 L7,17 M13,3 L15,3 L15,8 L17,10 L15,12 L15,17 L13,17</StreamGeometry>
     </Application.Resources>
 

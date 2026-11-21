@@ -139,6 +139,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_ThirdParty" xml:space="preserve"><value>OPEN-SOURCE-KOMPONENTEN</value></data>
   <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi baut auf diesen Projekten auf, jedes unter seiner eigenen Lizenz. Danke an ihre Autorinnen und Autoren.</value></data>
   <data name="Ui_NotBundled" xml:space="preserve"><value>optional, separat installiert</value></data>
+  <data name="Ui_PreviewTip" xml:space="preserve"><value>Vorschau: Formular ausprobieren (P)</value></data>
+  <data name="Ui_PreviewHint" xml:space="preserve"><value>Feld anklicken zum Tippen, Kästchen anklicken zum Ankreuzen. Tab weiter, Entf löscht. Die Eingaben kommen in das erstellte PDF.</value></data>
+  <data name="Ui_MadeFilled" xml:space="preserve"><value>{0} gespeichert, {1} Feld(er) ausgefüllt.</value></data>
   <data name="Ui_MenuFile" xml:space="preserve"><value>Datei</value></data>
   <data name="Ui_MenuView" xml:space="preserve"><value>Darstellung</value></data>
   <data name="Ui_Close" xml:space="preserve"><value>Schließen</value></data>
@@ -159,7 +162,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_SectionFind" xml:space="preserve"><value>FELDER FINDEN</value></data>
   <data name="Ui_SectionEdit" xml:space="preserve"><value>BEARBEITEN</value></data>
   <data name="Ui_SectionOutput" xml:space="preserve"><value>AUSGABE</value></data>
-  <data name="Ui_EditKeys" xml:space="preserve"><value>V Auswahl · F Feld zeichnen · Tab nächstes Feld · Enter umbenennen · Entf löschen · Pfeile verschieben (Umschalt: 5 pt)</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V Auswahl · F Feld zeichnen · P Vorschau · Tab nächstes Feld · Enter umbenennen · Entf löschen · Pfeile verschieben (Umschalt: 5 pt)</value></data>
   <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>Eingebettete Schrift</value></data>
   <data name="Ui_EmbedFontNote" xml:space="preserve"><value>Optional. Bettet eine ganze Schrift ein, damit seltene Zeichen (z. B. 燁) überall angezeigt werden.</value></data>
   <data name="Ui_LoadShort" xml:space="preserve"><value>Laden…</value></data>

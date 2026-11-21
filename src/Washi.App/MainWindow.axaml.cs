@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Washi.App.Services;
 using Washi.App.ViewModels;
+using Washi.Masume;
 
 namespace Washi.App;
 
@@ -54,12 +55,91 @@ public partial class MainWindow : Window
                 e.Handled = true;
             }
         };
+        ViewModel.EditRequested += BeginEdit;
+        FieldEditor.KeyDown += OnEditorKeyDown;
+        FieldEditor.LostFocus += (_, _) => EndEdit(commit: true);
+        ViewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(MainViewModel.Zoom) or nameof(MainViewModel.PageIndex) or nameof(MainViewModel.PreviewMode)
+                                or nameof(MainViewModel.ActiveTool) or nameof(MainViewModel.PdfPath))
+                EndEdit(commit: true);
+        };
         // the field list follows the selection, so Tab through fields keeps the row in view
         ViewModel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedField) && ViewModel.SelectedField is { } f)
                 FieldList.ScrollIntoView(f);
         };
+    }
+
+    // ------------------------------------------------------------------ Preview: typing into a field
+    private FieldViewModel? _editing;
+
+    /// <summary>Opens the inline editor over the field, sized and spaced like the field itself.</summary>
+    private void BeginEdit(FieldViewModel f)
+    {
+        EndEdit(commit: true);
+        _editing = f;
+        double z = ViewModel.Zoom;
+        double w = (f.X1 - f.X0) * z, h = (f.Y1 - f.Y0) * z;
+        var ed = FieldEditor;
+        ed.Margin = new Thickness(f.X0 * z, f.Y0 * z, 0, 0);
+        ed.Width = Math.Max(24, w);
+        ed.Height = Math.Max(14, h);
+        ed.FontSize = Math.Max(8, f.Kind == FieldKind.Comb && f.MaxLen > 0 ? Math.Min(h * 0.62, w / f.MaxLen * 0.9) : Math.Min(h * 0.62, 12 * z));
+        ed.MaxLength = f.Kind == FieldKind.Comb ? Math.Max(1, f.MaxLen) : 0;
+        ed.TextAlignment = f.Align switch { 1 => Avalonia.Media.TextAlignment.Center, 2 => Avalonia.Media.TextAlignment.Right, _ => Avalonia.Media.TextAlignment.Left };
+        if (f.Kind == FieldKind.Comb && f.MaxLen > 0)
+        {
+            // one character per printed box: spread the letters to the box pitch
+            double pitch = w / f.MaxLen;
+            double glyph = new Avalonia.Media.FormattedText("0", System.Globalization.CultureInfo.InvariantCulture, Avalonia.Media.FlowDirection.LeftToRight,
+                                                            new Avalonia.Media.Typeface(ed.FontFamily), ed.FontSize, null).Width;
+            ed.LetterSpacing = Math.Max(0, pitch - glyph);
+            ed.Padding = new Thickness(Math.Max(0, (pitch - glyph) / 2) - 1.5, 0, 0, 0);
+            ed.TextAlignment = Avalonia.Media.TextAlignment.Left;
+        }
+        else
+        {
+            ed.LetterSpacing = 0;
+            ed.Padding = new Thickness(2 * z, 0);
+        }
+        ed.Text = f.Value;
+        ed.IsVisible = true;
+        ed.Focus();
+        ed.SelectAll();
+    }
+
+    private void EndEdit(bool commit)
+    {
+        if (_editing is not { } f) return;
+        _editing = null;
+        if (commit) f.Value = FieldEditor.Text ?? "";
+        FieldEditor.IsVisible = false;
+    }
+
+    private void OnEditorKeyDown(object? sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Enter:
+                EndEdit(commit: true);
+                Canvas.Focus();
+                break;
+            case Key.Escape:
+                EndEdit(commit: false);
+                Canvas.Focus();
+                break;
+            case Key.Tab:
+                // Tab fills the next field, as in a PDF viewer
+                EndEdit(commit: true);
+                ViewModel.SelectNextField(backwards: e.KeyModifiers.HasFlag(KeyModifiers.Shift));
+                if (ViewModel.SelectedField is { Kind: not FieldKind.Checkbox } next) BeginEdit(next);
+                else Canvas.Focus();
+                break;
+            default: return;
+        }
+        e.Handled = true;
     }
 
     // ------------------------------------------------------------------ keyboard
@@ -93,11 +173,13 @@ public partial class MainWindow : Window
         {
             case Key.V when vm.IsFormTool: vm.SelectModeCommand.Execute(null); break;
             case Key.F when vm.IsFormTool: vm.DrawFieldModeCommand.Execute(null); break;
+            case Key.P when vm.IsFormTool: vm.TogglePreviewCommand.Execute(null); break;
             case Key.Tab when vm.IsFormTool:
                 vm.SelectNextField(backwards: e.KeyModifiers == KeyModifiers.Shift);
-                Canvas.Focus();
+                if (vm.PreviewMode && vm.SelectedField is { Kind: not FieldKind.Checkbox } f) BeginEdit(f);
+                else Canvas.Focus();
                 break;
-            case Key.Enter when vm.IsFormTool && vm.SelectedField is not null:
+            case Key.Enter when vm.IsFormTool && vm.SelectedField is not null && !vm.PreviewMode:
                 FieldNameBox.Focus();
                 FieldNameBox.SelectAll();
                 break;

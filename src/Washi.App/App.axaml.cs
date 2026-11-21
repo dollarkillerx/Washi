@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
@@ -62,8 +63,14 @@ public partial class App : Application
     }
 
     /// <summary>Rebuilds the main window in the new language, keeping the open document and tool.</summary>
-    private static async Task ReloadAsync(IClassicDesktopStyleApplicationLifetime desktop, MainWindow old)
+    private async Task ReloadAsync(IClassicDesktopStyleApplicationLifetime desktop, MainWindow old)
     {
+        // the application menu (macOS) belongs to the app, not the window: relabel it
+        if (NativeMenu.GetMenu(this)?.Items is { } items)
+        {
+            if (items.Count > 0 && items[0] is NativeMenuItem about) about.Header = Washi.Core.Localization.L.Get("Ui_About");
+            if (items.Count > 2 && items[2] is NativeMenuItem settings) settings.Header = Washi.Core.Localization.L.Get("Ui_SettingsMenu");
+        }
         var fresh = new MainWindow
         {
             Width = old.Width, Height = old.Height, Position = old.Position, WindowState = old.WindowState,

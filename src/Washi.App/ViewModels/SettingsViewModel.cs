@@ -30,7 +30,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>Raised after the language was saved; the app rebuilds its window in that language.</summary>
     public event Action? LanguageChanged;
 
-    public static IReadOnlyList<Choice<string>> Languages { get; } =
+    public static IReadOnlyList<Choice<string>> Languages =>
     [
         new("", L.Get("Ui_LangSystem")), new("ja", "日本語"), new("zh-Hans", "简体中文"), new("zh-Hant", "繁體中文"),
         new("ko", "한국어"), new("en", "English"), new("fr", "Français"), new("de", "Deutsch"),
@@ -56,7 +56,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public const string LicenseUrl = "https://github.com/dollarkillerx/Washi/blob/main/LICENSE";
 
     /// <summary>What ships in Washi, with each project's own licence (see THIRD_PARTY_NOTICES.md).</summary>
-    public static IReadOnlyList<Component> Components { get; } =
+    public static IReadOnlyList<Component> Components =>
     [
         new(".NET", "MIT", "https://github.com/dotnet/runtime"),
         new("Avalonia", "MIT", "https://github.com/AvaloniaUI/Avalonia"),

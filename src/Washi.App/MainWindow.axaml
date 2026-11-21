@@ -570,6 +570,11 @@
                         BoxShadow="0 2 10 0 #33000000">
                     <Grid Width="{Binding DisplayWidth}" Height="{Binding DisplayHeight}">
                         <c:FieldCanvas x:Name="Canvas" Editor="{Binding}" Zoom="{Binding Zoom}" />
+                        <!-- Preview: the inline editor, placed over the field being typed into -->
+                        <TextBox x:Name="FieldEditor" IsVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                 MinHeight="0" MinWidth="0" Padding="2,0" VerticalContentAlignment="Center"
+                                 Background="White" BorderBrush="{StaticResource BlueBrush}" BorderThickness="1.5" CornerRadius="0"
+                                 AcceptsReturn="False" Foreground="{StaticResource InkBrush}" />
                     </Grid>
                 </Border>
             </ScrollViewer>
@@ -601,12 +606,15 @@
             <!-- floating edit tools (form tool) -->
             <Border Classes="float" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14" IsVisible="{Binding ShowEditTools}">
                 <StackPanel Spacing="2">
-                    <ToggleButton IsChecked="{Binding !DrawMode}" Command="{Binding SelectModeCommand}" ToolTip.Tip="{l:Tr Ui_SelectTip}"
+                    <ToggleButton IsChecked="{Binding IsSelectMode, Mode=OneWay}" Command="{Binding SelectModeCommand}" ToolTip.Tip="{l:Tr Ui_SelectTip}"
                                   x:Name="SelectToolButton">
                         <c:Icon Data="{StaticResource I.Select}" />
                     </ToggleButton>
                     <ToggleButton IsChecked="{Binding DrawMode}" ToolTip.Tip="{l:Tr Ui_DrawTip}" x:Name="DrawToolButton">
                         <c:Icon Data="{StaticResource I.Draw}" />
+                    </ToggleButton>
+                    <ToggleButton IsChecked="{Binding PreviewMode}" ToolTip.Tip="{l:Tr Ui_PreviewTip}" x:Name="PreviewToolButton">
+                        <c:Icon Data="{StaticResource I.Preview}" />
                     </ToggleButton>
                     <Rectangle Height="1" Fill="{StaticResource RuleBrush}" Margin="6,2" />
                     <Button Command="{Binding DeleteSelectedCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="{l:Tr Ui_DeleteTip}">
