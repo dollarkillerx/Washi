@@ -33,15 +33,44 @@ public partial class AssistantPanel : UserControl
             if (_vm is not null) _vm.Items.CollectionChanged -= OnItemsChanged;
             _vm = DataContext as AssistantViewModel;
             if (_vm is not null) _vm.Items.CollectionChanged += OnItemsChanged;
+            FollowLatest();
+        };
+
+        // A streaming answer grows inside one item (and its Markdown is laid out after it arrives), so follow the
+        // content's height, not only added items.
+        Scroller.ScrollChanged += (_, e) =>
+        {
+            if (e.ExtentDelta.Y != 0 || e.ViewportDelta.Y != 0)
+            {
+                if (_pinned) Scroller.ScrollToEnd();
+            }
+            else if (e.OffsetDelta.Y != 0) _pinned = IsAtBottom;
         };
     }
 
-    /// <summary>Follow the newest message (also while it streams: items grow after they were added).</summary>
+    /// <summary>Within this many pixels of the end counts as "at the bottom".</summary>
+    internal const double BottomSlack = 24;
+
+    /// <summary>
+    /// Follow the newest content (after MySSH). True while the view is at the bottom; scrolling up to read clears it,
+    /// scrolling back down (or sending, or a new chat) sets it again.
+    /// </summary>
+    private bool _pinned = true;
+
+    public bool IsAtBottom => Scroller.Offset.Y >= Scroller.Extent.Height - Scroller.Viewport.Height - BottomSlack;
+
     private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        Dispatcher.UIThread.Post(() => Scroller.ScrollToEnd(), DispatcherPriority.Background);
-        if (e.NewItems is null) return;
-        foreach (var item in e.NewItems.OfType<AssistantChatItem>())
-            item.PropertyChanged += (_, _) => Dispatcher.UIThread.Post(() => Scroller.ScrollToEnd(), DispatcherPriority.Background);
+        // the user's own question (or a cleared chat) always brings the view down; other items only while following
+        if (e.Action == NotifyCollectionChangedAction.Reset || e.NewItems?.OfType<UserChatItem>().Any() == true) FollowLatest();
+        else if (_pinned) ScrollToEndSoon();
     }
+
+    private void FollowLatest()
+    {
+        _pinned = true;
+        ScrollToEndSoon();
+    }
+
+    private void ScrollToEndSoon() => Dispatcher.UIThread.Post(() => { if (_pinned) Scroller.ScrollToEnd(); }, DispatcherPriority.Background);
 }
