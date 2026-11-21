@@ -180,6 +180,31 @@ public class MasumeDetectorTests
         Assert.Empty(MasumeDetector.Detect(new Canvas(600, 400).Rect(10, 10, 50, 46).Snapshot(three)));
     }
 
+    /// <summary>Text as 8 pt chars from (x, y), in red: the minority colour, so the detector sees it as data.</summary>
+    private static IEnumerable<PdfChar> Red(string s, double x, double y) => s.Select((ch, i) => Ch(ch.ToString(), x + 8 * i, y, rgb: 0xFF0000));
+
+    /// <summary>Black text outside any cell, so black is the page's label colour.</summary>
+    private static IEnumerable<PdfChar> BlackNotes() => Enumerable.Range(0, 40).Select(i => Ch("注", 10 + 8 * (i % 20), 300 + 10 * (i / 20)));
+
+    [Fact]
+    public void A_paragraph_in_a_cell_is_printed_explanation_not_a_filled_in_value()
+    {
+        // a guide's explanation box: before, the whole paragraph became one prefilled field, and "make editable"
+        // erased it from the page and moved it into that field
+        var para = Red("これは説明の文です。", 14, 14).Concat(Red("次の欄に記入します。", 14, 26)).Concat(Red("以上です", 14, 38));
+        var page = new Canvas(600, 400).Rect(10, 10, 200, 60).Snapshot([.. para, .. BlackNotes()]);
+        Assert.Empty(MasumeDetector.Detect(page));
+    }
+
+    [Fact]
+    public void A_filled_in_address_on_two_lines_stays_a_prefilled_value()
+    {
+        var addr = Red("東京都千代田区一丁目", 14, 14).Concat(Red("二番三号", 14, 26));
+        var page = new Canvas(600, 400).Rect(10, 10, 200, 40).Snapshot([.. addr, .. BlackNotes()]);
+        var f = Assert.Single(MasumeDetector.Detect(page));
+        Assert.StartsWith("東京都", f.Prefilled);
+    }
+
     [Fact]
     public void Marks_on_two_lines_that_do_not_end_together_still_leave_a_field()
     {

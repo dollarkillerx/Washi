@@ -74,6 +74,13 @@ public static class MasumeDetector
             var cell = new Cell(r);
             cell.LabelChars.AddRange(labels.Where(c => Inside(c.Rect, r)));
             cell.DataChars.AddRange(data.Where(c => Inside(c.Rect, r)));
+            if (Paragraph(cell.DataChars))
+            {
+                // a paragraph in the "other" colour is printed explanation, not a filled-in value: on a guide page
+                // whose commentary is mostly red, the black body text would otherwise be taken for data
+                cell.LabelChars.AddRange(cell.DataChars);
+                cell.DataChars.Clear();
+            }
             cell.Boxes.AddRange(boxes.Where(b => Contains(r, b.Center)));
             var interior = g.Slice(Px(r.X0) + 3, Px(r.Y0) + 3, Px(r.X1) - 3, Px(r.Y1) - 3);
             cell.Shaded = interior.Length > 0 && Median(interior) < ShadedLum;
@@ -391,6 +398,19 @@ public static class MasumeDetector
                 lines.Add([ch]);
         }
         return lines;
+    }
+
+    /// <summary>Running prose: three or more lines with at least two sentence endings. Filled-in values (names,
+    /// numbers, addresses) are short and rarely end a sentence, let alone two.</summary>
+    internal static bool Paragraph(IReadOnlyList<PdfChar> chars)
+    {
+        var lines = Lines(chars);
+        if (chars.Count < 20 || lines.Count < 3) return false;
+        var text = string.Join(" ", lines.Select(l => string.Concat(l.OrderBy(c => c.Rect.X0).Select(c => c.Text)))) + " ";
+        int ends = 0;
+        for (int i = 0; i < text.Length - 1; i++)
+            if (text[i] is '。' or '．' || (text[i] is '.' or '!' or '?' && char.IsWhiteSpace(text[i + 1]))) ends++;
+        return ends >= 2;
     }
 
     /// <summary>Two or more lines that end at the same x: a right-aligned column of printed values.</summary>
