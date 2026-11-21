@@ -61,7 +61,10 @@
                     </StackPanel>
                 </Border>
                 <ToggleButton IsChecked="{Binding AttachDocument}" IsVisible="{Binding DocumentChip, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                              Classes="chip" Content="{Binding DocumentChip}" ToolTip.Tip="{l:Tr Ui_AssistantDocChipTip}" Margin="0" />
+                              Classes="chip" ToolTip.Tip="{l:Tr Ui_AssistantDocChipTip}" Margin="0" x:Name="DocumentChip">
+                    <!-- a TextBlock, not string content: a string would turn "_" in file names into an access key -->
+                    <TextBlock Text="{Binding DocumentChip}" />
+                </ToggleButton>
                 <TextBox Text="{Binding Input}" PlaceholderText="{l:Tr Ui_AssistantWatermark}" TextWrapping="Wrap" AcceptsReturn="False"
                          MinHeight="56" MaxHeight="160" x:Name="InputBox" />
                 <DockPanel>
