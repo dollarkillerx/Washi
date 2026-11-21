@@ -32,7 +32,7 @@ public sealed class PdfiumDocument : IDisposable
         return new PdfiumDocument(doc);
     }
 
-    private static void EnsureInit()
+    internal static void EnsureInit()
     {
         lock (InitLock)
         {
@@ -278,7 +278,7 @@ public sealed class PdfiumDocument : IDisposable
     }
 
     /// <summary>PDF user space (bottom-up, unrotated) to upright top-down points.</summary>
-    private readonly struct PageMapper(FpdfPageT page, double width, double height)
+    internal readonly struct PageMapper(FpdfPageT page, double width, double height)
     {
         public PdfRect ToDevice(double left, double top, double right, double bottom)
         {

@@ -111,7 +111,11 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      join files (form fields are kept)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
-                                          make scanned pages searchable (an invisible text layer; the page image is unchanged)</value></data>
+                                          make scanned pages searchable (an invisible text layer; the page image is unchanged)
+  washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
+                                          remove printed text/images under boxes for real (points, top-left origin; coloured form printing stays)</value></data>
+  <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
+  <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  (pages {1}-{2})</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi: {0}</value></data>
@@ -281,4 +285,28 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>The answer was cut off (output limit).</value></data>
   <data name="Ui_AssistantRefused" xml:space="preserve"><value>The model declined this request. {0}</value></data>
   <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>Stopped after too many tool steps; ask again to continue.</value></data>
+  <data name="Ui_ToolErase" xml:space="preserve"><value>Erase</value></data>
+  <data name="Ui_EraseTitle" xml:space="preserve"><value>Erase printed text</value></data>
+  <data name="Ui_EraseLead" xml:space="preserve"><value>Drag boxes over what is already printed on the page, for example wrong data on a form. Washi deletes it from the PDF for real; nothing is just covered.</value></data>
+  <data name="Ui_EraseBoxes" xml:space="preserve"><value>BOXES</value></data>
+  <data name="Ui_EraseNoBoxes" xml:space="preserve"><value>Drag on the page to draw a box.</value></data>
+  <data name="Ui_EraseBoxLabel" xml:space="preserve"><value>Page {0} · {1} × {2} pt</value></data>
+  <data name="Ui_EraseClear" xml:space="preserve"><value>Clear boxes</value></data>
+  <data name="Ui_ErasePlan" xml:space="preserve"><value>Will remove {0} text run(s), {1} image(s), {2} drawing(s).</value></data>
+  <data name="Ui_EraseKeptNote" xml:space="preserve"><value>{0} item(s) stay: {1}</value></data>
+  <data name="Ui_EraseLegendRemove" xml:space="preserve"><value>removed</value></data>
+  <data name="Ui_EraseLegendKeep" xml:space="preserve"><value>stays</value></data>
+  <data name="Ui_EraseOptions" xml:space="preserve"><value>OPTIONS</value></data>
+  <data name="Ui_EraseKeepColored" xml:space="preserve"><value>Keep coloured printing</value></data>
+  <data name="Ui_EraseKeepColoredNote" xml:space="preserve"><value>Official forms print the form in colour and the data in black: only black and grey ink is erased.</value></data>
+  <data name="Ui_EraseRules" xml:space="preserve"><value>Also erase thin lines (table rules, box dividers)</value></data>
+  <data name="Ui_EraseRun" xml:space="preserve"><value>Erase and save a copy</value></data>
+  <data name="Ui_EraseRunNote" xml:space="preserve"><value>Writes &lt;name&gt;_erased.pdf next to the original and opens it. The original is not changed.</value></data>
+  <data name="Ui_EraseFailed" xml:space="preserve"><value>Could not erase: {0}</value></data>
+  <data name="Ui_Erased" xml:space="preserve"><value>Saved {0}: {1} item(s) removed; check: {2} character(s) left in the erased areas, {3} image(s) dropped from the file.</value></data>
+  <data name="Erase_KeptRunsOutside" xml:space="preserve"><value>a line of text runs outside the box: widen the box</value></data>
+  <data name="Erase_KeptLargeImage" xml:space="preserve"><value>a large image (a scan?) covers this area; its pixels are not changed</value></data>
+  <data name="Erase_KeptGrouped" xml:space="preserve"><value>grouped content is not erased</value></data>
+  <data name="Erase_KeptColored" xml:space="preserve"><value>coloured printing of the form is kept (option above)</value></data>
+  <data name="Erase_KeptChained" xml:space="preserve"><value>a text run joined to the next one on its line: widen the box to include both</value></data>
 </root>

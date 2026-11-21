@@ -256,6 +256,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSplitTool}" x:Name="SplitToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Split}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSplit}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsAskTool}" x:Name="AskToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Ask}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolAsk}" /></StackPanel>
                 </RadioButton>
@@ -447,6 +450,63 @@
                             <TextBlock Classes="note" Text="{Binding Split.Preview}" Foreground="{StaticResource InkBrush}" />
                         </Border>
                     </StackPanel>
+                </DockPanel>
+
+                <!-- Erase printed content -->
+                <DockPanel IsVisible="{Binding IsEraseTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <Button Classes="accent primary" Command="{Binding Erase.EraseCommand}" IsEnabled="{Binding Erase.CanErase}" x:Name="EraseButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Erase}" Size="18" />
+                                    <TextBlock Text="{l:Tr Ui_EraseRun}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_EraseRunNote}" />
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_EraseTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_EraseLead}" />
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_EraseBoxes}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_EraseNoBoxes}" IsVisible="{Binding !Erase.HasBoxes}" />
+                            <ItemsControl ItemsSource="{Binding Erase.Boxes}" x:Name="EraseBoxList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:EraseBox">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <Button DockPanel.Dock="Right" Padding="6,2" Background="Transparent" ToolTip.Tip="{l:Tr Ui_Remove}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Erase.RemoveBoxCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Close}" Size="12" />
+                                            </Button>
+                                            <TextBlock Text="{Binding Label}" FontSize="12" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Content="{l:Tr Ui_EraseClear}" Command="{Binding Erase.ClearCommand}" IsVisible="{Binding Erase.HasBoxes}"
+                                    Padding="10,4" FontSize="12" Margin="0,4,0,0" />
+
+                            <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,12,0,0" IsVisible="{Binding Erase.HasBoxes}">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Classes="note" Text="{Binding Erase.PlanText}" Foreground="{StaticResource InkBrush}" x:Name="ErasePlanText" />
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Border Width="12" Height="12" Background="#47DA1E28" VerticalAlignment="Center" />
+                                        <TextBlock Classes="note" Text="{l:Tr Ui_EraseLegendRemove}" />
+                                        <Border Width="12" Height="12" BorderBrush="#F1C21B" BorderThickness="1.5" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                        <TextBlock Classes="note" Text="{l:Tr Ui_EraseLegendKeep}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_EraseOptions}" />
+                            <CheckBox IsChecked="{Binding Erase.KeepColored}" Content="{l:Tr Ui_EraseKeepColored}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_EraseKeepColoredNote}" Margin="28,0,0,6" />
+                            <CheckBox IsChecked="{Binding Erase.Rules}" Content="{l:Tr Ui_EraseRules}" />
+                        </StackPanel>
+                    </ScrollViewer>
                 </DockPanel>
 
                 <!-- AI assistant -->

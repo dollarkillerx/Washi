@@ -252,6 +252,10 @@ public sealed class EditorTests : IDisposable
         await vm.Ocr.RefreshPlanAsync();
         Shot(w, "ocr");
 
+        vm.ActiveTool = Tool.Erase;
+        await vm.Erase.AddBoxAsync(new Washi.Core.PdfRect(180, 40, 540, 125));
+        Shot(w, "erase");
+
         vm.ActiveTool = Tool.Ask;
         Shot(w, "assistant");
 

@@ -26,7 +26,8 @@ public static class WashiTools
         .Add(new FillFieldsTool(policy))
         .Add(new MergePdfsTool(policy))
         .Add(new SplitPdfTool(policy))
-        .Add(new OcrPdfTool(policy));
+        .Add(new OcrPdfTool(policy))
+        .Add(new EraseContentTool(policy));
 
     internal static readonly JsonSerializerOptions Json = new()
     {
@@ -56,6 +57,7 @@ public abstract class PdfTool(PathPolicy policy) : IWashiTool
             return await RunAsync(arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement, cancellationToken);
         }
         catch (ToolException e) { return ToolResult.Error(e.Message); }
+        catch (EraseException e) { return ToolResult.Error(e.Message); }
         catch (PageAssemblyException e) { return ToolResult.Error(e.Message); }
         catch (OcrException e) { return ToolResult.Error(e.Message); }
         catch (FontNotUsableException e) when (e.Reason == "license")
@@ -527,4 +529,56 @@ public sealed class OcrPdfTool(PathPolicy p) : PdfTool(p)
         OcrPageStatus.AlreadySearchable => "already_searchable",
         _ => "not_selected",
     };
+}
+
+public sealed class EraseContentTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "erase_content";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW PDF with the printed content inside boxes removed for real (deleted from the page, not covered): " +
+        "text, images and drawings, e.g. wrong data already printed on a form before filling it again. Boxes use the same " +
+        "coordinates as list_fields / detect_fields (points, top-left origin, upright page); a field's rect is a good box. " +
+        "By default coloured printing (the form itself) and thin table lines stay. A text line that runs outside a box is " +
+        "kept and reported. The result is checked: no text left where it was erased, no pixel changed outside the boxes. " +
+        "Never overwrites; render_page the result to check.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "boxes":{"type":"array","minItems":1,"items":{"type":"object","properties":{
+              "page":{"type":"integer","minimum":1,"description":"1-based page"},
+              "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4,"description":"[x0, y0, x1, y1] in points"}},
+            "required":["page","rect"],"additionalProperties":false}},
+          "keep_colored":{"type":"boolean","description":"Keep coloured ink (the form's printing); erase only black/grey (default true)"},
+          "rules":{"type":"boolean","description":"Also erase thin table lines and comb dividers (default false)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_erased.pdf next to the input)"}},
+         "required":["path","boxes"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var output = Policy.Output(OptStr(a, "output"), path, "_erased");
+        if (!a.TryGetProperty("boxes", out var arr) || arr.ValueKind != JsonValueKind.Array || arr.GetArrayLength() == 0)
+            throw new ToolException("'boxes' is required: [{\"page\":1,\"rect\":[x0,y0,x1,y1]}]");
+        var regions = new List<EraseRegion>();
+        foreach (var b in arr.EnumerateArray())
+        {
+            if (!b.TryGetProperty("page", out var pg) || !pg.TryGetInt32(out var page) || page < 1) throw new ToolException("each box needs a 1-based 'page'");
+            if (!b.TryGetProperty("rect", out var r) || r.ValueKind != JsonValueKind.Array || r.GetArrayLength() != 4)
+                throw new ToolException("each box needs 'rect': [x0, y0, x1, y1]");
+            var v = r.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+            regions.Add(new EraseRegion(page - 1, new PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3]))));
+        }
+        bool Flag(string k, bool d) => a.TryGetProperty(k, out var f) && f.ValueKind is JsonValueKind.True or JsonValueKind.False ? f.GetBoolean() : d;
+        var report = PdfEraser.Erase(path, output, regions, new EraseOptions(KeepColored: Flag("keep_colored", true), Rules: Flag("rules", false)));
+        return new ToolResult(ToJson(new
+        {
+            output,
+            removed = new { text = report.TextRemoved, images = report.ImagesRemoved, drawings = report.DrawingsRemoved },
+            image_streams_dropped = report.ImagesDropped,
+            check = new { characters_left = report.RemainingChars, pixels_changed_outside = report.ChangedPixelsOutside },
+            kept = report.Kept.Select(k => new { page = k.Page + 1, kind = k.Kind.ToString().ToLowerInvariant(), rect = Rect(k.Rect), reason = k.Reason }),
+        }));
+    }
 }

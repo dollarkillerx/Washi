@@ -274,3 +274,135 @@ public sealed partial class SplitToolViewModel(MainViewModel main) : ObservableO
         });
     }
 }
+
+/// <summary>A box drawn in the Erase tool (0-based page, page points).</summary>
+public sealed record EraseBox(int Page, Washi.Core.PdfRect Rect)
+{
+    public string Label => L.F("Ui_EraseBoxLabel", Page + 1, (int)Rect.Width, (int)Rect.Height);
+}
+
+/// <summary>
+/// Erase printed content: draw boxes over text that is already printed on the page (wrong data on a form), see
+/// what will go, then write a copy where it is removed for real (<see cref="PdfEraser"/>).
+/// </summary>
+public sealed partial class EraseToolViewModel(MainViewModel main) : ObservableObject
+{
+    public ObservableCollection<EraseBox> Boxes { get; } = [];
+
+    [ObservableProperty] private bool _keepColored = true;
+    [ObservableProperty] private bool _rules;
+    [ObservableProperty] private string _planText = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanErase))] private int _planned;
+
+    /// <summary>What will go (red) and what stays (amber), for the canvas.</summary>
+    public IReadOnlyList<EraseTarget> Targets { get; private set; } = [];
+    public IReadOnlyList<EraseKept> Kept { get; private set; } = [];
+
+    /// <summary>Raised when boxes, targets or kept items change (the canvas redraws).</summary>
+    public event Action? Changed;
+
+    public bool CanErase => main.HasDocument && Planned > 0;
+    public bool HasBoxes => Boxes.Count > 0;
+
+    partial void OnKeepColoredChanged(bool value) => _ = RefreshPlanAsync();
+    partial void OnRulesChanged(bool value) => _ = RefreshPlanAsync();
+
+    private EraseOptions Options => new(KeepColored: KeepColored, Rules: Rules);
+
+    public void Reset()
+    {
+        Boxes.Clear();
+        Targets = [];
+        Kept = [];
+        Planned = 0;
+        PlanText = "";
+        OnPropertyChanged(nameof(HasBoxes));
+        Changed?.Invoke();
+    }
+
+    public async Task AddBoxAsync(Washi.Core.PdfRect rect)
+    {
+        Boxes.Add(new EraseBox(main.PageIndex, rect));
+        OnPropertyChanged(nameof(HasBoxes));
+        await RefreshPlanAsync();
+    }
+
+    [RelayCommand]
+    private async Task RemoveBoxAsync(EraseBox? box)
+    {
+        if (box is null) return;
+        Boxes.Remove(box);
+        OnPropertyChanged(nameof(HasBoxes));
+        await RefreshPlanAsync();
+    }
+
+    [RelayCommand]
+    private async Task ClearAsync()
+    {
+        Reset();
+        await Task.CompletedTask;
+    }
+
+    public async Task RefreshPlanAsync()
+    {
+        if (main.PdfPath is not { } path || Boxes.Count == 0)
+        {
+            Targets = []; Kept = []; Planned = 0; PlanText = "";
+            Changed?.Invoke();
+            return;
+        }
+        var regions = Boxes.Select(b => new EraseRegion(b.Page, b.Rect)).ToList();
+        try
+        {
+            var (targets, kept) = await MainViewModel.Pdfium(() => PdfEraser.Plan(path, regions, Options));
+            Targets = targets;
+            Kept = kept;
+            Planned = targets.Count;
+            PlanText = L.F("Ui_ErasePlan", targets.Count(t => t.Kind == EraseKind.Text), targets.Count(t => t.Kind == EraseKind.Image),
+                           targets.Count(t => t.Kind == EraseKind.Drawing))
+                       + (kept.Count > 0 ? "\n" + L.F("Ui_EraseKeptNote", kept.Count, L.Get("Erase_Kept" + kept[0].Why)) : "");
+        }
+        catch (Exception e) when (e is EraseException or IOException)
+        {
+            Targets = []; Kept = []; Planned = 0;
+            PlanText = e.Message;
+        }
+        Changed?.Invoke();
+    }
+
+    /// <summary>Writes &lt;name&gt;_erased.pdf (or _erased_2, … : nothing is overwritten) and opens it.</summary>
+    [RelayCommand]
+    private async Task EraseAsync()
+    {
+        if (main.PdfPath is not { } path || Boxes.Count == 0) return;
+        var output = FreeName(path);
+        var regions = Boxes.Select(b => new EraseRegion(b.Page, b.Rect)).ToList();
+        EraseReport? report = null;
+        await main.Run(async () =>
+        {
+            try
+            {
+                report = await MainViewModel.Pdfium(() => PdfEraser.Erase(path, output, regions, Options));
+            }
+            catch (EraseException e)
+            {
+                main.Status = L.F("Ui_EraseFailed", e.Message);
+            }
+        });
+        if (report is null) return;
+        var page = main.PageIndex;
+        Reset();
+        await main.LoadAsync(output);
+        if (page < main.PageCount) main.PageIndex = page;
+        main.Status = L.F("Ui_Erased", Path.GetFileName(output), report.Removed, report.RemainingChars, report.ImagesDropped);
+    }
+
+    private static string FreeName(string input)
+    {
+        var dir = Path.GetDirectoryName(input)!;
+        var stem = Path.GetFileNameWithoutExtension(input);
+        var name = Path.Combine(dir, stem + "_erased.pdf");
+        for (int n = 2; File.Exists(name); n++) name = Path.Combine(dir, $"{stem}_erased_{n}.pdf");
+        return name;
+    }
+}

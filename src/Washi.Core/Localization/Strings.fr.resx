@@ -111,7 +111,11 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      assemble des fichiers (les champs de formulaire sont conservés)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dossier]
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
-                                          rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)</value></data>
+                                          rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)
+  washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
+                                          supprime pour de bon le texte et les images imprimés dans les cadres (points, origine en haut à gauche ; l’impression en couleur du formulaire reste)</value></data>
+  <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
+  <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  (pages {1} à {2})</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi : {0}</value></data>
@@ -281,4 +285,28 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>La réponse a été coupée (limite de sortie).</value></data>
   <data name="Ui_AssistantRefused" xml:space="preserve"><value>Le modèle a refusé cette demande. {0}</value></data>
   <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>Arrêté après trop d’étapes ; redemandez pour continuer.</value></data>
+  <data name="Ui_ToolErase" xml:space="preserve"><value>Effacer</value></data>
+  <data name="Ui_EraseTitle" xml:space="preserve"><value>Effacer le texte imprimé</value></data>
+  <data name="Ui_EraseLead" xml:space="preserve"><value>Tracez des cadres sur ce qui est déjà imprimé (par exemple des données erronées sur un formulaire). Washi le supprime vraiment du PDF ; rien n’est simplement masqué.</value></data>
+  <data name="Ui_EraseBoxes" xml:space="preserve"><value>CADRES</value></data>
+  <data name="Ui_EraseNoBoxes" xml:space="preserve"><value>Faites glisser sur la page pour tracer un cadre.</value></data>
+  <data name="Ui_EraseBoxLabel" xml:space="preserve"><value>Page {0} · {1} × {2} pt</value></data>
+  <data name="Ui_EraseClear" xml:space="preserve"><value>Effacer les cadres</value></data>
+  <data name="Ui_ErasePlan" xml:space="preserve"><value>Supprimera {0} texte(s), {1} image(s), {2} dessin(s).</value></data>
+  <data name="Ui_EraseKeptNote" xml:space="preserve"><value>{0} élément(s) restent : {1}</value></data>
+  <data name="Ui_EraseLegendRemove" xml:space="preserve"><value>supprimé</value></data>
+  <data name="Ui_EraseLegendKeep" xml:space="preserve"><value>conservé</value></data>
+  <data name="Ui_EraseOptions" xml:space="preserve"><value>OPTIONS</value></data>
+  <data name="Ui_EraseKeepColored" xml:space="preserve"><value>Garder l’impression en couleur</value></data>
+  <data name="Ui_EraseKeepColoredNote" xml:space="preserve"><value>Les formulaires officiels impriment le formulaire en couleur et les données en noir : seule l’encre noire ou grise est effacée.</value></data>
+  <data name="Ui_EraseRules" xml:space="preserve"><value>Effacer aussi les traits fins (filets, séparateurs de cases)</value></data>
+  <data name="Ui_EraseRun" xml:space="preserve"><value>Effacer et enregistrer une copie</value></data>
+  <data name="Ui_EraseRunNote" xml:space="preserve"><value>Écrit &lt;nom&gt;_erased.pdf à côté de l’original et l’ouvre. L’original n’est pas modifié.</value></data>
+  <data name="Ui_EraseFailed" xml:space="preserve"><value>Effacement impossible : {0}</value></data>
+  <data name="Ui_Erased" xml:space="preserve"><value>{0} enregistré : {1} élément(s) supprimé(s) ; contrôle : {2} caractère(s) restant(s) dans les zones effacées, {3} image(s) retirée(s) du fichier.</value></data>
+  <data name="Erase_KeptRunsOutside" xml:space="preserve"><value>une ligne de texte dépasse du cadre : agrandissez-le</value></data>
+  <data name="Erase_KeptLargeImage" xml:space="preserve"><value>une grande image (un scan ?) couvre cette zone ; ses pixels ne sont pas modifiés</value></data>
+  <data name="Erase_KeptGrouped" xml:space="preserve"><value>le contenu groupé n’est pas effacé</value></data>
+  <data name="Erase_KeptColored" xml:space="preserve"><value>l’impression en couleur du formulaire est conservée (option ci-dessus)</value></data>
+  <data name="Erase_KeptChained" xml:space="preserve"><value>texte lié au suivant sur sa ligne : agrandissez le cadre pour inclure les deux</value></data>
 </root>

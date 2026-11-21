@@ -38,6 +38,7 @@ public sealed class FieldCanvas : Control
     private PdfRect _startRect;
     private (bool Left, bool Top) _corner; // which corner is being dragged
     private FieldViewModel? _dragged;
+    private PdfRect? _eraseBox;           // the erase box being drawn, page points
 
     static FieldCanvas()
     {
@@ -61,6 +62,7 @@ public sealed class FieldCanvas : Control
     private void Hook(MainViewModel vm)
     {
         vm.PropertyChanged += OnEditorChanged;
+        vm.Erase.Changed += InvalidateVisual;
         vm.Fields.CollectionChanged += OnFieldsChanged;
         foreach (var f in vm.Fields) f.PropertyChanged += OnFieldChanged;
     }
@@ -68,6 +70,7 @@ public sealed class FieldCanvas : Control
     private void Unhook(MainViewModel vm)
     {
         vm.PropertyChanged -= OnEditorChanged;
+        vm.Erase.Changed -= InvalidateVisual;
         vm.Fields.CollectionChanged -= OnFieldsChanged;
         foreach (var f in vm.Fields) f.PropertyChanged -= OnFieldChanged;
     }
@@ -114,6 +117,11 @@ public sealed class FieldCanvas : Control
         // the page is drawn here too, in the same coordinates as the fields, so they always line up
         if (Editor is { PageImage: { } page } ed)
             ctx.DrawImage(page, new Rect(0, 0, page.PixelSize.Width, page.PixelSize.Height), new Rect(0, 0, ed.PageWidth * Zoom, ed.PageHeight * Zoom));
+        if (Editor is { IsEraseTool: true } er)
+        {
+            RenderErase(ctx, er);
+            return;
+        }
         var selected = Editor?.SelectedField;
         var typeface = new Typeface("Inter");
         if (Editor is { PreviewMode: true })
@@ -236,9 +244,38 @@ public sealed class FieldCanvas : Control
         return null;
     }
 
+    private Rect Screen(PdfRect r) => new(r.X0 * Zoom, r.Y0 * Zoom, Math.Max(0, r.Width) * Zoom, Math.Max(0, r.Height) * Zoom);
+
+    /// <summary>Erase tool: the boxes (vermilion), what will be removed (red) and what stays inside them (amber).</summary>
+    private void RenderErase(DrawingContext ctx, MainViewModel vm)
+    {
+        var page = vm.PageIndex;
+        foreach (var t in vm.Erase.Targets.Where(t => t.Page == page))
+            ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(218, 30, 40), 0.28), null, Screen(t.Rect));
+        var amber = new Pen(new SolidColorBrush(Color.FromRgb(241, 194, 27)), 1.5, new DashStyle([2, 2], 0));
+        foreach (var k in vm.Erase.Kept.Where(k => k.Page == page))
+            ctx.DrawRectangle(null, amber, Screen(k.Rect));
+        var edge = new Pen(new SolidColorBrush(Active), 1.5, new DashStyle([5, 3], 0));
+        foreach (var b in vm.Erase.Boxes.Where(b => b.Page == page))
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.06), edge, Screen(b.Rect));
+        if (_eraseBox is { } drawing)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.10), edge, Screen(drawing));
+    }
+
+    private static PdfRect Normal(Point a, Point b) =>
+        new(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        if (Editor is { IsEraseTool: true, HasDocument: true } ev && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _start = ToPage(e.GetPosition(this));
+            _eraseBox = Normal(_start, _start);
+            e.Pointer.Capture(this);
+            e.Handled = true;
+            return;
+        }
         if (Editor is not { IsFormTool: true } vm || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         Focus();
         var screen = e.GetPosition(this);
@@ -287,6 +324,13 @@ public sealed class FieldCanvas : Control
     {
         base.OnPointerMoved(e);
         var screen = e.GetPosition(this);
+        if (_eraseBox is not null)
+        {
+            _eraseBox = Normal(_start, ToPage(screen));
+            InvalidateVisual();
+            e.Handled = true;
+            return;
+        }
         if (_dragged is not { } f || _drag == Drag.None)
         {
             UpdateCursor(screen);
@@ -312,6 +356,14 @@ public sealed class FieldCanvas : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+        if (_eraseBox is { } box)
+        {
+            _eraseBox = null;
+            e.Pointer.Capture(null);
+            if (box.Width >= MinSizePt && box.Height >= MinSizePt && Editor is { } ed) _ = ed.Erase.AddBoxAsync(box);
+            InvalidateVisual();
+            return;
+        }
         if (_dragged is { } f && Editor is { } vm)
         {
             bool tooSmall = f.X1 - f.X0 < MinSizePt || f.Y1 - f.Y0 < MinSizePt;
@@ -339,7 +391,7 @@ public sealed class FieldCanvas : Control
         else if (vm.PreviewMode && HitField(screen) is { } over)
             type = over.Kind == FieldKind.Checkbox ? StandardCursorType.Hand : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
-        else if (vm.DrawMode) type = StandardCursorType.Cross;
+        else if (vm.DrawMode || vm.IsEraseTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
     }
