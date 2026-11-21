@@ -85,6 +85,32 @@ public sealed record AiSettings(AiProvider Provider, string Model, Uri? Endpoint
         return [.. list.Value.Select(m => m.Id).Order()];
     }
 
+    /// <summary>The chat provider settings for the assistant (tool calling, streaming), from this one configuration.</summary>
+    public Chat.AiProviderConfig ToProviderConfig()
+    {
+        var images = new Chat.ProviderCapabilities(Images: AcceptsImages);
+        var config = Provider switch
+        {
+            AiProvider.Anthropic => Chat.AiProviderConfig.Claude() with { BaseUrl = Endpoint?.ToString().TrimEnd('/') ?? "https://api.anthropic.com" },
+            AiProvider.OpenAI => Chat.AiProviderConfig.OpenAI() with { BaseUrl = Endpoint?.ToString().TrimEnd('/') ?? "https://api.openai.com/v1" },
+            AiProvider.DeepSeek => Chat.AiProviderConfig.DeepSeek() with { BaseUrl = (Endpoint ?? DeepSeekEndpoint).ToString().TrimEnd('/') },
+            _ => Chat.AiProviderConfig.Custom(Chat.AiProtocol.OpenAICompatible, Endpoint?.ToString().TrimEnd('/') ?? "http://127.0.0.1:11434/v1"),
+        };
+        return config with { Name = Provider == AiProvider.OpenAICompatible ? "Local" : config.Name, Model = Model, Capabilities = images };
+    }
+
+    /// <summary>The assistant's provider. Throws <see cref="AiException"/> when no model or key is set.</summary>
+    public Chat.IChatProvider CreateChatProvider(HttpClient http)
+    {
+        if (string.IsNullOrWhiteSpace(Model)) throw new AiException("no model is set: choose one in Settings → AI");
+        var key = ApiKeys.Find(Provider) ?? "";
+        if (key.Length == 0 && Provider != AiProvider.OpenAICompatible)
+            throw new AiException($"no API key for {Provider}: add it in Settings → AI, or set {KeyVariable(Provider)}");
+        if (Provider == AiProvider.OpenAICompatible && Endpoint is null)
+            throw new AiException("an OpenAI-compatible provider needs an endpoint, e.g. http://localhost:11434/v1");
+        return Chat.AiProviders.Create(ToProviderConfig(), key.Length > 0 ? key : null, http);
+    }
+
     /// <summary>Builds the model client. Throws <see cref="AiException"/> when it cannot.</summary>
     public IAiModel CreateModel()
     {
@@ -123,6 +149,44 @@ public static class ApiKeys
         var (code, output) = Security("add-generic-password", "-U", "-s", Service, "-a", Account(provider), "-l", $"Washi {provider} API key", "-w", key);
         if (code != 0) throw new AiException($"could not store the key in the Keychain: {output.Trim()}");
     }
+
+    /// <summary>Another secret of Washi's (e.g. "mcp-token"): the macOS Keychain, or a 0600 file elsewhere.</summary>
+    public static string? FindSecret(string account)
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            var (code, output) = Security("find-generic-password", "-s", Service, "-a", account, "-w");
+            return code == 0 && output.Trim().Length > 0 ? output.Trim() : null;
+        }
+        var file = SecretFile(account);
+        return File.Exists(file) ? File.ReadAllText(file).Trim() is { Length: > 0 } v ? v : null : null;
+    }
+
+    public static void StoreSecret(string account, string label, string value)
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            var (code, output) = Security("add-generic-password", "-U", "-s", Service, "-a", account, "-l", label, "-w", value);
+            if (code != 0) throw new AiException($"could not store the secret in the Keychain: {output.Trim()}");
+            return;
+        }
+        var file = SecretFile(account);
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        File.WriteAllText(file, value);
+        if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(file, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    private static string SecretFile(string account) => Path.Combine(Path.GetDirectoryName(AiSettings.ConfigPath)!, account);
+
+    /// <summary>Removes a stored key from the macOS Keychain (no-op when there is none).</summary>
+    public static void Remove(AiProvider provider)
+    {
+        if (OperatingSystem.IsMacOS()) Security("delete-generic-password", "-s", Service, "-a", Account(provider));
+    }
+
+    /// <summary>True when the key comes from the environment (it then wins over the Keychain).</summary>
+    public static bool FromEnvironment(AiProvider provider) =>
+        Environment.GetEnvironmentVariable(AiSettings.KeyVariable(provider)) is { Length: > 0 };
 
     private static string Account(AiProvider p) => p.ToString().ToLowerInvariant();
 

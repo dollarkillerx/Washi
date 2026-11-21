@@ -16,7 +16,8 @@ Avalonia.
 >
 > - `washi form make` turns a flat PDF into a fillable one
 > - `washi-mcp` lets AI agents (Claude Desktop, Claude Code and other MCP clients)
->   read, render, detect, make fillable and fill PDFs
+>   read, render, detect, make fillable and fill PDFs, on its own or through the
+>   desktop app's MCP server (Settings → AI & MCP)
 >
 > - the desktop editor (`Washi.App`) lets a person review and correct the
 >   detected fields before the fillable PDF is written
@@ -123,7 +124,8 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Ask AI
+- a **tool rail** on the left: Form, OCR, Combine, Split, AI assistant, and **Settings** at the
+  bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
 - the **page** in the middle, with floating edit tools and page and zoom controls
@@ -224,6 +226,27 @@ washi ai ask contract.pdf "When does the contract end?"
   フリガナ and 氏名 rows were split and `所得金額_3` became `合計所得金額の見積額`. A few got
   worse, which is why the editor keeps the human review step.
 - The editor's **Name fields with AI** button runs the same naming step, after a confirmation dialog.
+- The model, endpoint and API key can also be set in the app: **Settings → AI model**
+  (with *Test connection*, which lists the models and checks that tool calls work).
+
+### The AI assistant (desktop app)
+
+The **AI assistant** tool is a chat that works with the same tools as the MCP server
+(`pdf_info`, `extract_text`, `render_page`, `fill_fields`, `merge_pdfs`, …) plus two that only the
+app has: `get_open_document` and `open_document`. Ask about the open PDF, or have it make a form
+fillable, fill it, merge or split files in your folders.
+
+- **Streaming, tool calls in a loop.** The agent loop and the providers come from
+  [MySSH](https://github.com/dollarkillerx/MySSH): Claude over its own HTTP + SSE client (adaptive
+  thinking, refusal fallback, prompt caching, thinking blocks replayed as received), OpenAI, DeepSeek
+  and local servers over the OpenAI SDK. Page images from `render_page` reach the model when it takes
+  images.
+- **Context.** The open document (path and page) rides along as a chip you can switch off. Context is
+  data, never instructions: text inside a PDF cannot steer the assistant.
+- **Data notice.** For a cloud provider the chat says once where messages and the documents the
+  assistant reads will go, and waits for *Continue*. Keys, passwords and tokens in messages are masked.
+- **Approvals inline.** A tool that writes a file shows a card in the chat (*Allow* / *Deny*); see
+  *AI & MCP access* below.
 
 ## OCR: searchable scans
 
@@ -271,7 +294,17 @@ washi pdf split all.pdf                            # one file per page
 
 ## MCP server: PDFs for AI agents
 
-`washi-mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio.
+There are two ways to run it:
+
+- **In the desktop app** (Settings → AI & MCP → MCP server): Streamable HTTP on `127.0.0.1` with a
+  bearer token, plus a local socket for `washi-mcp --app`, the stdio bridge for Claude Desktop. Agents
+  then use the folders set in Settings, see the document open in the window (`get_open_document`,
+  `open_document`), and every write waits for your approval as a card over the page. The page shows
+  the exact `claude mcp add …` command and the `claude_desktop_config.json` snippet to copy, and the
+  clients that connected.
+- **Standalone** (`washi-mcp --allow <folder>`): stdio, no window, as below.
+
+`washi-mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io).
 
 | tool | does | changes files |
 |---|---|---|
@@ -318,8 +351,36 @@ Claude Desktop (`claude_desktop_config.json`), and most other MCP clients use th
 }
 ```
 
+With the desktop app instead (MCP server on), the Settings page shows these snippets with the right paths:
+
+```bash
+claude mcp add --transport http washi http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+```json
+{ "mcpServers": { "washi": { "command": "/Applications/Washi.app/Contents/MacOS/mcp/washi-mcp", "args": ["--app"] } } }
+```
+
+`washi-mcp --app` starts Washi in the background when it is not running (macOS app bundle) and exits
+with code 3 when the app's MCP server is off.
+
 Then ask, for example: *"Make ~/Documents/forms/application.pdf fillable and fill in my name 王燁"*.
 The agent calls `pdf_info` → `make_fillable` → `list_fields` → `fill_fields` → `render_page` to check.
+
+### AI & MCP access (desktop app)
+
+Settings → AI & MCP decides what the assistant and MCP clients may touch; both go through one tool
+layer (`ToolInvoker`: folder policy → approval → run → log):
+
+- **Folders.** Only the folders listed there, plus the open document's folder if you keep that box
+  ticked. Paths are resolved (symlinks included) before the check.
+- **Writing files:** *Ask me each time* (default), *Allow without asking*, or *Read only*. Write
+  tools still create new files only. An approval nobody answers is declined after 2 minutes, and the
+  agent is told not to retry in a loop.
+- **No pop-up windows:** approvals are cards, in the chat for the assistant and over the page for MCP.
+- **Log:** one line per call in `~/.config/washi/tool-calls.jsonl` (tool, caller, decision, time;
+  no argument values).
+- **Token** in the Keychain; *New token* locks out every HTTP client at once.
 
 ## Languages
 
@@ -335,11 +396,13 @@ Every PDF operation is defined **once**, as a tool in `Washi.Tools`. The CLI,
 the built-in AI and the MCP server all call the same tools.
 
 ```
-Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
-        │                   │               │
-        └─────────── Washi.Ai (model providers, confirmation before writes)
+Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄── washi-mcp --app
+        │                         Washi.Cli    Washi.Mcp (washi-mcp: stdio, standalone or bridge)
+        │                             │               │
+        └─────────── Washi.Ai (model providers, assistant agent loop, consent)
                             │
-                     Washi.Tools  (registry: name + JSON schema + risk level)
+                     Washi.Tools  (registry: name + JSON schema + risk level; ToolInvoker: folders,
+                                   approvals, log — shared by the assistant and MCP)
                             │
         Washi.Core (PDF I/O, geometry)    Washi.Masume (form-field detection)
 ```
@@ -350,9 +413,10 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
 | `Washi.Tools` | the 10 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
-| `Washi.Mcp` | `washi-mcp`, the MCP server over the tool registry (official C# MCP SDK, stdio) |
+| `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
+| `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
 | `Washi.Cli` | `washi` command line |
-| `Washi.App` | Avalonia desktop app: field review editor (MVVM with CommunityToolkit.Mvvm; one `FieldCanvas` control draws the page and all fields). "Name fields with AI" button |
+| `Washi.App` | Avalonia desktop app: field review editor (MVVM with CommunityToolkit.Mvvm; one `FieldCanvas` control draws the page and all fields), the AI assistant chat, the Settings page (AI model, AI & MCP access, MCP server), approvals |
 
 ### Privacy rules (by design)
 
@@ -366,8 +430,10 @@ Washi.App (Avalonia)    Washi.Cli    Washi.Mcp (MCP server: stdio / HTTP)
   nothing leaves the machine and nothing is asked.
 - **API keys** come from the environment or the macOS Keychain (`washi ai key …`), never
   from the settings file. Windows and Linux use environment variables for now.
-- `Write` and `Destructive` tools need the user's confirmation when the AI calls them.
+- `Write` and `Destructive` tools need the user's confirmation when the AI calls them (unless the
+  user chose *Allow without asking*; `Destructive` always asks).
 - The MCP server writes copies by default, and only inside folders the user allows.
+- The in-app MCP server is off by default and listens on loopback only.
 
 ## Build
 
@@ -389,9 +455,9 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 1. ~~Port Masume to C# (PDFium render + text layer, managed connected components) and reach the prototype's scores.~~ Done.
 2. ~~Write the AcroForm output (text, amount, comb, checkbox; fonts per language; rotated pages).~~ Done.
 3. ~~Tools: `pdf_info`, `extract_text`, `render_page`, `list_fields`, `detect_fields`, `make_fillable`, `fill_fields`.~~ Done.
-4. ~~MCP server over the tool registry (stdio).~~ Done. Streamable HTTP is next.
+4. ~~MCP server over the tool registry (stdio).~~ Done. ~~Streamable HTTP and the in-app server.~~ Done.
 5. ~~Avalonia field review editor.~~ Done.
-6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done.
+6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done. ~~AI assistant with tool calls.~~ Done.
 7. ~~OCR (Apple Vision, Tesseract, AI), merge and split.~~ Done.
 8. Redaction: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.
 

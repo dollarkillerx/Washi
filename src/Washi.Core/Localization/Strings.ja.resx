@@ -128,8 +128,7 @@
   <data name="Ui_LanguageCaption" xml:space="preserve"><value>表示言語</value></data>
   <data name="Ui_LangSystem" xml:space="preserve"><value>システムの言語</value></data>
   <data name="Ui_LanguageNote" xml:space="preserve"><value>ウィンドウが新しい言語で開き直します。開いている文書はそのままです。</value></data>
-  <data name="Ui_AiModelCaption" xml:space="preserve"><value>AI モデル</value></data>
-  <data name="Ui_AiModelNote" xml:space="preserve"><value>コマンドラインで変更します: washi ai config &lt;プロバイダ&gt; &lt;モデル&gt;。API キーはキーチェーンに保存されます。</value></data>
+  <data name="Ui_AiModelNote" xml:space="preserve"><value>アシスタント、記入欄の名前付け、フォーム記入、AI OCR に使うモデルです。API キーは macOS のキーチェーンに保存され、ファイルには書かれません。</value></data>
   <data name="Ui_Version" xml:space="preserve"><value>バージョン {0}</value></data>
   <data name="Ui_Tagline" xml:space="preserve"><value>デスクトップ、コマンドライン、AI エージェントのためのオープンソース PDF ツールキット。記入できるフォーム、OCR、結合と分割、内蔵 AI、MCP サーバー。</value></data>
   <data name="Ui_LicenseCaption" xml:space="preserve"><value>ライセンス</value></data>
@@ -155,7 +154,7 @@
   <data name="Ui_ToolOcr" xml:space="preserve"><value>OCR</value></data>
   <data name="Ui_ToolCombine" xml:space="preserve"><value>結合</value></data>
   <data name="Ui_ToolSplit" xml:space="preserve"><value>分割</value></data>
-  <data name="Ui_ToolAsk" xml:space="preserve"><value>AI に質問</value></data>
+  <data name="Ui_ToolAsk" xml:space="preserve"><value>AI アシスタント</value></data>
   <data name="Ui_FormTitle" xml:space="preserve"><value>記入欄を準備</value></data>
   <data name="Ui_FormLead" xml:space="preserve"><value>Washi が記入欄を見つけます。確認して直し、記入できる PDF として保存します。</value></data>
   <data name="Ui_FieldTotal" xml:space="preserve"><value>記入欄 {0} 個: {1}</value></data>
@@ -204,8 +203,82 @@
   <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} 個のファイル: {1}</value></data>
   <data name="Ui_SplitRun" xml:space="preserve"><value>フォルダに分割…</value></data>
   <data name="Ui_SplitDone" xml:space="preserve"><value>{0} 個のファイルを {1} に書き出しました</value></data>
-  <data name="Ui_AskTitle" xml:space="preserve"><value>この文書について質問</value></data>
-  <data name="Ui_AskLead" xml:space="preserve"><value>AI モデルが文書を読んで答えます。送信する内容を表示し、先に確認します。</value></data>
-  <data name="Ui_AskWatermark" xml:space="preserve"><value>例: どの欄を記入すればいい？</value></data>
-  <data name="Ui_AskRun" xml:space="preserve"><value>質問する（Enter）</value></data>
+  <data name="Ui_Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Ui_Copy" xml:space="preserve"><value>コピー</value></data>
+  <data name="Ui_Copied" xml:space="preserve"><value>コピーしました。</value></data>
+  <data name="Ui_Show" xml:space="preserve"><value>表示</value></data>
+  <data name="Ui_Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="Ui_No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Ui_AiTab" xml:space="preserve"><value>AI モデル</value></data>
+  <data name="Ui_AiProvider" xml:space="preserve"><value>プロバイダ</value></data>
+  <data name="Ui_AiProviderLocal" xml:space="preserve"><value>ローカル / OpenAI 互換</value></data>
+  <data name="Ui_AiModel" xml:space="preserve"><value>モデル</value></data>
+  <data name="Ui_AiEndpoint" xml:space="preserve"><value>エンドポイント</value></data>
+  <data name="Ui_AiEndpointNote" xml:space="preserve"><value>空欄ならプロバイダ標準の API を使います。ローカルサーバー（Ollama、LM Studio）なら何もこの Mac から出ません。</value></data>
+  <data name="Ui_AiBadEndpoint" xml:space="preserve"><value>エンドポイントが正しい URL ではありません。</value></data>
+  <data name="Ui_AiKey" xml:space="preserve"><value>API キー</value></data>
+  <data name="Ui_AiKeyWatermark" xml:space="preserve"><value>保存済みのキーを置き換えるには新しいキーを貼り付け</value></data>
+  <data name="Ui_AiKeyRemove" xml:space="preserve"><value>キーを削除</value></data>
+  <data name="Ui_AiKeyFromEnv" xml:space="preserve"><value>環境変数 {0} のキーを使用中（キーチェーンより優先）。</value></data>
+  <data name="Ui_AiKeyStored" xml:space="preserve"><value>キーチェーンのキー: {0}</value></data>
+  <data name="Ui_AiKeyOptional" xml:space="preserve"><value>キーは未保存です（ローカルサーバーには通常不要）。</value></data>
+  <data name="Ui_AiKeyMissing" xml:space="preserve"><value>キーがありません。上に貼り付けて保存してください。</value></data>
+  <data name="Ui_AiVision" xml:space="preserve"><value>ページ画像を送る（テキスト専用モデルではオフ）</value></data>
+  <data name="Ui_AiTest" xml:space="preserve"><value>接続テスト</value></data>
+  <data name="Ui_AiTesting" xml:space="preserve"><value>テスト中…</value></data>
+  <data name="Ui_AiSaved" xml:space="preserve"><value>保存しました。</value></data>
+  <data name="Ui_AiTestOk" xml:space="preserve"><value>{0} が応答しました。利用可能なモデル {1} 個、ツール呼び出し: {2}。</value></data>
+  <data name="Ui_McpTab" xml:space="preserve"><value>AI と MCP</value></data>
+  <data name="Ui_AccessCaption" xml:space="preserve"><value>AI が使えるフォルダ</value></data>
+  <data name="Ui_AccessNote" xml:space="preserve"><value>アシスタントと MCP クライアント（Claude Code、Claude Desktop など）は、これらのフォルダ内の PDF にだけアクセスします。新しいファイルを作るだけで、上書きはしません。</value></data>
+  <data name="Ui_AddFolder" xml:space="preserve"><value>フォルダを追加…</value></data>
+  <data name="Ui_AccessOpenDocument" xml:space="preserve"><value>Washi で開いている PDF のフォルダも含める</value></data>
+  <data name="Ui_WritesCaption" xml:space="preserve"><value>ファイルの書き込み</value></data>
+  <data name="Ui_WritesAsk" xml:space="preserve"><value>毎回確認する（推奨）</value></data>
+  <data name="Ui_WritesAllow" xml:space="preserve"><value>確認せずに許可</value></data>
+  <data name="Ui_WritesDeny" xml:space="preserve"><value>読み取りのみ（書き込まない）</value></data>
+  <data name="Ui_WritesNote" xml:space="preserve"><value>確認はアシスタントのチャット内に、MCP クライアントの場合はページ上のカードとして表示されます。2 分間応答がなければ拒否されます。</value></data>
+  <data name="Ui_McpCaption" xml:space="preserve"><value>MCP サーバー</value></data>
+  <data name="Ui_McpOn" xml:space="preserve"><value>オン</value></data>
+  <data name="Ui_McpOff" xml:space="preserve"><value>オフ</value></data>
+  <data name="Ui_McpNote" xml:space="preserve"><value>Washi の起動中、AI エージェントが Washi の PDF ツール、上のフォルダ、ここで開いている文書を使えるようにします。HTTP は 127.0.0.1 のみで待ち受け、トークンが必要です。</value></data>
+  <data name="Ui_McpClaudeCode" xml:space="preserve"><value>Claude Code（ターミナルで実行）</value></data>
+  <data name="Ui_McpClaudeDesktop" xml:space="preserve"><value>Claude Desktop（claude_desktop_config.json）</value></data>
+  <data name="Ui_McpOtherClients" xml:space="preserve"><value>その他のクライアント（Streamable HTTP）</value></data>
+  <data name="Ui_McpToken" xml:space="preserve"><value>トークン</value></data>
+  <data name="Ui_McpRegenerate" xml:space="preserve"><value>トークンを再発行</value></data>
+  <data name="Ui_McpTokenNote" xml:space="preserve"><value>新しいトークンにすると、設定し直すまですべての HTTP クライアントが接続できなくなります。washi-mcp（Claude Desktop）にはトークン不要です。</value></data>
+  <data name="Ui_McpClients" xml:space="preserve"><value>最近のクライアント</value></data>
+  <data name="Ui_McpNoClients" xml:space="preserve"><value>まだクライアントは接続していません。</value></data>
+  <data name="Ui_McpDisconnect" xml:space="preserve"><value>切断</value></data>
+  <data name="Ui_McpClientDetail" xml:space="preserve"><value>{0} · 呼び出し {1} 回 · 最終 {2}</value></data>
+  <data name="Mcp_Off" xml:space="preserve"><value>MCP サーバーはオフです。</value></data>
+  <data name="Mcp_Starting" xml:space="preserve"><value>起動中…</value></data>
+  <data name="Mcp_Running" xml:space="preserve"><value>動作中。HTTP: {0} · ローカルソケット: {1}</value></data>
+  <data name="Mcp_ErrInstance" xml:space="preserve"><value>別の Washi がすでに MCP を提供しています（{0}）。終了するか、その MCP サーバーをオフにしてください。</value></data>
+  <data name="Mcp_ErrStart" xml:space="preserve"><value>MCP サーバーを起動できませんでした: {0}</value></data>
+  <data name="Ui_ApprovalTitle" xml:space="preserve"><value>{0} がファイルを書き込もうとしています</value></data>
+  <data name="Ui_ApprovalAllow" xml:space="preserve"><value>許可</value></data>
+  <data name="Ui_ApprovalDeny" xml:space="preserve"><value>拒否</value></data>
+  <data name="Ui_ApprovalDetails" xml:space="preserve"><value>詳細</value></data>
+  <data name="Ui_ApprovalApproved" xml:space="preserve"><value>許可しました。</value></data>
+  <data name="Ui_ApprovalDenied" xml:space="preserve"><value>拒否しました。</value></data>
+  <data name="Ui_ApprovalTimedOut" xml:space="preserve"><value>時間内に応答がなかったため拒否しました。</value></data>
+  <data name="Ui_ApprovalCancelled" xml:space="preserve"><value>キャンセルされました。</value></data>
+  <data name="Ui_AssistantTitle" xml:space="preserve"><value>AI アシスタント</value></data>
+  <data name="Ui_AssistantEmpty" xml:space="preserve"><value>開いている PDF について質問したり、フォルダ内の PDF の記入・結合・分割・OCR を頼んだりできます。MCP クライアントと同じツールを使い、書き込む前に確認します。</value></data>
+  <data name="Ui_AssistantWatermark" xml:space="preserve"><value>メッセージ（Enter で送信、Shift+Enter で改行）</value></data>
+  <data name="Ui_AssistantSend" xml:space="preserve"><value>送信</value></data>
+  <data name="Ui_AssistantStop" xml:space="preserve"><value>停止</value></data>
+  <data name="Ui_AssistantNewChat" xml:space="preserve"><value>新しいチャット</value></data>
+  <data name="Ui_AssistantThinking" xml:space="preserve"><value>思考</value></data>
+  <data name="Ui_AssistantDocChip" xml:space="preserve"><value>📄 {0} · {1} ページ</value></data>
+  <data name="Ui_AssistantDocChipTip" xml:space="preserve"><value>開いている文書をアシスタントに伝えます（クリックで外す）</value></data>
+  <data name="Ui_AssistantNotice" xml:space="preserve"><value>メッセージと、アシスタントがツールで読んだ文書のテキストやページ画像は {0}（{1}）に送信されます。メッセージ内の認証情報（キー、パスワード、トークン）は伏せられます。</value></data>
+  <data name="Ui_AssistantAccept" xml:space="preserve"><value>続ける</value></data>
+  <data name="Ui_AssistantRedacted" xml:space="preserve"><value>送信前に {0} 件の秘密情報を伏せました。</value></data>
+  <data name="Ui_AssistantStopped" xml:space="preserve"><value>停止しました。</value></data>
+  <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>回答が途中で切れました（出力上限）。</value></data>
+  <data name="Ui_AssistantRefused" xml:space="preserve"><value>モデルがこのリクエストを断りました。{0}</value></data>
+  <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>ツールの手順が多すぎるため停止しました。続けるにはもう一度依頼してください。</value></data>
 </root>

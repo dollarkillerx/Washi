@@ -3,6 +3,8 @@
         xmlns:vm="using:Washi.App.ViewModels"
         xmlns:c="using:Washi.App.Controls"
         xmlns:l="using:Washi.App.Localization"
+        xmlns:v="using:Washi.App.Views"
+        xmlns:svc="using:Washi.App.Services"
         x:Class="Washi.App.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="{Binding Title}"
@@ -236,7 +238,12 @@
         <!-- ============================================================ tool rail -->
         <Border DockPanel.Dock="Left" Width="76" Background="{StaticResource MistBrush}"
                 BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,1,0">
-            <StackPanel>
+            <DockPanel>
+                <!-- Settings sits at the bottom of the rail and opens as a page, not a window -->
+                <RadioButton DockPanel.Dock="Bottom" Classes="rail" GroupName="tools" IsChecked="{Binding IsSettingsTool}" x:Name="SettingsToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Settings}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_Settings}" /></StackPanel>
+                </RadioButton>
+                <StackPanel>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsFormTool}" x:Name="FormToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Form}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolForm}" /></StackPanel>
                 </RadioButton>
@@ -252,12 +259,13 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsAskTool}" x:Name="AskToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Ask}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolAsk}" /></StackPanel>
                 </RadioButton>
-            </StackPanel>
+                </StackPanel>
+            </DockPanel>
         </Border>
 
         <!-- ============================================================ tool panel -->
-        <Border DockPanel.Dock="Left" Width="296" Background="White" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,1,0"
-                IsVisible="{Binding ToolPanelOpen}">
+        <Border DockPanel.Dock="Left" Width="{Binding ToolPanelWidth}" Background="White" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,1,0"
+                IsVisible="{Binding ShowToolPanel}">
             <Panel>
                 <!-- Prepare form -->
                 <DockPanel IsVisible="{Binding IsFormTool}">
@@ -441,31 +449,16 @@
                     </StackPanel>
                 </DockPanel>
 
-                <!-- Ask AI -->
-                <DockPanel IsVisible="{Binding IsAskTool}">
-                    <StackPanel DockPanel.Dock="Top" Margin="20,18,20,0">
-                        <TextBlock Classes="title" Text="{l:Tr Ui_AskTitle}" />
-                        <TextBlock Classes="lead" Text="{l:Tr Ui_AskLead}" />
-                        <TextBox Text="{Binding Ask.Question}" PlaceholderText="{l:Tr Ui_AskWatermark}" Margin="0,16,0,0"
-                                 TextWrapping="Wrap" MinHeight="64" IsEnabled="{Binding HasDocument}" x:Name="QuestionBox" />
-                        <Button Classes="accent primary" Command="{Binding Ask.RunCommand}" IsEnabled="{Binding HasDocument}" Margin="0,8,0,0">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <c:Icon Data="{StaticResource I.Spark}" Size="18" />
-                                <TextBlock Text="{l:Tr Ui_AskRun}" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                        <TextBlock Classes="note" Text="{Binding Ask.ModelText}" Margin="0,8,0,0" />
-                    </StackPanel>
-                    <ScrollViewer Margin="20,14,20,16">
-                        <SelectableTextBlock Text="{Binding Ask.Answer}" TextWrapping="Wrap" LineHeight="21" />
-                    </ScrollViewer>
-                </DockPanel>
+                <!-- AI assistant -->
+                <Panel IsVisible="{Binding IsAskTool}">
+                    <v:AssistantPanel DataContext="{Binding Assistant}" x:Name="AssistantView" />
+                </Panel>
             </Panel>
         </Border>
 
         <!-- ============================================================ right rail -->
         <Border DockPanel.Dock="Right" Width="52" Background="{StaticResource MistBrush}"
-                BorderBrush="{StaticResource RuleBrush}" BorderThickness="1,0,0,0" IsVisible="{Binding HasDocument}">
+                BorderBrush="{StaticResource RuleBrush}" BorderThickness="1,0,0,0" IsVisible="{Binding ShowRightRail}">
             <StackPanel Margin="0,8" Spacing="4" HorizontalAlignment="Center">
                 <ToggleButton Classes="siderail" IsChecked="{Binding ShowFieldsPanel}" IsVisible="{Binding IsFormTool}"
                               ToolTip.Tip="{l:Tr Ui_FieldsPanel}" x:Name="FieldsPanelButton">
@@ -562,8 +555,12 @@
             </Panel>
         </Border>
 
+        <Panel>
+        <!-- ============================================================ settings (a page, not a window) -->
+        <v:SettingsView IsVisible="{Binding IsSettingsTool}" x:Name="SettingsPage" />
+
         <!-- ============================================================ document -->
-        <Panel Background="{StaticResource CanvasBrush}" x:Name="DocumentArea">
+        <Panel Background="{StaticResource CanvasBrush}" x:Name="DocumentArea" IsVisible="{Binding IsDocumentView}">
             <ScrollViewer x:Name="PageScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                           IsVisible="{Binding HasDocument}">
                 <Border Margin="56,56,56,96" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White"
@@ -636,6 +633,30 @@
                     <Button Command="{Binding FitWidthCommand}" ToolTip.Tip="{l:Tr Ui_FitWidth}"><c:Icon Data="{StaticResource I.FitWidth}" Size="18" /></Button>
                 </StackPanel>
             </Border>
+        </Panel>
+
+        <!-- ============================================================ MCP approvals (cards, not modal windows) -->
+        <ItemsControl ItemsSource="{Binding McpApprovals}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="14" Width="360"
+                      x:Name="ApprovalCards">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="svc:ApprovalViewModel">
+                    <Border Background="White" BorderBrush="{StaticResource BlueBrush}" BorderThickness="0,3,0,0" Padding="14,12"
+                            Margin="0,0,0,10" BoxShadow="0 2 10 0 #40000000">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Summary}" FontFamily="Menlo, Consolas, monospace" FontSize="12" TextWrapping="Wrap" />
+                            <Expander Header="{l:Tr Ui_ApprovalDetails}" Padding="6" IsVisible="{Binding Details, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <SelectableTextBlock Text="{Binding Details}" FontFamily="Menlo, Consolas, monospace" FontSize="11" TextWrapping="Wrap" MaxHeight="200" />
+                            </Expander>
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                <Button Content="{l:Tr Ui_ApprovalDeny}" Command="{Binding DenyCommand}" />
+                                <Button Classes="accent" Content="{l:Tr Ui_ApprovalAllow}" Command="{Binding ApproveCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
         </Panel>
     </DockPanel>
 </Window>

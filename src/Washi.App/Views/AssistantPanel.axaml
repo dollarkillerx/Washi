@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Washi.App.ViewModels"
+             xmlns:svc="using:Washi.App.Services"
+             xmlns:c="using:Washi.App.Controls"
+             xmlns:l="using:Washi.App.Localization"
+             x:Class="Washi.App.Views.AssistantPanel"
+             x:DataType="vm:AssistantViewModel">
+
+    <!-- The built-in assistant: a chat over the same tools as the MCP server. Approvals appear inline. -->
+    <UserControl.Styles>
+        <Style Selector="Border.bubble">
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Padding" Value="10,9" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{StaticResource RuleBrush}" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel>
+        <!-- header -->
+        <DockPanel DockPanel.Dock="Top" Margin="20,18,12,0">
+            <Button DockPanel.Dock="Right" Command="{Binding NewChatCommand}" ToolTip.Tip="{l:Tr Ui_AssistantNewChat}"
+                    Background="Transparent" Padding="6" x:Name="NewChatButton">
+                <c:Icon Data="{StaticResource I.Add}" Size="16" />
+            </Button>
+            <StackPanel>
+                <TextBlock Classes="title" Text="{l:Tr Ui_AssistantTitle}" />
+                <TextBlock Classes="note" Text="{Binding ModelText}" Margin="0,2,0,0" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- input -->
+        <Border DockPanel.Dock="Bottom" Padding="14,10,14,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Spacing="8">
+                <!-- data notice for an off-device provider, once -->
+                <Border Classes="card" IsVisible="{Binding HasNotice}" Background="#fff8e1" BorderBrush="#f1c21b" Margin="0">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding NoticeText}" TextWrapping="Wrap" FontSize="12" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                            <Button Content="{l:Tr Ui_Cancel}" Command="{Binding DeclineNoticeCommand}" Padding="10,4" FontSize="12" />
+                            <Button Classes="accent" Content="{l:Tr Ui_AssistantAccept}" Command="{Binding AcceptNoticeCommand}" Padding="10,4"
+                                    FontSize="12" x:Name="AcceptNoticeButton" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <ToggleButton IsChecked="{Binding AttachDocument}" IsVisible="{Binding DocumentChip, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                              Classes="chip" Content="{Binding DocumentChip}" ToolTip.Tip="{l:Tr Ui_AssistantDocChipTip}" Margin="0" />
+                <TextBox Text="{Binding Input}" PlaceholderText="{l:Tr Ui_AssistantWatermark}" TextWrapping="Wrap" AcceptsReturn="False"
+                         MinHeight="56" MaxHeight="160" x:Name="InputBox" />
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Classes="accent" Command="{Binding SendCommand}" IsVisible="{Binding !Busy}" Padding="14,6"
+                            x:Name="SendButton">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <c:Icon Data="{StaticResource I.Spark}" Size="16" />
+                            <TextBlock Text="{l:Tr Ui_AssistantSend}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button DockPanel.Dock="Right" Command="{Binding StopCommand}" IsVisible="{Binding Busy}" Content="{l:Tr Ui_AssistantStop}" Padding="14,6" />
+                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding Busy}" Width="60" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                </DockPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- conversation -->
+        <ScrollViewer x:Name="Scroller" Margin="0,12,0,0">
+            <StackPanel Margin="14,0,14,8">
+                <TextBlock Classes="note" Text="{l:Tr Ui_AssistantEmpty}" IsVisible="{Binding !HasItems}" Margin="6,8,6,0" />
+                <ItemsControl ItemsSource="{Binding Items}" x:Name="ItemsList">
+                    <ItemsControl.DataTemplates>
+                        <DataTemplate DataType="vm:UserChatItem">
+                            <Border Classes="bubble" Background="{StaticResource SelectedRailBrush}" Margin="24,0,0,8">
+                                <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:AssistantChatItem">
+                            <StackPanel Margin="0,0,0,8">
+                                <Expander IsVisible="{Binding HasThinking}" Header="{l:Tr Ui_AssistantThinking}" Padding="6" Margin="0,0,0,4">
+                                    <SelectableTextBlock Text="{Binding Thinking}" TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource MutedBrush}" />
+                                </Expander>
+                                <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" LineHeight="20" />
+                            </StackPanel>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:ToolChatItem">
+                            <Border Background="{StaticResource MistBrush}" Padding="8,5" Margin="0,0,0,6" ToolTip.Tip="{Binding Detail}">
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding StatusText}" Margin="6,0,0,0" FontSize="12" />
+                                    <TextBlock Text="{Binding Summary}" FontFamily="Menlo, Consolas, monospace" FontSize="11"
+                                               TextTrimming="CharacterEllipsis" Classes.warn="{Binding Failed}" />
+                                </DockPanel>
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:ApprovalChatItem">
+                            <Border Classes="card" Background="White" BorderBrush="{StaticResource BlueBrush}">
+                                <StackPanel Spacing="6" DataContext="{Binding Approval}" x:DataType="svc:ApprovalViewModel">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Summary}" FontFamily="Menlo, Consolas, monospace" FontSize="11" TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right" IsVisible="{Binding IsPending}">
+                                        <Button Content="{l:Tr Ui_ApprovalDeny}" Command="{Binding DenyCommand}" Padding="10,4" FontSize="12" />
+                                        <Button Classes="accent" Content="{l:Tr Ui_ApprovalAllow}" Command="{Binding ApproveCommand}" Padding="10,4" FontSize="12" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding OutcomeText}" FontSize="12" Foreground="{StaticResource MutedBrush}" IsVisible="{Binding !IsPending}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:NoticeChatItem">
+                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,8"
+                                       Foreground="{StaticResource MutedBrush}" Classes.warn="{Binding IsError}" />
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

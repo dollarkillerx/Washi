@@ -225,21 +225,6 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
-    public async Task Ask_shows_the_answer_after_consent()
-    {
-        var dialogs = new FakeDialogs();
-        var (_, vm) = await Open(Form("a.pdf"), dialogs);
-        var model = new ScriptedModel(r => r.Prompt.Contains("Question: what?") ? " A test form. " : "?");
-        vm.Ask.ModelFactory = () => model;
-        vm.ActiveTool = Tool.Ask;
-        Assert.False(vm.Ask.RunCommand.CanExecute(null));
-        vm.Ask.Question = "what?";
-        await vm.Ask.RunCommand.ExecuteAsync(null);
-        Assert.NotNull(dialogs.LastConfirm);
-        Assert.Equal("A test form.", vm.Ask.Answer);
-    }
-
-    [AvaloniaFact]
     public async Task Pinch_zoom_is_free_but_clamped_and_ends_fit_width()
     {
         var (w, vm) = await Open(Form("a.pdf"), new FakeDialogs());

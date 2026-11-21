@@ -252,10 +252,15 @@ public sealed class EditorTests : IDisposable
         await vm.Ocr.RefreshPlanAsync();
         Shot(w, "ocr");
 
-        var about = new SettingsWindow(new SettingsViewModel(Path.Combine(_dir, "settings.json")), showAbout: true);
-        about.Show();
-        Shot(about, "about");
-        about.Close();
+        vm.ActiveTool = Tool.Ask;
+        Shot(w, "assistant");
+
+        w.ShowSettings("mcp");
+        Shot(w, "settings_mcp");
+        w.ShowSettings("ai");
+        Shot(w, "settings_ai");
+        w.ShowSettings("about");
+        Shot(w, "about");
     }
 }
 

@@ -6,6 +6,7 @@
     <Project Path="src/Washi.Core/Washi.Core.csproj" />
     <Project Path="src/Washi.Masume/Washi.Masume.csproj" />
     <Project Path="src/Washi.Mcp/Washi.Mcp.csproj" />
+    <Project Path="src/Washi.McpHost/Washi.McpHost.csproj" />
     <Project Path="src/Washi.Tools/Washi.Tools.csproj" />
   </Folder>
   <Folder Name="/tests/">

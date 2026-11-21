@@ -128,8 +128,7 @@
   <data name="Ui_LanguageCaption" xml:space="preserve"><value>介面語言</value></data>
   <data name="Ui_LangSystem" xml:space="preserve"><value>跟隨系統</value></data>
   <data name="Ui_LanguageNote" xml:space="preserve"><value>視窗會以新語言重新開啟，已開啟的檔案保持開啟。</value></data>
-  <data name="Ui_AiModelCaption" xml:space="preserve"><value>AI 模型</value></data>
-  <data name="Ui_AiModelNote" xml:space="preserve"><value>在命令列中變更：washi ai config &lt;提供者&gt; &lt;模型&gt;。API key 儲存在鑰匙圈中。</value></data>
+  <data name="Ui_AiModelNote" xml:space="preserve"><value>助理、填寫欄命名、表單填寫和 AI OCR 使用的模型。API key 儲存在 macOS 鑰匙圈中，不會寫入檔案。</value></data>
   <data name="Ui_Version" xml:space="preserve"><value>版本 {0}</value></data>
   <data name="Ui_Tagline" xml:space="preserve"><value>面向桌面、命令列和 AI 代理的開源 PDF 工具：可填寫表單、OCR、合併與分割、內建 AI 和 MCP 伺服器。</value></data>
   <data name="Ui_LicenseCaption" xml:space="preserve"><value>授權條款</value></data>
@@ -155,7 +154,7 @@
   <data name="Ui_ToolOcr" xml:space="preserve"><value>OCR</value></data>
   <data name="Ui_ToolCombine" xml:space="preserve"><value>合併</value></data>
   <data name="Ui_ToolSplit" xml:space="preserve"><value>分割</value></data>
-  <data name="Ui_ToolAsk" xml:space="preserve"><value>問 AI</value></data>
+  <data name="Ui_ToolAsk" xml:space="preserve"><value>AI 助理</value></data>
   <data name="Ui_FormTitle" xml:space="preserve"><value>準備表單</value></data>
   <data name="Ui_FormLead" xml:space="preserve"><value>Washi 會找出要填寫的欄位。檢查並修正後，儲存為可填寫的 PDF。</value></data>
   <data name="Ui_FieldTotal" xml:space="preserve"><value>{0} 個欄位：{1}</value></data>
@@ -204,8 +203,82 @@
   <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} 個檔案：{1}</value></data>
   <data name="Ui_SplitRun" xml:space="preserve"><value>分割到資料夾…</value></data>
   <data name="Ui_SplitDone" xml:space="preserve"><value>已將 {0} 個檔案寫入 {1}</value></data>
-  <data name="Ui_AskTitle" xml:space="preserve"><value>詢問這份文件</value></data>
-  <data name="Ui_AskLead" xml:space="preserve"><value>AI 模型閱讀文件並回答。Washi 會先列出要傳送的內容並請你確認。</value></data>
-  <data name="Ui_AskWatermark" xml:space="preserve"><value>例如：我需要填哪些欄？</value></data>
-  <data name="Ui_AskRun" xml:space="preserve"><value>提問（Enter）</value></data>
+  <data name="Ui_Save" xml:space="preserve"><value>儲存</value></data>
+  <data name="Ui_Copy" xml:space="preserve"><value>複製</value></data>
+  <data name="Ui_Copied" xml:space="preserve"><value>已複製。</value></data>
+  <data name="Ui_Show" xml:space="preserve"><value>顯示</value></data>
+  <data name="Ui_Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Ui_No" xml:space="preserve"><value>否</value></data>
+  <data name="Ui_AiTab" xml:space="preserve"><value>AI 模型</value></data>
+  <data name="Ui_AiProvider" xml:space="preserve"><value>提供者</value></data>
+  <data name="Ui_AiProviderLocal" xml:space="preserve"><value>本機 / OpenAI 相容</value></data>
+  <data name="Ui_AiModel" xml:space="preserve"><value>模型</value></data>
+  <data name="Ui_AiEndpoint" xml:space="preserve"><value>端點</value></data>
+  <data name="Ui_AiEndpointNote" xml:space="preserve"><value>留空則使用提供者自己的 API。本機伺服器（Ollama、LM Studio）不會把任何內容送出這台 Mac。</value></data>
+  <data name="Ui_AiBadEndpoint" xml:space="preserve"><value>端點不是有效的 URL。</value></data>
+  <data name="Ui_AiKey" xml:space="preserve"><value>API key</value></data>
+  <data name="Ui_AiKeyWatermark" xml:space="preserve"><value>貼上新的 key 以取代已儲存的</value></data>
+  <data name="Ui_AiKeyRemove" xml:space="preserve"><value>刪除 key</value></data>
+  <data name="Ui_AiKeyFromEnv" xml:space="preserve"><value>使用環境變數 {0} 中的 key（優先於鑰匙圈）。</value></data>
+  <data name="Ui_AiKeyStored" xml:space="preserve"><value>鑰匙圈中的 key：{0}</value></data>
+  <data name="Ui_AiKeyOptional" xml:space="preserve"><value>未儲存 key（本機伺服器通常不需要）。</value></data>
+  <data name="Ui_AiKeyMissing" xml:space="preserve"><value>還沒有 key：請在上方貼上並儲存。</value></data>
+  <data name="Ui_AiVision" xml:space="preserve"><value>傳送頁面影像（純文字模型請關閉）</value></data>
+  <data name="Ui_AiTest" xml:space="preserve"><value>測試連線</value></data>
+  <data name="Ui_AiTesting" xml:space="preserve"><value>正在測試…</value></data>
+  <data name="Ui_AiSaved" xml:space="preserve"><value>已儲存。</value></data>
+  <data name="Ui_AiTestOk" xml:space="preserve"><value>{0} 已回應。可用模型 {1} 個；工具呼叫：{2}。</value></data>
+  <data name="Ui_McpTab" xml:space="preserve"><value>AI 與 MCP</value></data>
+  <data name="Ui_AccessCaption" xml:space="preserve"><value>AI 可使用的資料夾</value></data>
+  <data name="Ui_AccessNote" xml:space="preserve"><value>助理和 MCP 用戶端（Claude Code、Claude Desktop 等）只能存取這些資料夾中的 PDF。它們只建立新檔案，從不覆寫。</value></data>
+  <data name="Ui_AddFolder" xml:space="preserve"><value>新增資料夾…</value></data>
+  <data name="Ui_AccessOpenDocument" xml:space="preserve"><value>同時包括 Washi 中開啟的 PDF 所在資料夾</value></data>
+  <data name="Ui_WritesCaption" xml:space="preserve"><value>寫入檔案</value></data>
+  <data name="Ui_WritesAsk" xml:space="preserve"><value>每次詢問我（建議）</value></data>
+  <data name="Ui_WritesAllow" xml:space="preserve"><value>不詢問直接允許</value></data>
+  <data name="Ui_WritesDeny" xml:space="preserve"><value>唯讀：從不寫入</value></data>
+  <data name="Ui_WritesNote" xml:space="preserve"><value>確認請求會出現在助理對話中；MCP 用戶端的請求以卡片形式顯示在頁面上方。2 分鐘內未回應則拒絕。</value></data>
+  <data name="Ui_McpCaption" xml:space="preserve"><value>MCP 伺服器</value></data>
+  <data name="Ui_McpOn" xml:space="preserve"><value>開</value></data>
+  <data name="Ui_McpOff" xml:space="preserve"><value>關</value></data>
+  <data name="Ui_McpNote" xml:space="preserve"><value>Washi 執行時，讓 AI 代理使用 Washi 的 PDF 工具、上面的資料夾和這裡開啟的文件。HTTP 只監聽 127.0.0.1，並且需要權杖。</value></data>
+  <data name="Ui_McpClaudeCode" xml:space="preserve"><value>Claude Code（在終端機中執行）</value></data>
+  <data name="Ui_McpClaudeDesktop" xml:space="preserve"><value>Claude Desktop（claude_desktop_config.json）</value></data>
+  <data name="Ui_McpOtherClients" xml:space="preserve"><value>其他用戶端（Streamable HTTP）</value></data>
+  <data name="Ui_McpToken" xml:space="preserve"><value>權杖</value></data>
+  <data name="Ui_McpRegenerate" xml:space="preserve"><value>重新產生權杖</value></data>
+  <data name="Ui_McpTokenNote" xml:space="preserve"><value>產生新權杖後，所有 HTTP 用戶端都要重新設定才能連線。washi-mcp（Claude Desktop）不需要權杖。</value></data>
+  <data name="Ui_McpClients" xml:space="preserve"><value>最近的用戶端</value></data>
+  <data name="Ui_McpNoClients" xml:space="preserve"><value>還沒有用戶端連線。</value></data>
+  <data name="Ui_McpDisconnect" xml:space="preserve"><value>中斷連線</value></data>
+  <data name="Ui_McpClientDetail" xml:space="preserve"><value>{0} · 呼叫 {1} 次 · 最近 {2}</value></data>
+  <data name="Mcp_Off" xml:space="preserve"><value>MCP 伺服器已關閉。</value></data>
+  <data name="Mcp_Starting" xml:space="preserve"><value>正在啟動…</value></data>
+  <data name="Mcp_Running" xml:space="preserve"><value>執行中。HTTP：{0} · 本機通訊端：{1}</value></data>
+  <data name="Mcp_ErrInstance" xml:space="preserve"><value>另一個 Washi 已在提供 MCP（{0}）。請結束它，或關閉它的 MCP 伺服器。</value></data>
+  <data name="Mcp_ErrStart" xml:space="preserve"><value>MCP 伺服器無法啟動：{0}</value></data>
+  <data name="Ui_ApprovalTitle" xml:space="preserve"><value>{0} 想要寫入檔案</value></data>
+  <data name="Ui_ApprovalAllow" xml:space="preserve"><value>允許</value></data>
+  <data name="Ui_ApprovalDeny" xml:space="preserve"><value>拒絕</value></data>
+  <data name="Ui_ApprovalDetails" xml:space="preserve"><value>詳細資訊</value></data>
+  <data name="Ui_ApprovalApproved" xml:space="preserve"><value>已允許。</value></data>
+  <data name="Ui_ApprovalDenied" xml:space="preserve"><value>已拒絕。</value></data>
+  <data name="Ui_ApprovalTimedOut" xml:space="preserve"><value>未及時回應：已拒絕。</value></data>
+  <data name="Ui_ApprovalCancelled" xml:space="preserve"><value>已取消。</value></data>
+  <data name="Ui_AssistantTitle" xml:space="preserve"><value>AI 助理</value></data>
+  <data name="Ui_AssistantEmpty" xml:space="preserve"><value>可以詢問開啟的 PDF，或讓助理填寫、合併、分割、OCR 資料夾中的 PDF。它與 MCP 用戶端使用相同的工具，寫入前會先詢問。</value></data>
+  <data name="Ui_AssistantWatermark" xml:space="preserve"><value>訊息（Enter 傳送，Shift+Enter 換行）</value></data>
+  <data name="Ui_AssistantSend" xml:space="preserve"><value>傳送</value></data>
+  <data name="Ui_AssistantStop" xml:space="preserve"><value>停止</value></data>
+  <data name="Ui_AssistantNewChat" xml:space="preserve"><value>新對話</value></data>
+  <data name="Ui_AssistantThinking" xml:space="preserve"><value>思考過程</value></data>
+  <data name="Ui_AssistantDocChip" xml:space="preserve"><value>📄 {0} · 第 {1} 頁</value></data>
+  <data name="Ui_AssistantDocChipTip" xml:space="preserve"><value>告訴助理開啟的是哪份文件（點擊可不附帶）</value></data>
+  <data name="Ui_AssistantNotice" xml:space="preserve"><value>你的訊息，以及助理用工具讀取的文件文字和頁面影像，會傳送到 {0}（{1}）。訊息中的憑證會被遮蓋。</value></data>
+  <data name="Ui_AssistantAccept" xml:space="preserve"><value>繼續</value></data>
+  <data name="Ui_AssistantRedacted" xml:space="preserve"><value>傳送前遮蓋了 {0} 處敏感資訊。</value></data>
+  <data name="Ui_AssistantStopped" xml:space="preserve"><value>已停止。</value></data>
+  <data name="Ui_AssistantMaxTokens" xml:space="preserve"><value>回答被截斷（輸出上限）。</value></data>
+  <data name="Ui_AssistantRefused" xml:space="preserve"><value>模型拒絕了這個請求。{0}</value></data>
+  <data name="Ui_AssistantStepLimit" xml:space="preserve"><value>工具步驟過多，已停止；再問一次即可繼續。</value></data>
 </root>

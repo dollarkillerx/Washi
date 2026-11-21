@@ -20,7 +20,26 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Washi.Ai\Washi.Ai.csproj" />
+    <ProjectReference Include="..\Washi.McpHost\Washi.McpHost.csproj" />
+    <!-- built, not referenced: the washi-mcp stdio bridge (Claude Desktop) is copied to mcp/ below -->
+    <ProjectReference Include="..\Washi.Mcp\Washi.Mcp.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <!-- washi-mcp in its own folder (bin/.../mcp/) so `dotnet run` shows the Claude Desktop setup too.
+       build/macos/bundle.sh publishes it to Contents/MacOS/mcp/ the same way. -->
+  <Target Name="CopyMcpBridge" AfterTargets="Build">
+    <MSBuild Projects="..\Washi.Mcp\Washi.Mcp.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_McpBridgeTarget" />
+    </MSBuild>
+    <PropertyGroup>
+      <_McpBridgeDir>@(_McpBridgeTarget->'%(RootDir)%(Directory)')</_McpBridgeDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_McpBridgeFiles Include="$(_McpBridgeDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_McpBridgeFiles)" DestinationFiles="@(_McpBridgeFiles->'$(OutDir)mcp\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
