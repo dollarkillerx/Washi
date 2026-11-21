@@ -2,6 +2,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 
 namespace Washi.App;
 
@@ -16,13 +17,61 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            using (var png = Avalonia.Platform.AssetLoader.Open(new Uri("avares://Washi.App/Assets/icon-macos-1024.png")))
+            using (var ms = new MemoryStream())
+            {
+                png.CopyTo(ms);
+                Platform.MacDock.SetIcon(ms.ToArray());
+            }
             var window = new MainWindow();
             desktop.MainWindow = window;
             // washi-app form.pdf opens the file straight away
             if (desktop.Args is [var path, ..] && File.Exists(path))
                 window.Opened += async (_, _) => await window.ViewModel.LoadAsync(Path.GetFullPath(path));
+            // Finder (double-click, Open With, drop on the Dock icon) sends files as an event
+            if (this.TryGetFeature<Avalonia.Controls.ApplicationLifetimes.IActivatableLifetime>() is { } activatable)
+                activatable.Activated += async (_, e) =>
+                {
+                    if (e is Avalonia.Controls.ApplicationLifetimes.FileActivatedEventArgs files)
+                    {
+                        var paths = files.Files.Select(f => f.TryGetLocalPath()).OfType<string>().ToList();
+                        if (paths.Count > 0) await window.ViewModel.DropAsync(paths);
+                    }
+                };
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void OnAboutClick(object? sender, EventArgs e) => ShowSettings(about: true);
+
+    private void OnSettingsClick(object? sender, EventArgs e) => ShowSettings(about: false);
+
+    /// <summary>Settings (or its About tab), owned by the main window.</summary>
+    public void ShowSettings(bool about)
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime { MainWindow: MainWindow main } desktop) return;
+        var vm = new ViewModels.SettingsViewModel();
+        var dialog = new SettingsWindow(vm, about);
+        vm.LanguageChanged += () => Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
+        {
+            dialog.Close();
+            await ReloadAsync(desktop, main);
+        });
+        dialog.ShowDialog(main);
+    }
+
+    /// <summary>Rebuilds the main window in the new language, keeping the open document and tool.</summary>
+    private static async Task ReloadAsync(IClassicDesktopStyleApplicationLifetime desktop, MainWindow old)
+    {
+        var fresh = new MainWindow
+        {
+            Width = old.Width, Height = old.Height, Position = old.Position, WindowState = old.WindowState,
+        };
+        fresh.ViewModel.ActiveTool = old.ViewModel.ActiveTool;
+        desktop.MainWindow = fresh;
+        fresh.Show();
+        old.Close();
+        if (old.ViewModel.PdfPath is { } pdf) await fresh.ViewModel.LoadAsync(pdf);
     }
 }

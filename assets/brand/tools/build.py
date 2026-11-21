@@ -38,41 +38,48 @@ GRAY_ON_DARK = "#a8a8a8"
 RULE = "#e3e3e3"
 
 # ------------------------------------------------------------------ geometry
-# 512 x 512 artboard, 8-unit grid: two 168 squares, 16 gutter, 80 margin.
-S, G, M = 168, 16, 80
-B = M + S + G                 # second column / row
-SPAN = 2 * S + G              # 352: the drawn part of the artboard
+# "Sheet": on a 512 × 512 Washi-blue tile, a white page (320 × 384, a 96 corner folded over)
+# with a 2 × 2 grid of form boxes (96 × 80); the bottom-right box, in vermilion, is the field
+# being filled. 32-unit grid.
+PAGE = (96, 64, 416, 448)      # x0, y0, x1, y1
+FOLD = 96
+CELLS = [(144, 224), (272, 224), (144, 336), (272, 336)]
+CELL_W, CELL_H = 96, 80
+FOLD_TINT = "#b1bff4"          # 35 % Washi blue on paper: the back of the folded corner
 
 
-def mark(blue=BLUE, accent=ACCENT, ox=0.0, oy=0.0, k=1.0):
-    """Fold grid: four squares. The top-right one is folded over (only its lower-left
-    half remains); the bottom-right one is the field being filled."""
-    def p(x, y):
+def mark(tile=BLUE, page=PAPER, accent=ACCENT, fold=FOLD_TINT, ox=0.0, oy=0.0, k=1.0):
+    def P(x, y):
         return f"{ox + x * k:.2f} {oy + y * k:.2f}"
 
-    def sq(x, y, fill):
-        return f'<path d="M{p(x, y)}H{ox + (x + S) * k:.2f}V{oy + (y + S) * k:.2f}H{ox + x * k:.2f}Z" fill="{fill}"/>'
+    def rect(x, y, w, h, fill):
+        return f'<path d="M{P(x, y)}H{ox + (x + w) * k:.2f}V{oy + (y + h) * k:.2f}H{ox + x * k:.2f}Z" fill="{fill}"/>'
 
-    return (sq(M, M, blue)
-            + f'<path d="M{p(B, M)}L{p(B + S, M + S)}H{ox + B * k:.2f}Z" fill="{blue}"/>'
-            + sq(M, B, blue)
-            + sq(B, B, accent))
+    x0, y0, x1, y1 = PAGE
+    out = rect(0, 0, 512, 512, tile)
+    out += f'<path d="M{P(x0, y0)}L{P(x1 - FOLD, y0)}L{P(x1, y0 + FOLD)}L{P(x1, y1)}L{P(x0, y1)}Z" fill="{page}"/>'
+    out += f'<path d="M{P(x1 - FOLD, y0)}L{P(x1 - FOLD, y0 + FOLD)}L{P(x1, y0 + FOLD)}Z" fill="{fold}"/>'
+    for n, (cx, cy) in enumerate(CELLS):
+        out += rect(cx, cy, CELL_W, CELL_H, accent if n == 3 else tile)
+    return out
 
 
 def mark_mono():
-    """Single colour (currentColor): the active field becomes an outlined box."""
-    w = 16
-    return (f'<path d="M{M} {M}h{S}v{S}h-{S}Z"/>'
-            f'<path d="M{B} {M}L{B + S} {M + S}H{B}Z"/>'
-            f'<path d="M{M} {B}h{S}v{S}h-{S}Z"/>'
-            f'<path d="M{B} {B}h{S}v{S}h-{S}Z M{B + w} {B + w}v{S - 2 * w}h{S - 2 * w}v-{S - 2 * w}Z" '
+    """Single colour (currentColor): the page is cut out of the tile, the active box is outlined."""
+    x0, y0, x1, y1 = PAGE
+    w = 12
+    cells = "".join(f'<path d="M{cx} {cy}h{CELL_W}v{CELL_H}h-{CELL_W}Z"/>' for cx, cy in CELLS[:3])
+    ax, ay = CELLS[3]
+    return (f'<path d="M0 0H512V512H0Z M{x0} {y0}V{y1}H{x1}V{y0 + FOLD}L{x1 - FOLD} {y0}Z" fill-rule="evenodd"/>'
+            f'<path d="M{x1 - FOLD} {y0}V{y0 + FOLD}H{x1}Z" fill-opacity="0.35"/>'
+            + cells +
+            f'<path d="M{ax} {ay}h{CELL_W}v{CELL_H}h-{CELL_W}Z M{ax + w} {ay + w}v{CELL_H - 2 * w}h{CELL_W - 2 * w}v-{CELL_H - 2 * w}Z" '
             f'fill-rule="evenodd"/>')
 
 
 def placed_mark(x, y, size, **kw):
-    """Mark whose squares cover exactly size x size at (x, y)."""
-    k = size / SPAN
-    return mark(ox=x - M * k, oy=y - M * k, k=k, **kw)
+    """The tile, size × size at (x, y)."""
+    return mark(ox=x, oy=y, k=size / 512, **kw)
 
 
 # ------------------------------------------------------------------ type
@@ -123,8 +130,8 @@ def lockup(dark=False, jp=True):
     """Mark (96) + 'Washi' with cap height = half the mark (+ divider + 和紙)."""
     h = 96
     size = (h * 0.5) / (cap(SANS_SEMI, 1000) / 1000)
-    blue, ink, gray = (BLUE_ON_DARK, PAPER, GRAY_ON_DARK) if dark else (BLUE, INK, GRAY)
-    body = placed_mark(0, 0, h, blue=blue)
+    ink, gray = (PAPER, GRAY_ON_DARK) if dark else (INK, GRAY)
+    body = placed_mark(0, 0, h)
     ch = cap(SANS_SEMI, size)
     base = h / 2 + ch / 2
     tx = h + h * 0.36                                       # gap after the mark
@@ -147,8 +154,7 @@ def social():
         body.append(f'<rect x="{gx}" y="0" width="1" height="{H}" fill="{RULE}"/>')
     for gy in range(0, H + 1, 32):
         body.append(f'<rect x="0" y="{gy}" width="{W}" height="1" fill="{RULE}"/>')
-    body.append(f'<rect x="96" y="128" width="384" height="384" fill="{PAPER}"/>')
-    body.append(placed_mark(160, 192, 256))
+    body.append(placed_mark(96, 128, 384))
     t, adv = text("Washi", SANS_SEMI, 128, 544, 320, INK, tracking=-0.01)
     body.append(t)
     t, _ = text("和紙", JP_REG, 40, 544 + adv + 32, 320, GRAY)
@@ -179,25 +185,26 @@ def render(svg_text, png_path, w, h, scale=1):
     return im.crop((0, 0, w * scale, h * scale))
 
 
-# Small icons are drawn on whole pixels instead of downscaled, so edges stay crisp.
-# size: (margin, square, gutter) with margin + 2 * square + gutter + margin == size
-PIXEL_GRID = {16: (2, 5, 2), 24: (3, 8, 2), 32: (4, 11, 2), 48: (6, 17, 2), 64: (8, 22, 4)}
+# Small icons are drawn on whole pixels instead of downscaled, so edges stay crisp:
+# every edge of the page and the boxes is rounded to a pixel; only the fold is anti-aliased.
+PIXEL_SIZES = (16, 24, 32, 48, 64)
 
 
-def pixel_icon(size, scale=4):
-    """Hinted small icon: geometry snapped to the pixel grid, triangle anti-aliased."""
+def pixel_icon(size, scale=8):
     from PIL import ImageDraw
-    m, s, g = PIXEL_GRID[size]
-    big = Image.new("RGBA", (size * scale, size * scale), PAPER)
+    big = Image.new("RGBA", (size * scale, size * scale), BLUE)
     d = ImageDraw.Draw(big)
-    def box(x, y, fill):
-        d.rectangle([x * scale, y * scale, (x + s) * scale - 1, (y + s) * scale - 1], fill=fill)
-    b = m + s + g
-    box(m, m, BLUE)
-    e = (m + s) * scale - 1                                   # last pixel row of the square
-    d.polygon([(b * scale, m * scale), ((b + s) * scale - 1, e), (b * scale, e)], fill=BLUE)
-    box(m, b, BLUE)
-    box(b, b, ACCENT)
+    u = size / 512
+
+    def px(v):
+        return round(v * u) * scale
+
+    x0, y0, x1, y1 = (px(v) for v in PAGE)
+    f = max(scale * 2, px(FOLD))
+    d.polygon([(x0, y0), (x1 - f, y0), (x1, y0 + f), (x1, y1), (x0, y1)], fill=PAPER)
+    d.polygon([(x1 - f, y0), (x1 - f, y0 + f), (x1, y0 + f)], fill=FOLD_TINT)
+    for n, (cx, cy) in enumerate(CELLS):
+        d.rectangle([px(cx), px(cy), px(cx + CELL_W) - 1, px(cy + CELL_H) - 1], fill=ACCENT if n == 3 else BLUE)
     return big.resize((size, size), Image.BOX)
 
 
@@ -210,11 +217,11 @@ def main():
     os.makedirs(f"{BRAND}/png", exist_ok=True)
 
     write("logo.svg", svg(512, 512, mark()))
-    write("logo-on-dark.svg", svg(512, 512, mark(blue=BLUE_ON_DARK)))
+    write("logo-on-dark.svg", svg(512, 512, mark()))
     write("logo-mono.svg", svg(512, 512, mark_mono(), extra=' fill="currentColor"'))
-    icon = svg(512, 512, mark(), bg=PAPER)
+    icon = svg(512, 512, mark())
     write("icon.svg", icon)
-    write("icon-dark.svg", svg(512, 512, mark(blue=BLUE_ON_DARK), bg=INK))
+    write("icon-dark.svg", icon)
 
     for name, kw in (("wordmark.svg", {}), ("wordmark-on-dark.svg", {"dark": True}),
                      ("wordmark-latin.svg", {"jp": False})):
@@ -229,7 +236,7 @@ def main():
     master.save(f"{BRAND}/png/icon-1024.png")
     for px in (512, 256, 128):
         master.resize((px, px), Image.LANCZOS).save(f"{BRAND}/png/icon-{px}.png")
-    small = {px: pixel_icon(px) for px in PIXEL_GRID}
+    small = {px: pixel_icon(px) for px in PIXEL_SIZES}
     for px, im in small.items():
         im.save(f"{BRAND}/png/icon-{px}.png")
     small[64].save(f"{BRAND}/favicon.ico", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64)],

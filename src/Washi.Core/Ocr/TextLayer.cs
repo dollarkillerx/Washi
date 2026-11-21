@@ -255,7 +255,8 @@ public static class TextLayer
         (int Id, string Text)[] names = [(1, "GlyphLessFont"), (2, "Regular"), (4, "GlyphLessFont"), (6, "GlyphLessFont")];
         var strings = names.Select(n => Encoding.BigEndianUnicode.GetBytes(n.Text)).ToList();
         using var ms = new MemoryStream();
-        void U16(int v) { Span<byte> s = stackalloc byte[2]; BinaryPrimitives.WriteUInt16BigEndian(s, (ushort)v); ms.Write(s); }
+        var buf = new byte[2];
+        void U16(int v) { BinaryPrimitives.WriteUInt16BigEndian(buf, (ushort)v); ms.Write(buf); }
         U16(0); U16(names.Length); U16(6 + 12 * names.Length);
         int off = 0;
         for (int i = 0; i < names.Length; i++)

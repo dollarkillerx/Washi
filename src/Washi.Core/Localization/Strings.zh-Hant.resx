@@ -121,4 +121,88 @@
   <data name="Ocr_Nothing" xml:space="preserve"><value>沒有需要 OCR 的頁面：每頁都已有文字或 Washi 文字層（如仍要辨識，請加 --force）。</value></data>
   <data name="Ocr_TextWritten" xml:space="preserve"><value>辨識出的文字：{0}</value></data>
   <data name="Ocr_MissingLangs" xml:space="preserve"><value>tesseract：以下語言未安裝，已略過：{0}（macOS：brew install tesseract-lang）</value></data>
+  <data name="Ui_Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="Ui_SettingsMenu" xml:space="preserve"><value>設定…</value></data>
+  <data name="Ui_General" xml:space="preserve"><value>一般</value></data>
+  <data name="Ui_About" xml:space="preserve"><value>關於 Washi</value></data>
+  <data name="Ui_LanguageCaption" xml:space="preserve"><value>介面語言</value></data>
+  <data name="Ui_LangSystem" xml:space="preserve"><value>跟隨系統</value></data>
+  <data name="Ui_LanguageNote" xml:space="preserve"><value>視窗會以新語言重新開啟，已開啟的檔案保持開啟。</value></data>
+  <data name="Ui_AiModelCaption" xml:space="preserve"><value>AI 模型</value></data>
+  <data name="Ui_AiModelNote" xml:space="preserve"><value>在命令列中變更：washi ai config &lt;提供者&gt; &lt;模型&gt;。API key 儲存在鑰匙圈中。</value></data>
+  <data name="Ui_Version" xml:space="preserve"><value>版本 {0}</value></data>
+  <data name="Ui_Tagline" xml:space="preserve"><value>面向桌面、命令列和 AI 代理的開源 PDF 工具：可填寫表單、OCR、合併與分割、內建 AI 和 MCP 伺服器。</value></data>
+  <data name="Ui_LicenseCaption" xml:space="preserve"><value>授權條款</value></data>
+  <data name="Ui_LicenseText" xml:space="preserve"><value>Washi 是自由軟體：你可以使用、研究、分享和修改它。如果你散布修改後的版本，或透過網路向他人提供服務，就必須以相同授權公開其原始碼。</value></data>
+  <data name="Ui_SourceCode" xml:space="preserve"><value>原始碼</value></data>
+  <data name="Ui_ReadLicense" xml:space="preserve"><value>閱讀授權條款</value></data>
+  <data name="Ui_ThirdParty" xml:space="preserve"><value>開源元件</value></data>
+  <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi 建構於以下專案之上，各自採用其授權。感謝它們的作者。</value></data>
+  <data name="Ui_NotBundled" xml:space="preserve"><value>選用，需另行安裝</value></data>
+  <data name="Ui_MenuFile" xml:space="preserve"><value>檔案</value></data>
+  <data name="Ui_MenuView" xml:space="preserve"><value>顯示</value></data>
+  <data name="Ui_Close" xml:space="preserve"><value>關閉</value></data>
+  <data name="Ui_ZoomIn" xml:space="preserve"><value>放大</value></data>
+  <data name="Ui_ZoomOut" xml:space="preserve"><value>縮小</value></data>
+  <data name="Ui_FitWidth" xml:space="preserve"><value>符合寬度</value></data>
+  <data name="Ui_FitPage" xml:space="preserve"><value>符合頁面</value></data>
+  <data name="Ui_PrevPage" xml:space="preserve"><value>上一頁（Page Up）</value></data>
+  <data name="Ui_NextPage" xml:space="preserve"><value>下一頁（Page Down）</value></data>
+  <data name="Ui_ToolForm" xml:space="preserve"><value>表單</value></data>
+  <data name="Ui_ToolOcr" xml:space="preserve"><value>OCR</value></data>
+  <data name="Ui_ToolCombine" xml:space="preserve"><value>合併</value></data>
+  <data name="Ui_ToolSplit" xml:space="preserve"><value>分割</value></data>
+  <data name="Ui_ToolAsk" xml:space="preserve"><value>問 AI</value></data>
+  <data name="Ui_FormTitle" xml:space="preserve"><value>準備表單</value></data>
+  <data name="Ui_FormLead" xml:space="preserve"><value>Washi 會找出要填寫的欄位。檢查並修正後，儲存為可填寫的 PDF。</value></data>
+  <data name="Ui_FieldTotal" xml:space="preserve"><value>{0} 個欄位：{1}</value></data>
+  <data name="Ui_SectionFind" xml:space="preserve"><value>尋找欄位</value></data>
+  <data name="Ui_SectionEdit" xml:space="preserve"><value>編輯</value></data>
+  <data name="Ui_SectionOutput" xml:space="preserve"><value>輸出</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V 選取 · F 繪製欄位 · Tab 下一個欄位 · Enter 改名 · Delete 刪除 · 方向鍵 微調（Shift：5 pt）</value></data>
+  <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>內嵌字型</value></data>
+  <data name="Ui_EmbedFontNote" xml:space="preserve"><value>選用。內嵌整套字型，讓罕用字（如 燁）在任何閱讀器都能顯示。</value></data>
+  <data name="Ui_LoadShort" xml:space="preserve"><value>載入…</value></data>
+  <data name="Ui_SaveShort" xml:space="preserve"><value>儲存…</value></data>
+  <data name="Ui_Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="Ui_SelectTip" xml:space="preserve"><value>選取和移動欄位（V）</value></data>
+  <data name="Ui_DrawTip" xml:space="preserve"><value>繪製新欄位（F）</value></data>
+  <data name="Ui_DeleteTip" xml:space="preserve"><value>刪除選取的欄位（Delete）</value></data>
+  <data name="Ui_FieldsPanel" xml:space="preserve"><value>欄位</value></data>
+  <data name="Ui_PagesPanel" xml:space="preserve"><value>頁面</value></data>
+  <data name="Ui_DropTitle" xml:space="preserve"><value>開啟 PDF</value></data>
+  <data name="Ui_DropLead" xml:space="preserve"><value>把 PDF 拖到這裡，或選擇一個檔案。然後在左側選擇工具。</value></data>
+  <data name="Ui_OcrTitle" xml:space="preserve"><value>讓掃描檔可搜尋</value></data>
+  <data name="Ui_OcrLead" xml:space="preserve"><value>辨識掃描頁上的文字，並作為看不見的文字層加入。頁面外觀不變。</value></data>
+  <data name="Ui_OcrPlan" xml:space="preserve"><value>{1} 頁中有 {0} 頁需要 OCR。</value></data>
+  <data name="Ui_OcrNothing" xml:space="preserve"><value>每頁都已有文字，不需要 OCR。如仍要辨識，請勾選下方的選項。</value></data>
+  <data name="Ui_OcrEngine" xml:space="preserve"><value>引擎</value></data>
+  <data name="Ui_EngineAuto" xml:space="preserve"><value>自動（在本機）</value></data>
+  <data name="Ui_EngineAi" xml:space="preserve"><value>AI 模型（會傳送頁面影像）</value></data>
+  <data name="Ui_OcrEngineNote" xml:space="preserve"><value>Apple Vision 和 Tesseract 在本機執行。AI 模型最擅長手寫，但傳送頁面前會先詢問。</value></data>
+  <data name="Ui_OcrLanguages" xml:space="preserve"><value>語言</value></data>
+  <data name="Ui_OcrForce" xml:space="preserve"><value>也辨識已有文字的頁面</value></data>
+  <data name="Ui_OcrRun" xml:space="preserve"><value>產生可搜尋的 PDF…</value></data>
+  <data name="Ui_OcrProgress" xml:space="preserve"><value>正在辨識第 {0}/{1} 頁…</value></data>
+  <data name="Ui_CombineTitle" xml:space="preserve"><value>合併檔案</value></data>
+  <data name="Ui_CombineLead" xml:space="preserve"><value>依下方順序合併 PDF。表單欄位仍可填寫。</value></data>
+  <data name="Ui_AddFiles" xml:space="preserve"><value>加入檔案…</value></data>
+  <data name="Ui_MoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="Ui_MoveDown" xml:space="preserve"><value>下移</value></data>
+  <data name="Ui_CombineEmpty" xml:space="preserve"><value>加入兩個或更多 PDF，或拖到這裡。</value></data>
+  <data name="Ui_ProtectedFile" xml:space="preserve"><value>受保護：無法合併</value></data>
+  <data name="Ui_ProtectedNote" xml:space="preserve"><value>{0} 受保護：其權限禁止重複使用頁面。Washi 不會解除保護。</value></data>
+  <data name="Ui_CombineRun" xml:space="preserve"><value>合併…</value></data>
+  <data name="Ui_PageCount" xml:space="preserve"><value>{0} 頁</value></data>
+  <data name="Ui_SplitTitle" xml:space="preserve"><value>分割為多個檔案</value></data>
+  <data name="Ui_SplitLead" xml:space="preserve"><value>每個頁碼範圍寫成一個 PDF，存到資料夾中。表單欄位仍可填寫。</value></data>
+  <data name="Ui_Ranges" xml:space="preserve"><value>頁碼範圍</value></data>
+  <data name="Ui_RangesHint" xml:space="preserve"><value>例如 1-3, 5。留空則每頁一個檔案。</value></data>
+  <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} 個檔案：{1}</value></data>
+  <data name="Ui_SplitRun" xml:space="preserve"><value>分割到資料夾…</value></data>
+  <data name="Ui_SplitDone" xml:space="preserve"><value>已將 {0} 個檔案寫入 {1}</value></data>
+  <data name="Ui_AskTitle" xml:space="preserve"><value>詢問這份文件</value></data>
+  <data name="Ui_AskLead" xml:space="preserve"><value>AI 模型閱讀文件並回答。Washi 會先列出要傳送的內容並請你確認。</value></data>
+  <data name="Ui_AskWatermark" xml:space="preserve"><value>例如：我需要填哪些欄？</value></data>
+  <data name="Ui_AskRun" xml:space="preserve"><value>提問（Enter）</value></data>
 </root>

@@ -121,4 +121,88 @@
   <data name="Ocr_Nothing" xml:space="preserve"><value>OCR が必要なページはありません。どのページにも文字情報か Washi の文字層があります（それでも認識するには --force）。</value></data>
   <data name="Ocr_TextWritten" xml:space="preserve"><value>認識した文字: {0}</value></data>
   <data name="Ocr_MissingLangs" xml:space="preserve"><value>tesseract: 次の言語はインストールされていないため使いませんでした: {0}（macOS: brew install tesseract-lang）</value></data>
+  <data name="Ui_Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="Ui_SettingsMenu" xml:space="preserve"><value>設定…</value></data>
+  <data name="Ui_General" xml:space="preserve"><value>一般</value></data>
+  <data name="Ui_About" xml:space="preserve"><value>Washi について</value></data>
+  <data name="Ui_LanguageCaption" xml:space="preserve"><value>表示言語</value></data>
+  <data name="Ui_LangSystem" xml:space="preserve"><value>システムの言語</value></data>
+  <data name="Ui_LanguageNote" xml:space="preserve"><value>ウィンドウが新しい言語で開き直します。開いている文書はそのままです。</value></data>
+  <data name="Ui_AiModelCaption" xml:space="preserve"><value>AI モデル</value></data>
+  <data name="Ui_AiModelNote" xml:space="preserve"><value>コマンドラインで変更します: washi ai config &lt;プロバイダ&gt; &lt;モデル&gt;。API キーはキーチェーンに保存されます。</value></data>
+  <data name="Ui_Version" xml:space="preserve"><value>バージョン {0}</value></data>
+  <data name="Ui_Tagline" xml:space="preserve"><value>デスクトップ、コマンドライン、AI エージェントのためのオープンソース PDF ツールキット。記入できるフォーム、OCR、結合と分割、内蔵 AI、MCP サーバー。</value></data>
+  <data name="Ui_LicenseCaption" xml:space="preserve"><value>ライセンス</value></data>
+  <data name="Ui_LicenseText" xml:space="preserve"><value>Washi はフリーソフトウェアです。自由に使い、調べ、共有し、変更できます。変更版を配布する場合や、ネットワーク越しに他の人へ提供する場合は、同じライセンスでソースコードを公開する必要があります。</value></data>
+  <data name="Ui_SourceCode" xml:space="preserve"><value>ソースコード</value></data>
+  <data name="Ui_ReadLicense" xml:space="preserve"><value>ライセンスを読む</value></data>
+  <data name="Ui_ThirdParty" xml:space="preserve"><value>オープンソースコンポーネント</value></data>
+  <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi は次のプロジェクトの上に作られています。それぞれ独自のライセンスです。作者の皆さんに感謝します。</value></data>
+  <data name="Ui_NotBundled" xml:space="preserve"><value>任意。別途インストール</value></data>
+  <data name="Ui_MenuFile" xml:space="preserve"><value>ファイル</value></data>
+  <data name="Ui_MenuView" xml:space="preserve"><value>表示</value></data>
+  <data name="Ui_Close" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Ui_ZoomIn" xml:space="preserve"><value>拡大</value></data>
+  <data name="Ui_ZoomOut" xml:space="preserve"><value>縮小</value></data>
+  <data name="Ui_FitWidth" xml:space="preserve"><value>幅に合わせる</value></data>
+  <data name="Ui_FitPage" xml:space="preserve"><value>ページ全体</value></data>
+  <data name="Ui_PrevPage" xml:space="preserve"><value>前のページ（Page Up）</value></data>
+  <data name="Ui_NextPage" xml:space="preserve"><value>次のページ（Page Down）</value></data>
+  <data name="Ui_ToolForm" xml:space="preserve"><value>記入欄</value></data>
+  <data name="Ui_ToolOcr" xml:space="preserve"><value>OCR</value></data>
+  <data name="Ui_ToolCombine" xml:space="preserve"><value>結合</value></data>
+  <data name="Ui_ToolSplit" xml:space="preserve"><value>分割</value></data>
+  <data name="Ui_ToolAsk" xml:space="preserve"><value>AI に質問</value></data>
+  <data name="Ui_FormTitle" xml:space="preserve"><value>記入欄を準備</value></data>
+  <data name="Ui_FormLead" xml:space="preserve"><value>Washi が記入欄を見つけます。確認して直し、記入できる PDF として保存します。</value></data>
+  <data name="Ui_FieldTotal" xml:space="preserve"><value>記入欄 {0} 個: {1}</value></data>
+  <data name="Ui_SectionFind" xml:space="preserve"><value>記入欄を探す</value></data>
+  <data name="Ui_SectionEdit" xml:space="preserve"><value>編集</value></data>
+  <data name="Ui_SectionOutput" xml:space="preserve"><value>出力</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V 選択 · F 記入欄を描く · Tab 次の記入欄 · Enter 名前を変更 · Delete 削除 · 矢印 微調整（Shift: 5 pt）</value></data>
+  <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>埋め込むフォント</value></data>
+  <data name="Ui_EmbedFontNote" xml:space="preserve"><value>任意。フォント全体を埋め込み、難しい漢字（例: 燁）をどのビューアでも表示します。</value></data>
+  <data name="Ui_LoadShort" xml:space="preserve"><value>読み込む…</value></data>
+  <data name="Ui_SaveShort" xml:space="preserve"><value>保存…</value></data>
+  <data name="Ui_Remove" xml:space="preserve"><value>外す</value></data>
+  <data name="Ui_SelectTip" xml:space="preserve"><value>選択・移動（V）</value></data>
+  <data name="Ui_DrawTip" xml:space="preserve"><value>新しい記入欄を描く（F）</value></data>
+  <data name="Ui_DeleteTip" xml:space="preserve"><value>選択した記入欄を削除（Delete）</value></data>
+  <data name="Ui_FieldsPanel" xml:space="preserve"><value>記入欄</value></data>
+  <data name="Ui_PagesPanel" xml:space="preserve"><value>ページ</value></data>
+  <data name="Ui_DropTitle" xml:space="preserve"><value>PDF を開く</value></data>
+  <data name="Ui_DropLead" xml:space="preserve"><value>ここに PDF をドロップするか、選んでください。次に左のツールを選びます。</value></data>
+  <data name="Ui_OcrTitle" xml:space="preserve"><value>スキャンを検索可能に</value></data>
+  <data name="Ui_OcrLead" xml:space="preserve"><value>スキャンしたページの文字を認識し、見えない文字層として加えます。見た目は変わりません。</value></data>
+  <data name="Ui_OcrPlan" xml:space="preserve"><value>{1} ページ中 {0} ページに OCR が必要です。</value></data>
+  <data name="Ui_OcrNothing" xml:space="preserve"><value>どのページにも文字情報があるため、OCR は不要です。それでも認識するには下のチェックボックスをオンにします。</value></data>
+  <data name="Ui_OcrEngine" xml:space="preserve"><value>エンジン</value></data>
+  <data name="Ui_EngineAuto" xml:space="preserve"><value>自動（このコンピュータ上）</value></data>
+  <data name="Ui_EngineAi" xml:space="preserve"><value>AI モデル（ページ画像を送信）</value></data>
+  <data name="Ui_OcrEngineNote" xml:space="preserve"><value>Apple Vision と Tesseract はこのコンピュータ上で動きます。AI モデルは手書きに強いですが、送信前に確認します。</value></data>
+  <data name="Ui_OcrLanguages" xml:space="preserve"><value>言語</value></data>
+  <data name="Ui_OcrForce" xml:space="preserve"><value>文字のあるページも認識する</value></data>
+  <data name="Ui_OcrRun" xml:space="preserve"><value>検索可能な PDF を作成…</value></data>
+  <data name="Ui_OcrProgress" xml:space="preserve"><value>{1} ページ中 {0} ページ目を認識中…</value></data>
+  <data name="Ui_CombineTitle" xml:space="preserve"><value>ファイルを結合</value></data>
+  <data name="Ui_CombineLead" xml:space="preserve"><value>下の順番で PDF をまとめます。記入欄はそのまま記入できます。</value></data>
+  <data name="Ui_AddFiles" xml:space="preserve"><value>ファイルを追加…</value></data>
+  <data name="Ui_MoveUp" xml:space="preserve"><value>上へ</value></data>
+  <data name="Ui_MoveDown" xml:space="preserve"><value>下へ</value></data>
+  <data name="Ui_CombineEmpty" xml:space="preserve"><value>PDF を 2 つ以上追加するか、ここにドロップしてください。</value></data>
+  <data name="Ui_ProtectedFile" xml:space="preserve"><value>保護あり: 結合できません</value></data>
+  <data name="Ui_ProtectedNote" xml:space="preserve"><value>{0} は保護されています。ページの再利用が許可されていません。Washi は保護を解除しません。</value></data>
+  <data name="Ui_CombineRun" xml:space="preserve"><value>結合…</value></data>
+  <data name="Ui_PageCount" xml:space="preserve"><value>{0} ページ</value></data>
+  <data name="Ui_SplitTitle" xml:space="preserve"><value>ファイルに分割</value></data>
+  <data name="Ui_SplitLead" xml:space="preserve"><value>ページ範囲ごとに 1 つの PDF をフォルダに書き出します。記入欄はそのまま記入できます。</value></data>
+  <data name="Ui_Ranges" xml:space="preserve"><value>ページ範囲</value></data>
+  <data name="Ui_RangesHint" xml:space="preserve"><value>例: 1-3, 5。空欄なら 1 ページずつ分けます。</value></data>
+  <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} 個のファイル: {1}</value></data>
+  <data name="Ui_SplitRun" xml:space="preserve"><value>フォルダに分割…</value></data>
+  <data name="Ui_SplitDone" xml:space="preserve"><value>{0} 個のファイルを {1} に書き出しました</value></data>
+  <data name="Ui_AskTitle" xml:space="preserve"><value>この文書について質問</value></data>
+  <data name="Ui_AskLead" xml:space="preserve"><value>AI モデルが文書を読んで答えます。送信する内容を表示し、先に確認します。</value></data>
+  <data name="Ui_AskWatermark" xml:space="preserve"><value>例: どの欄を記入すればいい？</value></data>
+  <data name="Ui_AskRun" xml:space="preserve"><value>質問する（Enter）</value></data>
 </root>

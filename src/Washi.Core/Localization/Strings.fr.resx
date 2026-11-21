@@ -121,4 +121,88 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ocr_Nothing" xml:space="preserve"><value>Aucune page n’a besoin d’OCR : chaque page a déjà du texte ou une couche de texte Washi (--force pour reconnaître quand même).</value></data>
   <data name="Ocr_TextWritten" xml:space="preserve"><value>texte reconnu : {0}</value></data>
   <data name="Ocr_MissingLangs" xml:space="preserve"><value>tesseract : ces langues ne sont pas installées et ont été ignorées : {0} (macOS : brew install tesseract-lang)</value></data>
+  <data name="Ui_Settings" xml:space="preserve"><value>Réglages</value></data>
+  <data name="Ui_SettingsMenu" xml:space="preserve"><value>Réglages…</value></data>
+  <data name="Ui_General" xml:space="preserve"><value>Général</value></data>
+  <data name="Ui_About" xml:space="preserve"><value>À propos de Washi</value></data>
+  <data name="Ui_LanguageCaption" xml:space="preserve"><value>LANGUE</value></data>
+  <data name="Ui_LangSystem" xml:space="preserve"><value>Langue du système</value></data>
+  <data name="Ui_LanguageNote" xml:space="preserve"><value>La fenêtre se rouvre dans la nouvelle langue ; le document ouvert le reste.</value></data>
+  <data name="Ui_AiModelCaption" xml:space="preserve"><value>MODÈLE D’IA</value></data>
+  <data name="Ui_AiModelNote" xml:space="preserve"><value>Changez-le en ligne de commande : washi ai config &lt;fournisseur&gt; &lt;modèle&gt;. Les clés d’API restent dans le trousseau.</value></data>
+  <data name="Ui_Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="Ui_Tagline" xml:space="preserve"><value>Boîte à outils PDF open source pour le bureau, la ligne de commande et les agents d’IA : formulaires remplissables, OCR, assemblage et division, IA intégrée et serveur MCP.</value></data>
+  <data name="Ui_LicenseCaption" xml:space="preserve"><value>LICENCE</value></data>
+  <data name="Ui_LicenseText" xml:space="preserve"><value>Washi est un logiciel libre : vous pouvez l’utiliser, l’étudier, le partager et le modifier. Si vous diffusez une version modifiée, ou la faites tourner pour d’autres sur un réseau, vous devez en offrir le code source sous la même licence.</value></data>
+  <data name="Ui_SourceCode" xml:space="preserve"><value>Code source</value></data>
+  <data name="Ui_ReadLicense" xml:space="preserve"><value>Lire la licence</value></data>
+  <data name="Ui_ThirdParty" xml:space="preserve"><value>COMPOSANTS OPEN SOURCE</value></data>
+  <data name="Ui_ThirdPartyNote" xml:space="preserve"><value>Washi repose sur ces projets, chacun sous sa propre licence. Merci à leurs auteurs.</value></data>
+  <data name="Ui_NotBundled" xml:space="preserve"><value>facultatif, installé à part</value></data>
+  <data name="Ui_MenuFile" xml:space="preserve"><value>Fichier</value></data>
+  <data name="Ui_MenuView" xml:space="preserve"><value>Présentation</value></data>
+  <data name="Ui_Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Ui_ZoomIn" xml:space="preserve"><value>Zoom avant</value></data>
+  <data name="Ui_ZoomOut" xml:space="preserve"><value>Zoom arrière</value></data>
+  <data name="Ui_FitWidth" xml:space="preserve"><value>Ajuster à la largeur</value></data>
+  <data name="Ui_FitPage" xml:space="preserve"><value>Page entière</value></data>
+  <data name="Ui_PrevPage" xml:space="preserve"><value>Page précédente (Pg préc.)</value></data>
+  <data name="Ui_NextPage" xml:space="preserve"><value>Page suivante (Pg suiv.)</value></data>
+  <data name="Ui_ToolForm" xml:space="preserve"><value>Formulaire</value></data>
+  <data name="Ui_ToolOcr" xml:space="preserve"><value>OCR</value></data>
+  <data name="Ui_ToolCombine" xml:space="preserve"><value>Assembler</value></data>
+  <data name="Ui_ToolSplit" xml:space="preserve"><value>Diviser</value></data>
+  <data name="Ui_ToolAsk" xml:space="preserve"><value>Demander à l’IA</value></data>
+  <data name="Ui_FormTitle" xml:space="preserve"><value>Préparer un formulaire</value></data>
+  <data name="Ui_FormLead" xml:space="preserve"><value>Washi trouve les cases à remplir. Vérifiez-les, corrigez, puis enregistrez un PDF remplissable.</value></data>
+  <data name="Ui_FieldTotal" xml:space="preserve"><value>{0} champs : {1}</value></data>
+  <data name="Ui_SectionFind" xml:space="preserve"><value>TROUVER LES CHAMPS</value></data>
+  <data name="Ui_SectionEdit" xml:space="preserve"><value>MODIFIER</value></data>
+  <data name="Ui_SectionOutput" xml:space="preserve"><value>SORTIE</value></data>
+  <data name="Ui_EditKeys" xml:space="preserve"><value>V sélection · F dessiner un champ · Tab champ suivant · Entrée renommer · Suppr retirer · flèches ajuster (Maj : 5 pt)</value></data>
+  <data name="Ui_EmbedFontCaption" xml:space="preserve"><value>Police incorporée</value></data>
+  <data name="Ui_EmbedFontNote" xml:space="preserve"><value>Facultatif. Incorpore une police entière pour que les caractères rares (ex. 燁) s’affichent partout.</value></data>
+  <data name="Ui_LoadShort" xml:space="preserve"><value>Charger…</value></data>
+  <data name="Ui_SaveShort" xml:space="preserve"><value>Enregistrer…</value></data>
+  <data name="Ui_Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="Ui_SelectTip" xml:space="preserve"><value>Sélectionner et déplacer (V)</value></data>
+  <data name="Ui_DrawTip" xml:space="preserve"><value>Dessiner un nouveau champ (F)</value></data>
+  <data name="Ui_DeleteTip" xml:space="preserve"><value>Supprimer le champ sélectionné (Suppr)</value></data>
+  <data name="Ui_FieldsPanel" xml:space="preserve"><value>Champs</value></data>
+  <data name="Ui_PagesPanel" xml:space="preserve"><value>Pages</value></data>
+  <data name="Ui_DropTitle" xml:space="preserve"><value>Ouvrir un PDF</value></data>
+  <data name="Ui_DropLead" xml:space="preserve"><value>Déposez un PDF ici ou choisissez-en un. Puis choisissez un outil à gauche.</value></data>
+  <data name="Ui_OcrTitle" xml:space="preserve"><value>Rendre un scan cherchable</value></data>
+  <data name="Ui_OcrLead" xml:space="preserve"><value>Reconnaît le texte des pages numérisées et l’ajoute en couche invisible. Les pages ne changent pas.</value></data>
+  <data name="Ui_OcrPlan" xml:space="preserve"><value>{0} page(s) sur {1} à reconnaître.</value></data>
+  <data name="Ui_OcrNothing" xml:space="preserve"><value>Chaque page a déjà du texte : aucun OCR nécessaire. Cochez la case ci-dessous pour reconnaître quand même.</value></data>
+  <data name="Ui_OcrEngine" xml:space="preserve"><value>MOTEUR</value></data>
+  <data name="Ui_EngineAuto" xml:space="preserve"><value>Automatique (sur cet ordinateur)</value></data>
+  <data name="Ui_EngineAi" xml:space="preserve"><value>Modèle d’IA (envoie les images)</value></data>
+  <data name="Ui_OcrEngineNote" xml:space="preserve"><value>Apple Vision et Tesseract tournent sur cet ordinateur. Le modèle d’IA lit mieux l’écriture manuscrite, mais demande avant d’envoyer.</value></data>
+  <data name="Ui_OcrLanguages" xml:space="preserve"><value>LANGUES</value></data>
+  <data name="Ui_OcrForce" xml:space="preserve"><value>Aussi les pages qui ont déjà du texte</value></data>
+  <data name="Ui_OcrRun" xml:space="preserve"><value>Créer le PDF cherchable…</value></data>
+  <data name="Ui_OcrProgress" xml:space="preserve"><value>Reconnaissance de la page {0} sur {1}…</value></data>
+  <data name="Ui_CombineTitle" xml:space="preserve"><value>Assembler des fichiers</value></data>
+  <data name="Ui_CombineLead" xml:space="preserve"><value>Assemble les PDF dans l’ordre ci-dessous. Les champs restent remplissables.</value></data>
+  <data name="Ui_AddFiles" xml:space="preserve"><value>Ajouter…</value></data>
+  <data name="Ui_MoveUp" xml:space="preserve"><value>Monter</value></data>
+  <data name="Ui_MoveDown" xml:space="preserve"><value>Descendre</value></data>
+  <data name="Ui_CombineEmpty" xml:space="preserve"><value>Ajoutez au moins deux PDF, ou déposez-les ici.</value></data>
+  <data name="Ui_ProtectedFile" xml:space="preserve"><value>protégé : impossible à assembler</value></data>
+  <data name="Ui_ProtectedNote" xml:space="preserve"><value>{0} est protégé : ses droits interdisent de réutiliser ses pages. Washi ne retire pas la protection.</value></data>
+  <data name="Ui_CombineRun" xml:space="preserve"><value>Assembler…</value></data>
+  <data name="Ui_PageCount" xml:space="preserve"><value>{0} page(s)</value></data>
+  <data name="Ui_SplitTitle" xml:space="preserve"><value>Diviser en fichiers</value></data>
+  <data name="Ui_SplitLead" xml:space="preserve"><value>Écrit un PDF par plage de pages dans un dossier. Les champs restent remplissables.</value></data>
+  <data name="Ui_Ranges" xml:space="preserve"><value>PLAGES DE PAGES</value></data>
+  <data name="Ui_RangesHint" xml:space="preserve"><value>Par exemple 1-3, 5. Laissez vide pour un fichier par page.</value></data>
+  <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} fichier(s) : {1}</value></data>
+  <data name="Ui_SplitRun" xml:space="preserve"><value>Diviser dans un dossier…</value></data>
+  <data name="Ui_SplitDone" xml:space="preserve"><value>{0} fichier(s) écrit(s) dans {1}</value></data>
+  <data name="Ui_AskTitle" xml:space="preserve"><value>Questions sur ce document</value></data>
+  <data name="Ui_AskLead" xml:space="preserve"><value>Le modèle d’IA lit le document et répond. Washi montre ce qui sera envoyé et demande d’abord.</value></data>
+  <data name="Ui_AskWatermark" xml:space="preserve"><value>ex. : Quelles cases dois-je remplir ?</value></data>
+  <data name="Ui_AskRun" xml:space="preserve"><value>Demander (Entrée)</value></data>
 </root>

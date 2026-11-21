@@ -9,6 +9,8 @@ namespace Washi.App.Services;
 public interface IDialogs
 {
     Task<string?> OpenPdfAsync();
+    Task<IReadOnlyList<string>> OpenPdfsAsync();
+    Task<string?> PickFolderAsync();
     Task<string?> OpenFieldsAsync();
     Task<string?> SaveFieldsAsync(string suggestedName);
     Task<string?> SavePdfAsync(string suggestedName);
@@ -24,6 +26,18 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     private static FilePickerFileType Fonts => new(L.Get("Ui_FontFiles")) { Patterns = ["*.ttf", "*.otf", "*.ttc", "*.otc"] };
 
     public Task<string?> OpenPdfAsync() => Open(Pdf);
+
+    public async Task<IReadOnlyList<string>> OpenPdfsAsync()
+    {
+        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { FileTypeFilter = [Pdf], AllowMultiple = true });
+        return [.. files.Select(f => f.TryGetLocalPath()).OfType<string>()];
+    }
+
+    public async Task<string?> PickFolderAsync()
+    {
+        var folders = await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
+        return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+    }
     public Task<string?> OpenFieldsAsync() => Open(Json);
     public Task<string?> OpenFontAsync() => Open(Fonts);
     public Task<string?> SaveFieldsAsync(string suggestedName) => Save(Json, suggestedName, "json");

@@ -86,10 +86,13 @@ public static class PageAssembly
         return ranges;
     }
 
-    public static int PageCount(string input)
+    public static int PageCount(string input) => Inspect(input).Pages;
+
+    /// <summary>Page count, and whether the file's permissions let its pages be reused (no exception for protected files).</summary>
+    public static (int Pages, bool MayAssemble) Inspect(string input)
     {
-        using var d = Open(input);
-        return d.PageCount;
+        using var d = PdfReader.Open(input, PdfDocumentOpenMode.Import);
+        return (d.PageCount, d.SecuritySettings.PermitAssembleDocument);
     }
 
     /// <summary>
@@ -160,7 +163,7 @@ public static class PageAssembly
             foreach (var s in streams.OfType<PdfDictionary>())
                 if (Deref(s.Elements.GetDictionary("/Resources")?.Elements["/Font"]) is PdfDictionary f)
                     foreach (var (key, value) in f.Elements)
-                        into.TryAdd(key, value);
+                        if (value is not null) into.TryAdd(key, value);
         }
     }
 }

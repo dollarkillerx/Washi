@@ -1,0 +1,97 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Washi.App.ViewModels"
+        xmlns:l="using:Washi.App.Localization"
+        x:Class="Washi.App.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="{l:Tr Ui_Settings}"
+        Icon="/Assets/washi.ico"
+        Width="640" Height="620" CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="Margin" Value="0,20,0,8" />
+        </Style>
+        <Style Selector="TextBlock.note">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Window.Styles>
+
+    <TabControl Padding="28,8,28,20" x:Name="Tabs">
+        <!-- ===================================================== General -->
+        <TabItem Header="{l:Tr Ui_General}">
+            <StackPanel>
+                <TextBlock Classes="section" Text="{l:Tr Ui_LanguageCaption}" />
+                <ComboBox ItemsSource="{x:Static vm:SettingsViewModel.Languages}" SelectedItem="{Binding Language}"
+                          Width="280" x:Name="LanguageBox" />
+                <TextBlock Classes="note" Text="{l:Tr Ui_LanguageNote}" Margin="0,8,0,0" />
+
+                <TextBlock Classes="section" Text="{l:Tr Ui_AiModelCaption}" />
+                <TextBlock Text="{Binding AiModel}" />
+                <TextBlock Classes="note" Text="{l:Tr Ui_AiModelNote}" Margin="0,8,0,0" />
+            </StackPanel>
+        </TabItem>
+
+        <!-- ===================================================== About -->
+        <TabItem Header="{l:Tr Ui_About}" x:Name="AboutTab">
+            <ScrollViewer>
+                <StackPanel Margin="0,12,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <Viewbox Width="56" Height="56">
+                            <Canvas Width="512" Height="512">
+                                <Path Data="M0,0 H512 V512 H0 Z" Fill="{StaticResource WashiBlue}" />
+                                <Path Data="M96,64 H320 L416,160 V448 H96 Z" Fill="White" />
+                                <Path Data="M320,64 V160 H416 Z" Fill="#b1bff4" />
+                                <Path Data="M144,224 h96 v80 h-96 Z M272,224 h96 v80 h-96 Z M144,336 h96 v80 h-96 Z" Fill="{StaticResource WashiBlue}" />
+                                <Path Data="M272,336 h96 v80 h-96 Z" Fill="{StaticResource Vermilion}" />
+                            </Canvas>
+                        </Viewbox>
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="Washi" FontSize="22" FontWeight="SemiBold" />
+                                <TextBlock Text="和紙" FontSize="14" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Bottom" Margin="0,0,0,3" />
+                            </StackPanel>
+                            <TextBlock Classes="note" Text="{Binding Version}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="{l:Tr Ui_Tagline}" TextWrapping="Wrap" Margin="0,14,0,0" />
+
+                    <TextBlock Classes="section" Text="{l:Tr Ui_LicenseCaption}" />
+                    <TextBlock Text="GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Classes="note" Text="{l:Tr Ui_LicenseText}" Margin="0,6,0,0" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,12,0,0">
+                        <Button Classes="accent" Content="{l:Tr Ui_SourceCode}" Click="OnSourceClick" />
+                        <Button Content="{l:Tr Ui_ReadLicense}" Click="OnLicenseClick" />
+                    </StackPanel>
+
+                    <TextBlock Classes="section" Text="{l:Tr Ui_ThirdParty}" />
+                    <TextBlock Classes="note" Text="{l:Tr Ui_ThirdPartyNote}" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{x:Static vm:SettingsViewModel.Components}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:Component">
+                                <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,0,1" Padding="0,7">
+                                    <Grid ColumnDefinitions="180,*,Auto">
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding License}" FontSize="12" />
+                                            <TextBlock Text="{Binding Note}" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                                                       IsVisible="{Binding Note, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="↗" Click="OnComponentClick" Padding="10,4"
+                                                ToolTip.Tip="{Binding Url}" Background="Transparent" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
+</Window>

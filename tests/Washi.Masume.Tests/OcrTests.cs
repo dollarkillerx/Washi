@@ -155,9 +155,10 @@ public sealed class OcrTests : IDisposable
     {
         var ttf = TextLayer.GlyphlessTrueType();
         uint sum = 0;
+        Span<byte> word = stackalloc byte[4];
         for (int i = 0; i < ttf.Length; i += 4)
         {
-            Span<byte> word = stackalloc byte[4];
+            word.Clear();
             ttf.AsSpan(i, Math.Min(4, ttf.Length - i)).CopyTo(word);
             sum += BinaryPrimitives.ReadUInt32BigEndian(word);
         }

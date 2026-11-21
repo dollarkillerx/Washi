@@ -35,7 +35,13 @@ public sealed partial class FieldViewModel : ObservableObject
         var p => p,
     };
 
-    partial void OnPrefilledChanged(string value) => OnPropertyChanged(nameof(PrefilledText));
+    public bool HasPrefilled => Prefilled.Length > 0;
+
+    partial void OnPrefilledChanged(string value)
+    {
+        OnPropertyChanged(nameof(PrefilledText));
+        OnPropertyChanged(nameof(HasPrefilled));
+    }
 
     public string PositionText => L.F("Ui_Position", Math.Round(X0, 1), Math.Round(Y0, 1), Math.Round(X1 - X0, 1), Math.Round(Y1 - Y0, 1));
 

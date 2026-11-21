@@ -19,6 +19,21 @@ public sealed record Choice<T>(T Value, string Text)
     public override string ToString() => Text;
 }
 
+/// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
+public enum Tool { Form, Ocr, Combine, Split, Ask }
+
+/// <summary>What the right side panel shows.</summary>
+public enum SidePanel { None, Pages, Fields }
+
+/// <summary>A page thumbnail in the Pages panel.</summary>
+public sealed partial class PageThumb(int index) : ObservableObject
+{
+    public int Index { get; } = index;
+    public string Label => (Index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+    [ObservableProperty] private Bitmap? _image;
+    [ObservableProperty] private bool _isCurrent;
+}
+
 /// <summary>
 /// The field review editor: open a PDF, let Masume suggest fields, let a person correct them,
 /// then save fields.json or write the fillable PDF.
@@ -35,13 +50,80 @@ public sealed partial class MainViewModel : ObservableObject
         _dialogs = dialogs;
         Fields.CollectionChanged += OnFieldsChanged;
         Status = L.Get("Ui_StartHint");
+        Ocr = new OcrToolViewModel(this);
+        Combine = new CombineToolViewModel(this);
+        Split = new SplitToolViewModel(this);
+        Ask = new AskToolViewModel(this);
     }
+
+    internal IDialogs Dialogs => _dialogs;
+
+    public OcrToolViewModel Ocr { get; }
+    public CombineToolViewModel Combine { get; }
+    public SplitToolViewModel Split { get; }
+    public AskToolViewModel Ask { get; }
 
     // ------------------------------------------------------------------ state
     public ObservableCollection<FieldViewModel> Fields { get; } = [];
     public ObservableCollection<FieldViewModel> PageFields { get; } = [];
+    public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasDocument), nameof(Title))] private string? _pdfPath;
+    // ------------------------------------------------------------------ tools and panels
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool),
+                                                  nameof(IsAskTool), nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools))]
+    private Tool _activeTool = Tool.Form;
+
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowPagesPanel), nameof(ShowFieldsPanel), nameof(ShowSidePanel))]
+    private SidePanel _sidePanel = SidePanel.Fields;
+
+    /// <summary>Clicking the active tool in the rail again hides its panel (more room for the page).</summary>
+    [ObservableProperty] private bool _toolPanelOpen = true;
+
+    public bool IsFormTool { get => ActiveTool == Tool.Form; set { if (value) ActiveTool = Tool.Form; } }
+    public bool IsOcrTool { get => ActiveTool == Tool.Ocr; set { if (value) ActiveTool = Tool.Ocr; } }
+    public bool IsCombineTool { get => ActiveTool == Tool.Combine; set { if (value) ActiveTool = Tool.Combine; } }
+    public bool IsSplitTool { get => ActiveTool == Tool.Split; set { if (value) ActiveTool = Tool.Split; } }
+    public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
+
+    /// <summary>Toggle buttons in the right rail: one panel at a time, a second click closes it.</summary>
+    public bool ShowPagesPanel
+    {
+        get => SidePanel == SidePanel.Pages;
+        set => SidePanel = value ? SidePanel.Pages : SidePanel == SidePanel.Pages ? SidePanel.None : SidePanel;
+    }
+
+    public bool ShowFieldsPanel
+    {
+        get => SidePanel == SidePanel.Fields && IsFormTool;
+        set => SidePanel = value ? SidePanel.Fields : SidePanel == SidePanel.Fields ? SidePanel.None : SidePanel;
+    }
+
+    public bool ShowSidePanel => HasDocument && (ShowPagesPanel || ShowFieldsPanel);
+
+    /// <summary>The floating select / draw / delete toolbar belongs to the form tool.</summary>
+    public bool ShowEditTools => HasDocument && IsFormTool;
+
+    partial void OnActiveToolChanged(Tool value)
+    {
+        if (value != Tool.Form) DrawMode = false;
+        if (value == Tool.Form && PdfPath is { } p && _detectedFor != p) _ = DetectAsync();
+        if (value == Tool.Ocr) _ = Ocr.RefreshPlanAsync();
+        if (value == Tool.Combine) Combine.OfferCurrentDocument();
+    }
+
+    private string? _detectedFor;
+
+    // ------------------------------------------------------------------ viewport
+    /// <summary>Size of the document area, set by the view; used to fit the page.</summary>
+    public double ViewportWidth { get => _viewportWidth; set { _viewportWidth = value; if (_fitWidthMode) FitWidth(); } }
+    public double ViewportHeight { get; set; }
+    private double _viewportWidth;
+
+    /// <summary>After "fit width" the page follows the window and panels until the user zooms by hand.</summary>
+    private bool _fitWidthMode = true;
+    private const double PageMargin = 56;   // the page's margin on both sides, in the view
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasDocument), nameof(Title), nameof(FileName), nameof(ShowSidePanel), nameof(ShowEditTools))]
+    private string? _pdfPath;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PageText))] private int _pageCount;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PageText))] private int _pageIndex;
     [ObservableProperty] private Bitmap? _pageImage;
@@ -54,6 +136,7 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _status = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(FontText))] private string? _embedFontPath;
     [ObservableProperty] private Choice<string> _formLanguage = Languages[0];
+    [ObservableProperty] private string _fieldSummary = "";
 
     public bool HasDocument => PdfPath is not null;
     public bool HasSelection => SelectedField is not null;
@@ -62,6 +145,7 @@ public sealed partial class MainViewModel : ObservableObject
     public string ZoomText => $"{Zoom:P0}";
     public string PageText => PageCount == 0 ? "" : L.F("Ui_PageOf", PageIndex + 1, PageCount);
     public string Title => PdfPath is null ? "Washi" : $"{Path.GetFileName(PdfPath)} — Washi";
+    public string FileName => PdfPath is null ? "" : Path.GetFileName(PdfPath);
     public string FontText => EmbedFontPath is null ? L.Get("Ui_NoFont") : Path.GetFileName(EmbedFontPath);
 
     public static IReadOnlyList<Choice<string>> Languages { get; } =
@@ -84,6 +168,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         RefreshPageFields();
         SelectedField = null;
+        foreach (var t in Thumbnails) t.IsCurrent = t.Index == value;
         _ = RenderPageAsync();
     }
 
@@ -98,17 +183,55 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>Opens a PDF and detects its fields.</summary>
     public async Task LoadAsync(string path)
     {
+        bool opened = false;
         await Run(async () =>
         {
             int count = await Pdfium(() => { using var d = PdfiumDocument.Open(path); return d.PageCount; });
             PdfPath = path;
+            _detectedFor = null;
             Fields.Clear();
+            FieldSummary = "";
             PageCount = count;
+            Thumbnails.Clear();
+            for (int i = 0; i < count; i++) Thumbnails.Add(new PageThumb(i) { IsCurrent = i == 0 });
+            _fitPending = true;
             if (PageIndex != 0) PageIndex = 0; else { RefreshPageFields(); await RenderPageAsync(); }
             Status = L.F("Ui_Opened", Path.GetFileName(path), count);
+            opened = true;
         });
-        await DetectAsync();
+        if (!opened) return;
+        _ = RenderThumbnailsAsync(path);
+        Split.Reset();
+        Ask.Reset();
+        if (ActiveTool == Tool.Form) await DetectAsync();
+        else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
+        else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
     }
+
+    /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
+    public async Task DropAsync(IReadOnlyList<string> paths)
+    {
+        var pdfs = paths.Where(p => p.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) && File.Exists(p)).ToList();
+        if (pdfs.Count == 0) return;
+        if (ActiveTool == Tool.Combine) await Combine.AddAsync(pdfs);
+        else await LoadAsync(pdfs[0]);
+    }
+
+    [RelayCommand]
+    private void CloseDocument()
+    {
+        PdfPath = null;
+        Fields.Clear();
+        Thumbnails.Clear();
+        PageCount = 0;
+        PageImage = null;
+        FieldSummary = "";
+        SelectedField = null;
+        DrawMode = false;
+        Status = L.Get("Ui_StartHint");
+    }
+
+    [RelayCommand] private void ShowTool(Tool tool) => ActiveTool = tool;
 
     [RelayCommand]
     private async Task DetectAsync()
@@ -118,7 +241,9 @@ public sealed partial class MainViewModel : ObservableObject
         {
             Status = L.Get("Ui_Detecting");
             var (fields, _) = await Pdfium(() => FormPipeline.Detect(path));
+            if (PdfPath != path) return;   // another file was opened meanwhile
             ReplaceFields(fields);
+            _detectedFor = path;
             Status = L.F("Ui_Detected", Fields.Count, Summary());
         });
     }
@@ -230,8 +355,47 @@ public sealed partial class MainViewModel : ObservableObject
 
     [RelayCommand] private void NextPage() { if (PageIndex + 1 < PageCount) PageIndex++; }
     [RelayCommand] private void PreviousPage() { if (PageIndex > 0) PageIndex--; }
-    [RelayCommand] private void ZoomIn() => Zoom = Math.Min(4, Math.Round(Zoom * 1.25, 2));
-    [RelayCommand] private void ZoomOut() => Zoom = Math.Max(0.25, Math.Round(Zoom / 1.25, 2));
+    [RelayCommand] private void GoToPage(PageThumb? t) { if (t is not null) PageIndex = t.Index; }
+    /// <summary>Free zoom (pinch, trackpad): clamped, and it ends "fit width" mode.</summary>
+    public void SetZoom(double zoom)
+    {
+        _fitWidthMode = false;
+        Zoom = Math.Clamp(Math.Round(zoom, 3), 0.25, 4);
+    }
+
+    [RelayCommand] private void ZoomIn() { _fitWidthMode = false; Zoom = Math.Min(4, Math.Round(Zoom * 1.25, 2)); }
+    [RelayCommand] private void ZoomOut() { _fitWidthMode = false; Zoom = Math.Max(0.25, Math.Round(Zoom / 1.25, 2)); }
+
+    [RelayCommand]
+    private void FitWidth()
+    {
+        _fitWidthMode = true;
+        if (PageWidth <= 0 || ViewportWidth <= PageMargin * 2) return;
+        Zoom = Math.Clamp(Math.Floor((ViewportWidth - PageMargin * 2) / PageWidth * 100) / 100, 0.25, 4);
+    }
+
+    [RelayCommand]
+    private void FitPage()
+    {
+        _fitWidthMode = false;
+        if (PageWidth <= 0 || PageHeight <= 0 || ViewportWidth <= PageMargin * 2 || ViewportHeight <= PageMargin * 2) return;
+        double k = Math.Min((ViewportWidth - PageMargin * 2) / PageWidth, (ViewportHeight - PageMargin * 2) / PageHeight);
+        Zoom = Math.Clamp(Math.Floor(k * 100) / 100, 0.25, 4);
+    }
+
+    [RelayCommand] private void SelectMode() => DrawMode = false;
+    [RelayCommand] private void DrawFieldMode() { if (HasDocument && IsFormTool) DrawMode = true; }
+
+    /// <summary>Tab / Shift+Tab: the next field in reading order on this page.</summary>
+    public void SelectNextField(bool backwards)
+    {
+        if (PageFields.Count == 0) return;
+        int i = SelectedField is { } f ? PageFields.IndexOf(f) : -1;
+        int next = backwards ? (i <= 0 ? PageFields.Count - 1 : i - 1) : (i + 1) % PageFields.Count;
+        SelectedField = PageFields[next];
+    }
+
+    private bool _fitPending;
 
     /// <summary>A new field drawn by the user on the current page.</summary>
     public FieldViewModel AddField(Washi.Core.PdfRect rect)
@@ -254,7 +418,12 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var f in fields) Fields.Add(FieldViewModel.From(f));
     }
 
-    private void OnFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshPageFields();
+    private void OnFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshPageFields();
+        var summary = Summary();
+        FieldSummary = Fields.Count == 0 ? "" : L.F("Ui_FieldTotal", Fields.Count, summary);
+    }
 
     private void RefreshPageFields()
     {
@@ -274,21 +443,43 @@ public sealed partial class MainViewModel : ObservableObject
             using var d = PdfiumDocument.Open(path);
             return (d.RenderPage(index, RenderScale), d.GetPageInfo(index));
         });
-        if (index != PageIndex) return;   // the user moved on meanwhile
+        if (index != PageIndex || path != PdfPath) return;   // the user moved on meanwhile
         PageWidth = info.Width;
         PageHeight = info.Height;
         PageImage = Imaging.ToBitmap(img);
+        if (_fitPending) { _fitPending = false; FitWidth(); }
+    }
+
+    private async Task RenderThumbnailsAsync(string path)
+    {
+        foreach (var thumb in Thumbnails.ToList())
+        {
+            if (path != PdfPath) return;
+            int index = thumb.Index;
+            try
+            {
+                var img = await Pdfium(() =>
+                {
+                    using var d = PdfiumDocument.Open(path);
+                    var info = d.GetPageInfo(index);
+                    return d.RenderPage(index, 220.0 / Math.Max(info.Width, info.Height));   // about 220 px on the long side
+                });
+                if (path != PdfPath) return;
+                thumb.Image = Imaging.ToBitmap(img);
+            }
+            catch (Exception e) when (e is IOException or InvalidOperationException) { return; }
+        }
     }
 
     /// <summary>PDFium is process-global: one call at a time, off the UI thread.</summary>
-    private static async Task<T> Pdfium<T>(Func<T> work)
+    internal static async Task<T> Pdfium<T>(Func<T> work)
     {
         await PdfiumDocument.Gate.WaitAsync();
         try { return await Task.Run(work); }
         finally { PdfiumDocument.Gate.Release(); }
     }
 
-    private async Task Run(Func<Task> work)
+    internal async Task Run(Func<Task> work)
     {
         Busy = true;
         try { await work(); }
@@ -300,6 +491,10 @@ public sealed partial class MainViewModel : ObservableObject
         catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("owner password", StringComparison.OrdinalIgnoreCase))
         {
             Status = L.F("Ui_Error", L.F("ProtectedPdf", Path.GetFileName(PdfPath ?? "")));
+        }
+        catch (Exception e) when (e is Washi.Core.Pages.PageAssemblyException or Washi.Core.Ocr.OcrException)
+        {
+            Status = L.F("Ui_Error", e.Message);
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException
                                       or System.Text.Json.JsonException or PdfSharp.Pdf.IO.PdfReaderException)

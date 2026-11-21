@@ -34,6 +34,10 @@ internal sealed class FakeDialogs : IDialogs
 {
     public string? Pdf, OpenJson, SaveJson, SavePdf, Font;
     public Task<string?> OpenPdfAsync() => Task.FromResult(Pdf);
+    public List<string> Pdfs = [];
+    public string? Folder;
+    public Task<IReadOnlyList<string>> OpenPdfsAsync() => Task.FromResult<IReadOnlyList<string>>(Pdfs);
+    public Task<string?> PickFolderAsync() => Task.FromResult(Folder);
     public Task<string?> OpenFieldsAsync() => Task.FromResult(OpenJson);
     public Task<string?> SaveFieldsAsync(string suggestedName) => Task.FromResult(SaveJson);
     public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult(SavePdf);
@@ -208,13 +212,40 @@ public sealed class EditorTests : IDisposable
     {
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_DIR") is not { Length: > 0 } outDir) return;
         var pdf = Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_PDF") is { Length: > 0 } p ? p : FlatForm();
-        var (w, vm, _) = await Open(pdf);
-        w.Width = 1440;
-        w.Height = 900;
-        vm.Zoom = 0.95;
-        vm.SelectedField = vm.PageFields.FirstOrDefault(f => f.Kind == FieldKind.Comb) ?? vm.PageFields.FirstOrDefault();
+        var culture = Washi.Core.Localization.L.Culture.Name;
+        void Shot(Window win, string name)
+        {
+            Dispatcher.UIThread.RunJobs();
+            win.CaptureRenderedFrame()!.Save(Path.Combine(outDir, $"{name}_{culture}.png"));
+        }
+
+        var empty = new MainWindow(new FakeDialogs()) { Width = 1440, Height = 900 };
+        empty.Show();
+        Shot(empty, "empty");
+        empty.Close();
+
+        var w = new MainWindow(new FakeDialogs()) { Width = 1440, Height = 900 };
+        w.Show();
         Dispatcher.UIThread.RunJobs();
-        w.CaptureRenderedFrame()!.Save(Path.Combine(outDir, $"editor_{Washi.Core.Localization.L.Culture.Name}.png"));
+        var vm = w.ViewModel;
+        await vm.LoadAsync(pdf);
+        Dispatcher.UIThread.RunJobs();
+        vm.FitWidthCommand.Execute(null);
+        vm.SelectedField = vm.PageFields.FirstOrDefault(f => f.Kind == FieldKind.Comb) ?? vm.PageFields.FirstOrDefault();
+        Shot(w, "editor");
+
+        vm.ShowPagesPanel = true;
+        await Task.Delay(1500);   // thumbnails render in the background
+        Shot(w, "pages");
+
+        vm.ActiveTool = Tool.Ocr;
+        await vm.Ocr.RefreshPlanAsync();
+        Shot(w, "ocr");
+
+        var about = new SettingsWindow(new SettingsViewModel(Path.Combine(_dir, "settings.json")), showAbout: true);
+        about.Show();
+        Shot(about, "about");
+        about.Close();
     }
 }
 

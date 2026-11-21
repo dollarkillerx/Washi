@@ -487,3 +487,4 @@ prototype/.venv/
 prototype/samples/
 prototype/out/
 __pycache__/
+build/out/

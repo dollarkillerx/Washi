@@ -122,32 +122,71 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 
 ## Desktop editor
 
-`Washi.App` is the "human confirms" half of Masume.
+`Washi.App` is the desktop app. Its layout follows Acrobat:
+- a **tool rail** on the left: Form, OCR, Combine, Split, Ask AI
+- the **tool's panel** next to the rail, with its main action always at the bottom.
+  Click the active tool again to fold the panel away.
+- the **page** in the middle, with floating edit tools and page and zoom controls
+- **Fields** and **Pages** (thumbnails) panels on the right
 
-![Washi editor on a 国税庁 form: detected fields over the page, the selected comb field in the side panel](docs/editor.png)
+![Washi editor on a 国税庁 form: tool rail and form panel on the left, detected fields over the page, the selected comb field in the Fields panel](docs/editor.png)
 
-1. **Open** a PDF. Masume suggests fields, coloured by type over the page:
+**Form tool**, the "human confirms" half of Masume:
+1. **Open** a PDF (button, ⌘O, or drop it on the window). Masume suggests fields, coloured
+   by type over the page:
    - blue: text
    - purple: amount
    - orange: comb
    - green: checkbox
    - red dashed outline: the cell already has printed data
+
+   The selected field is vermilion.
 2. **Fix** the fields:
    - drag a field to move it, drag a corner to resize it
-   - *Draw field* adds one
-   - Delete removes the selected field; the arrow keys nudge it (Shift = 5 pt)
-   - the side panel edits name, type, box count and alignment
-3. **Save** `fields.json`, the format the CLI and `make_fillable` read. Or write
-   the **fillable PDF** directly, with a form language and an optional embedded font.
+   - **V** selects, **F** draws a new field
+   - **Tab** / **Shift+Tab** walks through the fields; **Enter** jumps to the name box
+   - **Delete** removes the field; the arrow keys nudge it (Shift = 5 pt)
+3. **Save** `fields.json`, or write the **fillable PDF** (⌘S), with a form language and
+   an optional embedded font.
 
-The interface follows the system language (en, ja, zh-Hans, zh-Hant, ko, fr, de).
-It currently uses a light theme only.
+**The other tools:**
+- **OCR** makes a scan searchable. It shows how many pages need it, and you pick the
+  engine (Apple Vision, Tesseract or the AI model, which asks before sending pages) and
+  the languages. The searchable result opens in the editor.
+- **Combine** starts with the open file; add more files or drop them, then reorder them.
+  Protected files are marked and are not combined.
+- **Split** previews the files ("3 files: p1-3, p5, p6") before writing them to a folder.
+- **Ask AI** answers questions about the document, after showing what it will send.
+
+**Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your
+fingers stays put. The page fits the width when opened, and keeps fitting as panels
+open and close until you zoom by hand.
+
+**Settings** (gear button, or Washi ▸ Settings… / ⌘, on macOS):
+- the interface language: system, 日本語, 简体中文, 繁體中文, 한국어, English, Français or
+  Deutsch. It is saved in `~/.config/washi/settings.json`, and the window reopens in
+  that language. `WASHI_LANG` still overrides it.
+- **About Washi**: the version, the AGPL licence with a link to the source code, and the
+  open-source components with their licences ([`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)).
+
+The app uses a light theme only for now.
+
+**macOS app:** `build/macos/bundle.sh` builds `build/out/Washi.app` with the Washi icon.
+The app needs the .NET 10 runtime. It also offers itself in Finder's "Open With" for
+PDFs, without becoming the default app. Run from `dotnet`, the editor still sets its
+Dock icon itself.
 
 **Tests.** The editor is tested headlessly with Avalonia's test platform and real
-Skia rendering. The tests cover opening a PDF, dragging, resizing, drawing a field,
-keyboard deletion and nudging, the `fields.json` round trip, and writing the PDF.
-`WASHI_SCREENSHOT_DIR=… dotnet test --project tests/Washi.App.Tests -- --filter-method "*Screenshot"`
-saves a screenshot for review.
+Skia rendering. The tests cover:
+- opening a PDF; dragging, resizing and drawing fields; keyboard deletion and nudging
+- the `fields.json` round trip and writing the PDF
+- switching tools, field navigation, fit width and pinch zoom
+- Combine (including protected files), Split, OCR with the AI engine (consent first)
+  and Ask AI
+- the language setting
+
+Run `WASHI_SCREENSHOT_DIR=… dotnet test --project tests/Washi.App.Tests -- --filter-method "*Screenshot"`
+to save screenshots for review.
 
 ## Built-in AI
 
@@ -336,6 +375,7 @@ dotnet run --project src/Washi.Cli -- masume detect form.pdf -o out   # fields.j
 dotnet run --project src/Washi.Cli -- masume eval form.pdf -o out     # score against existing fields
 dotnet run --project src/Washi.Cli -- ocr scan.pdf                    # searchable PDF (macOS: needs the Xcode command line tools)
 dotnet run --project src/Washi.App -- form.pdf
+build/macos/bundle.sh && open build/out/Washi.app                     # the macOS app
 ```
 
 ## Roadmap

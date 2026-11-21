@@ -1,20 +1,16 @@
 # Washi brand
 
-## The mark: Fold grid
+## The mark: Sheet
 
-Four squares make the grid of boxes on a form (マス目). Two of them carry
-meaning:
-
-- **Top right** is folded over, so only its lower-left half remains. This is
-  the corner of a sheet of paper (和紙).
-- **Bottom right** is vermilion. This is the field being filled in, which is
-  what Washi does to flat forms.
+A sheet of paper (和紙) on a Washi-blue tile, with a 2 × 2 grid of form boxes
+(マス目). The top-right corner of the page is folded over. The bottom-right box is
+vermilion: the field being filled in, which is what Washi does to flat forms.
 
 The look follows design-language principles also used by IBM (Carbon / IBM
 Design Language):
 
 - strict grid and right angles
-- flat colour, no gradients, shadows or rounded corners
+- flat colour, no gradients or shadows
 - one accent colour
 - IBM Plex type
 
@@ -22,29 +18,26 @@ Washi is not affiliated with IBM and uses none of IBM's marks.
 
 ## Construction
 
-The artboard is 512 × 512 on an 8-unit grid. It holds two 168-unit squares
-with a 16-unit gutter, inside an 80-unit margin. The drawn part is 352 × 352.
-The fold runs from the top-left corner of the top-right square to its
-bottom-right corner.
+The artboard is 512 × 512 on a 32-unit grid. The tile fills it. The page is
+320 × 384 at (96, 64), with a 96-unit fold at the top right; the back of the
+fold is `#b1bff4` (35 % Washi blue on paper). The boxes are 96 × 80 at
+(144, 224), (272, 224), (144, 336) and (272, 336).
 
-Small icons are not scaled down from the master. Each one is drawn on whole
-pixels so its edges stay sharp. All values are pixels:
+Small icons (16–64 px) are not scaled down from the master. Every edge of the
+page and the boxes is rounded to a whole pixel so it stays sharp; only the fold
+is anti-aliased.
 
-| size | margin | square | gutter |
-|---|---|---|---|
-| 16 | 2 | 5 | 2 |
-| 24 | 3 | 8 | 2 |
-| 32 | 4 | 11 | 2 |
-| 48 | 6 | 17 | 2 |
-| 64 | 8 | 22 | 4 |
+On macOS the tile becomes the rounded app-icon body (Apple's 1024 grid: an
+824 × 824 continuous-corner square at 100, 100). `tools/macos_icon.py` draws it
+and writes `washi.icns`.
 
 ## Colour
 
 | name | hex | use |
 |---|---|---|
 | Washi blue (藍) | `#1f49e0` | the mark on light backgrounds |
-| Washi blue, on dark | `#4f7bff` | the mark on dark backgrounds |
-| Vermilion (朱) | `#e0452b` | the active field only. Never use it for text or large areas |
+| Washi blue, on dark | `#4f7bff` | links and highlights on dark backgrounds (the mark keeps its own tile) |
+| Vermilion (朱) | `#e0452b` | the active field only (in the mark, and the selected field in the editor). Never use it for text or large areas |
 | Ink | `#161616` | lettering, dark backgrounds |
 | Gray | `#6f6f6f` / `#a8a8a8` on dark | 和紙, secondary text |
 | Mist | `#f4f4f4` | calm backgrounds |

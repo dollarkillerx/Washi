@@ -75,6 +75,7 @@ public sealed class FieldCanvas : Control
     private void OnEditorChanged(object? s, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(MainViewModel.SelectedField) or nameof(MainViewModel.PageIndex) or nameof(MainViewModel.DrawMode)
+                           or nameof(MainViewModel.ActiveTool)
                            or nameof(MainViewModel.PageImage) or nameof(MainViewModel.PageWidth) or nameof(MainViewModel.PageHeight))
             InvalidateVisual();
     }
@@ -99,8 +100,11 @@ public sealed class FieldCanvas : Control
         [FieldKind.Checkbox] = Color.FromRgb(13, 150, 64),
     };
 
+    private static readonly Color Active = Color.FromRgb(224, 69, 43);   // vermilion
+
+    /// <summary>Fields are shown and edited in the form tool only; the other tools show the plain page.</summary>
     private IEnumerable<FieldViewModel> PageFields =>
-        Editor is { } vm ? vm.Fields.Where(f => f.Page == vm.PageIndex) : [];
+        Editor is { IsFormTool: true } vm ? vm.Fields.Where(f => f.Page == vm.PageIndex) : [];
 
     private Rect Screen(FieldViewModel f) => new(f.X0 * Zoom, f.Y0 * Zoom, (f.X1 - f.X0) * Zoom, (f.Y1 - f.Y0) * Zoom);
 
@@ -117,7 +121,8 @@ public sealed class FieldCanvas : Control
             var c = KindColors[f.Kind];
             var r = Screen(f);
             bool sel = ReferenceEquals(f, selected);
-            ctx.DrawRectangle(new SolidColorBrush(c, sel ? 0.28 : 0.14), new Pen(new SolidColorBrush(c), sel ? 2.2 : 1), r);
+            // the selected field is the brand's vermilion: "the field being filled"
+            ctx.DrawRectangle(new SolidColorBrush(sel ? Active : c, sel ? 0.18 : 0.14), new Pen(new SolidColorBrush(sel ? Active : c), sel ? 2 : 1), r);
 
             if (f.Kind == FieldKind.Comb && f.MaxLen > 1)
             {
@@ -139,7 +144,7 @@ public sealed class FieldCanvas : Control
 
             if (sel)
                 foreach (var h in Handles(r))
-                    ctx.DrawRectangle(Brushes.White, new Pen(new SolidColorBrush(c), 1.5), h);
+                    ctx.DrawRectangle(Brushes.White, new Pen(new SolidColorBrush(Active), 1.5), h);
         }
     }
 
@@ -171,7 +176,7 @@ public sealed class FieldCanvas : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (Editor is not { } vm || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        if (Editor is not { IsFormTool: true } vm || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         Focus();
         var screen = e.GetPosition(this);
         _start = ToPage(screen);
