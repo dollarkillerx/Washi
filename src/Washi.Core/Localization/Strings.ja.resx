@@ -101,6 +101,8 @@
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>AI に送信しますか？</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>送信</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>ここには何かが印刷されています（文字ではなく図形として描かれています）。</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>ここには文字が印刷されていますが、PDF の文字情報を読み取れません（フォントに Unicode の対応表がありません）。OCR なら読み取れます。</value></data>
   <data name="Kind_text" xml:space="preserve"><value>テキスト</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金額</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>マス目</value></data>

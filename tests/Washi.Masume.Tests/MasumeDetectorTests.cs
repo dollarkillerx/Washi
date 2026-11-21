@@ -121,3 +121,30 @@ public class MasumeDetectorTests
         Assert.True(e.Value.X0 >= 12 && e.Value.X1 <= 92);
     }
 }
+
+public class GarbledTextTests
+{
+    [Fact]
+    public void A_garbled_text_layer_never_reaches_names_labels_or_prefilled_text()
+    {
+        const double S = MasumeDetector.Scale;
+        int w = (int)(600 * S), h = (int)(400 * S);
+        var px = Enumerable.Repeat((byte)255, w * h * 3).ToArray();
+        void Line(double x0, double y0, double x1, double y1)
+        {
+            for (int y = (int)(y0 * S); y <= (int)(y1 * S); y++)
+                for (int x = (int)(x0 * S); x <= (int)(x1 * S); x++) { int i = (y * w + x) * 3; px[i] = px[i + 1] = px[i + 2] = 0; }
+        }
+        Line(10, 10, 190, 10); Line(10, 40, 190, 40); Line(10, 10, 10, 40); Line(190, 10, 190, 40); Line(60, 10, 60, 40);
+        // label glyphs in the form colour and one prefilled glyph in black, all without a Unicode mapping
+        PdfChar G(string c, double x, int rgb) => new(c, new PdfRect(x, 20, x + 8, 28), rgb);
+        var chars = new[] { G("ᖺ", 20, 0x028559), G("୰", 30, 0x028559), G("ᶓ", 300, 0x028559), G("ࢽ", 100, 0x231F20) };
+        var img = new RgbImage(w, h, px);
+        var fields = MasumeDetector.Detect(new PageSnapshot(0, 600, 400, S, chars, img, img, []));
+
+        var f = Assert.Single(fields);
+        Assert.StartsWith("p1_", f.Name);
+        Assert.Equal("", f.Label);
+        Assert.Equal(MasumeDetector.UnreadableMarker, f.Prefilled);
+    }
+}

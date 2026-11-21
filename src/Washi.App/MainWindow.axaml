@@ -96,7 +96,7 @@
                         <TextBlock Classes="caption" Text="{l:Tr Ui_Label}" />
                         <TextBlock Text="{Binding SelectedField.Label}" TextWrapping="Wrap" />
                         <TextBlock Classes="caption" Text="{l:Tr Ui_Prefilled}" />
-                        <TextBlock Text="{Binding SelectedField.Prefilled}" TextWrapping="Wrap" Foreground="Crimson" />
+                        <TextBlock Text="{Binding SelectedField.PrefilledText}" TextWrapping="Wrap" Foreground="Crimson" />
                         <TextBlock Text="{Binding SelectedField.PositionText}" Foreground="#6f6f6f" FontSize="11" Margin="0,10,0,0" />
                     </StackPanel>
                     <TextBlock Classes="caption" Text="{l:Tr Ui_FieldsOnPage}" Margin="0,18,0,4" />

@@ -101,6 +101,8 @@
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>发送给 AI？</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>发送</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>这里印有内容（以图形而非文字的形式绘制）。</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>这里印有文字，但 PDF 的文字层无法读取（字体没有 Unicode 对照表）。OCR 可以识别。</value></data>
   <data name="Kind_text" xml:space="preserve"><value>文本</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>金额</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>分格</value></data>

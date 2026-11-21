@@ -16,6 +16,12 @@ public static class MasumeDetector
 {
     /// <summary>Raster pixels per PDF point.</summary>
     public const double Scale = 4.0;
+
+    /// <summary>Prefilled marker: the cell holds printed content drawn as graphics, not as text.</summary>
+    public const string DrawnMarker = "(drawn, not text)";
+
+    /// <summary>Prefilled marker: printed text whose font has no Unicode mapping (garbled text layer).</summary>
+    public const string UnreadableMarker = "(text, unreadable)";
     private const int InkLum = 210;      // graphics raster: darker = ink
     private const int ShadedLum = 238;   // cell interior median darker = shaded, not for input
 
@@ -114,7 +120,7 @@ public static class MasumeDetector
             var c = cells[i];
             var r = c.Rect;
             var pre = JoinText(c.DataChars);
-            if (pre.Length == 0 && c.GraphicFill && CountTicks(g, r) == 0) pre = "(drawn, not text)";
+            if (pre.Length == 0 && c.GraphicFill && CountTicks(g, r) == 0) pre = DrawnMarker;
             if (c.Shaded) { c.Kind = "shaded"; continue; }
             if (c.GraphicLabel && c.DataChars.Count == 0 && CountTicks(g, r) == 0) { c.Kind = "label"; continue; }
 
@@ -186,6 +192,15 @@ public static class MasumeDetector
             fields.Add(new DetectedField { Page = pno, Kind = FieldKind.Checkbox, Rect = b, Notes = ["□ glyph"] });
 
         var named = NameFields(fields, cells, labels, readable, pno);
+        if (!readable)
+        {
+            // a garbled text layer gives mojibake: keep only the fact that something is printed there
+            named = named.Select(f => f with
+            {
+                Label = "",
+                Prefilled = f.Prefilled is "" or DrawnMarker ? f.Prefilled : UnreadableMarker,
+            }).ToList();
+        }
         cellInfo = cells.Select(c => new CellInfo(c.Rect, c.Kind, c.Text)).ToList();
         return named;
     }

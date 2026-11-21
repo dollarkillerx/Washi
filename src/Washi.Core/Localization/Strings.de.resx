@@ -101,6 +101,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>An die KI senden?</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>Senden</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>Hier ist etwas gedruckt (als Grafik gezeichnet, nicht als Text).</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>Hier ist Text gedruckt, aber die Textebene des PDFs ist nicht lesbar (die Schriften haben keine Unicode-Zuordnung). OCR kann ihn lesen.</value></data>
   <data name="Kind_text" xml:space="preserve"><value>Text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>Betrag</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>Kästchen</value></data>

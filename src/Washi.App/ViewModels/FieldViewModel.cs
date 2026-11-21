@@ -27,6 +27,16 @@ public sealed partial class FieldViewModel : ObservableObject
 
     public bool IsComb => Kind == FieldKind.Comb;
 
+    /// <summary>What is already printed in the cell, with the detector's markers in the UI language.</summary>
+    public string PrefilledText => Prefilled switch
+    {
+        MasumeDetector.DrawnMarker => L.Get("Ui_PrefilledDrawn"),
+        MasumeDetector.UnreadableMarker => L.Get("Ui_PrefilledUnreadable"),
+        var p => p,
+    };
+
+    partial void OnPrefilledChanged(string value) => OnPropertyChanged(nameof(PrefilledText));
+
     public string PositionText => L.F("Ui_Position", Math.Round(X0, 1), Math.Round(Y0, 1), Math.Round(X1 - X0, 1), Math.Round(Y1 - Y0, 1));
 
     partial void OnKindChanged(FieldKind value)

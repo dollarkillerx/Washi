@@ -101,6 +101,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>Send to the AI?</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>Send</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>Something is printed here (drawn as graphics, not text).</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>Text is printed here, but the PDF's text layer cannot be read (its fonts have no Unicode mapping). OCR can read it.</value></data>
   <data name="Kind_text" xml:space="preserve"><value>text</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>amount</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>comb</value></data>

@@ -101,6 +101,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_AiConfirmTitle" xml:space="preserve"><value>Envoyer à l’IA ?</value></data>
   <data name="Ui_Send" xml:space="preserve"><value>Envoyer</value></data>
   <data name="Ui_Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Ui_PrefilledDrawn" xml:space="preserve"><value>Quelque chose est imprimé ici (dessiné en graphisme, pas en texte).</value></data>
+  <data name="Ui_PrefilledUnreadable" xml:space="preserve"><value>Du texte est imprimé ici, mais la couche texte du PDF est illisible (ses polices n’ont pas de correspondance Unicode). L’OCR peut le lire.</value></data>
   <data name="Kind_text" xml:space="preserve"><value>texte</value></data>
   <data name="Kind_amount" xml:space="preserve"><value>montant</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>cases</value></data>
