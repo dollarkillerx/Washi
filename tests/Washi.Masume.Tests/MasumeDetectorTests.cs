@@ -34,10 +34,18 @@ public class MasumeDetectorTests
             return this;
         }
 
-        private void Dot(int x, int y)
+        private void Dot(int x, int y, int rgb = 0)
         {
             int i = (y * W + x) * 3;
-            Px[i] = Px[i + 1] = Px[i + 2] = 0;
+            Px[i] = (byte)(rgb >> 16); Px[i + 1] = (byte)(rgb >> 8); Px[i + 2] = (byte)rgb;
+        }
+
+        /// <summary>A filled block in one colour: stands in for a glyph drawn as a path.</summary>
+        public Canvas Blob(double x0, double y0, double x1, double y1, int rgb)
+        {
+            for (int y = (int)(y0 * S); y < (int)(y1 * S); y++)
+                for (int x = (int)(x0 * S); x < (int)(x1 * S); x++) Dot(x, y, rgb);
+            return this;
         }
 
         public PageSnapshot Snapshot(params PdfChar[] chars)
@@ -47,8 +55,12 @@ public class MasumeDetectorTests
         }
     }
 
-    private static PdfChar Ch(string c, double x0, double y0, double size = 8) =>
-        new(c, new PdfRect(x0, y0, x0 + size, y0 + size), 0x000000);
+    private static PdfChar Ch(string c, double x0, double y0, double size = 8, int rgb = 0x000000) =>
+        new(c, new PdfRect(x0, y0, x0 + size, y0 + size), rgb);
+
+    /// <summary>Three glyph-sized marks drawn as graphics in the cell 60..120 × 10..40, unevenly spaced (no comb).</summary>
+    private static Canvas DrawnMarks(Canvas c, int rgb) =>
+        c.Blob(66, 20, 71, 23, rgb).Blob(80, 26, 85, 29, rgb).Blob(100, 18, 105, 21, rgb);
 
     [Fact]
     public void Empty_cell_next_to_label_becomes_named_text_field()
@@ -90,6 +102,35 @@ public class MasumeDetectorTests
 
         Assert.Equal(FieldKind.Comb, f.Kind);
         Assert.Equal(12, f.MaxLen);
+    }
+
+    [Theory]
+    [InlineData(0x028559, 0x80C2AC, "")]                           // a lighter tint of the green label colour
+    [InlineData(0x000000, 0x404040, "")]                           // black headings come out grey once anti-aliased
+    [InlineData(0x028559, 0x000000, MasumeDetector.DrawnMarker)]   // black glyphs on a green form: written in
+    [InlineData(0x000000, 0xD03030, MasumeDetector.DrawnMarker)]   // red glyphs on a black form: written in
+    public void Drawn_marks_in_the_form_colour_are_not_prefilled(int labelRgb, int inkRgb, string prefilled)
+    {
+        var c = DrawnMarks(new Canvas(600, 400).Rect(10, 10, 120, 40).VLine(60, 10, 40), inkRgb);
+
+        var f = Assert.Single(MasumeDetector.Detect(c.Snapshot(Ch("氏", 20, 20, rgb: labelRgb), Ch("名", 30, 20, rgb: labelRgb))));
+
+        Assert.Equal(FieldKind.Text, f.Kind);
+        Assert.Equal(prefilled, f.Prefilled);
+    }
+
+    [Theory]
+    [InlineData(0x404040, "")]
+    [InlineData(0xD03030, MasumeDetector.DrawnMarker)]
+    public void Without_a_text_layer_the_rulings_give_the_form_colour(int inkRgb, string prefilled)
+    {
+        // every word of the form drawn as outlines (国税庁 PDFs): no text colour to compare with, so the page's
+        // commonest ink (black rulings and frame) is the form's own
+        var c = DrawnMarks(new Canvas(600, 400).Rect(5, 5, 595, 395).Rect(60, 10, 120, 40), inkRgb);
+
+        var f = Assert.Single(MasumeDetector.Detect(c.Snapshot()));
+
+        Assert.Equal(prefilled, f.Prefilled);
     }
 
     [Fact]
