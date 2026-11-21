@@ -180,4 +180,39 @@ public class GarbledTextTests
         Assert.Equal("", f.Label);
         Assert.Equal(MasumeDetector.UnreadableMarker, f.Prefilled);
     }
+
+    [Fact]
+    public void Printed_text_without_any_unicode_mapping_still_counts_as_prefilled()
+    {
+        // e-Gov style: the digits' font maps every glyph to nothing, so the text layer has no characters there at all
+        const double S = MasumeDetector.Scale;
+        int w = (int)(600 * S), h = (int)(400 * S);
+        byte[] Blank() => Enumerable.Repeat((byte)255, w * h * 3).ToArray();
+        var full = Blank();
+        var graphics = Blank();
+        void Fill(byte[] px, double x0, double y0, double x1, double y1, byte r, byte g, byte b)
+        {
+            for (int y = (int)(y0 * S); y <= (int)(y1 * S); y++)
+                for (int x = (int)(x0 * S); x <= (int)(x1 * S); x++) { int i = (y * w + x) * 3; px[i] = r; px[i + 1] = g; px[i + 2] = b; }
+        }
+        foreach (var px in new[] { full, graphics })
+        {
+            Fill(px, 10, 10, 190, 10, 0, 0, 0); Fill(px, 10, 40, 190, 40, 0, 0, 0); Fill(px, 10, 10, 10, 40, 0, 0, 0);
+            Fill(px, 190, 10, 190, 40, 0, 0, 0); Fill(px, 60, 10, 60, 40, 0, 0, 0);
+            Fill(px, 10, 60, 190, 60, 0, 0, 0); Fill(px, 10, 90, 190, 90, 0, 0, 0); Fill(px, 10, 60, 10, 90, 0, 0, 0);
+            Fill(px, 190, 60, 190, 90, 0, 0, 0); Fill(px, 60, 60, 60, 90, 0, 0, 0);
+        }
+        Fill(full, 80, 20, 84, 30, 20, 20, 20);    // black digits only the full render has (text), no characters for them
+        Fill(full, 90, 20, 94, 30, 20, 20, 20);
+        Fill(full, 80, 70, 84, 80, 2, 133, 89);    // a glyph in the form's own green in the other row: a label, not data
+        Fill(full, 90, 70, 94, 80, 2, 133, 89);
+        PdfChar G(string c, double x, double y) => new(c, new PdfRect(x, y, x + 8, y + 8), 0x028559);
+        var chars = new[] { G("氏", 20, 20), G("名", 30, 20), G("住", 20, 70), G("所", 30, 70), G("番", 300, 300) };
+        var fields = MasumeDetector.Detect(new PageSnapshot(0, 600, 400, S, chars, new RgbImage(w, h, full), new RgbImage(w, h, graphics), []))
+            .OrderBy(f => f.Rect.Y0).ToList();
+
+        Assert.Equal(2, fields.Count);
+        Assert.Equal(MasumeDetector.UnreadableMarker, fields[0].Prefilled);
+        Assert.Equal("", fields[1].Prefilled);
+    }
 }
