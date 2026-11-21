@@ -15,4 +15,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Washi.Masume.Tests" />
+  </ItemGroup>
 </Project>

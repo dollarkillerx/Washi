@@ -204,3 +204,10 @@ public class AiSettingsTests
     public void A_compatible_provider_needs_an_endpoint() =>
         Assert.Contains("endpoint", Assert.Throws<AiException>(() => new AiSettings(AiProvider.OpenAICompatible, "m").CreateModel()).Message);
 }
+
+public class ThinkingTests
+{
+    [Fact]
+    public void Reasoning_preamble_from_local_models_is_removed() =>
+        Assert.Equal("答え", Washi.Ai.OpenAICompatibleModel.StripThinking("<think>\nlet me see\n</think>\n\n答え"));
+}

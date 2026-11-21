@@ -53,6 +53,11 @@ public sealed class OpenAICompatibleModel : IAiModel
             throw new AiException("the answer was cut off (length limit); try fewer pages or fields at once");
         if (completion.FinishReason == ChatFinishReason.ContentFilter)
             throw new AiException("the provider's content filter stopped the answer");
-        return string.Concat(completion.Content.Select(c => c.Text));
+        return StripThinking(string.Concat(completion.Content.Select(c => c.Text)));
     }
+
+    /// <summary>Local reasoning models (DeepSeek-R1 style) prepend &lt;think&gt;…&lt;/think&gt;; it is not part of the answer.</summary>
+    internal static string StripThinking(string text) =>
+        System.Text.RegularExpressions.Regex.Replace(text, @"^\s*<think>.*?</think>\s*", "",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
 }
