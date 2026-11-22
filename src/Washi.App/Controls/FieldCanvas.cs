@@ -65,6 +65,7 @@ public sealed class FieldCanvas : Control
         vm.PropertyChanged += OnEditorChanged;
         vm.Erase.Changed += InvalidateVisual;
         vm.Redact.Changed += InvalidateVisual;
+        vm.Find.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
         vm.Fields.CollectionChanged += OnFieldsChanged;
@@ -76,6 +77,7 @@ public sealed class FieldCanvas : Control
         vm.PropertyChanged -= OnEditorChanged;
         vm.Erase.Changed -= InvalidateVisual;
         vm.Redact.Changed -= InvalidateVisual;
+        vm.Find.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
         vm.Fields.CollectionChanged -= OnFieldsChanged;
@@ -127,6 +129,7 @@ public sealed class FieldCanvas : Control
         // the page is drawn here too, in the same coordinates as the fields, so they always line up
         if (Editor is { PageImage: { } page } ed)
             ctx.DrawImage(page, new Rect(0, 0, page.PixelSize.Width, page.PixelSize.Height), new Rect(0, 0, ed.PageWidth * Zoom, ed.PageHeight * Zoom));
+        if (Editor is { } fv) RenderFindHits(ctx, fv);
         if (Editor is { IsEraseTool: true } er)
         {
             RenderErase(ctx, er);
@@ -347,6 +350,16 @@ public sealed class FieldCanvas : Control
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.06), edge, Screen(b.Rect));
         if (_eraseBox is { } drawing)
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.10), edge, Screen(drawing));
+    }
+
+    /// <summary>The find bar's hits on this page (yellow), the current one stronger and outlined.</summary>
+    private void RenderFindHits(DrawingContext ctx, MainViewModel vm)
+    {
+        var hit = new SolidColorBrush(Color.FromRgb(255, 214, 0), 0.38);
+        var current = new SolidColorBrush(Color.FromRgb(255, 140, 0), 0.45);
+        var edge = new Pen(new SolidColorBrush(Color.FromRgb(230, 110, 0)), 1.5);
+        foreach (var (box, now) in vm.Find.BoxesOn(vm.PageIndex))
+            ctx.DrawRectangle(now ? current : hit, now ? edge : null, Screen(box).Inflate(1));
     }
 
     /// <summary>Redact tool: ticked matches and drawn areas as dark boxes (what the copy will show), unticked ones outlined.</summary>

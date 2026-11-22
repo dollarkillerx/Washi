@@ -126,7 +126,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
                                           supprime les informations masquées (--list les affiche seulement)
   washi pdf redact &lt;in.pdf&gt; [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
-                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)</value></data>
+                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)
+  washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
@@ -559,4 +560,12 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Pdf_Redacted" xml:space="preserve"><value>{0} enregistré : {1} caractère(s), {2} zone(s) d’image, {3} dessin(s), {4} annotation(s) ou champ(s), {5} autre(s) texte(s) supprimés. Vérifié : rien retrouvé, rien changé hors des bandes.</value></data>
   <data name="Pdf_RedactMatch" xml:space="preserve"><value>  page {0} ({1}) : {2}</value></data>
   <data name="Pdf_RedactFound" xml:space="preserve"><value>{0} occurrence(s) sur {1} page(s).</value></data>
+  <data name="Ui_FindMenu" xml:space="preserve"><value>Rechercher…</value></data>
+  <data name="Ui_FindNext" xml:space="preserve"><value>Suivant</value></data>
+  <data name="Ui_FindPrevious" xml:space="preserve"><value>Précédent</value></data>
+  <data name="Ui_FindHint" xml:space="preserve"><value>Rechercher dans le document</value></data>
+  <data name="Ui_FindNone" xml:space="preserve"><value>Aucun résultat</value></data>
+  <data name="Ui_FindCount" xml:space="preserve"><value>{0} sur {1}</value></data>
+  <data name="Pdf_FindCount" xml:space="preserve"><value>{0} résultat(s) sur {1} page(s).</value></data>
+  <data name="Pdf_FindHit" xml:space="preserve"><value>  page {0} : {1}</value></data>
 </root>

@@ -5,7 +5,7 @@ using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find and washi ocr.</summary>
 internal static class PageCommands
 {
     private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words"];
@@ -88,6 +88,13 @@ internal static class PageCommands
                     var removed = PdfCleaner.Clean(input, output, remove);
                     Console.WriteLine(L.F("Ui_Cleaned", output, removed.Sum(r => r.Count)));
                     foreach (var item in removed) Console.WriteLine(HiddenLine(item));
+                    return 0;
+                }
+                case ["find", var input, var text]:
+                {
+                    var hits = PdfSearch.Find(input, text, opt.ContainsKey("--case"), opt.ContainsKey("--whole-words"));
+                    Console.WriteLine(L.F("Pdf_FindCount", hits.Count, hits.Select(h => h.Page).Distinct().Count()));
+                    foreach (var h in hits) Console.WriteLine(L.F("Pdf_FindHit", h.Page + 1, h.Context));
                     return 0;
                 }
                 case ["redact", var input] when opt.ContainsKey("--find") || opt.ContainsKey("--pattern") || opt.ContainsKey("--regex") || opt.ContainsKey("--box"):

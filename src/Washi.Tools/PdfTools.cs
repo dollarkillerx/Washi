@@ -19,6 +19,7 @@ public static class WashiTools
     public static ToolRegistry CreateRegistry(PathPolicy policy) => new ToolRegistry()
         .Add(new PdfInfoTool(policy))
         .Add(new ExtractTextTool(policy))
+        .Add(new SearchTextTool(policy))
         .Add(new RenderPageTool(policy))
         .Add(new ListFieldsTool(policy))
         .Add(new DetectFieldsTool(policy))
@@ -563,6 +564,43 @@ public sealed class RemoveHiddenInfoTool(PathPolicy p) : PdfTool(p)
         var output = Policy.Output(OptStr(a, "output"), path, "_cleaned");
         var removed = PdfCleaner.Clean(path, output, remove);
         return new ToolResult(ToJson(new { output, removed = Describe(removed), left = Describe(PdfCleaner.Inspect(output)) }));
+    }
+}
+
+public sealed class SearchTextTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "search_text";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Finds text in a PDF's text layer: each hit's page (1-based), the text, the words around it, and its boxes " +
+        "[x0,y0,x1,y1] in points from the top-left of the upright page (one per line it spans). Case, full-width and " +
+        "half-width forms and spaces do not matter. Scanned pages need ocr_pdf first.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "text":{"type":"string","description":"What to find"},
+          "match_case":{"type":"boolean"},
+          "whole_words":{"type":"boolean","description":"A hit must not be part of a longer word"},
+          "max":{"type":"integer","description":"At most this many hits (default 200)"}},
+         "required":["path","text"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        int max = (int)Math.Clamp(OptNum(a, "max") ?? 200, 1, 2000);
+        var hits = PdfSearch.Find(path, Str(a, "text"),
+                                  a.TryGetProperty("match_case", out var mc) && mc.ValueKind == JsonValueKind.True,
+                                  a.TryGetProperty("whole_words", out var ww) && ww.ValueKind == JsonValueKind.True, max + 1);
+        return new ToolResult(ToJson(new
+        {
+            count = Math.Min(hits.Count, max), more = hits.Count > max,
+            hits = hits.Take(max).Select(h => new
+            {
+                page = h.Page + 1, text = h.Text, context = h.Context,
+                boxes = h.Boxes.Select(b => new[] { b.X0, b.Y0, b.X1, b.Y1 }.Select(v => Math.Round(v, 1))),
+            }),
+        }));
     }
 }
 

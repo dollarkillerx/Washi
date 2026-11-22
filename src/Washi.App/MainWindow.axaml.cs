@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Washi.App.Services;
 using Washi.App.ViewModels;
 using Washi.Masume;
@@ -58,6 +59,10 @@ public partial class MainWindow : Window
                 SettingsPage.DataContext = ViewModel.Settings;
         };
         ViewModel.EditRequested += BeginEdit;
+        // find bar: the cursor goes to the box; the current hit is scrolled into view (after its page is drawn)
+        ViewModel.Find.Opened += () => Dispatcher.UIThread.Post(() => { FindBox.Focus(); FindBox.SelectAll(); }, DispatcherPriority.Input);
+        ViewModel.Find.Changed += () => Dispatcher.UIThread.Post(ShowFindHit, DispatcherPriority.Background);
+        FindBox.KeyDown += OnFindKeyDown;
         SignPad.InkCompleted += ink => ViewModel.Sign.SetInk(ink);
         FieldEditor.KeyDown += OnEditorKeyDown;
         FieldEditor.LostFocus += (_, _) => EndEdit(commit: true);
@@ -155,6 +160,31 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    // ------------------------------------------------------------------ find bar
+    private void OnFindKeyDown(object? sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Enter when e.KeyModifiers.HasFlag(KeyModifiers.Shift): ViewModel.Find.PreviousCommand.Execute(null); break;
+            case Key.Enter: ViewModel.Find.NextCommand.Execute(null); break;
+            case Key.Escape:
+                ViewModel.Find.CloseCommand.Execute(null);
+                Canvas.Focus();
+                break;
+            default: return;
+        }
+        e.Handled = true;
+    }
+
+    /// <summary>Scrolls the page so the current hit is in view, with some room around it.</summary>
+    private void ShowFindHit()
+    {
+        if (ViewModel.Find is not { IsOpen: true, Current: { } hit } || hit.Page != ViewModel.PageIndex || hit.Boxes.Count == 0) return;
+        var b = hit.Boxes[0];
+        double z = ViewModel.Zoom;
+        Canvas.BringIntoView(new Rect(b.X0 * z, b.Y0 * z, Math.Max(1, b.Width * z), Math.Max(1, b.Height * z)).Inflate(new Thickness(80, 60)));
+    }
+
     // ------------------------------------------------------------------ keyboard
     private static KeyModifiers CommandKey => OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control;
 
@@ -169,6 +199,8 @@ public partial class MainWindow : Window
             switch (e.Key)
             {
                 case Key.O: vm.OpenCommand.Execute(null); break;
+                case Key.F: vm.Find.OpenCommand.Execute(null); break;
+                case Key.G: vm.Find.NextCommand.Execute(null); break;
                 case Key.S when vm.IsFormTool: vm.MakeFillableCommand.Execute(null); break;
                 case Key.W: vm.CloseDocumentCommand.Execute(null); break;
                 case Key.OemPlus or Key.Add: vm.ZoomInCommand.Execute(null); break;
@@ -177,6 +209,18 @@ public partial class MainWindow : Window
                 case Key.D9 or Key.NumPad9: vm.FitPageCommand.Execute(null); break;
                 default: return;
             }
+            e.Handled = true;
+            return;
+        }
+        if (e.KeyModifiers == (CommandKey | KeyModifiers.Shift) && e.Key == Key.G && !OperatingSystem.IsMacOS())
+        {
+            vm.Find.PreviousCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+        if (e.Key == Key.F3 && vm.Find.IsOpen)
+        {
+            if (e.KeyModifiers == KeyModifiers.Shift) vm.Find.PreviousCommand.Execute(null); else vm.Find.NextCommand.Execute(null);
             e.Handled = true;
             return;
         }
