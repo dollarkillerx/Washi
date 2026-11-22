@@ -35,6 +35,7 @@ public static class WashiTools
         .Add(new EditCommentsTool(policy))
         .Add(new RemoveHiddenInfoTool(policy))
         .Add(new RedactTool(policy))
+        .Add(new CompressPdfTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -692,6 +693,43 @@ public sealed class SetBookmarksTool(PathPolicy p) : PdfTool(p)
         var output = Policy.Output(OptStr(a, "output"), path, "_bookmarks");
         PdfBookmarks.Write(path, output, outline);
         return new ToolResult(ToJson(new { output, bookmarks = ListBookmarksTool.Describe(PdfBookmarks.Read(output)) }));
+    }
+}
+
+public sealed class CompressPdfTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "compress_pdf";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW, smaller copy of a PDF. level: light (lossless clean-up; only images above 300 dpi scaled to 200), standard " +
+        "(images above 225 dpi to 150, photos as JPEG quality 75) or strong (above 150 dpi to 100, quality 60). Also compresses " +
+        "streams, keeps identical images and fonts once, drops page thumbnails and packs small objects into object streams. Line " +
+        "art, one-bit scans and CMYK images are kept as they are. Every page is rendered next to the original before the copy " +
+        "is kept. Password-protected files are refused. Never overwrites: output defaults to <name>_compressed.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "level":{"type":"string","enum":["light","standard","strong"],"description":"Default standard"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_compressed.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var level = (OptStr(a, "level") ?? "standard") switch
+        {
+            "light" => CompressLevel.Light, "strong" => CompressLevel.Strong, "standard" => CompressLevel.Standard,
+            var x => throw new ToolException($"unknown level '{x}': use light, standard or strong"),
+        };
+        var output = Policy.Output(OptStr(a, "output"), path, "_compressed");
+        var r = PdfCompressor.Compress(path, output, level);
+        return new ToolResult(ToJson(new
+        {
+            output, bytes_before = r.Before, bytes_after = r.After, saved_percent = Math.Round(r.Saved * 100, 1),
+            images = r.Images, downsampled = r.Downsampled, duplicates = r.Duplicates, streams = r.Streams,
+            page_difference = r.Difference, notes = r.Notes,
+        }));
     }
 }
 

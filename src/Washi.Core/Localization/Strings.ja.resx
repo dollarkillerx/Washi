@@ -132,7 +132,8 @@
                                           しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、
                                           または同じ形式のファイルのしおりでコピーを作成
   washi pdf print &lt;in.pdf&gt; [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
-  washi pdf printers                      プリンターの一覧</value></data>
+  washi pdf printers                      プリンターの一覧
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} 個のファイルを {1} に結合しました: {2} ページ、記入欄 {3} 個</value></data>
@@ -667,4 +668,23 @@
   <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>コメント「{0}」は別のアプリで作られたため、文字の変更・削除・返信はできますが、色は変えられません。</value></data>
   <data name="Err_CommentNotMovable" xml:space="preserve"><value>コメント「{0}」は移動できません（文字への注釈は文字に付いたままです）。</value></data>
   <data name="Err_CommentCheck" xml:space="preserve"><value>変更したコメントが指定どおりにならなかったため、コピーを保存しませんでした。</value></data>
+  <data name="Ui_ToolCompress" xml:space="preserve"><value>圧縮</value></data>
+  <data name="Ui_CompressTitle" xml:space="preserve"><value>ファイルを小さく</value></data>
+  <data name="Ui_CompressLead" xml:space="preserve"><value>メール送信やアップロード用に小さなコピーを作ります。見た目は変わりません。保存前に元のファイルとページごとに比べて確認します。</value></data>
+  <data name="Ui_CompressSize" xml:space="preserve"><value>現在: {0}</value></data>
+  <data name="Ui_CompressLight" xml:space="preserve"><value>軽め</value></data>
+  <data name="Ui_CompressLightNote" xml:space="preserve"><value>画質を落とさない整理のみ。画面や印刷に必要以上の高解像度（300 dpi 超）の画像だけ小さくします。</value></data>
+  <data name="Ui_CompressStandard" xml:space="preserve"><value>標準</value></data>
+  <data name="Ui_CompressStandardNote" xml:space="preserve"><value>画像を 150 dpi に、写真は JPEG に。画面でも印刷でもきれいです。通常はこれで十分です。</value></data>
+  <data name="Ui_CompressStrong" xml:space="preserve"><value>強め</value></data>
+  <data name="Ui_CompressStrongNote" xml:space="preserve"><value>画像を 100 dpi に、JPEG も強めに。最も小さくなり、メールの容量制限向け。スキャンの細かい文字はやや甘くなることがあります。</value></data>
+  <data name="Ui_CompressRun" xml:space="preserve"><value>圧縮してコピーを保存…</value></data>
+  <data name="Ui_CompressRunNote" xml:space="preserve"><value>記入欄・リンク・しおり・文字はそのまま残ります。元のファイルは変わりません。</value></data>
+  <data name="Ui_Compressing" xml:space="preserve"><value>圧縮しています…</value></data>
+  <data name="Ui_Compressed" xml:space="preserve"><value>{0} を保存しました: {1} → {2}（{3}% 削減）。</value></data>
+  <data name="Ui_CompressDetails" xml:space="preserve"><value>画像 {0} 件を縮小（うち解像度を下げたもの {1}）、重複 {2} 件を 1 つに、ストリーム {3} 件を圧縮。</value></data>
+  <data name="Ui_CompressSigned" xml:space="preserve"><value>このファイルにはデジタル署名がありました。圧縮したコピーでは署名は有効になりません。</value></data>
+  <data name="Err_CompressProtected" xml:space="preserve"><value>{0} は保護されています。先に「保護」でパスワードを外してから圧縮し、もう一度保護してください。</value></data>
+  <data name="Err_CompressChanged" xml:space="preserve"><value>圧縮したコピーの見た目が元と違った（差 {0}）ため、保存しませんでした。もっと軽いレベルをお試しください。</value></data>
+  <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} はこのレベルではこれ以上小さくできません。</value></data>
 </root>

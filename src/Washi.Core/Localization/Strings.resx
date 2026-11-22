@@ -132,7 +132,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
                                           list the bookmarks (one per line: two spaces per level, a tab, the page),
                                           or write a copy with the ones in a file of that form
   washi pdf print &lt;in.pdf&gt; [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
-  washi pdf printers                      list the printers</value></data>
+  washi pdf printers                      list the printers
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
@@ -667,4 +668,23 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>Comment “{0}” was made by another program; Washi can change its words, remove it or answer it, but not its colour.</value></data>
   <data name="Err_CommentNotMovable" xml:space="preserve"><value>Comment “{0}” cannot be moved (text markup stays on its text).</value></data>
   <data name="Err_CommentCheck" xml:space="preserve"><value>The changed comments did not come out as asked, so the copy was not kept.</value></data>
+  <data name="Ui_ToolCompress" xml:space="preserve"><value>Compress</value></data>
+  <data name="Ui_CompressTitle" xml:space="preserve"><value>Compress</value></data>
+  <data name="Ui_CompressLead" xml:space="preserve"><value>Make a smaller copy for e-mail or upload. Pages look the same; each copy is compared with the original, page by page, before it is kept.</value></data>
+  <data name="Ui_CompressSize" xml:space="preserve"><value>Now: {0}</value></data>
+  <data name="Ui_CompressLight" xml:space="preserve"><value>Light</value></data>
+  <data name="Ui_CompressLightNote" xml:space="preserve"><value>Lossless clean-up; only images far more detailed than any screen or printer needs (above 300 dpi) are made smaller.</value></data>
+  <data name="Ui_CompressStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="Ui_CompressStandardNote" xml:space="preserve"><value>Images at 150 dpi and photos as JPEG: sharp on screen and in print. Usually the right choice.</value></data>
+  <data name="Ui_CompressStrong" xml:space="preserve"><value>Strong</value></data>
+  <data name="Ui_CompressStrongNote" xml:space="preserve"><value>Images at 100 dpi, stronger JPEG: the smallest file, for e-mail limits. Fine print in scans may soften.</value></data>
+  <data name="Ui_CompressRun" xml:space="preserve"><value>Compress and save copy…</value></data>
+  <data name="Ui_CompressRunNote" xml:space="preserve"><value>Form fields, links, bookmarks and text stay as they are. The original is not changed.</value></data>
+  <data name="Ui_Compressing" xml:space="preserve"><value>Compressing…</value></data>
+  <data name="Ui_Compressed" xml:space="preserve"><value>Saved {0}: {1} → {2} ({3}% smaller).</value></data>
+  <data name="Ui_CompressDetails" xml:space="preserve"><value>{0} image(s) made smaller ({1} at a lower resolution), {2} duplicate(s) kept once, {3} stream(s) compressed.</value></data>
+  <data name="Ui_CompressSigned" xml:space="preserve"><value>The file was digitally signed: the signatures do not hold for the compressed copy.</value></data>
+  <data name="Err_CompressProtected" xml:space="preserve"><value>{0} is protected: remove its password first (Protect), compress it, then protect it again.</value></data>
+  <data name="Err_CompressChanged" xml:space="preserve"><value>The compressed copy looked different from the original (difference {0}), so it was not kept. Try a lighter level.</value></data>
+  <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} is already as small as Washi can make it at this level.</value></data>
 </root>

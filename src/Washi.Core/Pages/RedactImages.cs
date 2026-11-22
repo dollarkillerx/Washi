@@ -132,7 +132,7 @@ internal static class ImageBlanker
         Deref(image.Elements["/Decode"]) is PdfArray d && d.Elements.Count >= 2 && FontMetrics.Num(d.Elements[0]) > FontMetrics.Num(d.Elements[1]);
 
     /// <summary>Colour components per pixel, or null for colour spaces this does not know.</summary>
-    private static int? Components(PdfDictionary image)
+    internal static int? Components(PdfDictionary image)
     {
         if (image.Elements.GetBoolean("/ImageMask")) return 1;
         return Count(Deref(image.Elements["/ColorSpace"]));
@@ -155,7 +155,7 @@ internal static class ImageBlanker
     }
 
     /// <summary>The samples, when PDFsharp can undo every filter (no image codec needed); otherwise null.</summary>
-    private static byte[]? Raw(PdfDictionary image)
+    internal static byte[]? Raw(PdfDictionary image)
     {
         var filters = Deref(image.Elements["/Filter"]) switch
         {
@@ -254,7 +254,7 @@ internal static class ImageBlanker
     /// Decodes the image with PDFium: it is copied into a one-page PDF in memory (nothing is written to disk) and read
     /// back as a bitmap. Gray images give one byte per pixel, everything else RGB.
     /// </summary>
-    private static (byte[] Data, bool Gray) Decoded(PdfDictionary image, int w, int h, bool mask)
+    internal static (byte[] Data, bool Gray) Decoded(PdfDictionary image, int w, int h, bool mask)
     {
         var pdf = MiniPdf(image, mask);
         PdfiumDocument.EnsureInit();
