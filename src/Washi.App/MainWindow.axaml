@@ -6,6 +6,7 @@
         xmlns:v="using:Washi.App.Views"
         xmlns:svc="using:Washi.App.Services"
         xmlns:print="using:Washi.Core.Printing"
+        xmlns:sig="using:Washi.Core.Signatures"
         x:Class="Washi.App.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="{Binding Title}"
@@ -736,6 +737,91 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+
+                            <!-- signatures already in the file, checked -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_SigInFile}" IsVisible="{Binding Sign.Digital.HasSignatures}" />
+                            <ItemsControl ItemsSource="{Binding Sign.Digital.Signatures}" x:Name="SignatureChecks">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SignatureRow">
+                                        <DockPanel Margin="0,3">
+                                            <TextBlock DockPanel.Dock="Left" Text="{Binding Mark}" FontSize="16" FontWeight="Bold" Margin="0,0,8,0" VerticalAlignment="Top"
+                                                       Foreground="#B28600" Classes.ok="{Binding IsValid}" Classes.bad="{Binding IsInvalid}" />
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding StatusText}" FontSize="12" TextWrapping="Wrap" />
+                                                <TextBlock Classes="note" Text="{Binding Details}" TextWrapping="Wrap"
+                                                           IsVisible="{Binding Details, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.Styles>
+                                    <Style Selector="TextBlock.ok"><Setter Property="Foreground" Value="#198038" /></Style>
+                                    <Style Selector="TextBlock.bad"><Setter Property="Foreground" Value="#DA1E28" /></Style>
+                                </ItemsControl.Styles>
+                            </ItemsControl>
+
+                            <!-- signing with a digital ID -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_SigTitle}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_SigLead}" TextWrapping="Wrap" />
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigId}" />
+                            <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch"
+                                      IsVisible="{Binding !Sign.Digital.NoIds}" x:Name="DigitalIdBox">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_SigNoIds}" TextWrapping="Wrap" IsVisible="{Binding Sign.Digital.NoIds}" />
+                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+                                <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
+                                <ToggleButton Content="{l:Tr Ui_SigCreateId}" IsChecked="{Binding Sign.Digital.Creating}" Padding="8,3" FontSize="12" x:Name="CreateIdToggle" />
+                            </StackPanel>
+                            <StackPanel IsVisible="{Binding Sign.Digital.HasIdFile}" Spacing="4" Margin="0,6,0,0">
+                                <TextBlock Classes="caption" Text="{Binding Sign.Digital.IdFile}" TextTrimming="CharacterEllipsis" />
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
+                                    <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" x:Name="IdPasswordBox" />
+                                </DockPanel>
+                            </StackPanel>
+                            <Border IsVisible="{Binding Sign.Digital.Creating}" Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,6,0,0">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewName}" />
+                                    <TextBox Text="{Binding Sign.Digital.NewName}" x:Name="NewIdName" />
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewEmail}" />
+                                    <TextBox Text="{Binding Sign.Digital.NewEmail}" />
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewPassword}" />
+                                    <TextBox PasswordChar="•" Text="{Binding Sign.Digital.NewPassword}" />
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_SigNewNote}" TextWrapping="Wrap" />
+                                    <Button Content="{l:Tr Ui_SigCreateSave}" Command="{Binding Sign.Digital.CreateIdCommand}" Padding="10,4" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigPlace}" />
+                            <ComboBox ItemsSource="{Binding Sign.Digital.Places}" SelectedItem="{Binding Sign.Digital.Place}" HorizontalAlignment="Stretch" x:Name="SignPlaceBox">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SignPlace"><TextBlock Text="{Binding Text}" /></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <CheckBox IsChecked="{Binding Sign.Digital.IncludeInk}" Content="{l:Tr Ui_SigIncludeInk}" IsVisible="{Binding Sign.HasInk}" />
+                            <Grid ColumnDefinitions="*,8,*">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigReason}" />
+                                    <TextBox Text="{Binding Sign.Digital.Reason}" x:Name="SignReasonBox" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigLocation}" />
+                                    <TextBox Text="{Binding Sign.Digital.Location}" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigTimestamp}" />
+                            <TextBox Text="{Binding Sign.Digital.TimestampServer}" PlaceholderText="https://…" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_SigTimestampNote}" TextWrapping="Wrap" />
+                            <Button Classes="accent" Command="{Binding Sign.Digital.SignCommand}" IsEnabled="{Binding Sign.Digital.CanSign}" Margin="0,10,0,0"
+                                    HorizontalAlignment="Stretch" x:Name="DigitalSignButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Lock}" Size="16" />
+                                    <TextBlock Text="{l:Tr Ui_SigSign}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>

@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using Washi.Ai;
+using Washi.Core;
 using Washi.Core.Forms;
 using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
 using Washi.Core.Printing;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
     private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size"];
@@ -105,6 +106,44 @@ internal static class PageCommands
                     var outline = PdfBookmarks.Read(input);
                     if (outline.Count == 0) Console.WriteLine(L.Get("Pdf_BookmarksNone"));
                     foreach (var line in PdfBookmarks.ToLines(outline)) Console.WriteLine(line);
+                    return 0;
+                }
+                case ["verify", var input]:
+                {
+                    var checks = Washi.Core.Signatures.PdfSignatureVerifier.Verify(input);
+                    if (checks.Count == 0) Console.WriteLine(L.Get("Pdf_SigNone"));
+                    foreach (var c in checks)
+                    {
+                        Console.WriteLine(L.F("Pdf_SigLine", c.Field, c.Signer, L.Get("Ui_SigStatus_" + c.Status))
+                                          + (c.SignedAt is { } t ? $" ({t:yyyy-MM-dd HH:mm:ss zzz}{(c.Timestamped ? ", " + L.Get("Ui_SigTimestamped") : "")})" : ""));
+                        foreach (var p in c.Problems) Console.WriteLine("    " + p);
+                    }
+                    return checks.Any(c => !c.Intact) ? 3 : 0;
+                }
+                case ["make-id"] when opt.TryGetValue("--name", out var name) && opt.TryGetValue("-o", out var output):
+                {
+                    var pw = Password("WASHI_ID_PASSWORD", L.Get("Pdf_AskIdPassword"));
+                    var id = Washi.Core.Signatures.DigitalIds.Create(name, opt.GetValueOrDefault("--email", ""), output, pw);
+                    Console.WriteLine(L.F("Ui_IdCreated", output) + $" ({id.Name}, {id.Certificate.NotAfter:yyyy-MM-dd})");
+                    return 0;
+                }
+                case ["sign", var input] when opt.TryGetValue("--id", out var idFile):
+                {
+                    var id = Washi.Core.Signatures.DigitalIds.FromFile(idFile, Password("WASHI_ID_PASSWORD", L.Get("Pdf_AskIdPassword")));
+                    PdfRect? box = null;
+                    if (opt.TryGetValue("--box", out var b))
+                    {
+                        var v = b.Split(',').Select(x => double.Parse(x, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+                        if (v.Length != 4) throw new PageAssemblyException("--box takes x0,y0,x1,y1 (points, top-left origin)");
+                        box = new PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3]));
+                    }
+                    int page = opt.TryGetValue("--page", out var pg) && int.TryParse(pg, out var pn) ? pn - 1 : 0;
+                    Uri? tsa = opt.TryGetValue("--tsa", out var t) ? new Uri(t) : null;
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_signed.pdf"));
+                    var r = Washi.Core.Signatures.PdfDigitalSigner.Sign(input, output, new Washi.Core.Signatures.SignRequest(
+                        id, opt.GetValueOrDefault("--field"), page, box, opt.GetValueOrDefault("--reason", ""), opt.GetValueOrDefault("--location", ""), null, tsa));
+                    Console.WriteLine(L.F("Ui_SigSigned", output, r.Signer));
                     return 0;
                 }
                 case ["compress", var input]:

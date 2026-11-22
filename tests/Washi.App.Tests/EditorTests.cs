@@ -42,6 +42,9 @@ internal sealed class FakeDialogs : IDialogs
     public Task<string?> SaveFieldsAsync(string suggestedName) => Task.FromResult(SaveJson);
     public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult(SavePdf);
     public Task<string?> OpenFontAsync() => Task.FromResult(Font);
+    public string? DigitalId, SaveDigitalId;
+    public Task<string?> OpenDigitalIdAsync() => Task.FromResult(DigitalId);
+    public Task<string?> SaveDigitalIdAsync(string suggestedName) => Task.FromResult(SaveDigitalId);
     public bool ConfirmAnswer = true;
     public string? LastConfirm;
     public Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel)
@@ -453,6 +456,21 @@ public sealed class EditorTests : IDisposable
             }
             Dispatcher.UIThread.RunJobs();
             Shot(w, "comment-edit");
+
+            // a signed copy: the Sign tool lists its signature, checked
+            var idPath = Path.Combine(_dir, "shot-id.p12");
+            var id = Washi.Core.Signatures.DigitalIds.Create("山田 太郎", "taro@example.com", idPath, "secret-1");
+            var signedCopy = Path.Combine(_dir, "signed_copy.pdf");
+            Washi.Core.Signatures.PdfDigitalSigner.Sign(withComments, signedCopy,
+                new(id, Page: 0, Rect: new Washi.Core.PdfRect(300, 560, 560, 620), Reason: "承認"));
+            await vm.LoadAsync(signedCopy);
+            vm.Sign.StorePath = Path.Combine(_dir, "signature.txt");
+            vm.ActiveTool = Tool.Sign;
+            await vm.Sign.PrepareAsync();
+            vm.Sign.Digital.Ids.Add(id);
+            vm.Sign.Digital.Id = id;
+            Dispatcher.UIThread.RunJobs();
+            Shot(w, "digital-sign");
         }
 
         w.ShowSettings("mcp");

@@ -15,6 +15,9 @@ public interface IDialogs
     Task<string?> SaveFieldsAsync(string suggestedName);
     Task<string?> SavePdfAsync(string suggestedName);
     Task<string?> OpenFontAsync();
+    /// <summary>A digital ID file (.p12 / .pfx).</summary>
+    Task<string?> OpenDigitalIdAsync();
+    Task<string?> SaveDigitalIdAsync(string suggestedName);
     /// <summary>Yes / no question; true only when the user chose the confirming button.</summary>
     Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel);
 }
@@ -24,6 +27,7 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     private static FilePickerFileType Pdf => new(L.Get("Ui_PdfFiles")) { Patterns = ["*.pdf"], MimeTypes = ["application/pdf"] };
     private static FilePickerFileType Json => new(L.Get("Ui_JsonFiles")) { Patterns = ["*.json"], MimeTypes = ["application/json"] };
     private static FilePickerFileType Fonts => new(L.Get("Ui_FontFiles")) { Patterns = ["*.ttf", "*.otf", "*.ttc", "*.otc"] };
+    private static FilePickerFileType Ids => new(L.Get("Ui_IdFiles")) { Patterns = ["*.p12", "*.pfx"], MimeTypes = ["application/x-pkcs12"] };
 
     public Task<string?> OpenPdfAsync() => Open(Pdf);
 
@@ -40,6 +44,8 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     }
     public Task<string?> OpenFieldsAsync() => Open(Json);
     public Task<string?> OpenFontAsync() => Open(Fonts);
+    public Task<string?> OpenDigitalIdAsync() => Open(Ids);
+    public Task<string?> SaveDigitalIdAsync(string suggestedName) => Save(Ids, suggestedName, "p12");
     public Task<string?> SaveFieldsAsync(string suggestedName) => Save(Json, suggestedName, "json");
     public Task<string?> SavePdfAsync(string suggestedName) => Save(Pdf, suggestedName, "pdf");
 

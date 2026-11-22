@@ -119,7 +119,7 @@ public static class PdfSigner
         };
     }
 
-    private static void Draw(StringBuilder sb, SignatureStamp s)
+    internal static void Draw(StringBuilder sb, SignatureStamp s)
     {
         // the ink keeps its shape: as large as fits the rect, centred
         var r = s.Rect;

@@ -65,6 +65,10 @@ public static class AcroFormWriter
     /// </summary>
     public const string EmbeddedKey = "Wingdings";
 
+    /// <summary>The non-embedded CJK font Washi uses for a script (name, CMap, character collection).</summary>
+    internal static (string BaseFont, string Encoding, string Ordering, int Supplement) CidSpec(FormScript script, bool sans = false) =>
+        (sans ? CidSansFonts : CidFonts)[script] is var f ? (f.BaseFont, f.Encoding, f.Ordering, f.Supplement) : default;
+
     public static string FontKey(FormScript script) => script == FormScript.Latin ? "Helv" : CidFonts[script].Key;
 
     /// <summary>The /DR font name for a face: Auto and the script's usual face share one font.</summary>
