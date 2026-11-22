@@ -74,7 +74,7 @@ public sealed class ToolsTests : IDisposable
         var fill = await Call("fill_fields", new
         {
             path = "form_fillable.pdf",
-            values = new Dictionary<string, object> { [text] = "王 燁", [comb] = "123456789012", [box] = true, ["nope"] = "x" },
+            values = new Dictionary<string, object> { [text] = "林 燁", [comb] = "123456789012", [box] = true, ["nope"] = "x" },
         });
         Assert.False(fill.IsError, fill.Text);
         var fr = Json(fill);
@@ -83,7 +83,7 @@ public sealed class ToolsTests : IDisposable
 
         var after = Json(await Call("list_fields", new { path = "form_fillable_filled.pdf" })).EnumerateArray()
             .ToDictionary(f => f.GetProperty("name").GetString()!, f => f.GetProperty("value").GetString());
-        Assert.Equal("王 燁", after[text]);
+        Assert.Equal("林 燁", after[text]);
         Assert.Equal("123456789012", after[comb]);
         Assert.Equal("Yes", after[box]);
 

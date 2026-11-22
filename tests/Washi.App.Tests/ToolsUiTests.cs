@@ -349,7 +349,7 @@ public sealed class ToolsUiTests : IDisposable
         var (_, vm) = await Open(pdf, new FakeDialogs());
         Assert.True(vm.Fields.Count >= 2, string.Join("; ", vm.Fields.Select(f => $"{f.Name} {f.X0},{f.Y0},{f.X1},{f.Y1}")) + " | " + vm.Status);
         int fields = vm.Fields.Count;
-        var ocr = new StubOcr("王 燁");
+        var ocr = new StubOcr("林 燁");
         vm.OcrFactory = () => ocr;
         var typed = vm.Fields.First(f => f.Y0 > 90);                     // the empty cell: the user typed here already
         typed.Value = "入力済み";
@@ -361,7 +361,7 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(Path.Combine(_dir, "printed_erased.pdf"), vm.PdfPath);
         Assert.Equal(fields, vm.Fields.Count);                       // the fields are kept
         var filled = Assert.Single(vm.Fields, f => f.Value.Length > 0 && !ReferenceEquals(f, typed));
-        Assert.Equal("王 燁", filled.Value);
+        Assert.Equal("林 燁", filled.Value);
         Assert.InRange(filled.Y0, 35, 45);                            // the cell that held the print
         Assert.True(vm.PreviewMode);
         // a second conversion (one field, from its panel) updates the same copy: no _erased_erased.pdf
@@ -386,8 +386,8 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(text.Name, text.Display);                      // nothing better to show yet
         Assert.False(text.ShowName);
 
-        text.Value = "王 燁";
-        Assert.Equal("王 燁", text.Display);                         // the value, with the name small under it
+        text.Value = "林 燁";
+        Assert.Equal("林 燁", text.Display);                         // the value, with the name small under it
         Assert.True(text.ShowName);
 
         vm.PreviewMode = true;                                      // filling: an overview of what is filled in
@@ -554,11 +554,11 @@ public sealed class ToolsUiTests : IDisposable
         Dispatcher.UIThread.RunJobs();
         Assert.True(editor.IsVisible);
         Assert.Equal(text.X0 * vm.Zoom, editor.Margin.Left, 1);
-        editor.Text = "王 燁";
+        editor.Text = "林 燁";
         canvas.Focus();
         Dispatcher.UIThread.RunJobs();
         Assert.False(editor.IsVisible);
-        Assert.Equal("王 燁", text.Value);
+        Assert.Equal("林 燁", text.Value);
 
         // Delete clears the value in Preview; the field stays
         vm.SelectedField = text;
@@ -566,12 +566,12 @@ public sealed class ToolsUiTests : IDisposable
         w.KeyPress(Avalonia.Input.Key.Delete, Avalonia.Input.RawInputModifiers.None, Avalonia.Input.PhysicalKey.Delete, null);
         Assert.Equal("", text.Value);
         Assert.Contains(text, vm.Fields);
-        text.Value = "王 燁";
+        text.Value = "林 燁";
 
         // the values go into the saved PDF
         await vm.MakeFillableCommand.ExecuteAsync(null);
         var written = AcroFormFields.List(output).ToDictionary(f => f.Name, f => f.Value);
-        Assert.Equal("王 燁", written[text.Name]);
+        Assert.Equal("林 燁", written[text.Name]);
         Assert.Equal("Yes", written[box.Name]);
         Assert.Contains("2", vm.Status);
     }

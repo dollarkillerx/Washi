@@ -38,9 +38,9 @@ public sealed class PagesTests : IDisposable
         // the two copies are separate fields: filling one leaves the other empty
         var first = fields.First(f => f.Type == "text" && !f.Comb).Name;
         var filled = Path.Combine(_dir, "filled.pdf");
-        AcroFormFields.Fill(output, filled, new Dictionary<string, string> { [first] = "王 燁" });
+        AcroFormFields.Fill(output, filled, new Dictionary<string, string> { [first] = "林 燁" });
         var after = AcroFormFields.List(filled);
-        Assert.Single(after, f => f.Value == "王 燁");
+        Assert.Single(after, f => f.Value == "林 燁");
         Assert.Equal(1, after.Count(f => f.Name == first));
     }
 

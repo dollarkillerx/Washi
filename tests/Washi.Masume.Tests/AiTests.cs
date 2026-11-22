@@ -117,7 +117,7 @@ public sealed class AiFeatureTests : IDisposable
             {
                 values = new[]
                 {
-                    new { name = text, value = "王 燁" },
+                    new { name = text, value = "林 燁" },
                     new { name = comb, value = "{{SECRET_1}}" },
                     new { name = box, value = "true" },
                     new { name = "nope", value = "x" },
@@ -126,7 +126,7 @@ public sealed class AiFeatureTests : IDisposable
             });
         });
 
-        var profile = "氏名: 王 燁\nマイナンバー: 1234 5678 9012\n";
+        var profile = "氏名: 林 燁\nマイナンバー: 1234 5678 9012\n";
         Assert.Equal(1, AiFeatures.DescribeFill(model, fields, profile).MaskedNumbers);
         var plan = await AiFeatures.PlanFillAsync(model, pdf, fields, profile);
 
@@ -138,7 +138,7 @@ public sealed class AiFeatureTests : IDisposable
         var output = Path.Combine(_dir, "filled.pdf");
         AcroFormFields.Fill(pdf, output, plan.Values);
         var after = AcroFormFields.List(output).ToDictionary(f => f.Name, f => f.Value);
-        Assert.Equal("王 燁", after[text]);
+        Assert.Equal("林 燁", after[text]);
         Assert.Equal("123456789012", after[comb]);
         Assert.Equal("Yes", after[box]);
     }
