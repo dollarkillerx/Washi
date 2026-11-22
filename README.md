@@ -187,8 +187,9 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   in `~/.config/washi/signature.txt` if you tick "Remember" (never sent anywhere; untick to delete it). Drag a box on
   the page, or press **Sign here** next to a signature field, for each place to sign. **Save signed copy** draws the
   signature into the page as smooth curves (it prints sharply and is part of the page, like Acrobat's Fill & Sign)
-  and keeps the form fields. Signing is deliberately not offered to the AI assistant or MCP clients. This is a
-  hand-drawn signature, not a certificate-based digital signature.
+  and keeps the form fields. Signing is deliberately not offered to the AI assistant or MCP clients. The same tool
+  signs with a **digital ID** (a certificate-based PAdES signature) and checks the signatures a file already has
+  (see *Digital signatures*).
 - **Protect**: shows how the open file is protected and what it does not allow. Add a password to open it and/or
   limits (printing, copying, changes, comments, filling in, page changes) guarded by a separate permissions password,
   with AES-256; remove protection with the password that allows it; and **remove hidden information** before sending
@@ -436,6 +437,32 @@ why. Forms made elsewhere keep working: the same AF calls are read from their fi
 codes, phone numbers) and the 国税庁 input forms (amounts). Other scripts are left as they are and not run. These
 actions are JavaScript: *Remove hidden information* lists them under scripts.
 
+## Digital signatures
+
+```bash
+washi pdf make-id --name "山田 太郎" --email taro@example.com -o taro.p12     # a self-signed digital ID
+washi pdf sign contract.pdf --id taro.p12 --page 2 --box 380,640,560,700 --reason 承認
+washi pdf verify contract_signed.pdf                                          # exit code 3 when a signature is broken
+```
+
+In the editor, the **Sign** tool checks the signatures a file already has and signs with a digital ID: one from this
+computer's certificate store (the login keychain on macOS, the personal store on Windows), a `.p12` / `.pfx` file, or
+one made there. Choose where it goes (invisible, an empty signature field, or a box drawn on the page), add a reason
+and place, and the hand-drawn signature if you like. Agents can check signatures (`verify_signatures`) but not sign.
+
+- **PAdES**: a CAdES detached signature (SHA-256) with the signing certificate bound into it (ESS
+  signing-certificate-v2), the form Acrobat and EU validators expect. Optional RFC 3161 time-stamp from a service you
+  name; only the signature's hash is sent to it.
+- **Added, not rewritten**: the signature is an incremental update after the file's last byte (a cross-reference
+  table or stream, like the file's own), so everything before it is untouched and earlier signatures stay valid.
+  Every signed copy is verified before it is kept.
+- **Checking**: the bytes each signature covers, its value, the signer's certificate chain against this computer's
+  trusted roots (offline, nothing is sent), the time (from a time-stamp when there is one), and whether the file was
+  revised afterwards. Each signature is *valid*, *unverified* (intact, but the identity is not trusted, as with a
+  self-signed ID), *changed* (intact, revised later) or *invalid* (the signed bytes were altered).
+- A self-signed ID proves the document did not change; for signatures that carry legal weight, use an ID from a
+  certification authority. Password-protected files cannot be signed by Washi (remove the password first).
+
 ## Compression
 
 ```bash
@@ -540,6 +567,7 @@ There are two ways to run it:
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
+| `verify_signatures` | the digital signatures in a PDF: signer, time, intact, trusted, changed afterwards, status | no |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
@@ -635,7 +663,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 21 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 22 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -691,7 +719,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 13. ~~Print.~~ Done (the print card, `washi pdf print`).
 14. ~~Formats, ranges and calculations in forms.~~ Done (field rules, written as Acrobat's field actions and applied when filling).
 15. ~~Edit existing comments.~~ Done (the Comment tool, `edit_comments`).
-16. ~~Compression.~~ Done (`washi pdf compress`, the Compress tool, `compress_pdf`). Next: certificate signatures.
+16. ~~Compression.~~ Done (`washi pdf compress`, the Compress tool, `compress_pdf`).
+17. ~~Digital signatures (PAdES) and their checking.~~ Done (`washi pdf sign|verify|make-id`, the Sign tool, `verify_signatures`). Next: editing page text.
 
 ## License
 

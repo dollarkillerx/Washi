@@ -16,7 +16,7 @@ public sealed record PlacedSignature(int Page, PdfRect Rect)
 }
 
 /// <summary>A signature field to sign into: one the form tool found or drew, or one already in the PDF.</summary>
-public sealed record SignatureSpot(int Page, PdfRect Rect, string Name)
+public sealed record SignatureSpot(int Page, PdfRect Rect, string Name, bool InFile = false)
 {
     public string Label => L.F("Ui_SignSpot", Name, Page + 1);
 }
@@ -69,9 +69,17 @@ public sealed partial class SignToolViewModel(MainViewModel main) : ObservableOb
                 catch (Exception e) when (e is IOException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException) { return []; }
             });
             foreach (var f in existing.Where(f => !Spots.Any(s => s.Page == f.Page && Near(s.Rect, f.Rect))))
-                Spots.Add(new SignatureSpot(f.Page, f.Rect, f.Name));
+                Spots.Add(new SignatureSpot(f.Page, f.Rect, f.Name, InFile: true));
         }
+        await Digital.PrepareAsync();
+        // a field that already holds a digital signature is not a place to draw (redrawing the page would break it)
+        var signed = Digital.SignedFields;
+        foreach (var spot in Spots.Where(s => s.InFile && signed.Contains(s.Name)).ToList()) Spots.Remove(spot);
+        Digital.RefreshPlaces();
     }
+
+    /// <summary>Signing with a digital ID, and the signatures the file already has.</summary>
+    public DigitalSignViewModel Digital { get; } = new(main);
 
     private static bool Near(PdfRect a, PdfRect b) => Math.Abs(a.X0 - b.X0) < 2 && Math.Abs(a.Y0 - b.Y0) < 2;
 
@@ -149,6 +157,7 @@ public sealed partial class SignToolViewModel(MainViewModel main) : ObservableOb
     {
         OnPropertyChanged(nameof(HasPlaced));
         OnPropertyChanged(nameof(CanSave));
+        Digital.RefreshPlaces();
         Changed?.Invoke();
     }
 

@@ -133,7 +133,11 @@
                                           または同じ形式のファイルのしおりでコピーを作成
   washi pdf print &lt;in.pdf&gt; [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      プリンターの一覧
-  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）</value></data>
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+                                          デジタル ID で署名（パスワードは WASHI_ID_PASSWORD か入力）
+  washi pdf verify &lt;in.pdf&gt;               ファイルの署名を確認
+  washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} 個のファイルを {1} に結合しました: {2} ページ、記入欄 {3} 個</value></data>
@@ -687,4 +691,53 @@
   <data name="Err_CompressProtected" xml:space="preserve"><value>{0} は保護されています。先に「保護」でパスワードを外してから圧縮し、もう一度保護してください。</value></data>
   <data name="Err_CompressChanged" xml:space="preserve"><value>圧縮したコピーの見た目が元と違った（差 {0}）ため、保存しませんでした。もっと軽いレベルをお試しください。</value></data>
   <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} はこのレベルではこれ以上小さくできません。</value></data>
+  <data name="Sig_SignedBy" xml:space="preserve"><value>{0} によるデジタル署名</value></data>
+  <data name="Sig_Date" xml:space="preserve"><value>日時: {0}</value></data>
+  <data name="Sig_Reason" xml:space="preserve"><value>理由: {0}</value></data>
+  <data name="Sig_Location" xml:space="preserve"><value>場所: {0}</value></data>
+  <data name="Ui_IdFiles" xml:space="preserve"><value>デジタル ID（.p12, .pfx）</value></data>
+  <data name="Ui_SigInFile" xml:space="preserve"><value>このファイルの署名</value></data>
+  <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>有効: 署名後に変更なし、署名者を確認済み。</value></data>
+  <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>署名後に変更はありませんが、署名者の身元は確認できません（信頼された証明書ではありません）。</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>署名は有効ですが、署名後に文書が変更されています。</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>無効: 文書が改ざんされたか、署名が壊れています。</value></data>
+  <data name="Ui_SigTimestamped" xml:space="preserve"><value>タイムスタンプ付き</value></data>
+  <data name="Ui_SigTitle" xml:space="preserve"><value>デジタル ID で署名</value></data>
+  <data name="Ui_SigLead" xml:space="preserve"><value>証明書による署名で、誰が署名したか、署名後に変更がないかを閲覧者が確認できます。ファイルの末尾に追加されるため、それまでの署名も有効なままです。</value></data>
+  <data name="Ui_SigId" xml:space="preserve"><value>デジタル ID</value></data>
+  <data name="Ui_SigNoIds" xml:space="preserve"><value>このコンピューターにデジタル ID がありません。.p12 / .pfx ファイルを開くか、ここで作成してください。</value></data>
+  <data name="Ui_SigOpenId" xml:space="preserve"><value>ID ファイルを開く…</value></data>
+  <data name="Ui_SigCreateId" xml:space="preserve"><value>デジタル ID を作成</value></data>
+  <data name="Ui_SigNewName" xml:space="preserve"><value>氏名</value></data>
+  <data name="Ui_SigNewEmail" xml:space="preserve"><value>メールアドレス（任意）</value></data>
+  <data name="Ui_SigNewPassword" xml:space="preserve"><value>ID ファイルのパスワード（6 文字以上）</value></data>
+  <data name="Ui_SigNewNote" xml:space="preserve"><value>自己署名の ID です。文書が変更されていないことは証明できますが、閲覧者が信頼するまで身元は「未確認」と表示されます。法的に認められた署名には、認証局が発行した ID を使ってください。</value></data>
+  <data name="Ui_SigCreateSave" xml:space="preserve"><value>作成して保存…</value></data>
+  <data name="Ui_IdCreated" xml:space="preserve"><value>デジタル ID {0} を作成しました。ファイルとパスワードは大切に保管してください。</value></data>
+  <data name="Ui_SigPlace" xml:space="preserve"><value>署名の場所</value></data>
+  <data name="Ui_SigInvisible" xml:space="preserve"><value>非表示（ページには何も表示しない）</value></data>
+  <data name="Ui_SigInField" xml:space="preserve"><value>記入欄「{0}」（{1} ページ）</value></data>
+  <data name="Ui_SigInBox" xml:space="preserve"><value>{0} ページに描いた枠</value></data>
+  <data name="Ui_SigIncludeInk" xml:space="preserve"><value>手書きのサインも表示する</value></data>
+  <data name="Ui_SigReason" xml:space="preserve"><value>理由（任意）</value></data>
+  <data name="Ui_SigLocation" xml:space="preserve"><value>場所（任意）</value></data>
+  <data name="Ui_SigTimestamp" xml:space="preserve"><value>タイムスタンプサービス（任意）</value></data>
+  <data name="Ui_SigTimestampNote" xml:space="preserve"><value>空欄なら使いません。指定すると、署名した時刻を証明するために署名のハッシュだけを送ります（RFC 3161）。</value></data>
+  <data name="Ui_SigBadTimestamp" xml:space="preserve"><value>タイムスタンプサービスのアドレスが正しくありません。</value></data>
+  <data name="Ui_SigSign" xml:space="preserve"><value>署名してコピーを保存…</value></data>
+  <data name="Ui_SigSigned" xml:space="preserve"><value>{0} を保存しました（{1} による署名）。署名を確認済みです。</value></data>
+  <data name="Err_SignDamaged" xml:space="preserve"><value>このファイルの構造に安全に追記できないため、署名しませんでした。</value></data>
+  <data name="Err_SignProtected" xml:space="preserve"><value>パスワード保護されたファイルには署名できません。先にパスワードを外してください。</value></data>
+  <data name="Err_SignNoField" xml:space="preserve"><value>空の署名欄「{0}」はありません。</value></data>
+  <data name="Err_SignFieldSigned" xml:space="preserve"><value>署名欄「{0}」はすでに署名済みです。</value></data>
+  <data name="Err_SignCheck" xml:space="preserve"><value>署名したコピーの確認に失敗したため、保存しませんでした。</value></data>
+  <data name="Err_SignTimestamp" xml:space="preserve"><value>タイムスタンプサービス（{0}）から有効なタイムスタンプを得られませんでした。</value></data>
+  <data name="Err_IdOpen" xml:space="preserve"><value>{0} を開けませんでした。パスワードが違うか、デジタル ID ファイルではありません。</value></data>
+  <data name="Err_IdNoKey" xml:space="preserve"><value>{0} には秘密鍵がないため、署名できません。</value></data>
+  <data name="Err_IdName" xml:space="preserve"><value>デジタル ID には氏名が必要です。</value></data>
+  <data name="Err_IdPassword" xml:space="preserve"><value>パスワードは 6 文字以上にしてください。</value></data>
+  <data name="Pdf_SigNone" xml:space="preserve"><value>署名はありません。</value></data>
+  <data name="Pdf_SigLine" xml:space="preserve"><value>{0}: {1} — {2}</value></data>
+  <data name="Pdf_AskIdPassword" xml:space="preserve"><value>デジタル ID のパスワード: </value></data>
 </root>

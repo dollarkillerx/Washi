@@ -133,7 +133,11 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
                                           or write a copy with the ones in a file of that form
   washi pdf print &lt;in.pdf&gt; [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      list the printers
-  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)</value></data>
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+                                          sign with a digital ID (password from WASHI_ID_PASSWORD or asked for)
+  washi pdf verify &lt;in.pdf&gt;               check the signatures in a file
+  washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
@@ -687,4 +691,53 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_CompressProtected" xml:space="preserve"><value>{0} is protected: remove its password first (Protect), compress it, then protect it again.</value></data>
   <data name="Err_CompressChanged" xml:space="preserve"><value>The compressed copy looked different from the original (difference {0}), so it was not kept. Try a lighter level.</value></data>
   <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} is already as small as Washi can make it at this level.</value></data>
+  <data name="Sig_SignedBy" xml:space="preserve"><value>Digitally signed by {0}</value></data>
+  <data name="Sig_Date" xml:space="preserve"><value>Date: {0}</value></data>
+  <data name="Sig_Reason" xml:space="preserve"><value>Reason: {0}</value></data>
+  <data name="Sig_Location" xml:space="preserve"><value>Location: {0}</value></data>
+  <data name="Ui_IdFiles" xml:space="preserve"><value>Digital IDs (.p12, .pfx)</value></data>
+  <data name="Ui_SigInFile" xml:space="preserve"><value>Signatures in this file</value></data>
+  <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Valid: unchanged since signing, signer verified.</value></data>
+  <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>Unchanged since signing, but the signer's identity is not verified (no trusted certificate).</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signature intact; the document was changed after it was signed.</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Invalid: the document was altered or the signature is damaged.</value></data>
+  <data name="Ui_SigTimestamped" xml:space="preserve"><value>time-stamped</value></data>
+  <data name="Ui_SigTitle" xml:space="preserve"><value>Sign with a digital ID</value></data>
+  <data name="Ui_SigLead" xml:space="preserve"><value>A certificate-based signature that readers can check: it shows who signed and that nothing changed since. It is added after everything in the file, so earlier signatures stay valid.</value></data>
+  <data name="Ui_SigId" xml:space="preserve"><value>Digital ID</value></data>
+  <data name="Ui_SigNoIds" xml:space="preserve"><value>No digital ID found on this computer. Open a .p12 / .pfx file, or make one here.</value></data>
+  <data name="Ui_SigOpenId" xml:space="preserve"><value>Open ID file…</value></data>
+  <data name="Ui_SigCreateId" xml:space="preserve"><value>Make a digital ID</value></data>
+  <data name="Ui_SigNewName" xml:space="preserve"><value>Your name</value></data>
+  <data name="Ui_SigNewEmail" xml:space="preserve"><value>E-mail (optional)</value></data>
+  <data name="Ui_SigNewPassword" xml:space="preserve"><value>Password for the ID file (6 characters or more)</value></data>
+  <data name="Ui_SigNewNote" xml:space="preserve"><value>A self-signed ID: it proves the document did not change, but readers see your identity as not verified until they choose to trust it. For legally recognised signatures, use an ID from a certification authority.</value></data>
+  <data name="Ui_SigCreateSave" xml:space="preserve"><value>Make and save…</value></data>
+  <data name="Ui_IdCreated" xml:space="preserve"><value>Made the digital ID {0}. Keep the file and its password safe.</value></data>
+  <data name="Ui_SigPlace" xml:space="preserve"><value>Where</value></data>
+  <data name="Ui_SigInvisible" xml:space="preserve"><value>Invisible (no mark on the page)</value></data>
+  <data name="Ui_SigInField" xml:space="preserve"><value>Field “{0}” (page {1})</value></data>
+  <data name="Ui_SigInBox" xml:space="preserve"><value>The box drawn on page {0}</value></data>
+  <data name="Ui_SigIncludeInk" xml:space="preserve"><value>Show my handwritten signature in it</value></data>
+  <data name="Ui_SigReason" xml:space="preserve"><value>Reason (optional)</value></data>
+  <data name="Ui_SigLocation" xml:space="preserve"><value>Location (optional)</value></data>
+  <data name="Ui_SigTimestamp" xml:space="preserve"><value>Time-stamping service (optional)</value></data>
+  <data name="Ui_SigTimestampNote" xml:space="preserve"><value>Leave empty to sign without one. If given, only the signature's hash is sent to it (RFC 3161), to prove when you signed.</value></data>
+  <data name="Ui_SigBadTimestamp" xml:space="preserve"><value>The time-stamping service is not a valid web address.</value></data>
+  <data name="Ui_SigSign" xml:space="preserve"><value>Sign and save copy…</value></data>
+  <data name="Ui_SigSigned" xml:space="preserve"><value>Saved {0}, signed by {1}. The signature checks out.</value></data>
+  <data name="Err_SignDamaged" xml:space="preserve"><value>This file's structure could not be extended safely, so it was not signed.</value></data>
+  <data name="Err_SignProtected" xml:space="preserve"><value>Password-protected files cannot be signed by Washi: remove the password first.</value></data>
+  <data name="Err_SignNoField" xml:space="preserve"><value>There is no empty signature field “{0}”.</value></data>
+  <data name="Err_SignFieldSigned" xml:space="preserve"><value>The field “{0}” is already signed.</value></data>
+  <data name="Err_SignCheck" xml:space="preserve"><value>The signed copy did not verify, so it was not kept.</value></data>
+  <data name="Err_SignTimestamp" xml:space="preserve"><value>The time-stamping service ({0}) gave no valid time-stamp.</value></data>
+  <data name="Err_IdOpen" xml:space="preserve"><value>{0} could not be opened: the password is wrong or it is not a digital ID file.</value></data>
+  <data name="Err_IdNoKey" xml:space="preserve"><value>{0} holds no private key, so it cannot sign.</value></data>
+  <data name="Err_IdName" xml:space="preserve"><value>A digital ID needs a name.</value></data>
+  <data name="Err_IdPassword" xml:space="preserve"><value>The password must be at least 6 characters.</value></data>
+  <data name="Pdf_SigNone" xml:space="preserve"><value>No signatures.</value></data>
+  <data name="Pdf_SigLine" xml:space="preserve"><value>{0}: {1} — {2}</value></data>
+  <data name="Pdf_AskIdPassword" xml:space="preserve"><value>Password of the digital ID: </value></data>
 </root>

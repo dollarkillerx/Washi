@@ -133,7 +133,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
                                           oder eine Kopie mit denen aus einer solchen Datei schreiben
   washi pdf print &lt;in.pdf&gt; [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      Drucker auflisten
-  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)</value></data>
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field Name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+                                          mit digitaler ID signieren (Passwort aus WASHI_ID_PASSWORD oder abgefragt)
+  washi pdf verify &lt;in.pdf&gt;               Signaturen einer Datei prüfen
+  washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} Datei(en) zu {1} zusammengefügt: {2} Seite(n), {3} Formularfeld(er)</value></data>
@@ -687,4 +691,53 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_CompressProtected" xml:space="preserve"><value>{0} ist geschützt: zuerst das Passwort entfernen (Schützen), verkleinern, dann wieder schützen.</value></data>
   <data name="Err_CompressChanged" xml:space="preserve"><value>Die verkleinerte Kopie sah anders aus als das Original (Abweichung {0}) und wurde nicht behalten. Versuchen Sie eine leichtere Stufe.</value></data>
   <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} lässt sich auf dieser Stufe nicht weiter verkleinern.</value></data>
+  <data name="Sig_SignedBy" xml:space="preserve"><value>Digital signiert von {0}</value></data>
+  <data name="Sig_Date" xml:space="preserve"><value>Datum: {0}</value></data>
+  <data name="Sig_Reason" xml:space="preserve"><value>Grund: {0}</value></data>
+  <data name="Sig_Location" xml:space="preserve"><value>Ort: {0}</value></data>
+  <data name="Ui_IdFiles" xml:space="preserve"><value>Digitale IDs (.p12, .pfx)</value></data>
+  <data name="Ui_SigInFile" xml:space="preserve"><value>Signaturen in dieser Datei</value></data>
+  <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Gültig: seit der Signatur unverändert, Unterzeichner bestätigt.</value></data>
+  <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>Seit der Signatur unverändert, aber die Identität des Unterzeichners ist nicht bestätigt (kein vertrauenswürdiges Zertifikat).</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signatur intakt; das Dokument wurde nach der Signatur geändert.</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Ungültig: das Dokument wurde verändert oder die Signatur ist beschädigt.</value></data>
+  <data name="Ui_SigTimestamped" xml:space="preserve"><value>mit Zeitstempel</value></data>
+  <data name="Ui_SigTitle" xml:space="preserve"><value>Mit digitaler ID signieren</value></data>
+  <data name="Ui_SigLead" xml:space="preserve"><value>Eine zertifikatbasierte Signatur, die Leser prüfen können: wer unterschrieben hat und dass seither nichts geändert wurde. Sie wird hinten angefügt, frühere Signaturen bleiben gültig.</value></data>
+  <data name="Ui_SigId" xml:space="preserve"><value>Digitale ID</value></data>
+  <data name="Ui_SigNoIds" xml:space="preserve"><value>Keine digitale ID auf diesem Computer. Öffnen Sie eine .p12-/.pfx-Datei oder erstellen Sie hier eine.</value></data>
+  <data name="Ui_SigOpenId" xml:space="preserve"><value>ID-Datei öffnen…</value></data>
+  <data name="Ui_SigCreateId" xml:space="preserve"><value>Digitale ID erstellen</value></data>
+  <data name="Ui_SigNewName" xml:space="preserve"><value>Ihr Name</value></data>
+  <data name="Ui_SigNewEmail" xml:space="preserve"><value>E-Mail (optional)</value></data>
+  <data name="Ui_SigNewPassword" xml:space="preserve"><value>Passwort der ID-Datei (mindestens 6 Zeichen)</value></data>
+  <data name="Ui_SigNewNote" xml:space="preserve"><value>Eine selbstsignierte ID: sie belegt, dass das Dokument unverändert ist, aber Leser sehen Ihre Identität als unbestätigt, bis sie ihr vertrauen. Für rechtlich anerkannte Signaturen nutzen Sie eine ID einer Zertifizierungsstelle.</value></data>
+  <data name="Ui_SigCreateSave" xml:space="preserve"><value>Erstellen und speichern…</value></data>
+  <data name="Ui_IdCreated" xml:space="preserve"><value>Digitale ID {0} erstellt. Bewahren Sie Datei und Passwort sicher auf.</value></data>
+  <data name="Ui_SigPlace" xml:space="preserve"><value>Wo</value></data>
+  <data name="Ui_SigInvisible" xml:space="preserve"><value>Unsichtbar (keine Markierung auf der Seite)</value></data>
+  <data name="Ui_SigInField" xml:space="preserve"><value>Feld „{0}“ (Seite {1})</value></data>
+  <data name="Ui_SigInBox" xml:space="preserve"><value>Der Rahmen auf Seite {0}</value></data>
+  <data name="Ui_SigIncludeInk" xml:space="preserve"><value>Meine handschriftliche Unterschrift zeigen</value></data>
+  <data name="Ui_SigReason" xml:space="preserve"><value>Grund (optional)</value></data>
+  <data name="Ui_SigLocation" xml:space="preserve"><value>Ort (optional)</value></data>
+  <data name="Ui_SigTimestamp" xml:space="preserve"><value>Zeitstempeldienst (optional)</value></data>
+  <data name="Ui_SigTimestampNote" xml:space="preserve"><value>Leer lassen, um ohne zu signieren. Sonst wird nur der Hash der Signatur gesendet (RFC 3161), um den Zeitpunkt zu belegen.</value></data>
+  <data name="Ui_SigBadTimestamp" xml:space="preserve"><value>Die Adresse des Zeitstempeldienstes ist ungültig.</value></data>
+  <data name="Ui_SigSign" xml:space="preserve"><value>Signieren und Kopie speichern…</value></data>
+  <data name="Ui_SigSigned" xml:space="preserve"><value>{0} gespeichert, signiert von {1}. Die Signatur wurde geprüft.</value></data>
+  <data name="Err_SignDamaged" xml:space="preserve"><value>Die Struktur dieser Datei lässt sich nicht sicher erweitern; sie wurde nicht signiert.</value></data>
+  <data name="Err_SignProtected" xml:space="preserve"><value>Washi kann geschützte Dateien nicht signieren: zuerst das Passwort entfernen.</value></data>
+  <data name="Err_SignNoField" xml:space="preserve"><value>Es gibt kein leeres Signaturfeld „{0}“.</value></data>
+  <data name="Err_SignFieldSigned" xml:space="preserve"><value>Das Feld „{0}“ ist bereits signiert.</value></data>
+  <data name="Err_SignCheck" xml:space="preserve"><value>Die signierte Kopie ließ sich nicht prüfen und wurde nicht behalten.</value></data>
+  <data name="Err_SignTimestamp" xml:space="preserve"><value>Der Zeitstempeldienst ({0}) lieferte keinen gültigen Zeitstempel.</value></data>
+  <data name="Err_IdOpen" xml:space="preserve"><value>{0} ließ sich nicht öffnen: falsches Passwort oder keine ID-Datei.</value></data>
+  <data name="Err_IdNoKey" xml:space="preserve"><value>{0} enthält keinen privaten Schlüssel und kann nicht signieren.</value></data>
+  <data name="Err_IdName" xml:space="preserve"><value>Eine digitale ID braucht einen Namen.</value></data>
+  <data name="Err_IdPassword" xml:space="preserve"><value>Das Passwort muss mindestens 6 Zeichen lang sein.</value></data>
+  <data name="Pdf_SigNone" xml:space="preserve"><value>Keine Signaturen.</value></data>
+  <data name="Pdf_SigLine" xml:space="preserve"><value>{0}: {1} — {2}</value></data>
+  <data name="Pdf_AskIdPassword" xml:space="preserve"><value>Passwort der digitalen ID: </value></data>
 </root>

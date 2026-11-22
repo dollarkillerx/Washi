@@ -36,6 +36,7 @@ public static class WashiTools
         .Add(new RemoveHiddenInfoTool(policy))
         .Add(new RedactTool(policy))
         .Add(new CompressPdfTool(policy))
+        .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -693,6 +694,38 @@ public sealed class SetBookmarksTool(PathPolicy p) : PdfTool(p)
         var output = Policy.Output(OptStr(a, "output"), path, "_bookmarks");
         PdfBookmarks.Write(path, output, outline);
         return new ToolResult(ToJson(new { output, bookmarks = ListBookmarksTool.Describe(PdfBookmarks.Read(output)) }));
+    }
+}
+
+public sealed class VerifySignaturesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "verify_signatures";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Checks the digital signatures in a PDF: for each, the field, signer and issuer, when it was signed (from a time-stamp when " +
+        "there is one), reason and location, whether the signed bytes are intact, whether the certificate leads to one this " +
+        "computer trusts (checked offline), whether the document was changed after it, and a status: valid, unverified (intact, " +
+        "identity not trusted), changed (intact, revised later) or invalid. Signing itself is not offered to agents.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var checks = Washi.Core.Signatures.PdfSignatureVerifier.Verify(Policy.Input(Str(a, "path")));
+        return new ToolResult(ToJson(new
+        {
+            count = checks.Count,
+            signatures = checks.Select(c => new
+            {
+                field = c.Field, status = c.Status, signer = c.Signer, issuer = c.Issuer,
+                signed_at = c.SignedAt?.ToString("o", CultureInfo.InvariantCulture), timestamped = c.Timestamped,
+                reason = c.Reason.Length > 0 ? c.Reason : null, location = c.Location.Length > 0 ? c.Location : null,
+                intact = c.Intact, trusted = c.Trusted, covers_document = c.CoversDocument, revisions_after = c.ChangedAfter,
+                kind = c.SubFilter, page = c.Page >= 0 ? c.Page + 1 : (int?)null, problems = c.Problems,
+            }),
+        }));
     }
 }
 

@@ -133,7 +133,11 @@
                                           或用同樣格式的檔案寫出帶書籤的副本
   washi pdf print &lt;in.pdf&gt; [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      列出印表機
-  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）</value></data>
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名稱 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+                                          以數位識別碼簽署（密碼取自 WASHI_ID_PASSWORD 或提示輸入）
+  washi pdf verify &lt;in.pdf&gt;               核實檔案中的簽章
+  washi pdf make-id --name "…" [--email …] -o id.p12   建立自簽署數位識別碼</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了文字 {1} 段、影像 {2} 個、圖形 {3} 個。檢查：刪除處剩餘文字 {4} 個，其他地方變化的像素 {5} 個。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 頁保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已將 {0} 個檔案合併為 {1}：{2} 頁，{3} 個表單欄位</value></data>
@@ -687,4 +691,53 @@
   <data name="Err_CompressProtected" xml:space="preserve"><value>{0} 有保護：請先在「保護」中解除密碼，壓縮後再重新加密。</value></data>
   <data name="Err_CompressChanged" xml:space="preserve"><value>壓縮後的副本與原檔案看起來不同（差異 {0}），因此沒有保留。請試試較輕的級別。</value></data>
   <data name="Err_CompressNoGain" xml:space="preserve"><value>在此級別下，{0} 已無法再縮小。</value></data>
+  <data name="Sig_SignedBy" xml:space="preserve"><value>由 {0} 數位簽署</value></data>
+  <data name="Sig_Date" xml:space="preserve"><value>日期：{0}</value></data>
+  <data name="Sig_Reason" xml:space="preserve"><value>原因：{0}</value></data>
+  <data name="Sig_Location" xml:space="preserve"><value>地點：{0}</value></data>
+  <data name="Ui_IdFiles" xml:space="preserve"><value>數位識別碼（.p12, .pfx）</value></data>
+  <data name="Ui_SigInFile" xml:space="preserve"><value>此檔案中的簽章</value></data>
+  <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>有效：簽署後未被修改，簽署人已驗證。</value></data>
+  <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>簽署後未被修改，但無法驗證簽署人身分（憑證不受信任）。</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>簽章完好，但文件在簽署後被修改過。</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>無效：文件被竄改或簽章已損壞。</value></data>
+  <data name="Ui_SigTimestamped" xml:space="preserve"><value>附時間戳記</value></data>
+  <data name="Ui_SigTitle" xml:space="preserve"><value>以數位識別碼簽署</value></data>
+  <data name="Ui_SigLead" xml:space="preserve"><value>以憑證為基礎的簽章，閱讀者可以核實誰簽署、簽署後是否被改動。簽章附加在檔案末尾，先前的簽章仍然有效。</value></data>
+  <data name="Ui_SigId" xml:space="preserve"><value>數位識別碼</value></data>
+  <data name="Ui_SigNoIds" xml:space="preserve"><value>這台電腦上沒有數位識別碼。請開啟 .p12 / .pfx 檔案，或在這裡建立一個。</value></data>
+  <data name="Ui_SigOpenId" xml:space="preserve"><value>開啟識別碼檔案…</value></data>
+  <data name="Ui_SigCreateId" xml:space="preserve"><value>建立數位識別碼</value></data>
+  <data name="Ui_SigNewName" xml:space="preserve"><value>姓名</value></data>
+  <data name="Ui_SigNewEmail" xml:space="preserve"><value>電子郵件（選填）</value></data>
+  <data name="Ui_SigNewPassword" xml:space="preserve"><value>識別碼檔案的密碼（至少 6 個字元）</value></data>
+  <data name="Ui_SigNewNote" xml:space="preserve"><value>這是自簽署識別碼：能證明文件未被修改，但在閱讀者選擇信任之前，你的身分顯示為「未驗證」。如需具有法律效力的簽章，請使用憑證機構頒發的識別碼。</value></data>
+  <data name="Ui_SigCreateSave" xml:space="preserve"><value>建立並儲存…</value></data>
+  <data name="Ui_IdCreated" xml:space="preserve"><value>已建立數位識別碼 {0}。請妥善保管檔案和密碼。</value></data>
+  <data name="Ui_SigPlace" xml:space="preserve"><value>位置</value></data>
+  <data name="Ui_SigInvisible" xml:space="preserve"><value>不可見（頁面上不顯示）</value></data>
+  <data name="Ui_SigInField" xml:space="preserve"><value>欄位「{0}」（第 {1} 頁）</value></data>
+  <data name="Ui_SigInBox" xml:space="preserve"><value>第 {0} 頁上畫的框</value></data>
+  <data name="Ui_SigIncludeInk" xml:space="preserve"><value>同時顯示我的手寫簽名</value></data>
+  <data name="Ui_SigReason" xml:space="preserve"><value>原因（選填）</value></data>
+  <data name="Ui_SigLocation" xml:space="preserve"><value>地點（選填）</value></data>
+  <data name="Ui_SigTimestamp" xml:space="preserve"><value>時間戳記服務（選填）</value></data>
+  <data name="Ui_SigTimestampNote" xml:space="preserve"><value>留空則不使用。填寫後只會傳送簽章的雜湊值（RFC 3161），用於證明簽署時間。</value></data>
+  <data name="Ui_SigBadTimestamp" xml:space="preserve"><value>時間戳記服務的位址無效。</value></data>
+  <data name="Ui_SigSign" xml:space="preserve"><value>簽署並另存副本…</value></data>
+  <data name="Ui_SigSigned" xml:space="preserve"><value>已儲存 {0}（由 {1} 簽署），簽章已核實。</value></data>
+  <data name="Err_SignDamaged" xml:space="preserve"><value>無法安全地擴充此檔案的結構，因此沒有簽署。</value></data>
+  <data name="Err_SignProtected" xml:space="preserve"><value>Washi 不能為有密碼保護的檔案簽署，請先解除密碼。</value></data>
+  <data name="Err_SignNoField" xml:space="preserve"><value>沒有空的簽章欄位「{0}」。</value></data>
+  <data name="Err_SignFieldSigned" xml:space="preserve"><value>欄位「{0}」已經簽署過。</value></data>
+  <data name="Err_SignCheck" xml:space="preserve"><value>簽署後的副本未通過核實，因此沒有保留。</value></data>
+  <data name="Err_SignTimestamp" xml:space="preserve"><value>時間戳記服務（{0}）沒有傳回有效的時間戳記。</value></data>
+  <data name="Err_IdOpen" xml:space="preserve"><value>無法開啟 {0}：密碼錯誤，或者它不是數位識別碼檔案。</value></data>
+  <data name="Err_IdNoKey" xml:space="preserve"><value>{0} 不含私密金鑰，因此不能簽署。</value></data>
+  <data name="Err_IdName" xml:space="preserve"><value>數位識別碼需要一個姓名。</value></data>
+  <data name="Err_IdPassword" xml:space="preserve"><value>密碼至少需要 6 個字元。</value></data>
+  <data name="Pdf_SigNone" xml:space="preserve"><value>沒有簽章。</value></data>
+  <data name="Pdf_SigLine" xml:space="preserve"><value>{0}：{1} — {2}</value></data>
+  <data name="Pdf_AskIdPassword" xml:space="preserve"><value>數位識別碼的密碼：</value></data>
 </root>

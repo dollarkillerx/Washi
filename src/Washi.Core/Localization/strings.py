@@ -523,7 +523,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          or write a copy with the ones in a file of that form\n'
             '  washi pdf print <in.pdf> [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      list the printers\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          sign with a digital ID (password from WASHI_ID_PASSWORD or asked for)\n'
+            '  washi pdf verify <in.pdf>               check the signatures in a file\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID'
         ),
         "ja": (
             'ページと OCR:\n'
@@ -549,7 +553,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          または同じ形式のファイルのしおりでコピーを作成\n'
             '  washi pdf print <in.pdf> [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      プリンターの一覧\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          デジタル ID で署名（パスワードは WASHI_ID_PASSWORD か入力）\n'
+            '  washi pdf verify <in.pdf>               ファイルの署名を確認\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成'
         ),
         "zh-Hans": (
             '页面与 OCR：\n'
@@ -575,7 +583,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          或用同样格式的文件写出带书签的副本\n'
             '  washi pdf print <in.pdf> [--printer 名称] [--copies 份数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      列出打印机\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 名称 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          用数字标识签名（密码取自 WASHI_ID_PASSWORD 或提示输入）\n'
+            '  washi pdf verify <in.pdf>               核实文件中的签名\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   创建自签名数字标识'
         ),
         "zh-Hant": (
             '頁面與 OCR：\n'
@@ -601,7 +613,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          或用同樣格式的檔案寫出帶書籤的副本\n'
             '  washi pdf print <in.pdf> [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      列出印表機\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 名稱 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          以數位識別碼簽署（密碼取自 WASHI_ID_PASSWORD 或提示輸入）\n'
+            '  washi pdf verify <in.pdf>               核實檔案中的簽章\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   建立自簽署數位識別碼'
         ),
         "ko": (
             '페이지와 OCR:\n'
@@ -627,7 +643,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성\n'
             '  washi pdf print <in.pdf> [--printer 이름] [--copies 매수] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      프린터 목록\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   더 작은 사본 (저장 전 페이지 비교)'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   더 작은 사본 (저장 전 페이지 비교)\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 이름 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          디지털 ID 로 서명 (암호는 WASHI_ID_PASSWORD 또는 입력)\n'
+            '  washi pdf verify <in.pdf>               파일의 서명 확인\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   자체 서명 디지털 ID 만들기'
         ),
         "fr": (
             'Pages et OCR :\n'
@@ -653,7 +673,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          ou écrit une copie avec ceux d’un fichier de cette forme\n'
             '  washi pdf print <in.pdf> [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      liste les imprimantes\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          signe avec une identité numérique (mot de passe : WASHI_ID_PASSWORD ou demandé)\n'
+            '  washi pdf verify <in.pdf>               vérifie les signatures d’un fichier\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée'
         ),
         "de": (
             'Seiten und OCR:\n'
@@ -679,7 +703,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          oder eine Kopie mit denen aus einer solchen Datei schreiben\n'
             '  washi pdf print <in.pdf> [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      Drucker auflisten\n'
-            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field Name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '                                          mit digitaler ID signieren (Passwort aus WASHI_ID_PASSWORD oder abgefragt)\n'
+            '  washi pdf verify <in.pdf>               Signaturen einer Datei prüfen\n'
+            '  washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen'
         ),
     },
     "Pdf_Erased": {
@@ -1544,6 +1572,55 @@ _UI = {
     "Err_CompressProtected": ["{0} is protected: remove its password first (Protect), compress it, then protect it again.", "{0} は保護されています。先に「保護」でパスワードを外してから圧縮し、もう一度保護してください。", "{0} 有保护：请先在“保护”中解除密码，压缩后再重新加密。", "{0} 有保護：請先在「保護」中解除密碼，壓縮後再重新加密。", "{0} 은(는) 보호되어 있습니다. 먼저 '보호'에서 암호를 해제하고 압축한 뒤 다시 보호하세요.", "{0} est protégé : retirez d’abord son mot de passe (Protéger), compressez-le, puis protégez-le de nouveau.", "{0} ist geschützt: zuerst das Passwort entfernen (Schützen), verkleinern, dann wieder schützen."],
     "Err_CompressChanged": ["The compressed copy looked different from the original (difference {0}), so it was not kept. Try a lighter level.", "圧縮したコピーの見た目が元と違った（差 {0}）ため、保存しませんでした。もっと軽いレベルをお試しください。", "压缩后的副本与原文件看起来不同（差异 {0}），因此没有保留。请试试较轻的级别。", "壓縮後的副本與原檔案看起來不同（差異 {0}），因此沒有保留。請試試較輕的級別。", "압축한 사본이 원본과 다르게 보여(차이 {0}) 저장하지 않았습니다. 더 가벼운 단계를 시도하세요.", "La copie compressée différait visiblement de l’original (écart {0}) ; elle n’a pas été conservée. Essayez un niveau plus léger.", "Die verkleinerte Kopie sah anders aus als das Original (Abweichung {0}) und wurde nicht behalten. Versuchen Sie eine leichtere Stufe."],
     "Err_CompressNoGain": ["{0} is already as small as Washi can make it at this level.", "{0} はこのレベルではこれ以上小さくできません。", "在此级别下，{0} 已无法再缩小。", "在此級別下，{0} 已無法再縮小。", "{0} 은(는) 이 단계에서 더 이상 줄일 수 없습니다.", "{0} est déjà aussi léger que Washi peut le rendre à ce niveau.", "{0} lässt sich auf dieser Stufe nicht weiter verkleinern."],
+    "Sig_SignedBy": ["Digitally signed by {0}", "{0} によるデジタル署名", "由 {0} 数字签名", "由 {0} 數位簽署", "{0} 의 디지털 서명", "Signé numériquement par {0}", "Digital signiert von {0}"],
+    "Sig_Date": ["Date: {0}", "日時: {0}", "日期：{0}", "日期：{0}", "날짜: {0}", "Date : {0}", "Datum: {0}"],
+    "Sig_Reason": ["Reason: {0}", "理由: {0}", "原因：{0}", "原因：{0}", "사유: {0}", "Motif : {0}", "Grund: {0}"],
+    "Sig_Location": ["Location: {0}", "場所: {0}", "地点：{0}", "地點：{0}", "장소: {0}", "Lieu : {0}", "Ort: {0}"],
+    "Ui_IdFiles": ["Digital IDs (.p12, .pfx)", "デジタル ID（.p12, .pfx）", "数字标识（.p12, .pfx）", "數位識別碼（.p12, .pfx）", "디지털 ID (.p12, .pfx)", "Identités numériques (.p12, .pfx)", "Digitale IDs (.p12, .pfx)"],
+    "Ui_SigInFile": ["Signatures in this file", "このファイルの署名", "此文件中的签名", "此檔案中的簽章", "이 파일의 서명", "Signatures de ce fichier", "Signaturen in dieser Datei"],
+    "Ui_SigRow": ["{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}"],
+    "Ui_SigStatus_valid": ["Valid: unchanged since signing, signer verified.", "有効: 署名後に変更なし、署名者を確認済み。", "有效：签名后未被修改，签名人已验证。", "有效：簽署後未被修改，簽署人已驗證。", "유효: 서명 후 변경 없음, 서명자 확인됨.", "Valide : inchangé depuis la signature, signataire vérifié.", "Gültig: seit der Signatur unverändert, Unterzeichner bestätigt."],
+    "Ui_SigStatus_unverified": ["Unchanged since signing, but the signer's identity is not verified (no trusted certificate).", "署名後に変更はありませんが、署名者の身元は確認できません（信頼された証明書ではありません）。", "签名后未被修改，但无法验证签名人身份（证书不受信任）。", "簽署後未被修改，但無法驗證簽署人身分（憑證不受信任）。", "서명 후 변경은 없지만 서명자 신원은 확인되지 않았습니다 (신뢰할 수 있는 인증서가 아님).", "Inchangé depuis la signature, mais l’identité du signataire n’est pas vérifiée (certificat non approuvé).", "Seit der Signatur unverändert, aber die Identität des Unterzeichners ist nicht bestätigt (kein vertrauenswürdiges Zertifikat)."],
+    "Ui_SigStatus_changed": ["Signature intact; the document was changed after it was signed.", "署名は有効ですが、署名後に文書が変更されています。", "签名完好，但文档在签名后被修改过。", "簽章完好，但文件在簽署後被修改過。", "서명은 유효하지만 서명 후 문서가 변경되었습니다.", "Signature intacte ; le document a été modifié après la signature.", "Signatur intakt; das Dokument wurde nach der Signatur geändert."],
+    "Ui_SigStatus_invalid": ["Invalid: the document was altered or the signature is damaged.", "無効: 文書が改ざんされたか、署名が壊れています。", "无效：文档被篡改或签名已损坏。", "無效：文件被竄改或簽章已損壞。", "무효: 문서가 변조되었거나 서명이 손상되었습니다.", "Non valide : le document a été altéré ou la signature est endommagée.", "Ungültig: das Dokument wurde verändert oder die Signatur ist beschädigt."],
+    "Ui_SigTimestamped": ["time-stamped", "タイムスタンプ付き", "带时间戳", "附時間戳記", "타임스탬프 있음", "horodaté", "mit Zeitstempel"],
+    "Ui_SigTitle": ["Sign with a digital ID", "デジタル ID で署名", "用数字标识签名", "以數位識別碼簽署", "디지털 ID 로 서명", "Signer avec une identité numérique", "Mit digitaler ID signieren"],
+    "Ui_SigLead": ["A certificate-based signature that readers can check: it shows who signed and that nothing changed since. It is added after everything in the file, so earlier signatures stay valid.", "証明書による署名で、誰が署名したか、署名後に変更がないかを閲覧者が確認できます。ファイルの末尾に追加されるため、それまでの署名も有効なままです。", "基于证书的签名，阅读者可以核实谁签的、签名后是否被改动。签名追加在文件末尾，之前的签名仍然有效。", "以憑證為基礎的簽章，閱讀者可以核實誰簽署、簽署後是否被改動。簽章附加在檔案末尾，先前的簽章仍然有效。", "인증서 기반 서명으로, 누가 서명했고 이후 변경이 없는지 읽는 사람이 확인할 수 있습니다. 파일 끝에 추가되므로 이전 서명도 유효합니다.", "Une signature à certificat que les lecteurs peuvent vérifier : qui a signé, et que rien n’a changé depuis. Elle s’ajoute après le contenu du fichier : les signatures antérieures restent valides.", "Eine zertifikatbasierte Signatur, die Leser prüfen können: wer unterschrieben hat und dass seither nichts geändert wurde. Sie wird hinten angefügt, frühere Signaturen bleiben gültig."],
+    "Ui_SigId": ["Digital ID", "デジタル ID", "数字标识", "數位識別碼", "디지털 ID", "Identité numérique", "Digitale ID"],
+    "Ui_SigNoIds": ["No digital ID found on this computer. Open a .p12 / .pfx file, or make one here.", "このコンピューターにデジタル ID がありません。.p12 / .pfx ファイルを開くか、ここで作成してください。", "这台电脑上没有数字标识。请打开 .p12 / .pfx 文件，或在这里创建一个。", "這台電腦上沒有數位識別碼。請開啟 .p12 / .pfx 檔案，或在這裡建立一個。", "이 컴퓨터에 디지털 ID 가 없습니다. .p12 / .pfx 파일을 열거나 여기서 만드세요.", "Aucune identité numérique sur cet ordinateur. Ouvrez un fichier .p12 / .pfx, ou créez-en une ici.", "Keine digitale ID auf diesem Computer. Öffnen Sie eine .p12-/.pfx-Datei oder erstellen Sie hier eine."],
+    "Ui_SigOpenId": ["Open ID file…", "ID ファイルを開く…", "打开标识文件…", "開啟識別碼檔案…", "ID 파일 열기…", "Ouvrir un fichier d’identité…", "ID-Datei öffnen…"],
+    "Ui_SigCreateId": ["Make a digital ID", "デジタル ID を作成", "创建数字标识", "建立數位識別碼", "디지털 ID 만들기", "Créer une identité", "Digitale ID erstellen"],
+    "Ui_SigNewName": ["Your name", "氏名", "姓名", "姓名", "이름", "Votre nom", "Ihr Name"],
+    "Ui_SigNewEmail": ["E-mail (optional)", "メールアドレス（任意）", "电子邮件（可选）", "電子郵件（選填）", "이메일 (선택)", "E-mail (facultatif)", "E-Mail (optional)"],
+    "Ui_SigNewPassword": ["Password for the ID file (6 characters or more)", "ID ファイルのパスワード（6 文字以上）", "标识文件的密码（至少 6 个字符）", "識別碼檔案的密碼（至少 6 個字元）", "ID 파일 암호 (6자 이상)", "Mot de passe du fichier (6 caractères ou plus)", "Passwort der ID-Datei (mindestens 6 Zeichen)"],
+    "Ui_SigNewNote": ["A self-signed ID: it proves the document did not change, but readers see your identity as not verified until they choose to trust it. For legally recognised signatures, use an ID from a certification authority.", "自己署名の ID です。文書が変更されていないことは証明できますが、閲覧者が信頼するまで身元は「未確認」と表示されます。法的に認められた署名には、認証局が発行した ID を使ってください。", "这是自签名标识：能证明文档未被修改，但在阅读者选择信任之前，你的身份显示为“未验证”。如需具有法律效力的签名，请使用认证机构颁发的标识。", "這是自簽署識別碼：能證明文件未被修改，但在閱讀者選擇信任之前，你的身分顯示為「未驗證」。如需具有法律效力的簽章，請使用憑證機構頒發的識別碼。", "자체 서명 ID 입니다. 문서가 바뀌지 않았음은 증명하지만, 읽는 사람이 신뢰하기 전까지 신원은 '미확인'으로 표시됩니다. 법적 효력이 있는 서명에는 인증기관이 발급한 ID 를 사용하세요.", "Une identité auto-signée : elle prouve que le document n’a pas changé, mais les lecteurs voient votre identité comme non vérifiée tant qu’ils ne lui font pas confiance. Pour une signature reconnue juridiquement, utilisez une identité d’une autorité de certification.", "Eine selbstsignierte ID: sie belegt, dass das Dokument unverändert ist, aber Leser sehen Ihre Identität als unbestätigt, bis sie ihr vertrauen. Für rechtlich anerkannte Signaturen nutzen Sie eine ID einer Zertifizierungsstelle."],
+    "Ui_SigCreateSave": ["Make and save…", "作成して保存…", "创建并保存…", "建立並儲存…", "만들어 저장…", "Créer et enregistrer…", "Erstellen und speichern…"],
+    "Ui_IdCreated": ["Made the digital ID {0}. Keep the file and its password safe.", "デジタル ID {0} を作成しました。ファイルとパスワードは大切に保管してください。", "已创建数字标识 {0}。请妥善保管文件和密码。", "已建立數位識別碼 {0}。請妥善保管檔案和密碼。", "디지털 ID {0} 을(를) 만들었습니다. 파일과 암호를 안전하게 보관하세요.", "Identité {0} créée. Gardez le fichier et son mot de passe en lieu sûr.", "Digitale ID {0} erstellt. Bewahren Sie Datei und Passwort sicher auf."],
+    "Ui_SigPlace": ["Where", "署名の場所", "位置", "位置", "위치", "Emplacement", "Wo"],
+    "Ui_SigInvisible": ["Invisible (no mark on the page)", "非表示（ページには何も表示しない）", "不可见（页面上不显示）", "不可見（頁面上不顯示）", "보이지 않음 (페이지에 표시 없음)", "Invisible (rien sur la page)", "Unsichtbar (keine Markierung auf der Seite)"],
+    "Ui_SigInField": ["Field “{0}” (page {1})", "記入欄「{0}」（{1} ページ）", "栏位“{0}”（第 {1} 页）", "欄位「{0}」（第 {1} 頁）", "입력란 “{0}” ({1}쪽)", "Champ « {0} » (page {1})", "Feld „{0}“ (Seite {1})"],
+    "Ui_SigInBox": ["The box drawn on page {0}", "{0} ページに描いた枠", "第 {0} 页上画的框", "第 {0} 頁上畫的框", "{0}쪽에 그린 상자", "Le cadre tracé page {0}", "Der Rahmen auf Seite {0}"],
+    "Ui_SigIncludeInk": ["Show my handwritten signature in it", "手書きのサインも表示する", "同时显示我的手写签名", "同時顯示我的手寫簽名", "손글씨 서명도 표시", "Y montrer ma signature manuscrite", "Meine handschriftliche Unterschrift zeigen"],
+    "Ui_SigReason": ["Reason (optional)", "理由（任意）", "原因（可选）", "原因（選填）", "사유 (선택)", "Motif (facultatif)", "Grund (optional)"],
+    "Ui_SigLocation": ["Location (optional)", "場所（任意）", "地点（可选）", "地點（選填）", "장소 (선택)", "Lieu (facultatif)", "Ort (optional)"],
+    "Ui_SigTimestamp": ["Time-stamping service (optional)", "タイムスタンプサービス（任意）", "时间戳服务（可选）", "時間戳記服務（選填）", "타임스탬프 서비스 (선택)", "Service d’horodatage (facultatif)", "Zeitstempeldienst (optional)"],
+    "Ui_SigTimestampNote": ["Leave empty to sign without one. If given, only the signature's hash is sent to it (RFC 3161), to prove when you signed.", "空欄なら使いません。指定すると、署名した時刻を証明するために署名のハッシュだけを送ります（RFC 3161）。", "留空则不使用。填写后只会发送签名的哈希值（RFC 3161），用于证明签名时间。", "留空則不使用。填寫後只會傳送簽章的雜湊值（RFC 3161），用於證明簽署時間。", "비워 두면 사용하지 않습니다. 입력하면 서명 시각 증명을 위해 서명의 해시만 보냅니다 (RFC 3161).", "Laissez vide pour signer sans. Sinon, seule l’empreinte de la signature lui est envoyée (RFC 3161), pour prouver quand vous avez signé.", "Leer lassen, um ohne zu signieren. Sonst wird nur der Hash der Signatur gesendet (RFC 3161), um den Zeitpunkt zu belegen."],
+    "Ui_SigBadTimestamp": ["The time-stamping service is not a valid web address.", "タイムスタンプサービスのアドレスが正しくありません。", "时间戳服务的地址无效。", "時間戳記服務的位址無效。", "타임스탬프 서비스 주소가 올바르지 않습니다.", "L’adresse du service d’horodatage n’est pas valide.", "Die Adresse des Zeitstempeldienstes ist ungültig."],
+    "Ui_SigSign": ["Sign and save copy…", "署名してコピーを保存…", "签名并另存副本…", "簽署並另存副本…", "서명하고 사본 저장…", "Signer et enregistrer une copie…", "Signieren und Kopie speichern…"],
+    "Ui_SigSigned": ["Saved {0}, signed by {1}. The signature checks out.", "{0} を保存しました（{1} による署名）。署名を確認済みです。", "已保存 {0}（由 {1} 签名），签名已核实。", "已儲存 {0}（由 {1} 簽署），簽章已核實。", "{0} 저장 ({1} 서명). 서명 확인됨.", "{0} enregistré, signé par {1}. La signature a été vérifiée.", "{0} gespeichert, signiert von {1}. Die Signatur wurde geprüft."],
+    "Err_SignDamaged": ["This file's structure could not be extended safely, so it was not signed.", "このファイルの構造に安全に追記できないため、署名しませんでした。", "无法安全地扩展此文件的结构，因此没有签名。", "無法安全地擴充此檔案的結構，因此沒有簽署。", "이 파일 구조에 안전하게 추가할 수 없어 서명하지 않았습니다.", "La structure de ce fichier ne peut pas être prolongée sans risque ; il n’a pas été signé.", "Die Struktur dieser Datei lässt sich nicht sicher erweitern; sie wurde nicht signiert."],
+    "Err_SignProtected": ["Password-protected files cannot be signed by Washi: remove the password first.", "パスワード保護されたファイルには署名できません。先にパスワードを外してください。", "Washi 不能为有密码保护的文件签名，请先解除密码。", "Washi 不能為有密碼保護的檔案簽署，請先解除密碼。", "암호로 보호된 파일에는 서명할 수 없습니다. 먼저 암호를 해제하세요.", "Washi ne peut pas signer un fichier protégé : retirez d’abord le mot de passe.", "Washi kann geschützte Dateien nicht signieren: zuerst das Passwort entfernen."],
+    "Err_SignNoField": ["There is no empty signature field “{0}”.", "空の署名欄「{0}」はありません。", "没有空的签名栏位“{0}”。", "沒有空的簽章欄位「{0}」。", "빈 서명란 “{0}” 이(가) 없습니다.", "Il n’y a pas de champ de signature vide « {0} ».", "Es gibt kein leeres Signaturfeld „{0}“."],
+    "Err_SignFieldSigned": ["The field “{0}” is already signed.", "署名欄「{0}」はすでに署名済みです。", "栏位“{0}”已经签过名。", "欄位「{0}」已經簽署過。", "서명란 “{0}” 은(는) 이미 서명되었습니다.", "Le champ « {0} » est déjà signé.", "Das Feld „{0}“ ist bereits signiert."],
+    "Err_SignCheck": ["The signed copy did not verify, so it was not kept.", "署名したコピーの確認に失敗したため、保存しませんでした。", "签名后的副本未通过核实，因此没有保留。", "簽署後的副本未通過核實，因此沒有保留。", "서명한 사본 확인에 실패해 저장하지 않았습니다.", "La copie signée ne s’est pas vérifiée ; elle n’a pas été conservée.", "Die signierte Kopie ließ sich nicht prüfen und wurde nicht behalten."],
+    "Err_SignTimestamp": ["The time-stamping service ({0}) gave no valid time-stamp.", "タイムスタンプサービス（{0}）から有効なタイムスタンプを得られませんでした。", "时间戳服务（{0}）没有返回有效的时间戳。", "時間戳記服務（{0}）沒有傳回有效的時間戳記。", "타임스탬프 서비스({0})에서 유효한 타임스탬프를 받지 못했습니다.", "Le service d’horodatage ({0}) n’a pas fourni d’horodatage valide.", "Der Zeitstempeldienst ({0}) lieferte keinen gültigen Zeitstempel."],
+    "Err_IdOpen": ["{0} could not be opened: the password is wrong or it is not a digital ID file.", "{0} を開けませんでした。パスワードが違うか、デジタル ID ファイルではありません。", "无法打开 {0}：密码错误，或者它不是数字标识文件。", "無法開啟 {0}：密碼錯誤，或者它不是數位識別碼檔案。", "{0} 을(를) 열 수 없습니다. 암호가 틀렸거나 디지털 ID 파일이 아닙니다.", "{0} n’a pas pu être ouvert : mot de passe erroné ou fichier qui n’est pas une identité numérique.", "{0} ließ sich nicht öffnen: falsches Passwort oder keine ID-Datei."],
+    "Err_IdNoKey": ["{0} holds no private key, so it cannot sign.", "{0} には秘密鍵がないため、署名できません。", "{0} 不含私钥，因此不能签名。", "{0} 不含私密金鑰，因此不能簽署。", "{0} 에 개인 키가 없어 서명할 수 없습니다.", "{0} ne contient pas de clé privée : il ne peut pas signer.", "{0} enthält keinen privaten Schlüssel und kann nicht signieren."],
+    "Err_IdName": ["A digital ID needs a name.", "デジタル ID には氏名が必要です。", "数字标识需要一个姓名。", "數位識別碼需要一個姓名。", "디지털 ID 에는 이름이 필요합니다.", "Une identité numérique a besoin d’un nom.", "Eine digitale ID braucht einen Namen."],
+    "Err_IdPassword": ["The password must be at least 6 characters.", "パスワードは 6 文字以上にしてください。", "密码至少需要 6 个字符。", "密碼至少需要 6 個字元。", "암호는 6자 이상이어야 합니다.", "Le mot de passe doit compter au moins 6 caractères.", "Das Passwort muss mindestens 6 Zeichen lang sein."],
+    "Pdf_SigNone": ["No signatures.", "署名はありません。", "没有签名。", "沒有簽章。", "서명이 없습니다.", "Aucune signature.", "Keine Signaturen."],
+    "Pdf_SigLine": ["{0}: {1} — {2}", "{0}: {1} — {2}", "{0}：{1} — {2}", "{0}：{1} — {2}", "{0}: {1} — {2}", "{0} : {1} — {2}", "{0}: {1} — {2}"],
+    "Pdf_AskIdPassword": ["Password of the digital ID: ", "デジタル ID のパスワード: ", "数字标识的密码：", "數位識別碼的密碼：", "디지털 ID 암호: ", "Mot de passe de l’identité : ", "Passwort der digitalen ID: "],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

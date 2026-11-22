@@ -636,6 +636,54 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(4, vm.PageCount);
     }
 
+    [AvaloniaFact]
+    public async Task A_digital_id_is_made_or_opened_and_signs_a_copy_whose_signature_is_listed()
+    {
+        var pdf = Form("d.pdf");
+        var idPath = Path.Combine(_dir, "me.p12");
+        var dialogs = new FakeDialogs { SaveDigitalId = idPath, DigitalId = idPath, SavePdf = Path.Combine(_dir, "d_signed.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.Sign.StorePath = Path.Combine(_dir, "signature.txt");
+        vm.ActiveTool = Tool.Sign;
+        await vm.Sign.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        var d = vm.Sign.Digital;
+        Assert.False(d.HasSignatures);
+        Assert.Equal("invisible", d.Place!.Kind);
+
+        // make an ID here (it is saved where the dialog says) …
+        d.Creating = true;
+        d.NewName = "Washi Tester";
+        d.NewPassword = "secret-1";
+        await d.CreateIdCommand.ExecuteAsync(null);
+        Assert.True(File.Exists(idPath));
+        Assert.Equal("Washi Tester", d.Id!.Name);
+        // … or open one: a wrong password is refused, the right one adds it
+        d.Ids.Clear();
+        await d.OpenIdFileCommand.ExecuteAsync(null);
+        d.IdPassword = "nope";
+        d.UnlockIdFileCommand.Execute(null);
+        Assert.Empty(d.Ids);
+        d.IdPassword = "secret-1";
+        d.UnlockIdFileCommand.Execute(null);
+        Assert.Equal("Washi Tester", d.Id!.Name);
+
+        // a box drawn on the page becomes a place to sign
+        vm.Sign.SetInk(Washi.Core.Pages.Ink.From([[(0.0, 0.0), (20, 10), (40, 0)]]));
+        vm.Sign.Place(new Washi.Core.PdfRect(500, 300, 700, 360));
+        Assert.Equal("box", d.Place!.Kind);
+        d.Reason = "Approved";
+        Assert.True(d.CanSign);
+        await d.SignCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Empty(vm.Sign.Placed);                               // that box became the digital signature
+        var row = Assert.Single(d.Signatures);
+        Assert.True(row.Check.Intact);
+        Assert.Equal("unverified", row.Check.Status);               // a self-signed ID
+        Assert.Equal("Approved", row.Check.Reason);
+        Assert.True(w.FindControl<ItemsControl>("SignatureChecks")!.IsEffectivelyVisible);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

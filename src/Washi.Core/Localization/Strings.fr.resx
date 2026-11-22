@@ -133,7 +133,11 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
                                           ou écrit une copie avec ceux d’un fichier de cette forme
   washi pdf print &lt;in.pdf&gt; [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      liste les imprimantes
-  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)</value></data>
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+                                          signe avec une identité numérique (mot de passe : WASHI_ID_PASSWORD ou demandé)
+  washi pdf verify &lt;in.pdf&gt;               vérifie les signatures d’un fichier
+  washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
@@ -687,4 +691,53 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_CompressProtected" xml:space="preserve"><value>{0} est protégé : retirez d’abord son mot de passe (Protéger), compressez-le, puis protégez-le de nouveau.</value></data>
   <data name="Err_CompressChanged" xml:space="preserve"><value>La copie compressée différait visiblement de l’original (écart {0}) ; elle n’a pas été conservée. Essayez un niveau plus léger.</value></data>
   <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} est déjà aussi léger que Washi peut le rendre à ce niveau.</value></data>
+  <data name="Sig_SignedBy" xml:space="preserve"><value>Signé numériquement par {0}</value></data>
+  <data name="Sig_Date" xml:space="preserve"><value>Date : {0}</value></data>
+  <data name="Sig_Reason" xml:space="preserve"><value>Motif : {0}</value></data>
+  <data name="Sig_Location" xml:space="preserve"><value>Lieu : {0}</value></data>
+  <data name="Ui_IdFiles" xml:space="preserve"><value>Identités numériques (.p12, .pfx)</value></data>
+  <data name="Ui_SigInFile" xml:space="preserve"><value>Signatures de ce fichier</value></data>
+  <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Valide : inchangé depuis la signature, signataire vérifié.</value></data>
+  <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>Inchangé depuis la signature, mais l’identité du signataire n’est pas vérifiée (certificat non approuvé).</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signature intacte ; le document a été modifié après la signature.</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Non valide : le document a été altéré ou la signature est endommagée.</value></data>
+  <data name="Ui_SigTimestamped" xml:space="preserve"><value>horodaté</value></data>
+  <data name="Ui_SigTitle" xml:space="preserve"><value>Signer avec une identité numérique</value></data>
+  <data name="Ui_SigLead" xml:space="preserve"><value>Une signature à certificat que les lecteurs peuvent vérifier : qui a signé, et que rien n’a changé depuis. Elle s’ajoute après le contenu du fichier : les signatures antérieures restent valides.</value></data>
+  <data name="Ui_SigId" xml:space="preserve"><value>Identité numérique</value></data>
+  <data name="Ui_SigNoIds" xml:space="preserve"><value>Aucune identité numérique sur cet ordinateur. Ouvrez un fichier .p12 / .pfx, ou créez-en une ici.</value></data>
+  <data name="Ui_SigOpenId" xml:space="preserve"><value>Ouvrir un fichier d’identité…</value></data>
+  <data name="Ui_SigCreateId" xml:space="preserve"><value>Créer une identité</value></data>
+  <data name="Ui_SigNewName" xml:space="preserve"><value>Votre nom</value></data>
+  <data name="Ui_SigNewEmail" xml:space="preserve"><value>E-mail (facultatif)</value></data>
+  <data name="Ui_SigNewPassword" xml:space="preserve"><value>Mot de passe du fichier (6 caractères ou plus)</value></data>
+  <data name="Ui_SigNewNote" xml:space="preserve"><value>Une identité auto-signée : elle prouve que le document n’a pas changé, mais les lecteurs voient votre identité comme non vérifiée tant qu’ils ne lui font pas confiance. Pour une signature reconnue juridiquement, utilisez une identité d’une autorité de certification.</value></data>
+  <data name="Ui_SigCreateSave" xml:space="preserve"><value>Créer et enregistrer…</value></data>
+  <data name="Ui_IdCreated" xml:space="preserve"><value>Identité {0} créée. Gardez le fichier et son mot de passe en lieu sûr.</value></data>
+  <data name="Ui_SigPlace" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="Ui_SigInvisible" xml:space="preserve"><value>Invisible (rien sur la page)</value></data>
+  <data name="Ui_SigInField" xml:space="preserve"><value>Champ « {0} » (page {1})</value></data>
+  <data name="Ui_SigInBox" xml:space="preserve"><value>Le cadre tracé page {0}</value></data>
+  <data name="Ui_SigIncludeInk" xml:space="preserve"><value>Y montrer ma signature manuscrite</value></data>
+  <data name="Ui_SigReason" xml:space="preserve"><value>Motif (facultatif)</value></data>
+  <data name="Ui_SigLocation" xml:space="preserve"><value>Lieu (facultatif)</value></data>
+  <data name="Ui_SigTimestamp" xml:space="preserve"><value>Service d’horodatage (facultatif)</value></data>
+  <data name="Ui_SigTimestampNote" xml:space="preserve"><value>Laissez vide pour signer sans. Sinon, seule l’empreinte de la signature lui est envoyée (RFC 3161), pour prouver quand vous avez signé.</value></data>
+  <data name="Ui_SigBadTimestamp" xml:space="preserve"><value>L’adresse du service d’horodatage n’est pas valide.</value></data>
+  <data name="Ui_SigSign" xml:space="preserve"><value>Signer et enregistrer une copie…</value></data>
+  <data name="Ui_SigSigned" xml:space="preserve"><value>{0} enregistré, signé par {1}. La signature a été vérifiée.</value></data>
+  <data name="Err_SignDamaged" xml:space="preserve"><value>La structure de ce fichier ne peut pas être prolongée sans risque ; il n’a pas été signé.</value></data>
+  <data name="Err_SignProtected" xml:space="preserve"><value>Washi ne peut pas signer un fichier protégé : retirez d’abord le mot de passe.</value></data>
+  <data name="Err_SignNoField" xml:space="preserve"><value>Il n’y a pas de champ de signature vide « {0} ».</value></data>
+  <data name="Err_SignFieldSigned" xml:space="preserve"><value>Le champ « {0} » est déjà signé.</value></data>
+  <data name="Err_SignCheck" xml:space="preserve"><value>La copie signée ne s’est pas vérifiée ; elle n’a pas été conservée.</value></data>
+  <data name="Err_SignTimestamp" xml:space="preserve"><value>Le service d’horodatage ({0}) n’a pas fourni d’horodatage valide.</value></data>
+  <data name="Err_IdOpen" xml:space="preserve"><value>{0} n’a pas pu être ouvert : mot de passe erroné ou fichier qui n’est pas une identité numérique.</value></data>
+  <data name="Err_IdNoKey" xml:space="preserve"><value>{0} ne contient pas de clé privée : il ne peut pas signer.</value></data>
+  <data name="Err_IdName" xml:space="preserve"><value>Une identité numérique a besoin d’un nom.</value></data>
+  <data name="Err_IdPassword" xml:space="preserve"><value>Le mot de passe doit compter au moins 6 caractères.</value></data>
+  <data name="Pdf_SigNone" xml:space="preserve"><value>Aucune signature.</value></data>
+  <data name="Pdf_SigLine" xml:space="preserve"><value>{0} : {1} — {2}</value></data>
+  <data name="Pdf_AskIdPassword" xml:space="preserve"><value>Mot de passe de l’identité : </value></data>
 </root>
