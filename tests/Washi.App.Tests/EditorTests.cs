@@ -267,6 +267,20 @@ public sealed class EditorTests : IDisposable
         await Task.Delay(300);
         Shot(w, "organize");
 
+        // Fill & Sign with a made-up signature (kept in a temp file, never the user's own)
+        var store = Path.Combine(Path.GetTempPath(), $"washi-sig-{Guid.NewGuid():N}.txt");
+        vm.Sign.StorePath = store;
+        vm.ActiveTool = Tool.Sign;
+        await vm.Sign.PrepareAsync();
+        IReadOnlyList<(double, double)> Wave(double x0, double amp, double f) =>
+            [.. Enumerable.Range(0, 60).Select(i => (x0 + i * 2.0, 30 + amp * Math.Sin(i / 60.0 * f) + 4 * Math.Sin(i / 3.0)))];
+        vm.Sign.SetInk(Washi.Core.Pages.Ink.From([Wave(0, 12, 9), Wave(130, 8, 14)]));
+        if (vm.Sign.Spots.FirstOrDefault() is { } spot) vm.Sign.SignSpotCommand.Execute(spot);
+        else vm.Sign.Place(new Washi.Core.PdfRect(80, 120, 280, 170));
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "sign");
+        File.Delete(store);
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

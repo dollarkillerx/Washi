@@ -12,6 +12,7 @@ using Washi.Core;
 using Washi.Core.Forms;
 using Washi.Core.Localization;
 using Washi.Core.Pdfium;
+using Washi.Masume;
 
 namespace Washi.App.Tests;
 
@@ -121,6 +122,81 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(zoomed, vm.Zoom);
         vm.FitWidthCommand.Execute(null);
         Assert.True(vm.Zoom < fitted);
+    }
+
+    private static FieldViewModel Field(FieldKind kind, double x, string name, string group = "", string export = "", string options = "") => new()
+    {
+        Page = 0, Kind = kind, X0 = x, Y0 = 200, X1 = x + (kind == FieldKind.Radio ? 10 : 120), Y1 = 210 + (kind == FieldKind.Radio ? 0 : 10),
+        Name = name, Group = group, Export = export, Options = options,
+    };
+
+    [AvaloniaFact]
+    public async Task Radio_buttons_choose_one_per_group_and_dropdowns_cycle_then_both_are_saved()
+    {
+        var a = Form("a.pdf");
+        var output = Path.Combine(_dir, "a_fillable.pdf");
+        var (_, vm) = await Open(a, new FakeDialogs { SavePdf = output });
+        vm.Fields.Clear();
+        var yes = Field(FieldKind.Radio, 40, "r1", "有無", "有");
+        var no = Field(FieldKind.Radio, 80, "r2", "有無", "無");
+        var pick = Field(FieldKind.Choice, 200, "続柄", options: "夫\n妻\n子");
+        foreach (var f in new[] { yes, no, pick }) vm.Fields.Add(f);
+
+        vm.PreviewMode = true;
+        vm.ActivateField(yes);
+        vm.ActivateField(no);                       // the group's other button is cleared
+        Assert.False(yes.IsChecked);
+        Assert.True(no.IsChecked);
+        Assert.Equal("● 無", no.Display);
+        vm.ActivateField(pick);
+        vm.ActivateField(pick);
+        Assert.Equal("妻", pick.Value);              // each click moves to the next item
+
+        await vm.MakeFillableCommand.ExecuteAsync(null);
+        var saved = AcroFormFields.List(output);
+        Assert.Equal("無", Assert.Single(saved, f => f.Type == "radio").Value);
+        Assert.Equal("妻", Assert.Single(saved, f => f.Type == "choice").Value);
+    }
+
+    [AvaloniaFact]
+    public async Task Sign_tool_remembers_the_signature_places_it_and_saves_a_signed_copy()
+    {
+        var a = Form("a.pdf");
+        var output = Path.Combine(_dir, "a_signed.pdf");
+        var (w, vm) = await Open(a, new FakeDialogs { SavePdf = output });
+        var store = Path.Combine(_dir, "signature.txt");
+        vm.Sign.StorePath = store;
+        vm.Fields.Add(Field(FieldKind.Signature, 300, "署名"));
+
+        vm.ActiveTool = Tool.Sign;
+        await vm.Sign.PrepareAsync();
+        var spot = Assert.Single(vm.Sign.Spots);
+        vm.Sign.SignSpotCommand.Execute(spot);
+        Assert.Empty(vm.Sign.Placed);                // nothing to place before a signature is drawn
+        Assert.False(vm.Sign.CanSave);
+
+        // draw on the pad: a stroke from left to right
+        var pad = w.FindControl<Washi.App.Controls.InkPad>("SignPad")!;
+        Dispatcher.UIThread.RunJobs();
+        w.MouseDown(Avalonia.VisualExtensions.TranslatePoint(pad, new Avalonia.Point(20, 60), w)!.Value, Avalonia.Input.MouseButton.Left);
+        foreach (var x in new[] { 60, 100, 140, 180 })
+            w.MouseMove(Avalonia.VisualExtensions.TranslatePoint(pad, new Avalonia.Point(x, x % 80 == 0 ? 40 : 80), w)!.Value);
+        w.MouseUp(Avalonia.VisualExtensions.TranslatePoint(pad, new Avalonia.Point(200, 60), w)!.Value, Avalonia.Input.MouseButton.Left);
+        Assert.True(vm.Sign.HasInk);
+        Assert.True(File.Exists(store));             // remembered on this computer
+
+        vm.Sign.SignSpotCommand.Execute(spot);
+        vm.Sign.Place(new PdfRect(40, 300, 240, 340));
+        Assert.Equal(2, vm.Sign.Placed.Count);
+        Assert.True(vm.Sign.CanSave);
+
+        await vm.Sign.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(output, vm.PdfPath);
+        Assert.Empty(vm.Sign.Placed);
+        Assert.Contains("2", vm.Status);
+
+        vm.Sign.Remember = false;                    // forgetting deletes the file
+        Assert.False(File.Exists(store));
     }
 
     /// <summary>A UI context that has stopped: posted continuations never run (a closed app, an ended headless test).</summary>

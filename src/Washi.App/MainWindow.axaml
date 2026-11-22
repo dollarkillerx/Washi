@@ -262,6 +262,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsOrganizeTool}" x:Name="OrganizeToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Organize}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolOrganize}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSignTool}" x:Name="SignToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Sign}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSign}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
                 </RadioButton>
@@ -548,6 +551,61 @@
                     </Panel>
                 </DockPanel>
 
+                <!-- Fill & Sign -->
+                <DockPanel IsVisible="{Binding IsSignTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <Button Classes="accent primary" Command="{Binding Sign.SaveCommand}" IsEnabled="{Binding Sign.CanSave}" x:Name="SignSaveButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Sign}" Size="18" />
+                                <TextBlock Text="{l:Tr Ui_SignRun}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_SignTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_SignLead}" />
+                            <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="1" Margin="0,14,0,0" Height="120">
+                                <Panel>
+                                    <c:InkPad Ink="{Binding Sign.Ink}" x:Name="SignPad" Cursor="Cross" />
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_SignPadHint}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               IsVisible="{Binding !Sign.HasInk}" IsHitTestVisible="False" />
+                                </Panel>
+                            </Border>
+                            <DockPanel Margin="0,6,0,0">
+                                <Button DockPanel.Dock="Right" Content="{l:Tr Ui_SignClear}" Command="{Binding Sign.ClearInkCommand}" Padding="10,3" FontSize="12" />
+                                <CheckBox IsChecked="{Binding Sign.Remember}" Content="{l:Tr Ui_SignRemember}" FontSize="12" />
+                            </DockPanel>
+                            <TextBlock Classes="section" Text="{l:Tr Ui_SignSpots}" IsVisible="{Binding Sign.Spots.Count}" />
+                            <ItemsControl ItemsSource="{Binding Sign.Spots}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SignatureSpot">
+                                        <DockPanel Margin="0,2">
+                                            <Button DockPanel.Dock="Right" Content="{l:Tr Ui_SignHereButton}" Padding="8,2" FontSize="12"
+                                                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).Sign.SignSpotCommand}" CommandParameter="{Binding}" />
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="12" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Classes="section" Text="{l:Tr Ui_SignPlacedTitle}" IsVisible="{Binding Sign.HasPlaced}" />
+                            <ItemsControl ItemsSource="{Binding Sign.Placed}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PlacedSignature">
+                                        <DockPanel Margin="0,2">
+                                            <Button DockPanel.Dock="Right" Padding="5" ToolTip.Tip="{l:Tr Ui_Remove}"
+                                                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).Sign.RemovePlacedCommand}" CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Delete}" Size="14" />
+                                            </Button>
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" FontSize="12" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
                 <!-- Erase printed content -->
                 <DockPanel IsVisible="{Binding IsEraseTool}">
                     <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
@@ -645,10 +703,16 @@
                                 <TextBlock Classes="caption" Text="{Binding SelectedField.Label}"
                                            IsVisible="{Binding SelectedField.Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}" />
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Value}" />
-                                <TextBox Text="{Binding SelectedField.Value}" IsVisible="{Binding !SelectedField.IsCheckbox, FallbackValue=False}"
+                                <TextBox Text="{Binding SelectedField.Value}" IsVisible="{Binding SelectedField.IsTyped, FallbackValue=False}"
                                          TextWrapping="Wrap" x:Name="FieldValueBox" />
                                 <CheckBox IsChecked="{Binding SelectedField.Ticked}" Content="{l:Tr Ui_Ticked}"
                                           IsVisible="{Binding SelectedField.IsCheckbox, FallbackValue=False}" />
+                                <ComboBox ItemsSource="{Binding SelectedField.OptionList, FallbackValue={x:Null}}" SelectedItem="{Binding SelectedField.Value}"
+                                          IsVisible="{Binding SelectedField.IsChoice, FallbackValue=False}" HorizontalAlignment="Stretch" x:Name="FieldChoiceBox" />
+                                <Button Content="{l:Tr Ui_ChooseOption}" Command="{Binding ChooseRadioCommand}" CommandParameter="{Binding SelectedField}"
+                                        IsVisible="{Binding SelectedField.IsRadio, FallbackValue=False}" Padding="10,4" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SignHere}" TextWrapping="Wrap"
+                                           IsVisible="{Binding SelectedField.IsSignature, FallbackValue=False}" />
                             </StackPanel>
                             <StackPanel IsVisible="{Binding IsDesignMode}">
                             <TextBlock Classes="caption" Text="{l:Tr Ui_Name}" />
@@ -669,13 +733,31 @@
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Boxes}" />
                                 <NumericUpDown Value="{Binding SelectedField.MaxLen}" Minimum="1" Maximum="64" Increment="1" FormatString="0" />
                             </StackPanel>
+                            <StackPanel IsVisible="{Binding SelectedField.IsRadio, FallbackValue=False}">
+                                <Grid ColumnDefinitions="*,8,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_RadioGroup}" />
+                                        <TextBox Text="{Binding SelectedField.Group}" x:Name="FieldGroupBox" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_RadioExport}" />
+                                        <TextBox Text="{Binding SelectedField.Export}" x:Name="FieldExportBox" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_RadioGroupHint}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <StackPanel IsVisible="{Binding SelectedField.IsChoice, FallbackValue=False}">
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_ChoiceOptions}" />
+                                <TextBox Text="{Binding SelectedField.Options}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64"
+                                         x:Name="FieldOptionsBox" />
+                            </StackPanel>
                             <StackPanel IsVisible="{Binding SelectedField.Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Label}" />
                                 <TextBlock Text="{Binding SelectedField.Label}" TextWrapping="Wrap" />
                             </StackPanel>
                             </StackPanel>
                             <!-- how the value looks: fitted to the box unless a size is chosen -->
-                            <StackPanel IsVisible="{Binding !SelectedField.IsCheckbox, FallbackValue=False}" x:Name="TextStylePanel">
+                            <StackPanel IsVisible="{Binding SelectedField.HasTextStyle, FallbackValue=False}" x:Name="TextStylePanel">
                                 <Grid ColumnDefinitions="*,8,*">
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Classes="caption" Text="{l:Tr Ui_TextSize}" />

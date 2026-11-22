@@ -27,6 +27,7 @@ public static class AcroFormWriter
     private const int FlagMultiline = 1 << 12;
     private const int FlagDoNotScroll = 1 << 23;
     private const int FlagComb = 1 << 24;
+    private const int FlagNoToggleToOff = 1 << 14, FlagRadio = 1 << 15, FlagCombo = 1 << 17;
     private const int AnnotPrint = 4;
 
     private sealed record FontSpec(string Key, string BaseFont, string Encoding, string Ordering, int Supplement, string Widths, int Flags = 6);
@@ -118,6 +119,9 @@ public static class AcroFormWriter
             fonts.Elements.SetReference("/" + daFont, Fonts.PdfFontEmbedder.Embed(doc, embedFont));
         }
 
+        // radio groups: one parent field per name, one widget per option; finished after the loop
+        var radios = new Dictionary<string, (PdfDictionary Parent, List<(PdfDictionary Widget, string Label, double W, double H)> Kids)>(StringComparer.Ordinal);
+
         foreach (var f in fields)
         {
             if (f.Page < 0 || f.Page >= doc.PageCount)
@@ -141,7 +145,44 @@ public static class AcroFormWriter
             widget.Elements.SetReference("/P", page);
             widget.Elements["/Rect"] = Numbers(doc, r.X0, h - r.Y1, r.X1, h - r.Y0);
 
-            if (f.Kind == FormFieldKind.Checkbox)
+            if (f.Kind == FormFieldKind.Radio)
+            {
+                var group = f.Name.Trim();
+                if (!radios.TryGetValue(group, out var g))
+                {
+                    var parent = new PdfDictionary(doc);
+                    doc.Internals.AddObject(parent);
+                    parent.Elements["/T"] = widget.Elements["/T"];
+                    parent.Elements.SetName("/FT", "/Btn");
+                    parent.Elements.SetInteger("/Ff", FlagRadio | FlagNoToggleToOff);
+                    parent.Elements.SetName("/V", "/Off");
+                    parent.Elements["/Kids"] = new PdfArray(doc);
+                    fieldArray.Elements.Add(parent.Reference!);
+                    radios[group] = g = (parent, []);
+                }
+                else used.Remove(widget.Elements.GetString("/T"));   // the name UniqueName reserved for this kid
+                widget.Elements.Remove("/T");                          // a kid widget is named by its parent
+                widget.Elements.SetReference("/Parent", g.Parent);
+                widget.Elements.SetString("/DA", "/ZaDb 0 Tf 0 g");
+                var mk = new PdfDictionary(doc);
+                mk.Elements.SetString("/CA", "l");
+                widget.Elements["/MK"] = mk;
+                widget.Elements.SetName("/AS", "/Off");
+                g.Parent.Elements.GetArray("/Kids")!.Elements.Add(widget.Reference!);
+                g.Kids.Add((widget, f.Export.Trim().Length > 0 ? f.Export.Trim() : f.Tooltip, w, fh));
+                GetOrCreateArray(doc, page, "/Annots").Elements.Add(widget.Reference!);
+                continue;                                              // the parent, not the kid, is in /Fields
+            }
+            if (f.Kind == FormFieldKind.Signature)
+            {
+                // an empty signature field: a viewer offers to sign here, and Washi's Sign tool draws into it
+                widget.Elements.SetName("/FT", "/Sig");
+                widget.Elements["/MK"] = new PdfDictionary(doc);
+                var sap = new PdfDictionary(doc);
+                sap.Elements.SetReference("/N", FormXObject(doc, w, fh, null, null, ""));
+                widget.Elements["/AP"] = sap;
+            }
+            else if (f.Kind == FormFieldKind.Checkbox)
             {
                 double fs = fh * 0.9;
                 var yes = FormXObject(doc, w, fh, fonts, "ZaDb",
@@ -166,10 +207,17 @@ public static class AcroFormWriter
                 double size = f.FontSize > 0 ? Math.Round(Math.Clamp(f.FontSize, 3, 72), 1) : FormField.NominalSize(fh);
                 // an embedded font is the document's one font; otherwise the field may ask for a face
                 string font = embedFont is not null ? daFont : FontKey(script, f.Font);
-                widget.Elements.SetName("/FT", "/Tx");
+                widget.Elements.SetName("/FT", f.Kind == FormFieldKind.Choice ? "/Ch" : "/Tx");
                 widget.Elements.SetString("/DA", $"/{font} {N(size)} Tf {FormField.ColorOps(f.Color)}");
                 widget.Elements.SetInteger("/Q", Math.Clamp(f.Align, 0, 2));
-                if (f.Kind == FormFieldKind.Comb && f.MaxLen > 0)
+                if (f.Kind == FormFieldKind.Choice)
+                {
+                    // a drop-down list (combo box) of the given items
+                    widget.Elements.SetInteger("/Ff", FlagCombo);
+                    widget.Elements["/Opt"] = new PdfArray(doc, (f.Options ?? []).Where(o => o.Trim().Length > 0)
+                        .Select(o => (PdfItem)new PdfString(o.Trim(), PdfStringEncoding.Unicode)).ToArray());
+                }
+                else if (f.Kind == FormFieldKind.Comb && f.MaxLen > 0)
                 {
                     widget.Elements.SetInteger("/Ff", FlagComb | FlagDoNotScroll);
                     widget.Elements.SetInteger("/MaxLen", f.MaxLen);
@@ -188,7 +236,38 @@ public static class AcroFormWriter
             fieldArray.Elements.Add(widget.Reference!);
         }
 
+        foreach (var (_, (parent, kids)) in radios) FinishRadioGroup(doc, parent, kids);
         return new AcroFormResult(fields.Count, straightened, warnings);
+    }
+
+    /// <summary>
+    /// Gives each button of a radio group its on-state and appearance (a filled dot). Plain ASCII labels such as
+    /// "Yes" / "No" are the states themselves; otherwise (有 / 無, or labels missing or repeated) the states are
+    /// 0, 1, 2 ... and the parent's /Opt holds the labels, so a viewer and <see cref="AcroFormFields"/> show them.
+    /// </summary>
+    private static void FinishRadioGroup(PdfDocument doc, PdfDictionary parent, List<(PdfDictionary Widget, string Label, double W, double H)> kids)
+    {
+        var labels = kids.Select((k, i) => k.Label.Length > 0 ? k.Label : (i + 1).ToString(CultureInfo.InvariantCulture)).ToList();
+        bool plain = labels.Distinct(StringComparer.Ordinal).Count() == labels.Count
+                     && labels.All(l => l.All(c => c is >= '0' and <= '9' or >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_' or '-'));
+        if (!plain)
+            parent.Elements["/Opt"] = new PdfArray(doc, labels.Select(l => (PdfItem)new PdfString(l, PdfStringEncoding.Unicode)).ToArray());
+        var fonts = doc.Internals.Catalog.Elements.GetDictionary("/AcroForm")!.Elements.GetDictionary("/DR")!.Elements.GetDictionary("/Font")!;
+        for (int i = 0; i < kids.Count; i++)
+        {
+            var (widget, _, w, h) = kids[i];
+            string state = plain ? labels[i] : i.ToString(CultureInfo.InvariantCulture);
+            double fs = Math.Min(w, h) * 0.7;
+            var on = FormXObject(doc, w, h, fonts, "ZaDb",
+                $"q BT /ZaDb {N(fs)} Tf 0 g {N((w - fs * 0.79) / 2)} {N((h - fs * 0.73) / 2)} Td (l) Tj ET Q");
+            var off = FormXObject(doc, w, h, null, null, "");
+            var states = new PdfDictionary(doc);
+            states.Elements.SetReference("/" + state, on);
+            states.Elements.SetReference("/Off", off);
+            var ap = new PdfDictionary(doc);
+            ap.Elements["/N"] = states;
+            widget.Elements["/AP"] = ap;
+        }
     }
 
     // ------------------------------------------------------------------ rotation

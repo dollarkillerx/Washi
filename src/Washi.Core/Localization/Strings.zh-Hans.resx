@@ -107,6 +107,9 @@
   <data name="Kind_amount" xml:space="preserve"><value>金额</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>分格</value></data>
   <data name="Kind_checkbox" xml:space="preserve"><value>复选框</value></data>
+  <data name="Kind_radio" xml:space="preserve"><value>单选按钮</value></data>
+  <data name="Kind_choice" xml:space="preserve"><value>下拉列表</value></data>
+  <data name="Kind_signature" xml:space="preserve"><value>签名</value></data>
   <data name="UsagePdf" xml:space="preserve"><value>页面与 OCR：
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      合并文件（保留表单栏位）
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
@@ -380,6 +383,7 @@
   <data name="Err_NothingToMerge" xml:space="preserve"><value>没有可合并的文件。</value></data>
   <data name="Err_RangeOutside" xml:space="preserve"><value>页码范围 {0} 超出了 1-{1}。</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>“{0}”不是有效的页码范围（例如 1-3,5）。</value></data>
+  <data name="Err_NoSignature" xml:space="preserve"><value>没有要放置的签名。</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>没有要写入的页面。</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>旋转 {0}° 不是 90 的倍数。</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>“{0}”不是有效的旋转设置（例如 2:90,5:-90）。</value></data>
@@ -402,6 +406,26 @@
   <data name="Ui_FaceAuto" xml:space="preserve"><value>表单默认</value></data>
   <data name="Ui_FaceSerif" xml:space="preserve"><value>宋体 / 明朝（衬线）</value></data>
   <data name="Ui_FaceSans" xml:space="preserve"><value>黑体 / 哥特（无衬线）</value></data>
+  <data name="Ui_RadioGroup" xml:space="preserve"><value>分组</value></data>
+  <data name="Ui_RadioGroupHint" xml:space="preserve"><value>同一分组的按钮构成一道单选题，只能选其中一个。</value></data>
+  <data name="Ui_RadioExport" xml:space="preserve"><value>选项</value></data>
+  <data name="Ui_ChoiceOptions" xml:space="preserve"><value>选项（每行一个）</value></data>
+  <data name="Ui_ChooseOption" xml:space="preserve"><value>选择这一项</value></data>
+  <data name="Ui_SignHere" xml:space="preserve"><value>请用签名工具在这里签名。</value></data>
+  <data name="Ui_ToolSign" xml:space="preserve"><value>签名</value></data>
+  <data name="Ui_SignTitle" xml:space="preserve"><value>填写并签名</value></data>
+  <data name="Ui_SignLead" xml:space="preserve"><value>先在下方签一次名，然后在页面上为每个要签名的位置拖一个框（或选择签名栏）。保存时会生成一份签名已写进页面的副本。</value></data>
+  <data name="Ui_SignPadHint" xml:space="preserve"><value>用鼠标、触控板或手写笔在这里签名</value></data>
+  <data name="Ui_SignClear" xml:space="preserve"><value>清除</value></data>
+  <data name="Ui_SignRemember" xml:space="preserve"><value>保存在这台电脑上</value></data>
+  <data name="Ui_SignSpots" xml:space="preserve"><value>签名栏</value></data>
+  <data name="Ui_SignSpot" xml:space="preserve"><value>{0}（第 {1} 页）</value></data>
+  <data name="Ui_SignHereButton" xml:space="preserve"><value>在此签名</value></data>
+  <data name="Ui_SignPlacedTitle" xml:space="preserve"><value>已放置的签名</value></data>
+  <data name="Ui_SignPlaced" xml:space="preserve"><value>第 {0} 页的签名</value></data>
+  <data name="Ui_SignDrawFirst" xml:space="preserve"><value>请先在面板里签名。</value></data>
+  <data name="Ui_SignRun" xml:space="preserve"><value>保存已签名的副本…</value></data>
+  <data name="Ui_Signed" xml:space="preserve"><value>已保存 {0}（{1} 处签名）。</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>应用到所有栏位</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>已把字号、颜色和字体应用到 {0} 个栏位。</value></data>
 </root>

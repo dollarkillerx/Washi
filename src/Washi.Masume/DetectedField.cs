@@ -6,7 +6,7 @@ using Washi.Core;
 namespace Washi.Masume;
 
 [JsonConverter(typeof(JsonStringEnumConverter<FieldKind>))]
-public enum FieldKind { Text, Amount, Comb, Checkbox }
+public enum FieldKind { Text, Amount, Comb, Checkbox, Radio, Choice, Signature }
 
 /// <summary>
 /// One field suggested by the detector. The JSON shape is shared with the Python reference
@@ -34,7 +34,14 @@ public sealed record DetectedField
     public string Color { get; init; } = "";
     /// <summary>"" (the form language's usual face), "serif" or "sans".</summary>
     public string Font { get; init; } = "";
+    /// <summary>Radio buttons: the group this button belongs to (one option per group can be chosen).</summary>
+    public string Group { get; init; } = "";
+    /// <summary>Radio buttons: the option this button stands for, e.g. "有".</summary>
+    public string Export { get; init; } = "";
+    /// <summary>Drop-down lists: the items to choose from.</summary>
+    public IReadOnlyList<string> Options { get; init; } = [];
 
+    /// <summary>The PDF field this becomes. A radio button is named by its group, so the group's buttons form one field.</summary>
     public Washi.Core.Forms.FormField ToFormField() => new(
         Page,
         Kind switch
@@ -42,10 +49,16 @@ public sealed record DetectedField
             FieldKind.Amount => Washi.Core.Forms.FormFieldKind.Amount,
             FieldKind.Comb => Washi.Core.Forms.FormFieldKind.Comb,
             FieldKind.Checkbox => Washi.Core.Forms.FormFieldKind.Checkbox,
+            FieldKind.Radio => Washi.Core.Forms.FormFieldKind.Radio,
+            FieldKind.Choice => Washi.Core.Forms.FormFieldKind.Choice,
+            FieldKind.Signature => Washi.Core.Forms.FormFieldKind.Signature,
             _ => Washi.Core.Forms.FormFieldKind.Text,
         },
-        Rect, Name, MaxLen, Align, Label, FontSize, Color.Length > 0 ? Color : null,
-        Font switch { "serif" => Washi.Core.Forms.FormFontFace.Serif, "sans" => Washi.Core.Forms.FormFontFace.Sans, _ => Washi.Core.Forms.FormFontFace.Auto });
+        Rect, Kind == FieldKind.Radio && Group.Trim().Length > 0 ? Group.Trim() : Name, MaxLen, Align, Label, FontSize,
+        Color.Length > 0 ? Color : null,
+        Font switch { "serif" => Washi.Core.Forms.FormFontFace.Serif, "sans" => Washi.Core.Forms.FormFontFace.Sans, _ => Washi.Core.Forms.FormFontFace.Auto },
+        Kind == FieldKind.Radio ? (Export.Trim().Length > 0 ? Export.Trim() : Label) : "",
+        Kind == FieldKind.Choice ? Options : null);
 }
 
 public static class FieldsJson

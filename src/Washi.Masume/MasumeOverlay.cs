@@ -16,6 +16,9 @@ public static class MasumeOverlay
         [FieldKind.Amount] = (140, 51, 217),
         [FieldKind.Comb] = (242, 128, 13),
         [FieldKind.Checkbox] = (13, 166, 64),
+        [FieldKind.Radio] = (0, 125, 121),
+        [FieldKind.Choice] = (0, 99, 168),
+        [FieldKind.Signature] = (138, 63, 0),
     };
 
     public static RgbImage Draw(PageSnapshot page, IEnumerable<DetectedField> fields,

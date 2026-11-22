@@ -68,6 +68,10 @@ washi form make form.pdf --fields out/form_fields.json   # ...then write the rev
   - amount (right-aligned)
   - comb (`MaxLen`, one character per box, e.g. マイナンバー)
   - checkbox
+  - radio button: ○ choices on one line (○有 ○無) become one group, of which one option is chosen;
+    placeholders such as ○○県 or 令和○年 are left alone
+  - drop-down list (set in the editor: type, then one item per line)
+  - signature: a blank labelled 署名, Signature, 签名, 서명 … becomes an empty signature field
 - **Rotated pages** are straightened first, so fields and typed text stay upright in every viewer.
 - **Form language** (`--lang auto|ja|zh-Hans|zh-Hant|ko|en|fr|de`) picks the font that
   viewers use for typed text. Each script needs its own font: a Japanese font has no Hangul,
@@ -127,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Sign, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -143,6 +147,9 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
    - purple: amount
    - orange: comb
    - green: checkbox
+   - teal: radio button (a ring)
+   - blue with ▾: drop-down list
+   - brown with ✍: signature
    - red dashed outline: the cell already has printed data
 
    The selected field is vermilion.
@@ -168,6 +175,12 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 - **Organize** shows the pages as a grid. Select one or more (⌘/Ctrl or Shift + click) to turn them left or right,
   move them, or remove them (Delete), and insert every page of other PDFs after the selection (button, or drop
   the files). **Save as new PDF** writes the result, keeps the form fields fillable, and opens it.
+- **Sign** (Fill & Sign): sign once on the pad with a mouse, trackpad or pen. The signature is kept as vector strokes
+  in `~/.config/washi/signature.txt` if you tick "Remember" (never sent anywhere; untick to delete it). Drag a box on
+  the page, or press **Sign here** next to a signature field, for each place to sign. **Save signed copy** draws the
+  signature into the page as smooth curves (it prints sharply and is part of the page, like Acrobat's Fill & Sign)
+  and keeps the form fields. Signing is deliberately not offered to the AI assistant or MCP clients. This is a
+  hand-drawn signature, not a certificate-based digital signature.
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your

@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Sign, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -59,6 +59,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Combine = new CombineToolViewModel(this);
         Split = new SplitToolViewModel(this);
         Organize = new OrganizeToolViewModel(this);
+        Sign = new SignToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -72,6 +73,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public CombineToolViewModel Combine { get; }
     public SplitToolViewModel Split { get; }
     public OrganizeToolViewModel Organize { get; }
+    public SignToolViewModel Sign { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -132,7 +134,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -148,6 +150,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsCombineTool { get => ActiveTool == Tool.Combine; set { if (value) ActiveTool = Tool.Combine; } }
     public bool IsSplitTool { get => ActiveTool == Tool.Split; set { if (value) ActiveTool = Tool.Split; } }
     public bool IsOrganizeTool { get => ActiveTool == Tool.Organize; set { if (value) ActiveTool = Tool.Organize; } }
+    public bool IsSignTool { get => ActiveTool == Tool.Sign; set { if (value) ActiveTool = Tool.Sign; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -188,6 +191,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Ocr) _ = Ocr.RefreshPlanAsync();
         if (value == Tool.Combine) Combine.OfferCurrentDocument();
         if (value == Tool.Organize) Organize.Prepare();
+        if (value == Tool.Sign) _ = Sign.PrepareAsync();
     }
 
     private string? _detectedFor;
@@ -300,8 +304,31 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public void ActivateField(FieldViewModel f)
     {
         SelectedField = f;
-        if (f.Kind == FieldKind.Checkbox) f.Value = f.IsChecked ? "" : "true";
-        else EditRequested?.Invoke(f);
+        switch (f.Kind)
+        {
+            case FieldKind.Checkbox: f.Value = f.IsChecked ? "" : "true"; break;
+            case FieldKind.Radio: ChooseRadio(f); break;
+            case FieldKind.Choice:
+            {
+                // each click moves to the next item, then back to empty (the fill panel has the full list)
+                var items = f.OptionList;
+                int i = items.ToList().IndexOf(f.Value);
+                f.Value = items.Count == 0 ? "" : i + 1 < items.Count ? items[i + 1] : "";
+                break;
+            }
+            case FieldKind.Signature: Status = L.Get("Ui_SignHere"); break;
+            default: EditRequested?.Invoke(f); break;
+        }
+    }
+
+    /// <summary>Chooses a radio button: the other buttons of its group are cleared.</summary>
+    [RelayCommand]
+    private void ChooseRadio(FieldViewModel? f)
+    {
+        if (f is not { Kind: FieldKind.Radio }) return;
+        foreach (var other in Fields.Where(o => o.Kind == FieldKind.Radio && o.Group == f.Group && !ReferenceEquals(o, f)))
+            other.Value = "";
+        f.Value = "true";
     }
 
     [RelayCommand] private void TogglePreview() { if (HasDocument && IsFormTool) PreviewMode = !PreviewMode; }
@@ -367,11 +394,14 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
         Erase.Reset();
-        Organize.Clear();                       // a reloaded file (even the same path) starts a fresh page list
+        Organize.Clear();
+        Sign.Reset();                       // a reloaded file (even the same path) starts a fresh page list
+        Sign.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
         else if (ActiveTool == Tool.Organize) Organize.Prepare();
+        else if (ActiveTool == Tool.Sign) await Sign.PrepareAsync();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
@@ -467,7 +497,13 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
             var fields = Fields.Select(f => f.ToDetected().ToFormField()).ToList();
             // what was typed in Preview goes into the file (by field name)
             var values = new Dictionary<string, string>();
-            foreach (var f in Fields.Where(f => f.Value.Length > 0)) values[f.Name] = f.Value;
+            foreach (var f in Fields.Where(f => f.Value.Length > 0 && f.Kind is not (FieldKind.Radio or FieldKind.Signature))) values[f.Name] = f.Value;
+            // a chosen radio button: its group (the PDF field) takes the button's option
+            foreach (var f in Fields.Where(f => f.Kind == FieldKind.Radio && f.IsChecked))
+            {
+                var d = f.ToDetected().ToFormField();
+                values[d.Name] = d.Export;
+            }
             var font = EmbedFontPath is { } fp ? await Task.Run(() => OpenTypeFont.Load(fp)) : null;
             int filled = await Pdfium(() =>
             {

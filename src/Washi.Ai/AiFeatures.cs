@@ -94,6 +94,8 @@ public static class AiFeatures
                     };
                     int maxLen = item.TryGetProperty("max_len", out var ml) && ml.TryGetInt32(out var m) ? m : 0;
                     var f = result[id];
+                    // the model picks among text, amount, comb and checkbox only: radio, drop-down and signature stay
+                    if (f.Kind is FieldKind.Radio or FieldKind.Choice or FieldKind.Signature) kind = f.Kind;
                     if (kind != f.Kind) kinds++;
                     if (name.Length > 0 && name != f.Name) renamed++;
                     result[id] = f with
