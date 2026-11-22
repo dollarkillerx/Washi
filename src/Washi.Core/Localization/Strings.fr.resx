@@ -130,7 +130,9 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),
-                                          ou écrit une copie avec ceux d’un fichier de cette forme</value></data>
+                                          ou écrit une copie avec ceux d’un fichier de cette forme
+  washi pdf print &lt;in.pdf&gt; [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
+  washi pdf printers                      liste les imprimantes</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
@@ -591,4 +593,29 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_BookmarkCheck" xml:space="preserve"><value>Les signets de la copie ne correspondaient pas ; elle n’a pas été conservée.</value></data>
   <data name="Pdf_BookmarksNone" xml:space="preserve"><value>Aucun signet.</value></data>
   <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} enregistré avec {1} signet(s).</value></data>
+  <data name="Ui_PrintMenu" xml:space="preserve"><value>Imprimer…</value></data>
+  <data name="Ui_PrintTitle" xml:space="preserve"><value>Imprimer</value></data>
+  <data name="Ui_PrintNote" xml:space="preserve"><value>Imprime {0} tel qu’il est enregistré.</value></data>
+  <data name="Ui_PrintPrinter" xml:space="preserve"><value>Imprimante</value></data>
+  <data name="Ui_PrintCopies" xml:space="preserve"><value>Copies</value></data>
+  <data name="Ui_PrintPages" xml:space="preserve"><value>Pages</value></data>
+  <data name="Ui_PrintAll" xml:space="preserve"><value>Toutes</value></data>
+  <data name="Ui_PrintCurrentPage" xml:space="preserve"><value>Page affichée ({0})</value></data>
+  <data name="Ui_PrintSome" xml:space="preserve"><value>Pages</value></data>
+  <data name="Ui_PrintTwoSided" xml:space="preserve"><value>Recto verso</value></data>
+  <data name="Ui_PrintGray" xml:space="preserve"><value>Noir et blanc</value></data>
+  <data name="Ui_PrintFit" xml:space="preserve"><value>Ajuster au papier</value></data>
+  <data name="Ui_PrintActual" xml:space="preserve"><value>Taille réelle</value></data>
+  <data name="Ui_PrintRun" xml:space="preserve"><value>Imprimer</value></data>
+  <data name="Ui_PrintNoPrinters" xml:space="preserve"><value>Aucune imprimante n’est configurée sur cet ordinateur. Ajoutez-en une dans les réglages du système, puis réessayez.</value></data>
+  <data name="Ui_Printed" xml:space="preserve"><value>{0} page(s) de {1} envoyée(s) à {2}.</value></data>
+  <data name="Err_PrintMissing" xml:space="preserve"><value>{0} n’existe pas.</value></data>
+  <data name="Err_PrintPassword" xml:space="preserve"><value>{0} demande un mot de passe pour s’ouvrir, que le système d’impression ne peut pas fournir. Enregistrez une copie sans mot de passe d’ouverture (Protéger), puis imprimez-la.</value></data>
+  <data name="Err_PrintNotAllowed" xml:space="preserve"><value>{0} n’autorise pas l’impression.</value></data>
+  <data name="Err_PrintCopies" xml:space="preserve"><value>Le nombre de copies doit être compris entre 1 et 999.</value></data>
+  <data name="Err_PrintFailed" xml:space="preserve"><value>Le système d’impression a refusé la tâche : {0}</value></data>
+  <data name="Err_PrintNoSystem" xml:space="preserve"><value>Aucun système d’impression trouvé (CUPS : lp, lpstat).</value></data>
+  <data name="Err_PrintNoPrinter" xml:space="preserve"><value>Il n’y a pas d’imprimante nommée {0}.</value></data>
+  <data name="Pdf_PrintersNone" xml:space="preserve"><value>Aucune imprimante.</value></data>
+  <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0} (par défaut)</value></data>
 </root>

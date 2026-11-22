@@ -130,7 +130,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   washi pdf find &lt;in.pdf&gt; &lt;Text&gt; [--case] [--whole-words]   wo der Text steht, Seite für Seite
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)
-                                          oder eine Kopie mit denen aus einer solchen Datei schreiben</value></data>
+                                          oder eine Kopie mit denen aus einer solchen Datei schreiben
+  washi pdf print &lt;in.pdf&gt; [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
+  washi pdf printers                      Drucker auflisten</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} Datei(en) zu {1} zusammengefügt: {2} Seite(n), {3} Formularfeld(er)</value></data>
@@ -591,4 +593,29 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_BookmarkCheck" xml:space="preserve"><value>Die Lesezeichen der Kopie stimmten nicht; sie wurde nicht behalten.</value></data>
   <data name="Pdf_BookmarksNone" xml:space="preserve"><value>Keine Lesezeichen.</value></data>
   <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} mit {1} Lesezeichen gespeichert.</value></data>
+  <data name="Ui_PrintMenu" xml:space="preserve"><value>Drucken…</value></data>
+  <data name="Ui_PrintTitle" xml:space="preserve"><value>Drucken</value></data>
+  <data name="Ui_PrintNote" xml:space="preserve"><value>Druckt {0}, wie es gespeichert ist.</value></data>
+  <data name="Ui_PrintPrinter" xml:space="preserve"><value>Drucker</value></data>
+  <data name="Ui_PrintCopies" xml:space="preserve"><value>Exemplare</value></data>
+  <data name="Ui_PrintPages" xml:space="preserve"><value>Seiten</value></data>
+  <data name="Ui_PrintAll" xml:space="preserve"><value>Alle</value></data>
+  <data name="Ui_PrintCurrentPage" xml:space="preserve"><value>Aktuelle Seite ({0})</value></data>
+  <data name="Ui_PrintSome" xml:space="preserve"><value>Seiten</value></data>
+  <data name="Ui_PrintTwoSided" xml:space="preserve"><value>Beidseitig</value></data>
+  <data name="Ui_PrintGray" xml:space="preserve"><value>Schwarzweiß</value></data>
+  <data name="Ui_PrintFit" xml:space="preserve"><value>An Papier anpassen</value></data>
+  <data name="Ui_PrintActual" xml:space="preserve"><value>Originalgröße</value></data>
+  <data name="Ui_PrintRun" xml:space="preserve"><value>Drucken</value></data>
+  <data name="Ui_PrintNoPrinters" xml:space="preserve"><value>Auf diesem Computer ist kein Drucker eingerichtet. Fügen Sie einen in den Systemeinstellungen hinzu und versuchen Sie es erneut.</value></data>
+  <data name="Ui_Printed" xml:space="preserve"><value>{0} Seite(n) von {1} an {2} gesendet.</value></data>
+  <data name="Err_PrintMissing" xml:space="preserve"><value>{0} existiert nicht.</value></data>
+  <data name="Err_PrintPassword" xml:space="preserve"><value>{0} braucht zum Öffnen ein Passwort, das das Drucksystem nicht hat. Speichern Sie unter Schützen eine Kopie ohne Öffnungspasswort und drucken Sie diese.</value></data>
+  <data name="Err_PrintNotAllowed" xml:space="preserve"><value>{0} erlaubt kein Drucken.</value></data>
+  <data name="Err_PrintCopies" xml:space="preserve"><value>Die Anzahl muss zwischen 1 und 999 liegen.</value></data>
+  <data name="Err_PrintFailed" xml:space="preserve"><value>Das Drucksystem hat den Auftrag abgelehnt: {0}</value></data>
+  <data name="Err_PrintNoSystem" xml:space="preserve"><value>Kein Drucksystem gefunden (CUPS: lp, lpstat).</value></data>
+  <data name="Err_PrintNoPrinter" xml:space="preserve"><value>Es gibt keinen Drucker namens {0}.</value></data>
+  <data name="Pdf_PrintersNone" xml:space="preserve"><value>Keine Drucker.</value></data>
+  <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0} (Standard)</value></data>
 </root>

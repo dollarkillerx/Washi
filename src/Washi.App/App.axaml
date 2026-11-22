@@ -52,6 +52,7 @@
         <StreamGeometry x:Key="I.Delete">M3,5 L17,5 M8,5 L8,3 L12,3 L12,5 M5,5 L6,17 L14,17 L15,5 M8.5,8 L8.5,14 M11.5,8 L11.5,14</StreamGeometry>
         <StreamGeometry x:Key="I.Prev">M12,4 L6,10 L12,16</StreamGeometry>
         <StreamGeometry x:Key="I.Next">M8,4 L14,10 L8,16</StreamGeometry>
+        <StreamGeometry x:Key="I.Print">M5.5,8 L5.5,2.5 L14.5,2.5 L14.5,8 M5.5,14.5 L3,14.5 L3,8 L17,8 L17,14.5 L14.5,14.5 M5.5,11.5 L14.5,11.5 L14.5,17.5 L5.5,17.5 Z</StreamGeometry>
         <StreamGeometry x:Key="I.Bookmark">M5.5,3 L14.5,3 L14.5,17 L10,13.5 L5.5,17 Z</StreamGeometry>
         <StreamGeometry x:Key="I.Indent">M3,4 L17,4 M8,8 L17,8 M8,12 L17,12 M3,16 L17,16 M3,7.5 L5.5,10 L3,12.5</StreamGeometry>
         <StreamGeometry x:Key="I.Outdent">M3,4 L17,4 M8,8 L17,8 M8,12 L17,12 M3,16 L17,16 M5.5,7.5 L3,10 L5.5,12.5</StreamGeometry>
