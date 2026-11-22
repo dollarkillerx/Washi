@@ -392,7 +392,7 @@ public static class PdfEraser
 
     // ------------------------------------------------------------------ PDFium plumbing
 
-    private static FpdfDocumentT Load(string path)
+    internal static FpdfDocumentT Load(string path)
     {
         var doc = fpdfview.FPDF_LoadDocument(path, PdfPasswords.For(path) ?? "");
         if (doc is null || doc.__Instance == IntPtr.Zero)
@@ -400,7 +400,7 @@ public static class PdfEraser
         return doc;
     }
 
-    private static void WithPage(FpdfDocumentT doc, int index, Action<FpdfPageT, PdfiumDocument.PageMapper> action)
+    internal static void WithPage(FpdfDocumentT doc, int index, Action<FpdfPageT, PdfiumDocument.PageMapper> action)
     {
         var page = fpdfview.FPDF_LoadPage(doc, index);
         if (page is null || page.__Instance == IntPtr.Zero) throw new EraseException($"page {index + 1} could not be read", "Err_PageUnreadable", index + 1);
@@ -411,7 +411,7 @@ public static class PdfEraser
     // ------------------------------------------------------------------ content streams (PDFsharp)
 
     /// <summary>The page's content streams, decoded and joined (stream boundaries count as white space).</summary>
-    private static byte[] ReadContents(PdfPage page)
+    internal static byte[] ReadContents(PdfPage page)
     {
         var parts = new List<byte[]>();
         switch (Deref(page.Elements["/Contents"]))
@@ -428,7 +428,7 @@ public static class PdfEraser
     }
 
     /// <summary>One new compressed content stream for the page; the old ones become unreachable and are not saved.</summary>
-    private static void WriteContents(PdfDocument d, PdfPage page, byte[] bytes)
+    internal static void WriteContents(PdfDocument d, PdfPage page, byte[] bytes)
     {
         var stream = new PdfDictionary(d);
         stream.CreateStream(new PdfSharp.Pdf.Filters.FlateDecode().Encode(bytes, PdfFlateEncodeMode.Default));
@@ -451,7 +451,7 @@ public static class PdfEraser
         return ms.ToArray();
     }
 
-    private static PdfDictionary? Resources(PdfPage page)
+    internal static PdfDictionary? Resources(PdfPage page)
     {
         PdfDictionary? node = page;
         while (node is not null)
@@ -560,7 +560,7 @@ public static class PdfEraser
 
     // ------------------------------------------------------------------ checks
 
-    private static void CheckPermissions(string input)
+    internal static void CheckPermissions(string input)
     {
         try
         {

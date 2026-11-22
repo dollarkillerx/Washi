@@ -124,7 +124,9 @@
                                           암호는 입력을 요청하거나 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 에서 읽습니다
   washi pdf unlock &lt;in.pdf&gt; -o out.pdf   암호 해제 (입력 요청 또는 WASHI_PASSWORD)
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
-                                          숨은 정보 삭제 (--list 는 보여주기만)</value></data>
+                                          숨은 정보 삭제 (--list 는 보여주기만)
+  washi pdf redact &lt;in.pdf&gt; [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
+                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>파일 {0}개를 {1}(으)로 합쳤습니다: {2}페이지, 입력란 {3}개</value></data>
@@ -519,4 +521,42 @@
   <data name="Pdf_AskPassword" xml:space="preserve"><value>{0} 의 암호:</value></data>
   <data name="Pdf_Protected" xml:space="preserve"><value>{0} 저장 (AES-256).</value></data>
   <data name="Pdf_Unlocked" xml:space="preserve"><value>{0} 을(를) 암호 없이 저장했습니다.</value></data>
+  <data name="Ui_ToolRedact" xml:space="preserve"><value>가리기</value></data>
+  <data name="Ui_RedactTitle" xml:space="preserve"><value>가리기</value></data>
+  <data name="Ui_RedactLead" xml:space="preserve"><value>이름·번호·주소를 찾거나 페이지에서 원하는 부분을 끌어 지정합니다. 검은 상자 아래의 내용은 가려지기만 하는 것이 아니라 파일에서 실제로 삭제됩니다. 사본으로 저장합니다.</value></data>
+  <data name="Ui_RedactFindTitle" xml:space="preserve"><value>찾기</value></data>
+  <data name="Ui_RedactWordsHint" xml:space="preserve"><value>단어나 구절 (한 줄에 하나)</value></data>
+  <data name="Ui_RedactPatterns" xml:space="preserve"><value>함께 찾기:</value></data>
+  <data name="Ui_RedactEmails" xml:space="preserve"><value>이메일 주소</value></data>
+  <data name="Ui_RedactPhones" xml:space="preserve"><value>전화번호</value></data>
+  <data name="Ui_RedactNumbers" xml:space="preserve"><value>주민·계좌·카드 번호 등 (7자리 이상)</value></data>
+  <data name="Ui_RedactMatchCase" xml:space="preserve"><value>대소문자 구분</value></data>
+  <data name="Ui_RedactWholeWords" xml:space="preserve"><value>단어 단위</value></data>
+  <data name="Ui_RedactFind" xml:space="preserve"><value>찾기</value></data>
+  <data name="Ui_RedactFound" xml:space="preserve"><value>{1}쪽에서 {0}개를 찾았습니다. 남길 항목은 선택을 해제하세요.</value></data>
+  <data name="Ui_RedactNoneFound" xml:space="preserve"><value>찾지 못했습니다. 스캔한 페이지는 먼저 OCR 로 텍스트를 검색할 수 있게 하세요.</value></data>
+  <data name="Ui_RedactAll" xml:space="preserve"><value>모두</value></data>
+  <data name="Ui_RedactNone" xml:space="preserve"><value>없음</value></data>
+  <data name="Ui_RedactOnPage" xml:space="preserve"><value>{0}쪽</value></data>
+  <data name="Ui_RedactInField" xml:space="preserve"><value>{0}쪽, 입력란 (삭제)</value></data>
+  <data name="Ui_RedactInComment" xml:space="preserve"><value>{0}쪽, 주석 (삭제)</value></data>
+  <data name="Ui_RedactAreasTitle" xml:space="preserve"><value>영역</value></data>
+  <data name="Ui_RedactNoAreas" xml:space="preserve"><value>페이지에서 끌면 사진·서명·도장 등 원하는 영역을 가릴 수 있습니다.</value></data>
+  <data name="Ui_RedactRun" xml:space="preserve"><value>{0}개 가리고 사본 저장…</value></data>
+  <data name="Ui_RedactRunNote" xml:space="preserve"><value>상자 아래의 글자·이미지 픽셀·도형은 사본에서 복구할 수 없습니다. 문서 속성과 책갈피의 같은 단어도 가립니다. 원본은 바뀌지 않습니다.</value></data>
+  <data name="Ui_RedactNotOriginal" xml:space="preserve"><value>가린 사본은 다른 이름으로 저장하세요 (원본은 그대로 둡니다).</value></data>
+  <data name="Ui_RedactFailed" xml:space="preserve"><value>가리지 못했습니다: {0}</value></data>
+  <data name="Ui_Redacted" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}곳, 도형 {3}개, 기타 {4}개 삭제. 확인: 다시 찾아도 없고 다른 부분도 바뀌지 않았습니다.</value></data>
+  <data name="Err_RedactNothing" xml:space="preserve"><value>가릴 항목이 없습니다. 먼저 찾거나 영역을 지정하세요.</value></data>
+  <data name="Err_RedactNested" xml:space="preserve"><value>페이지 구조가 너무 깊어 안전하게 가릴 수 없습니다.</value></data>
+  <data name="Err_RedactInlineImage" xml:space="preserve"><value>작은 내장 이미지가 영역에 일부만 겹칩니다. 이미지 전체를 덮도록 영역을 지정하세요.</value></data>
+  <data name="Err_RedactImage" xml:space="preserve"><value>영역 아래의 이미지를 읽을 수 없어 아무것도 바꾸지 않았습니다.</value></data>
+  <data name="Err_RedactRegex" xml:space="preserve"><value>올바른 정규식이 아닙니다: {0}</value></data>
+  <data name="Err_RedactRegexSlow" xml:space="preserve"><value>정규식 처리가 너무 오래 걸립니다. 더 간단하게 하세요.</value></data>
+  <data name="Err_RedactLeftover" xml:space="preserve"><value>가린 사본에서 아직 {0}개가 발견되어 저장하지 않았습니다.</value></data>
+  <data name="Err_RedactChanged" xml:space="preserve"><value>가린 사본이 검은 상자 밖에서도 원본과 달라 ({0} 픽셀) 저장하지 않았습니다.</value></data>
+  <data name="Err_RedactUnstable" xml:space="preserve"><value>확인할 때마다 결과가 달라져 가린 사본을 저장하지 않았습니다.</value></data>
+  <data name="Pdf_Redacted" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}곳, 도형 {3}개, 주석·입력란 {4}개, 기타 문자열 {5}개 삭제. 확인: 다시 찾아도 없고 상자 밖은 바뀌지 않았습니다.</value></data>
+  <data name="Pdf_RedactMatch" xml:space="preserve"><value>  {0}쪽 ({1}): {2}</value></data>
+  <data name="Pdf_RedactFound" xml:space="preserve"><value>{1}쪽에서 {0}개.</value></data>
 </root>

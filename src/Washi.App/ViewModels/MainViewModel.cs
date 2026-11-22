@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Protect, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Protect, Redact, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -62,6 +62,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Sign = new SignToolViewModel(this);
         Comment = new CommentToolViewModel(this);
         Protect = new ProtectToolViewModel(this);
+        Redact = new RedactToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -78,6 +79,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public SignToolViewModel Sign { get; }
     public CommentToolViewModel Comment { get; }
     public ProtectToolViewModel Protect { get; }
+    public RedactToolViewModel Redact { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -138,7 +140,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -157,6 +159,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsSignTool { get => ActiveTool == Tool.Sign; set { if (value) ActiveTool = Tool.Sign; } }
     public bool IsCommentTool { get => ActiveTool == Tool.Comment; set { if (value) ActiveTool = Tool.Comment; } }
     public bool IsProtectTool { get => ActiveTool == Tool.Protect; set { if (value) ActiveTool = Tool.Protect; } }
+    public bool IsRedactTool { get => ActiveTool == Tool.Redact; set { if (value) ActiveTool = Tool.Redact; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -420,6 +423,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Sign.Reset();
         Comment.Reset();
         Protect.Reset();
+        Redact.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
@@ -447,6 +451,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Sign.Reset();
         Comment.Reset();
         Protect.Reset();
+        Redact.Reset();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();

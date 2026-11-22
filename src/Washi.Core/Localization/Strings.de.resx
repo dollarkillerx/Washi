@@ -124,7 +124,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
                                           Passwörter werden abgefragt oder aus WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD gelesen
   washi pdf unlock &lt;in.pdf&gt; -o out.pdf   Passwort entfernen (abgefragt, oder WASHI_PASSWORD)
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
-                                          versteckte Informationen entfernen (--list zeigt sie nur)</value></data>
+                                          versteckte Informationen entfernen (--list zeigt sie nur)
+  washi pdf redact &lt;in.pdf&gt; [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
+                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} Datei(en) zu {1} zusammengefügt: {2} Seite(n), {3} Formularfeld(er)</value></data>
@@ -519,4 +521,42 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Pdf_AskPassword" xml:space="preserve"><value>Passwort für {0}:</value></data>
   <data name="Pdf_Protected" xml:space="preserve"><value>{0} gespeichert (AES-256).</value></data>
   <data name="Pdf_Unlocked" xml:space="preserve"><value>{0} ohne Passwort gespeichert.</value></data>
+  <data name="Ui_ToolRedact" xml:space="preserve"><value>Schwärzen</value></data>
+  <data name="Ui_RedactTitle" xml:space="preserve"><value>Schwärzen</value></data>
+  <data name="Ui_RedactLead" xml:space="preserve"><value>Suchen Sie Namen, Nummern oder Adressen, oder ziehen Sie über einen Bereich der Seite. Was unter jedem schwarzen Balken liegt, wird wirklich aus der Datei entfernt, nicht nur verdeckt. Speichert eine Kopie.</value></data>
+  <data name="Ui_RedactFindTitle" xml:space="preserve"><value>Suchen</value></data>
+  <data name="Ui_RedactWordsHint" xml:space="preserve"><value>Wörter oder Ausdrücke, einer pro Zeile</value></data>
+  <data name="Ui_RedactPatterns" xml:space="preserve"><value>Außerdem suchen:</value></data>
+  <data name="Ui_RedactEmails" xml:space="preserve"><value>E-Mail-Adressen</value></data>
+  <data name="Ui_RedactPhones" xml:space="preserve"><value>Telefonnummern</value></data>
+  <data name="Ui_RedactNumbers" xml:space="preserve"><value>Ausweis-, Konto- und Kartennummern (ab 7 Ziffern)</value></data>
+  <data name="Ui_RedactMatchCase" xml:space="preserve"><value>Groß-/Kleinschreibung</value></data>
+  <data name="Ui_RedactWholeWords" xml:space="preserve"><value>Ganze Wörter</value></data>
+  <data name="Ui_RedactFind" xml:space="preserve"><value>Suchen</value></data>
+  <data name="Ui_RedactFound" xml:space="preserve"><value>{0} Treffer auf {1} Seite(n). Entfernen Sie das Häkchen bei allem, was bleiben soll.</value></data>
+  <data name="Ui_RedactNoneFound" xml:space="preserve"><value>Nichts gefunden. Gescannte Seiten brauchen zuerst OCR, damit ihr Text durchsucht werden kann.</value></data>
+  <data name="Ui_RedactAll" xml:space="preserve"><value>Alle</value></data>
+  <data name="Ui_RedactNone" xml:space="preserve"><value>Keine</value></data>
+  <data name="Ui_RedactOnPage" xml:space="preserve"><value>Seite {0}</value></data>
+  <data name="Ui_RedactInField" xml:space="preserve"><value>Seite {0}, Formularfeld (wird entfernt)</value></data>
+  <data name="Ui_RedactInComment" xml:space="preserve"><value>Seite {0}, Kommentar (wird entfernt)</value></data>
+  <data name="Ui_RedactAreasTitle" xml:space="preserve"><value>Bereiche</value></data>
+  <data name="Ui_RedactNoAreas" xml:space="preserve"><value>Ziehen Sie auf der Seite, um einen Bereich zu schwärzen: ein Foto, eine Unterschrift, einen Stempel.</value></data>
+  <data name="Ui_RedactRun" xml:space="preserve"><value>{0} schwärzen und Kopie speichern…</value></data>
+  <data name="Ui_RedactRunNote" xml:space="preserve"><value>Text, Bildpixel und Zeichnungen unter den Balken lassen sich aus der Kopie nicht wiederherstellen. Dieselben Wörter werden in Dokumenteigenschaften und Lesezeichen unkenntlich gemacht. Das Original bleibt unverändert.</value></data>
+  <data name="Ui_RedactNotOriginal" xml:space="preserve"><value>Speichern Sie die geschwärzte Kopie unter einem anderen Namen: das Original bleibt, wie es ist.</value></data>
+  <data name="Ui_RedactFailed" xml:space="preserve"><value>Schwärzen nicht möglich: {0}</value></data>
+  <data name="Ui_Redacted" xml:space="preserve"><value>{0} gespeichert: {1} Zeichen, {2} Bildbereich(e), {3} Zeichnung(en), {4} weitere Element(e) entfernt. Geprüft: nichts wiedergefunden, nichts verschoben.</value></data>
+  <data name="Err_RedactNothing" xml:space="preserve"><value>Nichts zu schwärzen: zuerst suchen oder einen Bereich ziehen.</value></data>
+  <data name="Err_RedactNested" xml:space="preserve"><value>Der Seiteninhalt ist zu tief verschachtelt, um ihn sicher zu schwärzen.</value></data>
+  <data name="Err_RedactInlineImage" xml:space="preserve"><value>Ein kleines eingebettetes Bild liegt nur teilweise unter einem Bereich: ziehen Sie den Bereich über das ganze Bild.</value></data>
+  <data name="Err_RedactImage" xml:space="preserve"><value>Ein Bild unter einem Bereich ließ sich nicht lesen; nichts wurde geändert.</value></data>
+  <data name="Err_RedactRegex" xml:space="preserve"><value>Kein gültiger regulärer Ausdruck: {0}</value></data>
+  <data name="Err_RedactRegexSlow" xml:space="preserve"><value>Der reguläre Ausdruck dauert zu lange; vereinfachen Sie ihn.</value></data>
+  <data name="Err_RedactLeftover" xml:space="preserve"><value>In der geschwärzten Kopie wurden noch {0} Treffer gefunden; sie wurde nicht behalten.</value></data>
+  <data name="Err_RedactChanged" xml:space="preserve"><value>Die geschwärzte Kopie wich außerhalb der Balken vom Original ab ({0} Pixel); sie wurde nicht behalten.</value></data>
+  <data name="Err_RedactUnstable" xml:space="preserve"><value>Die geschwärzte Kopie änderte sich zwischen den Prüfungen; sie wurde nicht behalten.</value></data>
+  <data name="Pdf_Redacted" xml:space="preserve"><value>{0} gespeichert: {1} Zeichen, {2} Bildbereich(e), {3} Zeichnung(en), {4} Kommentar(e) oder Feld(er), {5} weitere(r) Text(e) entfernt. Geprüft: nichts wiedergefunden, außerhalb der Balken nichts verändert.</value></data>
+  <data name="Pdf_RedactMatch" xml:space="preserve"><value>  Seite {0} ({1}): {2}</value></data>
+  <data name="Pdf_RedactFound" xml:space="preserve"><value>{0} Treffer auf {1} Seite(n).</value></data>
 </root>

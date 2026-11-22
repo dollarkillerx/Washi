@@ -30,6 +30,7 @@ public static class WashiTools
         .Add(new ListCommentsTool(policy))
         .Add(new AddCommentsTool(policy))
         .Add(new RemoveHiddenInfoTool(policy))
+        .Add(new RedactTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -62,6 +63,7 @@ public abstract class PdfTool(PathPolicy policy) : IWashiTool
         }
         catch (ToolException e) { return ToolResult.Error(e.Message); }
         catch (EraseException e) { return ToolResult.Error(e.Message); }
+        catch (RedactException e) { return ToolResult.Error(e.Message); }
         catch (PageAssemblyException e) { return ToolResult.Error(e.Message); }
         catch (OcrException e) { return ToolResult.Error(e.Message); }
         catch (FontNotUsableException e) when (e.Reason == "license")
@@ -561,6 +563,89 @@ public sealed class RemoveHiddenInfoTool(PathPolicy p) : PdfTool(p)
         var output = Policy.Output(OptStr(a, "output"), path, "_cleaned");
         var removed = PdfCleaner.Clean(path, output, remove);
         return new ToolResult(ToJson(new { output, removed = Describe(removed), left = Describe(PdfCleaner.Inspect(output)) }));
+    }
+}
+
+public sealed class RedactTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "redact";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Redaction: removes words, kinds of personal data or areas from a PDF for real and covers them with black boxes. Text " +
+        "under a box is taken out glyph by glyph (the rest of the line stays in place), pixels of images under it are blanked, " +
+        "drawings inside it dropped, and comments and form fields there removed; the same words are masked with ■ in document " +
+        "properties, bookmarks and tags. The copy is checked before it is kept (the words are searched for again, no character " +
+        "is left under a box, nothing changed outside the boxes). With dry_run it only lists the matches. Scanned pages need " +
+        "ocr_pdf first so their text can be found. Never overwrites: output defaults to <name>_redacted.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "find":{"type":"array","items":{"type":"string"},"description":"Words or phrases (case, full/half width and spaces do not matter)"},
+          "patterns":{"type":"array","items":{"type":"string","enum":["email","phone","number"]},
+                      "description":"Kinds of data: e-mail addresses, phone numbers, long numbers (7+ digits: ID, account, card)"},
+          "regex":{"type":"array","items":{"type":"string"},"description":".NET regular expressions over the page text"},
+          "areas":{"type":"array","items":{"type":"object","properties":{
+                     "page":{"type":"integer","description":"1-based"},
+                     "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4,
+                             "description":"[x0,y0,x1,y1] in points from the top-left of the upright page"}},
+                   "required":["page","rect"],"additionalProperties":false},
+                   "description":"Areas to black out besides the matches (a photo, a signature)"},
+          "match_case":{"type":"boolean"},
+          "whole_words":{"type":"boolean","description":"A word must not be part of a longer word"},
+          "dry_run":{"type":"boolean","description":"Only list the matches; write nothing"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_redacted.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    private static List<string> Strings(JsonElement a, string key) =>
+        a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Array
+            ? [.. v.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.String).Select(e => e.GetString()!)]
+            : [];
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var patterns = Strings(a, "patterns").Select(p => p.ToLowerInvariant() switch
+        {
+            "email" => RedactPattern.Email,
+            "phone" => RedactPattern.Phone,
+            "number" => RedactPattern.Number,
+            _ => throw new ToolException($"unknown pattern '{p}': use email, phone or number"),
+        }).ToList();
+        var search = new RedactSearch(Strings(a, "find"), patterns, Strings(a, "regex"),
+                                      a.TryGetProperty("match_case", out var mc) && mc.ValueKind == JsonValueKind.True,
+                                      a.TryGetProperty("whole_words", out var ww) && ww.ValueKind == JsonValueKind.True);
+        var found = PdfRedactor.Find(path, search);
+        var matches = found.Select(m => new
+        {
+            page = m.Page + 1, source = m.Source.ToString().ToLowerInvariant(), text = m.Text, context = m.Context,
+            boxes = m.Boxes.Select(b => new[] { b.X0, b.Y0, b.X1, b.Y1 }.Select(v => Math.Round(v, 1))),
+        }).ToList();
+        if (a.TryGetProperty("dry_run", out var dry) && dry.ValueKind == JsonValueKind.True)
+            return new ToolResult(ToJson(new { matches }));
+
+        var areas = PdfRedactor.Areas(found).ToList();
+        if (a.TryGetProperty("areas", out var list) && list.ValueKind == JsonValueKind.Array)
+            foreach (var e in list.EnumerateArray())
+            {
+                if (!e.TryGetProperty("page", out var pg) || !pg.TryGetInt32(out var page) || !e.TryGetProperty("rect", out var r)
+                    || r.ValueKind != JsonValueKind.Array || r.GetArrayLength() != 4)
+                    throw new ToolException("each area needs a page (1-based) and a rect [x0,y0,x1,y1]");
+                var v = r.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+                areas.Add(new RedactArea(page - 1, new PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3]))));
+            }
+        if (areas.Count == 0) return new ToolResult(ToJson(new { matches, output = (string?)null, note = "nothing found: nothing was written" }));
+        var output = Policy.Output(OptStr(a, "output"), path, "_redacted");
+        var report = PdfRedactor.Redact(path, output, areas, search.IsEmpty ? null : search);
+        return new ToolResult(ToJson(new
+        {
+            output, matches = matches.Count, removed = new
+            {
+                characters = report.Glyphs, image_areas = report.Images, drawings = report.Paths,
+                annotations_and_fields = report.Annotations, other_texts = report.Strings,
+            },
+            verified = "searched again: nothing found; no character left under a box; nothing changed outside the boxes",
+        }));
     }
 }
 

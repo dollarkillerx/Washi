@@ -338,6 +338,74 @@ public sealed class ToolsUiTests : IDisposable
         Assert.True(vm.Protect.NothingHidden);
     }
 
+    /// <summary>A one-page PDF (Helvetica) with one line of text per entry, written by hand.</summary>
+    private string TextPdf(string name, params string[] lines)
+    {
+        var content = string.Join("\n", lines.Select((l, i) => $"BT /F1 14 Tf 40 {540 - i * 30} Td ({l}) Tj ET"));
+        string[] objects =
+        [
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+            $"<< /Length {content.Length} >>\nstream\n{content}\nendstream",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+        ];
+        var sb = new System.Text.StringBuilder("%PDF-1.7\n");
+        var offsets = new List<int>();
+        for (int i = 0; i < objects.Length; i++) { offsets.Add(sb.Length); sb.Append($"{i + 1} 0 obj\n{objects[i]}\nendobj\n"); }
+        int xref = sb.Length;
+        sb.Append($"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        foreach (var o in offsets) sb.Append($"{o:D10} 00000 n \n");
+        sb.Append($"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        var path = Path.Combine(_dir, name);
+        File.WriteAllText(path, sb.ToString(), System.Text.Encoding.ASCII);
+        return path;
+    }
+
+    [AvaloniaFact]
+    public async Task Redact_finds_words_lets_some_stay_and_saves_a_copy_without_the_rest()
+    {
+        var pdf = TextPdf("t.pdf", "Name: Taro Yamada", "Mail: taro@example.com", "Keep this line");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "t_redacted.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Redact;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<TextBox>("RedactWordsBox")!.IsEffectivelyVisible);
+        Assert.False(vm.Redact.CanFind);
+        Assert.False(vm.Redact.CanRedact);
+
+        vm.Redact.Words = "yamada\n";
+        vm.Redact.Emails = true;
+        await vm.Redact.FindCommand.ExecuteAsync(null);
+        Assert.Equal(2, vm.Redact.Matches.Count);
+        Assert.Equal(L.F("Ui_RedactFound", 2, 1), vm.Redact.FoundText);
+        Assert.Contains("Taro Yamada", vm.Redact.Matches[0].Context);
+        vm.Redact.Matches[1].Redact = false;                   // the e-mail address stays
+        vm.Redact.AddArea(new Washi.Core.PdfRect(40, 300, 200, 330));   // an empty spot: only covered
+        Assert.Equal(2, vm.Redact.Chosen);
+        Assert.Equal(L.F("Ui_RedactRun", 2), vm.Redact.RunText);
+
+        await vm.Redact.RedactCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.False(vm.Redact.HasMatches);                     // the copy starts afresh
+        Assert.StartsWith(L.F("Ui_Redacted", "t_redacted.pdf", 6, 0, 0, 0)[..20], vm.Status);
+        var text = await MainViewModel.Pdfium(() =>
+        {
+            using var d = PdfiumDocument.Open(dialogs.SavePdf!);
+            return d.GetPageText(0);
+        });
+        Assert.DoesNotContain("Yamada", text);
+        Assert.Contains("Name: Taro", text);
+        Assert.Contains("taro@example.com", text);
+        Assert.Contains("Keep this line", text);
+        Assert.True(File.Exists(pdf));                          // the original is untouched
+
+        dialogs.SavePdf = vm.PdfPath;                           // never over the open file itself
+        vm.Redact.AddArea(new Washi.Core.PdfRect(40, 40, 100, 60));
+        await vm.Redact.RedactCommand.ExecuteAsync(null);
+        Assert.Equal(L.Get("Ui_RedactNotOriginal"), vm.Status);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

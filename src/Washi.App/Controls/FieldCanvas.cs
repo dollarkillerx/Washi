@@ -64,6 +64,7 @@ public sealed class FieldCanvas : Control
     {
         vm.PropertyChanged += OnEditorChanged;
         vm.Erase.Changed += InvalidateVisual;
+        vm.Redact.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
         vm.Fields.CollectionChanged += OnFieldsChanged;
@@ -74,6 +75,7 @@ public sealed class FieldCanvas : Control
     {
         vm.PropertyChanged -= OnEditorChanged;
         vm.Erase.Changed -= InvalidateVisual;
+        vm.Redact.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
         vm.Fields.CollectionChanged -= OnFieldsChanged;
@@ -128,6 +130,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsEraseTool: true } er)
         {
             RenderErase(ctx, er);
+            return;
+        }
+        if (Editor is { IsRedactTool: true } rd)
+        {
+            RenderRedact(ctx, rd);
             return;
         }
         if (Editor is { IsSignTool: true } sg)
@@ -342,6 +349,22 @@ public sealed class FieldCanvas : Control
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.10), edge, Screen(drawing));
     }
 
+    /// <summary>Redact tool: ticked matches and drawn areas as dark boxes (what the copy will show), unticked ones outlined.</summary>
+    private void RenderRedact(DrawingContext ctx, MainViewModel vm)
+    {
+        var page = vm.PageIndex;
+        var fill = new SolidColorBrush(Color.FromRgb(20, 20, 20), 0.72);
+        var edge = new Pen(new SolidColorBrush(Active), 1.5);
+        var off = new Pen(new SolidColorBrush(Active), 1, new DashStyle([3, 3], 0));
+        foreach (var m in vm.Redact.Matches.Where(m => m.Match.Page == page))
+            foreach (var b in m.Match.Boxes)
+                ctx.DrawRectangle(m.Redact ? fill : null, m.Redact ? edge : off, Screen(b));
+        foreach (var a in vm.Redact.Areas.Where(a => a.Page == page))
+            ctx.DrawRectangle(fill, edge, Screen(a.Rect));
+        if (_eraseBox is { } drawing)
+            ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(20, 20, 20), 0.35), edge, Screen(drawing));
+    }
+
     /// <summary>Sign tool: the signature fields (dashed), the placed signatures as they will print, the box being dragged.</summary>
     private void RenderSign(DrawingContext ctx, MainViewModel vm)
     {
@@ -460,7 +483,7 @@ public sealed class FieldCanvas : Control
             e.Handled = true;
             return;
         }
-        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsSignTool || ev.IsCommentTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsRedactTool || ev.IsSignTool || ev.IsCommentTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _start = ToPage(e.GetPosition(this));
             _eraseBox = Normal(_start, _start);
@@ -579,6 +602,7 @@ public sealed class FieldCanvas : Control
             if (box.Width >= MinSizePt && box.Height >= MinSizePt && Editor is { } ed)
             {
                 if (ed.IsSignTool) ed.Sign.Place(box);
+                else if (ed.IsRedactTool) ed.Redact.AddArea(box);
                 else _ = ed.Erase.AddBoxAsync(box);
             }
             InvalidateVisual();
@@ -612,7 +636,7 @@ public sealed class FieldCanvas : Control
             type = over.Kind is FieldKind.Checkbox or FieldKind.Radio or FieldKind.Choice ? StandardCursorType.Hand
                  : over.Kind == FieldKind.Signature ? StandardCursorType.Arrow : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
-        else if (vm.DrawMode || vm.IsEraseTool || vm.IsSignTool || vm.IsCommentTool) type = StandardCursorType.Cross;
+        else if (vm.DrawMode || vm.IsEraseTool || vm.IsRedactTool || vm.IsSignTool || vm.IsCommentTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
     }

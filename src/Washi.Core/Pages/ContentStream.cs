@@ -81,7 +81,7 @@ internal sealed class ContentStream
         return ops;
     }
 
-    private static byte[] ReadLiteral(byte[] s, ref int i)
+    internal static byte[] ReadLiteral(byte[] s, ref int i)
     {
         var buf = new List<byte>();
         int depth = 0;
@@ -117,7 +117,7 @@ internal sealed class ContentStream
         return [.. buf];
     }
 
-    private static byte[] ReadHex(byte[] s, ref int i)
+    internal static byte[] ReadHex(byte[] s, ref int i)
     {
         var digits = new StringBuilder();
         i++; // <
@@ -156,6 +156,79 @@ internal sealed class ContentStream
             while (i < s.Length && !IsSpace(s[i]) && !IsDelimiter(s[i])) i++;
             numbers.Add(Encoding.Latin1.GetString(s, t0, i - t0));
         }
+    }
+
+    /// <summary>
+    /// The operands of <paramref name="op"/> in order: numbers (double), strings (byte[]), names (string, with the
+    /// slash), arrays (List&lt;object&gt;) and dictionaries (Dictionary&lt;string, object&gt;).
+    /// </summary>
+    internal List<object> Operands(Op op)
+    {
+        var list = new List<object>();
+        int i = op.Start;
+        while (i < op.End)
+        {
+            var v = ReadValue(Bytes, ref i, op.End);
+            if (v is null) break;
+            list.Add(v);
+        }
+        if (list.Count > 0 && list[^1] is string last && last == op.Name) list.RemoveAt(list.Count - 1);
+        return list;
+    }
+
+    private static object? ReadValue(byte[] s, ref int i, int end)
+    {
+        while (i < end)
+        {
+            byte c = s[i];
+            if (IsSpace(c)) { i++; continue; }
+            if (c == '%') { while (i < end && s[i] != '\n' && s[i] != '\r') i++; continue; }
+            switch (c)
+            {
+                case (byte)'(': return ReadLiteral(s, ref i);
+                case (byte)'<' when i + 1 < end && s[i + 1] == '<':
+                {
+                    i += 2;
+                    var d = new Dictionary<string, object>(StringComparer.Ordinal);
+                    while (i < end)
+                    {
+                        while (i < end && IsSpace(s[i])) i++;
+                        if (i + 1 < end && s[i] == '>' && s[i + 1] == '>') { i += 2; break; }
+                        if (ReadValue(s, ref i, end) is not string key || !key.StartsWith('/')) break;
+                        if (ReadValue(s, ref i, end) is { } value) d[key] = value;
+                    }
+                    return d;
+                }
+                case (byte)'<': return ReadHex(s, ref i);
+                case (byte)'[':
+                {
+                    i++;
+                    var a = new List<object>();
+                    while (i < end)
+                    {
+                        while (i < end && IsSpace(s[i])) i++;
+                        if (i < end && s[i] == ']') { i++; break; }
+                        if (ReadValue(s, ref i, end) is not { } v) break;
+                        a.Add(v);
+                    }
+                    return a;
+                }
+                case (byte)'/':
+                {
+                    int n0 = i++;
+                    while (i < end && !IsSpace(s[i]) && !IsDelimiter(s[i])) i++;
+                    return Encoding.Latin1.GetString(s, n0, i - n0);
+                }
+                case (byte)']' or (byte)'>' or (byte)')' or (byte)'{' or (byte)'}': i++; continue;
+            }
+            int t0 = i;
+            while (i < end && !IsSpace(s[i]) && !IsDelimiter(s[i])) i++;
+            var word = Encoding.Latin1.GetString(s, t0, i - t0);
+            if (word.Length == 0) { i++; continue; }
+            if (double.TryParse(word, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var num)) return num;
+            return word;   // the operator itself, true/false/null
+        }
+        return null;
     }
 
     /// <summary>After BI: the dictionary, ID, one white-space byte, the data, then EI (white-space delimited).</summary>

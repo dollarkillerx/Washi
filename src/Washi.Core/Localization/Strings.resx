@@ -124,7 +124,9 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
                                           passwords are asked for, or read from WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD
   washi pdf unlock &lt;in.pdf&gt; -o out.pdf   remove the password (asked for, or WASHI_PASSWORD)
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
-                                          remove hidden information (--list only shows it)</value></data>
+                                          remove hidden information (--list only shows it)
+  washi pdf redact &lt;in.pdf&gt; [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
+                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
@@ -519,4 +521,42 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Pdf_AskPassword" xml:space="preserve"><value>Password for {0}:</value></data>
   <data name="Pdf_Protected" xml:space="preserve"><value>Saved {0} (AES-256).</value></data>
   <data name="Pdf_Unlocked" xml:space="preserve"><value>Saved {0} without a password.</value></data>
+  <data name="Ui_ToolRedact" xml:space="preserve"><value>Redact</value></data>
+  <data name="Ui_RedactTitle" xml:space="preserve"><value>Redact</value></data>
+  <data name="Ui_RedactLead" xml:space="preserve"><value>Find names, numbers or addresses, or drag over any part of a page. What lies under each black box is removed from the file for real, not just hidden. Saves a copy.</value></data>
+  <data name="Ui_RedactFindTitle" xml:space="preserve"><value>Find</value></data>
+  <data name="Ui_RedactWordsHint" xml:space="preserve"><value>Words or phrases, one per line</value></data>
+  <data name="Ui_RedactPatterns" xml:space="preserve"><value>Also find:</value></data>
+  <data name="Ui_RedactEmails" xml:space="preserve"><value>E-mail addresses</value></data>
+  <data name="Ui_RedactPhones" xml:space="preserve"><value>Phone numbers</value></data>
+  <data name="Ui_RedactNumbers" xml:space="preserve"><value>ID, account and card numbers (7+ digits)</value></data>
+  <data name="Ui_RedactMatchCase" xml:space="preserve"><value>Match case</value></data>
+  <data name="Ui_RedactWholeWords" xml:space="preserve"><value>Whole words</value></data>
+  <data name="Ui_RedactFind" xml:space="preserve"><value>Find</value></data>
+  <data name="Ui_RedactFound" xml:space="preserve"><value>{0} found on {1} page(s). Untick what should stay.</value></data>
+  <data name="Ui_RedactNoneFound" xml:space="preserve"><value>Nothing found. Scanned pages need OCR first so their text can be searched.</value></data>
+  <data name="Ui_RedactAll" xml:space="preserve"><value>All</value></data>
+  <data name="Ui_RedactNone" xml:space="preserve"><value>None</value></data>
+  <data name="Ui_RedactOnPage" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_RedactInField" xml:space="preserve"><value>Page {0}, form field (removed)</value></data>
+  <data name="Ui_RedactInComment" xml:space="preserve"><value>Page {0}, comment (removed)</value></data>
+  <data name="Ui_RedactAreasTitle" xml:space="preserve"><value>Areas</value></data>
+  <data name="Ui_RedactNoAreas" xml:space="preserve"><value>Drag on the page to black out any area: a photo, a signature, a stamp.</value></data>
+  <data name="Ui_RedactRun" xml:space="preserve"><value>Redact {0} and save copy…</value></data>
+  <data name="Ui_RedactRunNote" xml:space="preserve"><value>Text, image pixels and drawings under the boxes cannot be recovered from the copy. The same words are masked in document properties and bookmarks. The original is not changed.</value></data>
+  <data name="Ui_RedactNotOriginal" xml:space="preserve"><value>Save the redacted copy under another name: the original stays as it is.</value></data>
+  <data name="Ui_RedactFailed" xml:space="preserve"><value>Could not redact: {0}</value></data>
+  <data name="Ui_Redacted" xml:space="preserve"><value>Saved {0}: removed {1} character(s), {2} image area(s), {3} drawing(s), {4} other item(s). Checked: nothing found again, nothing moved.</value></data>
+  <data name="Err_RedactNothing" xml:space="preserve"><value>Nothing to redact: find something or drag an area first.</value></data>
+  <data name="Err_RedactNested" xml:space="preserve"><value>The page's content is nested too deeply to redact safely.</value></data>
+  <data name="Err_RedactInlineImage" xml:space="preserve"><value>A small embedded image lies partly under an area: draw the area over the whole image.</value></data>
+  <data name="Err_RedactImage" xml:space="preserve"><value>An image under an area could not be read, so nothing was changed.</value></data>
+  <data name="Err_RedactRegex" xml:space="preserve"><value>Not a valid regular expression: {0}</value></data>
+  <data name="Err_RedactRegexSlow" xml:space="preserve"><value>The regular expression took too long; make it simpler.</value></data>
+  <data name="Err_RedactLeftover" xml:space="preserve"><value>{0} match(es) were still found in the redacted copy, so it was not kept.</value></data>
+  <data name="Err_RedactChanged" xml:space="preserve"><value>The redacted copy differed from the original outside the black boxes ({0} pixels), so it was not kept.</value></data>
+  <data name="Err_RedactUnstable" xml:space="preserve"><value>The redacted copy kept changing between checks, so it was not kept.</value></data>
+  <data name="Pdf_Redacted" xml:space="preserve"><value>Saved {0}: removed {1} character(s), {2} image area(s), {3} drawing(s), {4} annotation(s) or field(s), {5} other text(s). Checked: nothing found again, nothing moved outside the boxes.</value></data>
+  <data name="Pdf_RedactMatch" xml:space="preserve"><value>  page {0} ({1}): {2}</value></data>
+  <data name="Pdf_RedactFound" xml:space="preserve"><value>{0} match(es) on {1} page(s).</value></data>
 </root>
