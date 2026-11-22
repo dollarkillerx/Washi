@@ -35,6 +35,10 @@
                     <NativeMenuItem Header="{l:Tr Ui_FitWidth}" Command="{Binding FitWidthCommand}" Gesture="Cmd+D0" />
                     <NativeMenuItem Header="{l:Tr Ui_FitPage}" Command="{Binding FitPageCommand}" Gesture="Cmd+D9" />
                     <NativeMenuItemSeparator />
+                    <NativeMenuItem Header="{l:Tr Ui_FindMenu}" Command="{Binding Find.OpenCommand}" Gesture="Cmd+F" />
+                    <NativeMenuItem Header="{l:Tr Ui_FindNext}" Command="{Binding Find.NextCommand}" Gesture="Cmd+G" />
+                    <NativeMenuItem Header="{l:Tr Ui_FindPrevious}" Command="{Binding Find.PreviousCommand}" Gesture="Cmd+Shift+G" />
+                    <NativeMenuItemSeparator />
                     <NativeMenuItem Header="{l:Tr Ui_PrevPage}" Command="{Binding PreviousPageCommand}" />
                     <NativeMenuItem Header="{l:Tr Ui_NextPage}" Command="{Binding NextPageCommand}" />
                 </NativeMenu>
@@ -428,10 +432,10 @@
                                 </StackPanel>
                             </Button>
                             <Button Grid.Column="1" Command="{Binding Combine.MoveUpCommand}" Padding="7" Margin="4,0,0,0" ToolTip.Tip="{l:Tr Ui_MoveUp}">
-                                <c:Icon Data="{StaticResource I.Up}" Size="16" />
+                                <c:Icon Data="{StaticResource I.ChevronUp}" Size="16" />
                             </Button>
                             <Button Grid.Column="2" Command="{Binding Combine.MoveDownCommand}" Padding="7" Margin="4,0,0,0" ToolTip.Tip="{l:Tr Ui_MoveDown}">
-                                <c:Icon Data="{StaticResource I.Down}" Size="16" />
+                                <c:Icon Data="{StaticResource I.ChevronDown}" Size="16" />
                             </Button>
                             <Button Grid.Column="3" Command="{Binding Combine.RemoveCommand}" Padding="7" Margin="4,0,0,0" ToolTip.Tip="{l:Tr Ui_Remove}">
                                 <c:Icon Data="{StaticResource I.Delete}" Size="16" />
@@ -1142,6 +1146,33 @@
                     <Rectangle Height="1" Fill="{StaticResource RuleBrush}" Margin="6,2" />
                     <Button Command="{Binding DeleteSelectedCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="{l:Tr Ui_DeleteTip}">
                         <c:Icon Data="{StaticResource I.Delete}" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- find bar (⌘/Ctrl+F), over the page in every tool -->
+            <Border Classes="float" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="14" Padding="6,4"
+                    IsVisible="{Binding Find.IsOpen}" x:Name="FindBar">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <c:Icon Data="{StaticResource I.Search}" Size="16" VerticalAlignment="Center" Margin="4,0,0,0" />
+                    <TextBox Text="{Binding Find.Query}" Width="200" PlaceholderText="{l:Tr Ui_FindHint}" VerticalContentAlignment="Center"
+                             x:Name="FindBox" />
+                    <TextBlock Text="{Binding Find.CountText}" VerticalAlignment="Center" MinWidth="56" TextAlignment="Center" FontSize="12"
+                               Foreground="{StaticResource MutedBrush}" x:Name="FindCount" />
+                    <Button Command="{Binding Find.PreviousCommand}" IsEnabled="{Binding Find.HasHits}" ToolTip.Tip="{l:Tr Ui_FindPrevious}">
+                        <c:Icon Data="{StaticResource I.ChevronUp}" Size="16" />
+                    </Button>
+                    <Button Command="{Binding Find.NextCommand}" IsEnabled="{Binding Find.HasHits}" ToolTip.Tip="{l:Tr Ui_FindNext}">
+                        <c:Icon Data="{StaticResource I.ChevronDown}" Size="16" />
+                    </Button>
+                    <ToggleButton IsChecked="{Binding Find.MatchCase}" ToolTip.Tip="{l:Tr Ui_RedactMatchCase}" Padding="6,2">
+                        <TextBlock Text="Aa" FontSize="12" />
+                    </ToggleButton>
+                    <ToggleButton IsChecked="{Binding Find.WholeWords}" ToolTip.Tip="{l:Tr Ui_RedactWholeWords}" Padding="6,2">
+                        <TextBlock Text="ab|" FontSize="12" />
+                    </ToggleButton>
+                    <Button Command="{Binding Find.CloseCommand}" ToolTip.Tip="{l:Tr Ui_Close}">
+                        <c:Icon Data="{StaticResource I.Close}" Size="14" />
                     </Button>
                 </StackPanel>
             </Border>

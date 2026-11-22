@@ -94,7 +94,7 @@ public static class PdfRedactor
         return list;
     }
 
-    private static IEnumerable<RedactMatch> FindOnPage(FpdfPageT page, PdfiumDocument.PageMapper map, int pageIndex, Matcher matcher)
+    internal static IEnumerable<RedactMatch> FindOnPage(FpdfPageT page, PdfiumDocument.PageMapper map, int pageIndex, Matcher matcher)
     {
         var chars = Chars(page, map);
         foreach (var hit in matcher.Find([.. chars.Select(c => c.Text)]))

@@ -63,6 +63,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Comment = new CommentToolViewModel(this);
         Protect = new ProtectToolViewModel(this);
         Redact = new RedactToolViewModel(this);
+        Find = new FindViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -80,6 +81,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public CommentToolViewModel Comment { get; }
     public ProtectToolViewModel Protect { get; }
     public RedactToolViewModel Redact { get; }
+    public FindViewModel Find { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -424,6 +426,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Comment.Reset();
         Protect.Reset();
         Redact.Reset();
+        Find.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
@@ -452,6 +455,8 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Comment.Reset();
         Protect.Reset();
         Redact.Reset();
+        Find.CloseCommand.Execute(null);
+        Find.Reset();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();

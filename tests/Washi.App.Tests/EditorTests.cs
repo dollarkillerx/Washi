@@ -319,6 +319,14 @@ public sealed class EditorTests : IDisposable
         Shot(w, "redact");
         vm.Redact.Reset();
 
+        vm.ActiveTool = Tool.Form;
+        vm.Find.OpenCommand.Execute(null);
+        vm.Find.Query = Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_FIND") ?? "氏名";
+        await vm.Find.SearchSoonAsync(0);
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "find");
+        vm.Find.CloseCommand.Execute(null);
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

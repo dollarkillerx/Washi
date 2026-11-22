@@ -397,6 +397,34 @@ public sealed class RedactTests : IDisposable
         Assert.Throws<RedactException>(() => new Matcher(new RedactSearch([], Regexes: ["(unclosed"])));
     }
 
+    // ------------------------------------------------------------------ the find bar's search
+
+    [Fact]
+    public async Task Search_finds_text_page_by_page_with_boxes()
+    {
+        var input = Pdf("find.pdf", """
+            BT /F1 12 Tf 30 250 Td (Contact: Yamada Taro) Tj ET
+            BT /F1 12 Tf 30 220 Td (Mr YAMADA called; Yamadaya closed.) Tj ET
+            """, "/Font << /F1 5 0 R >>", extra: Helvetica);
+        var hits = Locked(() => PdfSearch.Find(input, "yamada"));
+        Assert.Equal(3, hits.Count);
+        Assert.All(hits, h => Assert.Equal(0, h.Page));
+        Assert.True(hits[0].Boxes[0].Y0 < hits[1].Boxes[0].Y0);           // the first line first
+        Assert.Contains("Contact", hits[0].Context);
+        Assert.InRange(hits[0].Boxes[0].Height, 8, 20);
+        Assert.Equal(2, Locked(() => PdfSearch.Find(input, "yamada", wholeWords: true)).Count);
+        Assert.Single(Locked(() => PdfSearch.Find(input, "YAMADA", matchCase: true)));
+        Assert.Empty(Locked(() => PdfSearch.Find(input, "   ")));
+
+        var tools = Washi.Tools.WashiTools.CreateRegistry(new Washi.Tools.PathPolicy([_dir]));
+        var r = await tools.Find("search_text")!.InvokeAsync(System.Text.Json.JsonSerializer.SerializeToElement(new { path = input, text = "Yamada", max = 2 }));
+        Assert.False(r.IsError, r.Text);
+        var json = System.Text.Json.JsonDocument.Parse(r.Text).RootElement;
+        Assert.Equal(2, json.GetProperty("count").GetInt32());
+        Assert.True(json.GetProperty("more").GetBoolean());
+        Assert.Equal(1, json.GetProperty("hits")[0].GetProperty("page").GetInt32());
+    }
+
     // ------------------------------------------------------------------ refusals
 
     [Fact]

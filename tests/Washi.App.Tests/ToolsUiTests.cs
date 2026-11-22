@@ -406,6 +406,45 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(L.Get("Ui_RedactNotOriginal"), vm.Status);
     }
 
+    [AvaloniaFact]
+    public async Task The_find_bar_searches_highlights_and_steps_through_hits_in_any_tool()
+    {
+        var pdf = TextPdf("f.pdf", "Yamada wrote this", "and Yamada signed", "Nothing here");
+        var (w, vm) = await Open(pdf, new FakeDialogs());
+        vm.ActiveTool = Tool.Comment;                              // works over any tool
+        Dispatcher.UIThread.RunJobs();
+        var bar = w.FindControl<Border>("FindBar")!;
+        Assert.False(bar.IsEffectivelyVisible);
+
+        vm.Find.OpenCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(bar.IsEffectivelyVisible);
+        Assert.True(w.FindControl<TextBox>("FindBox")!.IsFocused);
+
+        vm.Find.Query = "yamada";
+        await vm.Find.SearchSoonAsync(0);
+        Assert.Equal(2, vm.Find.Hits.Count);
+        Assert.Equal(L.F("Ui_FindCount", 1, 2), vm.Find.CountText);
+        Assert.Equal(2, vm.Find.BoxesOn(0).Count());
+        Assert.Single(vm.Find.BoxesOn(0), b => b.Current);
+        vm.Find.NextCommand.Execute(null);
+        Assert.Equal(L.F("Ui_FindCount", 2, 2), vm.Find.CountText);
+        vm.Find.NextCommand.Execute(null);                         // wraps around
+        Assert.Equal(0, vm.Find.Index);
+        vm.Find.PreviousCommand.Execute(null);
+        Assert.Equal(1, vm.Find.Index);
+
+        vm.Find.Query = "absent";
+        await vm.Find.SearchSoonAsync(0);
+        Assert.Equal(L.Get("Ui_FindNone"), vm.Find.CountText);
+        Assert.False(vm.Find.HasHits);
+
+        vm.Find.CloseCommand.Execute(null);
+        Assert.Empty(vm.Find.BoxesOn(0));                         // nothing highlighted once closed
+        vm.CloseDocumentCommand.Execute(null);
+        Assert.False(vm.Find.IsOpen);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

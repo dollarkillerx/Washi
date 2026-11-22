@@ -126,7 +126,8 @@
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
                                           숨은 정보 삭제 (--list 는 보여주기만)
   washi pdf redact &lt;in.pdf&gt; [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
-                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)</value></data>
+                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)
+  washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>파일 {0}개를 {1}(으)로 합쳤습니다: {2}페이지, 입력란 {3}개</value></data>
@@ -559,4 +560,12 @@
   <data name="Pdf_Redacted" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}곳, 도형 {3}개, 주석·입력란 {4}개, 기타 문자열 {5}개 삭제. 확인: 다시 찾아도 없고 상자 밖은 바뀌지 않았습니다.</value></data>
   <data name="Pdf_RedactMatch" xml:space="preserve"><value>  {0}쪽 ({1}): {2}</value></data>
   <data name="Pdf_RedactFound" xml:space="preserve"><value>{1}쪽에서 {0}개.</value></data>
+  <data name="Ui_FindMenu" xml:space="preserve"><value>찾기…</value></data>
+  <data name="Ui_FindNext" xml:space="preserve"><value>다음 찾기</value></data>
+  <data name="Ui_FindPrevious" xml:space="preserve"><value>이전 찾기</value></data>
+  <data name="Ui_FindHint" xml:space="preserve"><value>문서에서 찾기</value></data>
+  <data name="Ui_FindNone" xml:space="preserve"><value>결과 없음</value></data>
+  <data name="Ui_FindCount" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Pdf_FindCount" xml:space="preserve"><value>{1}쪽에서 {0}개.</value></data>
+  <data name="Pdf_FindHit" xml:space="preserve"><value>  {0}쪽: {1}</value></data>
 </root>

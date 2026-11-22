@@ -126,7 +126,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
                                           remove hidden information (--list only shows it)
   washi pdf redact &lt;in.pdf&gt; [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
-                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)</value></data>
+                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)
+  washi pdf find &lt;in.pdf&gt; &lt;text&gt; [--case] [--whole-words]   where the text is, page by page</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
@@ -559,4 +560,12 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Pdf_Redacted" xml:space="preserve"><value>Saved {0}: removed {1} character(s), {2} image area(s), {3} drawing(s), {4} annotation(s) or field(s), {5} other text(s). Checked: nothing found again, nothing moved outside the boxes.</value></data>
   <data name="Pdf_RedactMatch" xml:space="preserve"><value>  page {0} ({1}): {2}</value></data>
   <data name="Pdf_RedactFound" xml:space="preserve"><value>{0} match(es) on {1} page(s).</value></data>
+  <data name="Ui_FindMenu" xml:space="preserve"><value>Find…</value></data>
+  <data name="Ui_FindNext" xml:space="preserve"><value>Find next</value></data>
+  <data name="Ui_FindPrevious" xml:space="preserve"><value>Find previous</value></data>
+  <data name="Ui_FindHint" xml:space="preserve"><value>Find in document</value></data>
+  <data name="Ui_FindNone" xml:space="preserve"><value>No results</value></data>
+  <data name="Ui_FindCount" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="Pdf_FindCount" xml:space="preserve"><value>{0} hit(s) on {1} page(s).</value></data>
+  <data name="Pdf_FindHit" xml:space="preserve"><value>  page {0}: {1}</value></data>
 </root>

@@ -126,7 +126,8 @@
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
                                           隠れた情報を削除（--list は表示だけ）
   washi pdf redact &lt;in.pdf&gt; [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
-                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）</value></data>
+                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）
+  washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} 個のファイルを {1} に結合しました: {2} ページ、記入欄 {3} 個</value></data>
@@ -559,4 +560,12 @@
   <data name="Pdf_Redacted" xml:space="preserve"><value>{0} を保存しました：文字 {1}、画像 {2}、図形 {3}、注釈・記入欄 {4}、その他の文字列 {5} を削除。確認済み：再検索で見つからず、箱の外も変わっていません。</value></data>
   <data name="Pdf_RedactMatch" xml:space="preserve"><value>  {0} ページ（{1}）：{2}</value></data>
   <data name="Pdf_RedactFound" xml:space="preserve"><value>{1} ページで {0} 件。</value></data>
+  <data name="Ui_FindMenu" xml:space="preserve"><value>検索…</value></data>
+  <data name="Ui_FindNext" xml:space="preserve"><value>次を検索</value></data>
+  <data name="Ui_FindPrevious" xml:space="preserve"><value>前を検索</value></data>
+  <data name="Ui_FindHint" xml:space="preserve"><value>文書内を検索</value></data>
+  <data name="Ui_FindNone" xml:space="preserve"><value>見つかりません</value></data>
+  <data name="Ui_FindCount" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Pdf_FindCount" xml:space="preserve"><value>{1} ページで {0} 件。</value></data>
+  <data name="Pdf_FindHit" xml:space="preserve"><value>  {0} ページ：{1}</value></data>
 </root>

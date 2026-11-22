@@ -126,7 +126,8 @@
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
                                           删除隐藏信息（--list 只列出）
   washi pdf redact &lt;in.pdf&gt; [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
-                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）</value></data>
+                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）
+  washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐页列出文字所在位置</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已保存 {0}：删除了文字 {1} 段、图像 {2} 个、图形 {3} 个。检查：删除处剩余文字 {4} 个，其他地方变化的像素 {5} 个。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 页保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已将 {0} 个文件合并为 {1}：{2} 页，{3} 个表单栏位</value></data>
@@ -559,4 +560,12 @@
   <data name="Pdf_Redacted" xml:space="preserve"><value>已保存 {0}：删除文字 {1} 个、图像 {2} 处、图形 {3} 个、批注或栏位 {4} 个、其他文字 {5} 处。已检查：再次搜索没有找到，黑框外没有变化。</value></data>
   <data name="Pdf_RedactMatch" xml:space="preserve"><value>  第 {0} 页（{1}）：{2}</value></data>
   <data name="Pdf_RedactFound" xml:space="preserve"><value>共 {1} 页 {0} 处。</value></data>
+  <data name="Ui_FindMenu" xml:space="preserve"><value>查找…</value></data>
+  <data name="Ui_FindNext" xml:space="preserve"><value>查找下一个</value></data>
+  <data name="Ui_FindPrevious" xml:space="preserve"><value>查找上一个</value></data>
+  <data name="Ui_FindHint" xml:space="preserve"><value>在文档中查找</value></data>
+  <data name="Ui_FindNone" xml:space="preserve"><value>没有结果</value></data>
+  <data name="Ui_FindCount" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Pdf_FindCount" xml:space="preserve"><value>共 {1} 页 {0} 处。</value></data>
+  <data name="Pdf_FindHit" xml:space="preserve"><value>  第 {0} 页：{1}</value></data>
 </root>
