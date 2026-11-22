@@ -275,6 +275,19 @@ public sealed class PageToolsTests : IDisposable
     }
 
     [Fact]
+    public async Task Organize_tool_writes_the_listed_pages_to_a_new_file()
+    {
+        await Call("merge_pdfs", new { paths = new[] { "a.pdf", "scan.pdf" } });
+        var r = await Call("organize_pages", new { path = "a_merged.pdf", pages = new object[] { new { page = 2 }, new { page = 1, rotate = 90 }, new { page = 1, path = "scan.pdf" } } });
+        Assert.False(r.IsError, r.Text);
+        Assert.Equal(3, JsonDocument.Parse(r.Text).RootElement.GetProperty("pages").GetInt32());
+        Assert.True(File.Exists(Path.Combine(_root, "a_merged_organized.pdf")));
+        Assert.Contains("already exists", (await Call("organize_pages", new { path = "a_merged.pdf", pages = new[] { new { page = 1 } } })).Text);
+        Assert.Contains("twice", (await Call("organize_pages", new { path = "a.pdf", output = "b.pdf", pages = new[] { new { page = 1 }, new { page = 1 } } })).Text);
+        Assert.Contains("outside", (await Call("organize_pages", new { path = "a.pdf", output = "c.pdf", pages = new[] { new { page = 1, path = "/etc/hosts" } } })).Text);
+    }
+
+    [Fact]
     public async Task Ocr_tool_reports_text_or_a_clear_error()
     {
         var r = await Call("ocr_pdf", new { path = "scan.pdf", lang = "en" });

@@ -127,7 +127,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -165,6 +165,9 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 - **Combine** starts with the open file; add more files or drop them, then reorder them.
   Protected files are marked and are not combined.
 - **Split** previews the files ("3 files: p1-3, p5, p6") before writing them to a folder.
+- **Organize** shows the pages as a grid. Select one or more (⌘/Ctrl or Shift + click) to turn them left or right,
+  move them, or remove them (Delete), and insert every page of other PDFs after the selection (button, or drop
+  the files). **Save as new PDF** writes the result, keeps the form fields fillable, and opens it.
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your
@@ -279,12 +282,13 @@ washi ocr scan.pdf --engine ai --yes       # the configured AI model reads the p
   per page (王燁, the address, the 13-digit company number). Both PDFium and macOS PDFKit
   (Preview) find the text at the right spots.
 
-## Merge and split
+## Merge, split and organize
 
 ```bash
 washi pdf merge a.pdf b.pdf c.pdf -o all.pdf
 washi pdf split all.pdf --pages 1-2,5 -o parts     # parts/all_p1-2.pdf, parts/all_p5.pdf
 washi pdf split all.pdf                            # one file per page
+washi pdf organize all.pdf --pages 3,1-2 --rotate 3:90 -o new.pdf   # page 3 first and turned; pages 4+ dropped
 ```
 
 - **Form fields stay fillable**: the copied pages' fields are registered in the new file's
@@ -294,6 +298,9 @@ washi pdf split all.pdf                            # one file per page
 - **Protected files**: if a file's permissions forbid reusing its pages (as the 国税庁 PDFs
   do), Washi refuses it. Washi does not remove protection.
 - `split` never overwrites existing parts.
+- `organize` writes exactly the listed pages in that order, so pages left out are dropped. A turned
+  page's form fields turn with it (`/MK /R`), so text typed later still reads upright. A page may
+  appear only once, because two copies would share their fields' values.
 
 ## Erasing printed text
 
@@ -364,6 +371,7 @@ There are two ways to run it:
 | `fill_fields` | new PDF with values filled in. Washi draws each value itself, so it looks the same everywhere | writes a **new** file |
 | `merge_pdfs` | new PDF with the pages of several PDFs; form fields kept | writes a **new** file |
 | `split_pdf` | new PDFs, one per page range | writes **new** files |
+| `organize_pages` | new PDF with the listed pages in order: reorder, drop, rotate, insert pages from other PDFs; form fields kept | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 

@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -58,6 +58,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Ocr = new OcrToolViewModel(this);
         Combine = new CombineToolViewModel(this);
         Split = new SplitToolViewModel(this);
+        Organize = new OrganizeToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -70,6 +71,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public OcrToolViewModel Ocr { get; }
     public CombineToolViewModel Combine { get; }
     public SplitToolViewModel Split { get; }
+    public OrganizeToolViewModel Organize { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -130,7 +132,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -145,6 +147,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsOcrTool { get => ActiveTool == Tool.Ocr; set { if (value) ActiveTool = Tool.Ocr; } }
     public bool IsCombineTool { get => ActiveTool == Tool.Combine; set { if (value) ActiveTool = Tool.Combine; } }
     public bool IsSplitTool { get => ActiveTool == Tool.Split; set { if (value) ActiveTool = Tool.Split; } }
+    public bool IsOrganizeTool { get => ActiveTool == Tool.Organize; set { if (value) ActiveTool = Tool.Organize; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -184,6 +187,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Form && PdfPath is { } p && _detectedFor != p) _ = DetectAsync();
         if (value == Tool.Ocr) _ = Ocr.RefreshPlanAsync();
         if (value == Tool.Combine) Combine.OfferCurrentDocument();
+        if (value == Tool.Organize) Organize.Prepare();
     }
 
     private string? _detectedFor;
@@ -363,9 +367,11 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
         Erase.Reset();
+        Organize.Clear();                       // a reloaded file (even the same path) starts a fresh page list
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
+        else if (ActiveTool == Tool.Organize) Organize.Prepare();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
@@ -374,6 +380,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         var pdfs = paths.Where(p => p.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) && File.Exists(p)).ToList();
         if (pdfs.Count == 0) return;
         if (ActiveTool == Tool.Combine) await Combine.AddAsync(pdfs);
+        else if (ActiveTool == Tool.Organize && HasDocument) await Organize.InsertAsync(pdfs);   // dropped files are inserted
         else await LoadAsync(pdfs[0]);
     }
 
@@ -381,6 +388,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     private void CloseDocument()
     {
         Erase.Reset();
+        Organize.Clear();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();
@@ -751,13 +759,17 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         }
     }
 
-    /// <summary>PDFium is process-global: one call at a time, off the UI thread.</summary>
-    internal static async Task<T> Pdfium<T>(Func<T> work)
+    /// <summary>
+    /// PDFium is process-global: one call at a time, off the UI thread. The lock is taken and released on the same
+    /// pool thread, never after a hop back to the UI thread: a render still running when its dispatcher stops (the
+    /// app closing, or a headless test ending) would otherwise keep the lock forever and hang every later PDFium call.
+    /// </summary>
+    internal static Task<T> Pdfium<T>(Func<T> work) => Task.Run(async () =>
     {
-        await PdfiumDocument.Gate.WaitAsync();
-        try { return await Task.Run(work); }
+        await PdfiumDocument.Gate.WaitAsync().ConfigureAwait(false);
+        try { return work(); }
         finally { PdfiumDocument.Gate.Release(); }
-    }
+    });
 
     internal async Task Run(Func<Task> work)
     {

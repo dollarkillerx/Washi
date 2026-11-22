@@ -110,6 +110,8 @@
   <data name="UsagePdf" xml:space="preserve"><value>페이지와 OCR:
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      파일 합치기 (입력란 유지)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
+  washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
+                                          페이지 순서 바꾸기, 삭제(나열하지 않은 페이지), 회전 (입력란 유지)
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           스캔한 페이지를 검색 가능하게 (보이지 않는 텍스트 레이어 추가, 페이지 이미지는 그대로)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -117,6 +119,7 @@
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>파일 {0}개를 {1}(으)로 합쳤습니다: {2}페이지, 입력란 {3}개</value></data>
+  <data name="Pdf_Organized" xml:space="preserve"><value>{0} 저장: {1}페이지, 입력란 {2}개</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  ({1}-{2}페이지)</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi: {0}</value></data>
   <data name="Ocr_Engine" xml:space="preserve"><value>{0}(으)로 OCR: 인식할 페이지 {1}개</value></data>
@@ -207,6 +210,18 @@
   <data name="Ui_SplitPreview" xml:space="preserve"><value>파일 {0}개: {1}</value></data>
   <data name="Ui_SplitRun" xml:space="preserve"><value>폴더로 나누기…</value></data>
   <data name="Ui_SplitDone" xml:space="preserve"><value>파일 {0}개를 {1}에 저장했습니다</value></data>
+  <data name="Ui_ToolOrganize" xml:space="preserve"><value>페이지 정리</value></data>
+  <data name="Ui_OrganizeTitle" xml:space="preserve"><value>페이지 정리</value></data>
+  <data name="Ui_OrganizeLead" xml:space="preserve"><value>페이지 순서를 바꾸고, 돌리고, 지우거나 끼워 넣은 뒤 새 PDF 로 저장합니다. 입력란은 그대로 쓸 수 있습니다.</value></data>
+  <data name="Ui_OrganizeInsert" xml:space="preserve"><value>페이지 삽입…</value></data>
+  <data name="Ui_OrganizeInsertTip" xml:space="preserve"><value>선택한 페이지 뒤에 다른 PDF 의 모든 페이지를 넣습니다</value></data>
+  <data name="Ui_RotateLeft" xml:space="preserve"><value>왼쪽으로 회전</value></data>
+  <data name="Ui_RotateRight" xml:space="preserve"><value>오른쪽으로 회전</value></data>
+  <data name="Ui_OrganizeReset" xml:space="preserve"><value>처음부터</value></data>
+  <data name="Ui_OrganizeSummary" xml:space="preserve"><value>{0}페이지 · 삭제 {1} · 회전 {2} · 삽입 {3}</value></data>
+  <data name="Ui_OrganizeFrom" xml:space="preserve"><value>{1} {0}페이지</value></data>
+  <data name="Ui_OrganizeEmpty" xml:space="preserve"><value>페이지를 정리할 PDF 를 여세요.</value></data>
+  <data name="Ui_OrganizeRun" xml:space="preserve"><value>새 PDF 로 저장…</value></data>
   <data name="Ui_Save" xml:space="preserve"><value>저장</value></data>
   <data name="Ui_Copy" xml:space="preserve"><value>복사</value></data>
   <data name="Ui_Copied" xml:space="preserve"><value>복사했습니다.</value></data>
@@ -365,6 +380,10 @@
   <data name="Err_NothingToMerge" xml:space="preserve"><value>합칠 파일이 없습니다.</value></data>
   <data name="Err_RangeOutside" xml:space="preserve"><value>페이지 범위 {0} 이(가) 1-{1} 밖입니다.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>'{0}' 은(는) 페이지 범위가 아닙니다(예: 1-3,5).</value></data>
+  <data name="Err_NoPages" xml:space="preserve"><value>저장할 페이지가 없습니다.</value></data>
+  <data name="Err_BadRotation" xml:space="preserve"><value>{0}° 회전은 90의 배수가 아닙니다.</value></data>
+  <data name="Err_BadRotateSpec" xml:space="preserve"><value>'{0}' 은(는) 회전 지정이 아닙니다(예: 2:90,5:-90).</value></data>
+  <data name="Err_PageTwice" xml:space="preserve"><value>{1}의 {0}페이지가 두 번 지정되었습니다. 각 페이지는 한 번만 쓸 수 있습니다.</value></data>
   <data name="Ui_Value" xml:space="preserve"><value>값</value></data>
   <data name="Ui_Ticked" xml:space="preserve"><value>체크됨</value></data>
   <data name="Ui_FilledOnPage" xml:space="preserve"><value>이 페이지에서 작성됨: {0} / {1}</value></data>

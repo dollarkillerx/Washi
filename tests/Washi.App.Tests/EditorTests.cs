@@ -257,6 +257,17 @@ public sealed class EditorTests : IDisposable
         Shot(w, "erase");
 
         vm.Erase.Reset();
+        vm.ActiveTool = Tool.Organize;
+        Dispatcher.UIThread.RunJobs();
+        if (vm.Organize.Pages.Count > 1)
+        {
+            vm.Organize.Selected.Add(vm.Organize.Pages[1]);
+            vm.Organize.RotateRightCommand.Execute(null);
+        }
+        await Task.Delay(300);
+        Shot(w, "organize");
+
+        vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })
         {

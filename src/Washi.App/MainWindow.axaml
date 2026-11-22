@@ -149,6 +149,9 @@
             <Setter Property="Padding" Value="12,11" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+        <Style Selector="TextBlock.inserted">
+            <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
+        </Style>
         <Style Selector="TextBlock.warn">
             <Setter Property="Foreground" Value="#da1e28" />
         </Style>
@@ -255,6 +258,9 @@
                 </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSplitTool}" x:Name="SplitToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Split}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSplit}" /></StackPanel>
+                </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsOrganizeTool}" x:Name="OrganizeToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Organize}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolOrganize}" /></StackPanel>
                 </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
@@ -458,6 +464,88 @@
                             <TextBlock Classes="note" Text="{Binding Split.Preview}" Foreground="{StaticResource InkBrush}" />
                         </Border>
                     </StackPanel>
+                </DockPanel>
+
+                <!-- Organize pages -->
+                <DockPanel IsVisible="{Binding IsOrganizeTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <Button Classes="accent primary" Command="{Binding Organize.SaveCommand}" IsEnabled="{Binding Organize.CanSave}"
+                                x:Name="OrganizeSaveButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Save}" Size="18" />
+                                <TextBlock Text="{l:Tr Ui_OrganizeRun}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                    <StackPanel DockPanel.Dock="Top" Margin="20,18,20,0">
+                        <TextBlock Classes="title" Text="{l:Tr Ui_OrganizeTitle}" />
+                        <TextBlock Classes="lead" Text="{l:Tr Ui_OrganizeLead}" />
+                        <Button Command="{Binding Organize.InsertFilesCommand}" HorizontalAlignment="Left" Margin="0,16,0,8"
+                                IsEnabled="{Binding HasDocument}" ToolTip.Tip="{l:Tr Ui_OrganizeInsertTip}" x:Name="OrganizeInsertButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Add}" Size="16" />
+                                <TextBlock Text="{l:Tr Ui_OrganizeInsert}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,8" IsEnabled="{Binding HasDocument}">
+                            <Button Command="{Binding Organize.RotateLeftCommand}" Padding="7" ToolTip.Tip="{l:Tr Ui_RotateLeft}">
+                                <c:Icon Data="{StaticResource I.RotateLeft}" Size="16" />
+                            </Button>
+                            <Button Command="{Binding Organize.RotateRightCommand}" Padding="7" ToolTip.Tip="{l:Tr Ui_RotateRight}">
+                                <c:Icon Data="{StaticResource I.RotateRight}" Size="16" />
+                            </Button>
+                            <Button Command="{Binding Organize.MoveUpCommand}" Padding="7" ToolTip.Tip="{l:Tr Ui_MoveUp}">
+                                <c:Icon Data="{StaticResource I.Prev}" Size="16" />
+                            </Button>
+                            <Button Command="{Binding Organize.MoveDownCommand}" Padding="7" ToolTip.Tip="{l:Tr Ui_MoveDown}">
+                                <c:Icon Data="{StaticResource I.Next}" Size="16" />
+                            </Button>
+                            <Button Command="{Binding Organize.RemoveCommand}" Padding="7" ToolTip.Tip="{l:Tr Ui_Remove}">
+                                <c:Icon Data="{StaticResource I.Delete}" Size="16" />
+                            </Button>
+                        </StackPanel>
+                        <DockPanel Margin="0,0,0,8" IsVisible="{Binding HasDocument}">
+                            <Button DockPanel.Dock="Right" Content="{l:Tr Ui_OrganizeReset}" Command="{Binding Organize.ResetCommand}"
+                                    IsVisible="{Binding Organize.Changed}" Padding="8,2" FontSize="12" />
+                            <TextBlock Classes="note" Text="{Binding Organize.Summary}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </DockPanel>
+                    </StackPanel>
+                    <Panel Margin="20,0,20,12">
+                        <ListBox ItemsSource="{Binding Organize.Pages}" SelectedItems="{Binding Organize.Selected}" SelectionMode="Multiple"
+                                 BorderBrush="{StaticResource RuleBrush}" BorderThickness="1" x:Name="OrganizeList">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="4,6" />
+                                </Style>
+                            </ListBox.Styles>
+                            <ListBox.KeyBindings>
+                                <KeyBinding Gesture="Delete" Command="{Binding Organize.RemoveCommand}" />
+                                <KeyBinding Gesture="Back" Command="{Binding Organize.RemoveCommand}" />
+                            </ListBox.KeyBindings>
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:OrganizeItem">
+                                    <StackPanel Width="64" Spacing="2" ToolTip.Tip="{Binding Source}">
+                                        <Panel Width="64" Height="64">
+                                            <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center" LayoutTransform="{Binding Turn}">
+                                                <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="1" Background="White">
+                                                    <Image Source="{Binding Image}" MaxWidth="62" MaxHeight="62" Stretch="Uniform" />
+                                                </Border>
+                                            </LayoutTransformControl>
+                                        </Panel>
+                                        <TextBlock Text="{Binding Label}" FontSize="11" TextAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   Classes.inserted="{Binding Inserted}" />
+                                        <TextBlock Text="{Binding RotateText}" FontSize="10" TextAlignment="Center" Foreground="{StaticResource BlueBrush}"
+                                                   IsVisible="{Binding RotateText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Classes="note" Text="{l:Tr Ui_OrganizeEmpty}" TextAlignment="Center" VerticalAlignment="Center" Margin="24"
+                                   IsVisible="{Binding !HasDocument}" IsHitTestVisible="False" />
+                    </Panel>
                 </DockPanel>
 
                 <!-- Erase printed content -->

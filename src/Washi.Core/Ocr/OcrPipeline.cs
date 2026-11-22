@@ -74,7 +74,7 @@ public static class OcrPipeline
 
         var statuses = new OcrPageStatus[doc.PageCount];
         var jobs = new List<(int Index, OcrImage Image, double Scale)>();
-        await PdfiumDocument.Gate.WaitAsync(ct);
+        await PdfiumDocument.Gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             using var pdf = PdfiumDocument.Open(input);

@@ -250,7 +250,7 @@ public static class AiFeatures
 
     private static async Task<(AiImage? Image, double W, double H, string Text)> RenderAsync(string pdf, int page, bool withImage)
     {
-        await PdfiumDocument.Gate.WaitAsync();
+        await PdfiumDocument.Gate.WaitAsync().ConfigureAwait(false);
         try
         {
             return await Task.Run(() =>
@@ -265,7 +265,7 @@ public static class AiFeatures
                     image = new AiImage("image/png", ms.ToArray());
                 }
                 return (image, info.Width, info.Height, withImage ? "" : doc.GetPageText(page));
-            });
+            }).ConfigureAwait(false);
         }
         finally { PdfiumDocument.Gate.Release(); }
     }

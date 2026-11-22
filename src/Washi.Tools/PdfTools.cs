@@ -26,6 +26,7 @@ public static class WashiTools
         .Add(new FillFieldsTool(policy))
         .Add(new MergePdfsTool(policy))
         .Add(new SplitPdfTool(policy))
+        .Add(new OrganizePagesTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -51,10 +52,10 @@ public abstract class PdfTool(PathPolicy policy) : IWashiTool
     public async Task<ToolResult> InvokeAsync(JsonElement arguments, CancellationToken cancellationToken = default)
     {
         bool locked = HoldsPdfiumLock;
-        if (locked) await PdfiumDocument.Gate.WaitAsync(cancellationToken);
+        if (locked) await PdfiumDocument.Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await RunAsync(arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement, cancellationToken);
+            return await RunAsync(arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement, cancellationToken).ConfigureAwait(false);
         }
         catch (ToolException e) { return ToolResult.Error(e.Message); }
         catch (EraseException e) { return ToolResult.Error(e.Message); }
@@ -463,6 +464,47 @@ public sealed class SplitPdfTool(PathPolicy p) : PdfTool(p)
             output_dir = dir,
             files = parts.Select(x => new { path = x.Path, first_page = x.FirstPage, last_page = x.LastPage }),
         }));
+    }
+}
+
+public sealed class OrganizePagesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "organize_pages";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW PDF with exactly the listed pages, in the listed order: reorder, delete (leave a page out), rotate, and " +
+        "insert pages from other PDFs in one call. Each entry is {page (1-based), path (optional, default: the main path), " +
+        "rotate (optional, degrees clockwise, a multiple of 90, added to the page's own rotation)}. A page may appear only once. " +
+        "Form fields on the pages are kept and stay fillable. Never overwrites: output defaults to <name>_organized.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"The main PDF file"},
+          "pages":{"type":"array","minItems":1,"description":"The pages of the new file, in order","items":{"type":"object","properties":{
+            "page":{"type":"integer","minimum":1},
+            "path":{"type":"string","description":"Another PDF to take this page from (default: the main path)"},
+            "rotate":{"type":"integer","description":"Extra clockwise rotation: 90, 180, 270 or -90"}},
+            "required":["page"],"additionalProperties":false}},
+          "output":{"type":"string","description":"New PDF path (default: <name>_organized.pdf next to the input)"}},
+         "required":["path","pages"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (!a.TryGetProperty("pages", out var arr) || arr.ValueKind != JsonValueKind.Array || arr.GetArrayLength() == 0)
+            throw new ToolException("'pages' must list at least one page");
+        var picks = new List<PagePick>();
+        foreach (var e in arr.EnumerateArray())
+        {
+            if (!e.TryGetProperty("page", out var pg) || !pg.TryGetInt32(out var page) || page < 1)
+                throw new ToolException("each entry needs a 1-based 'page'");
+            var src = e.TryGetProperty("path", out var ps) && ps.GetString() is { Length: > 0 } other ? Policy.Input(other) : path;
+            int rot = e.TryGetProperty("rotate", out var r) && r.TryGetInt32(out var deg) ? deg : 0;
+            picks.Add(new PagePick(src, page, rot));
+        }
+        var output = Policy.Output(OptStr(a, "output"), path, "_organized");
+        int pages = PageAssembly.Organize(picks, output);
+        return new ToolResult(ToJson(new { output, pages, form_fields = AcroFormFields.List(output).Count }));
     }
 }
 

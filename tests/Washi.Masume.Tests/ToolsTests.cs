@@ -147,7 +147,7 @@ public sealed class McpServerTests : IDisposable
         }));
 
         var tools = await client.ListToolsAsync();
-        Assert.Equal(["detect_fields", "erase_content", "extract_text", "fill_fields", "list_fields", "make_fillable", "merge_pdfs", "ocr_pdf", "pdf_info", "render_page", "split_pdf"],
+        Assert.Equal(["detect_fields", "erase_content", "extract_text", "fill_fields", "list_fields", "make_fillable", "merge_pdfs", "ocr_pdf", "organize_pages", "pdf_info", "render_page", "split_pdf"],
                      tools.Select(t => t.Name).Order());
         Assert.True(tools.Single(t => t.Name == "pdf_info").ProtocolTool.Annotations!.ReadOnlyHint);
         Assert.False(tools.Single(t => t.Name == "fill_fields").ProtocolTool.Annotations!.ReadOnlyHint);

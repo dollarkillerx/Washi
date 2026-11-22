@@ -110,6 +110,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="UsagePdf" xml:space="preserve"><value>Pages et OCR :
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      assemble des fichiers (les champs de formulaire sont conservés)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dossier]
+  washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
+                                          réordonne, retire (pages non listées) et fait pivoter les pages (les champs de formulaire sont conservés)
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -117,6 +119,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
+  <data name="Pdf_Organized" xml:space="preserve"><value>{0} écrit : {1} page(s), {2} champ(s) de formulaire</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  (pages {1} à {2})</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi : {0}</value></data>
   <data name="Ocr_Engine" xml:space="preserve"><value>OCR avec {0} : {1} page(s) à reconnaître</value></data>
@@ -207,6 +210,18 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} fichier(s) : {1}</value></data>
   <data name="Ui_SplitRun" xml:space="preserve"><value>Diviser dans un dossier…</value></data>
   <data name="Ui_SplitDone" xml:space="preserve"><value>{0} fichier(s) écrit(s) dans {1}</value></data>
+  <data name="Ui_ToolOrganize" xml:space="preserve"><value>Organiser</value></data>
+  <data name="Ui_OrganizeTitle" xml:space="preserve"><value>Organiser les pages</value></data>
+  <data name="Ui_OrganizeLead" xml:space="preserve"><value>Réordonnez, faites pivoter, retirez ou insérez des pages, puis enregistrez un nouveau PDF. Les champs restent remplissables.</value></data>
+  <data name="Ui_OrganizeInsert" xml:space="preserve"><value>Insérer des pages…</value></data>
+  <data name="Ui_OrganizeInsertTip" xml:space="preserve"><value>Ajoute toutes les pages d’autres PDF après la page sélectionnée</value></data>
+  <data name="Ui_RotateLeft" xml:space="preserve"><value>Pivoter à gauche</value></data>
+  <data name="Ui_RotateRight" xml:space="preserve"><value>Pivoter à droite</value></data>
+  <data name="Ui_OrganizeReset" xml:space="preserve"><value>Recommencer</value></data>
+  <data name="Ui_OrganizeSummary" xml:space="preserve"><value>{0} page(s) · {1} retirée(s) · {2} pivotée(s) · {3} insérée(s)</value></data>
+  <data name="Ui_OrganizeFrom" xml:space="preserve"><value>p. {0} · {1}</value></data>
+  <data name="Ui_OrganizeEmpty" xml:space="preserve"><value>Ouvrez un PDF pour organiser ses pages.</value></data>
+  <data name="Ui_OrganizeRun" xml:space="preserve"><value>Enregistrer un nouveau PDF…</value></data>
   <data name="Ui_Save" xml:space="preserve"><value>Enregistrer</value></data>
   <data name="Ui_Copy" xml:space="preserve"><value>Copier</value></data>
   <data name="Ui_Copied" xml:space="preserve"><value>Copié.</value></data>
@@ -365,6 +380,10 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_NothingToMerge" xml:space="preserve"><value>Rien à fusionner.</value></data>
   <data name="Err_RangeOutside" xml:space="preserve"><value>La plage de pages {0} sort de 1-{1}.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>« {0} » n’est pas une plage de pages (p. ex. 1-3,5).</value></data>
+  <data name="Err_NoPages" xml:space="preserve"><value>Il n’y a aucune page à écrire.</value></data>
+  <data name="Err_BadRotation" xml:space="preserve"><value>Une rotation de {0}° n’est pas un multiple de 90.</value></data>
+  <data name="Err_BadRotateSpec" xml:space="preserve"><value>« {0} » n’est pas une rotation (p. ex. 2:90,5:-90).</value></data>
+  <data name="Err_PageTwice" xml:space="preserve"><value>La page {0} de {1} figure deux fois ; chaque page ne peut apparaître qu’une fois.</value></data>
   <data name="Ui_Value" xml:space="preserve"><value>Valeur</value></data>
   <data name="Ui_Ticked" xml:space="preserve"><value>Coché</value></data>
   <data name="Ui_FilledOnPage" xml:space="preserve"><value>Remplis sur cette page : {0} sur {1}</value></data>
