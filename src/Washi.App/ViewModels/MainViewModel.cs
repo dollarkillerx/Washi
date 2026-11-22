@@ -23,7 +23,7 @@ public sealed record Choice<T>(T Value, string Text)
 public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Protect, Redact, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
-public enum SidePanel { None, Pages, Fields }
+public enum SidePanel { None, Pages, Fields, Bookmarks }
 
 /// <summary>A page thumbnail in the Pages panel.</summary>
 public sealed partial class PageThumb(int index) : ObservableObject
@@ -64,6 +64,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Protect = new ProtectToolViewModel(this);
         Redact = new RedactToolViewModel(this);
         Find = new FindViewModel(this);
+        Bookmarks = new BookmarksViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -82,6 +83,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ProtectToolViewModel Protect { get; }
     public RedactToolViewModel Redact { get; }
     public FindViewModel Find { get; }
+    public BookmarksViewModel Bookmarks { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -147,7 +149,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowPagesPanel), nameof(ShowFieldsPanel), nameof(ShowSidePanel))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowPagesPanel), nameof(ShowFieldsPanel), nameof(ShowBookmarksPanel), nameof(ShowSidePanel))]
     private SidePanel _sidePanel = SidePanel.Fields;
 
     /// <summary>Clicking the active tool in the rail again hides its panel (more room for the page).</summary>
@@ -190,7 +192,18 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         set => SidePanel = value ? SidePanel.Fields : SidePanel == SidePanel.Fields ? SidePanel.None : SidePanel;
     }
 
-    public bool ShowSidePanel => HasDocument && !IsSettingsTool && (ShowPagesPanel || ShowFieldsPanel);
+    public bool ShowBookmarksPanel
+    {
+        get => SidePanel == SidePanel.Bookmarks;
+        set => SidePanel = value ? SidePanel.Bookmarks : SidePanel == SidePanel.Bookmarks ? SidePanel.None : SidePanel;
+    }
+
+    partial void OnSidePanelChanged(SidePanel value)
+    {
+        if (value == SidePanel.Bookmarks) _ = Bookmarks.LoadAsync();
+    }
+
+    public bool ShowSidePanel => HasDocument && !IsSettingsTool && (ShowPagesPanel || ShowFieldsPanel || ShowBookmarksPanel);
 
     /// <summary>The floating select / draw / delete toolbar belongs to the form tool.</summary>
     public bool ShowEditTools => HasDocument && IsFormTool;
@@ -427,6 +440,8 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Protect.Reset();
         Redact.Reset();
         Find.Reset();
+        Bookmarks.Clear();
+        if (ShowBookmarksPanel) await Bookmarks.LoadAsync();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
@@ -457,6 +472,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Redact.Reset();
         Find.CloseCommand.Execute(null);
         Find.Reset();
+        Bookmarks.Clear();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();

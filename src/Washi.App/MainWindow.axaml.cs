@@ -63,6 +63,16 @@ public partial class MainWindow : Window
         ViewModel.Find.Opened += () => Dispatcher.UIThread.Post(() => { FindBox.Focus(); FindBox.SelectAll(); }, DispatcherPriority.Input);
         ViewModel.Find.Changed += () => Dispatcher.UIThread.Post(ShowFindHit, DispatcherPriority.Background);
         FindBox.KeyDown += OnFindKeyDown;
+        // bookmarks: a click opens the bookmark's place (once its page is drawn)
+        BookmarkList.Tapped += (_, e) =>
+        {
+            if ((e.Source as Control)?.DataContext is BookmarkRow row) ViewModel.Bookmarks.Go(row);
+        };
+        ViewModel.Bookmarks.Navigate += (_, top) => Dispatcher.UIThread.Post(() =>
+        {
+            double z = ViewModel.Zoom, y = (top ?? 0) * z;
+            Canvas.BringIntoView(new Rect(0, Math.Max(0, y - 12), 1, Math.Max(1, PageScroller.Viewport.Height - 24)));
+        }, DispatcherPriority.Background);
         SignPad.InkCompleted += ink => ViewModel.Sign.SetInk(ink);
         FieldEditor.KeyDown += OnEditorKeyDown;
         FieldEditor.LostFocus += (_, _) => EndEdit(commit: true);

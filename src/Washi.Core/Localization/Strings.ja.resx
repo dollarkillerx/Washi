@@ -127,7 +127,10 @@
                                           隠れた情報を削除（--list は表示だけ）
   washi pdf redact &lt;in.pdf&gt; [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）
-  washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示</value></data>
+  washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示
+  washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
+                                          しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、
+                                          または同じ形式のファイルのしおりでコピーを作成</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} 個のファイルを {1} に結合しました: {2} ページ、記入欄 {3} 個</value></data>
@@ -568,4 +571,24 @@
   <data name="Ui_FindCount" xml:space="preserve"><value>{0} / {1}</value></data>
   <data name="Pdf_FindCount" xml:space="preserve"><value>{1} ページで {0} 件。</value></data>
   <data name="Pdf_FindHit" xml:space="preserve"><value>  {0} ページ：{1}</value></data>
+  <data name="Ui_BookmarksPanel" xml:space="preserve"><value>しおり</value></data>
+  <data name="Ui_BookmarkAdd" xml:space="preserve"><value>このページにしおりを追加</value></data>
+  <data name="Ui_BookmarkRemove" xml:space="preserve"><value>削除（下位のしおりも）</value></data>
+  <data name="Ui_BookmarkUp" xml:space="preserve"><value>上へ</value></data>
+  <data name="Ui_BookmarkDown" xml:space="preserve"><value>下へ</value></data>
+  <data name="Ui_BookmarkOutdent" xml:space="preserve"><value>1 段上の階層へ</value></data>
+  <data name="Ui_BookmarkIndent" xml:space="preserve"><value>上のしおりの下へ</value></data>
+  <data name="Ui_BookmarkTitle" xml:space="preserve"><value>タイトル</value></data>
+  <data name="Ui_BookmarkUseThisPage" xml:space="preserve"><value>このページを指すようにする</value></data>
+  <data name="Ui_BookmarksNone" xml:space="preserve"><value>この文書にはしおりがありません。＋で表示中のページにしおりを追加できます。</value></data>
+  <data name="Ui_BookmarkPage" xml:space="preserve"><value>{0} ページ</value></data>
+  <data name="Ui_BookmarksSave" xml:space="preserve"><value>しおり付きのコピーを保存…</value></data>
+  <data name="Ui_BookmarksSaveNote" xml:space="preserve"><value>変更していないしおりはリンクと書式をそのまま保ちます。元のファイルは変わりません。</value></data>
+  <data name="Ui_BookmarksNotOriginal" xml:space="preserve"><value>コピーは別の名前で保存してください（元のファイルはそのまま残します）。</value></data>
+  <data name="Ui_BookmarksSaved" xml:space="preserve"><value>{0} を保存しました（しおり {1} 件）。</value></data>
+  <data name="Err_BookmarkPage" xml:space="preserve"><value>しおり「{0}」は {1} ページを指していますが、この PDF は {2} ページです。</value></data>
+  <data name="Err_BookmarkTitle" xml:space="preserve"><value>しおりにはタイトルが必要です。</value></data>
+  <data name="Err_BookmarkCheck" xml:space="preserve"><value>コピーのしおりが指定どおりにならなかったため、保存しませんでした。</value></data>
+  <data name="Pdf_BookmarksNone" xml:space="preserve"><value>しおりはありません。</value></data>
+  <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} を保存しました（しおり {1} 件）。</value></data>
 </root>

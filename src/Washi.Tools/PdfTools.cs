@@ -20,6 +20,8 @@ public static class WashiTools
         .Add(new PdfInfoTool(policy))
         .Add(new ExtractTextTool(policy))
         .Add(new SearchTextTool(policy))
+        .Add(new ListBookmarksTool(policy))
+        .Add(new SetBookmarksTool(policy))
         .Add(new RenderPageTool(policy))
         .Add(new ListFieldsTool(policy))
         .Add(new DetectFieldsTool(policy))
@@ -601,6 +603,77 @@ public sealed class SearchTextTool(PathPolicy p) : PdfTool(p)
                 boxes = h.Boxes.Select(b => new[] { b.X0, b.Y0, b.X1, b.Y1 }.Select(v => Math.Round(v, 1))),
             }),
         }));
+    }
+}
+
+public sealed class ListBookmarksTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_bookmarks";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "The PDF's bookmarks (outline) as a tree: title, page (1-based; left out when it opens something else, such as a web " +
+        "link), top (points from the top of the upright page where it opens; left out: the top), children.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    internal static object Describe(IReadOnlyList<Bookmark> outline) => outline.Select(b => new
+    {
+        title = b.Title, page = b.Page >= 0 ? b.Page + 1 : (int?)null, top = b.Top is { } t ? Math.Round(t, 1) : (double?)null,
+        children = Describe(b.Children),
+    });
+
+    protected override ToolResult Run(JsonElement a) => new(ToJson(Describe(PdfBookmarks.Read(Policy.Input(Str(a, "path"))))));
+}
+
+public sealed class SetBookmarksTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "set_bookmarks";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a copy of the PDF whose bookmarks are exactly the tree given (an empty list removes them all), for example a " +
+        "table of contents built from extract_text. Bookmarks with the same title and page as before keep their link and " +
+        "style; one with page null keeps what it opened if its title matches an old one. Checked by reading the copy back. " +
+        "Never overwrites: output defaults to <name>_bookmarks.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "bookmarks":{"type":"array","items":{"$ref":"#/$defs/bookmark"},"description":"The whole outline, in order"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_bookmarks.pdf next to the input)"}},
+         "required":["path","bookmarks"],"additionalProperties":false,
+         "$defs":{"bookmark":{"type":"object","properties":{
+            "title":{"type":"string"},
+            "page":{"type":["integer","null"],"description":"1-based"},
+            "top":{"type":["number","null"],"description":"Points from the top of the page (default: the top)"},
+            "children":{"type":"array","items":{"$ref":"#/$defs/bookmark"}}},
+           "required":["title","page"],"additionalProperties":false}}}
+        """;
+
+    private static List<Bookmark> Parse(JsonElement list, int depth)
+    {
+        if (depth > 32) throw new ToolException("bookmarks are nested too deeply");
+        var result = new List<Bookmark>();
+        foreach (var e in list.EnumerateArray())
+        {
+            var title = e.TryGetProperty("title", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString()! : throw new ToolException("each bookmark needs a title");
+            int page = e.TryGetProperty("page", out var p) && p.ValueKind == JsonValueKind.Number ? p.GetInt32() - 1 : -1;
+            double? top = e.TryGetProperty("top", out var y) && y.ValueKind == JsonValueKind.Number ? y.GetDouble() : null;
+            var children = e.TryGetProperty("children", out var c) && c.ValueKind == JsonValueKind.Array ? Parse(c, depth + 1) : [];
+            result.Add(new Bookmark(title, page, top, children));
+        }
+        return result;
+    }
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (!a.TryGetProperty("bookmarks", out var list) || list.ValueKind != JsonValueKind.Array) throw new ToolException("'bookmarks' must be a list");
+        var outline = Parse(list, 0);
+        var output = Policy.Output(OptStr(a, "output"), path, "_bookmarks");
+        PdfBookmarks.Write(path, output, outline);
+        return new ToolResult(ToJson(new { output, bookmarks = ListBookmarksTool.Describe(PdfBookmarks.Read(output)) }));
     }
 }
 

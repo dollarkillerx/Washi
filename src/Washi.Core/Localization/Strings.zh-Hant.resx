@@ -127,7 +127,10 @@
                                           刪除隱藏資訊（--list 只列出）
   washi pdf redact &lt;in.pdf&gt; [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）
-  washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐頁列出文字所在位置</value></data>
+  washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐頁列出文字所在位置
+  washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
+                                          列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），
+                                          或用同樣格式的檔案寫出帶書籤的副本</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了文字 {1} 段、影像 {2} 個、圖形 {3} 個。檢查：刪除處剩餘文字 {4} 個，其他地方變化的像素 {5} 個。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 頁保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已將 {0} 個檔案合併為 {1}：{2} 頁，{3} 個表單欄位</value></data>
@@ -568,4 +571,24 @@
   <data name="Ui_FindCount" xml:space="preserve"><value>{0} / {1}</value></data>
   <data name="Pdf_FindCount" xml:space="preserve"><value>共 {1} 頁 {0} 處。</value></data>
   <data name="Pdf_FindHit" xml:space="preserve"><value>  第 {0} 頁：{1}</value></data>
+  <data name="Ui_BookmarksPanel" xml:space="preserve"><value>書籤</value></data>
+  <data name="Ui_BookmarkAdd" xml:space="preserve"><value>為本頁加入書籤</value></data>
+  <data name="Ui_BookmarkRemove" xml:space="preserve"><value>刪除（連同下層書籤）</value></data>
+  <data name="Ui_BookmarkUp" xml:space="preserve"><value>上移</value></data>
+  <data name="Ui_BookmarkDown" xml:space="preserve"><value>下移</value></data>
+  <data name="Ui_BookmarkOutdent" xml:space="preserve"><value>移到上一層</value></data>
+  <data name="Ui_BookmarkIndent" xml:space="preserve"><value>移到上一個書籤之下</value></data>
+  <data name="Ui_BookmarkTitle" xml:space="preserve"><value>標題</value></data>
+  <data name="Ui_BookmarkUseThisPage" xml:space="preserve"><value>改為指向本頁</value></data>
+  <data name="Ui_BookmarksNone" xml:space="preserve"><value>此文件沒有書籤。按 + 可為正在看的頁面加入書籤。</value></data>
+  <data name="Ui_BookmarkPage" xml:space="preserve"><value>第 {0} 頁</value></data>
+  <data name="Ui_BookmarksSave" xml:space="preserve"><value>另存帶書籤的副本…</value></data>
+  <data name="Ui_BookmarksSaveNote" xml:space="preserve"><value>沒改動的書籤保留原本的連結和樣式。原檔案不會改變。</value></data>
+  <data name="Ui_BookmarksNotOriginal" xml:space="preserve"><value>請用另一個檔名儲存副本（原檔案保持不變）。</value></data>
+  <data name="Ui_BookmarksSaved" xml:space="preserve"><value>已儲存 {0}（{1} 個書籤）。</value></data>
+  <data name="Err_BookmarkPage" xml:space="preserve"><value>書籤「{0}」指向第 {1} 頁，但該 PDF 只有 {2} 頁。</value></data>
+  <data name="Err_BookmarkTitle" xml:space="preserve"><value>每個書籤都需要標題。</value></data>
+  <data name="Err_BookmarkCheck" xml:space="preserve"><value>副本的書籤與要求不符，因此沒有保留。</value></data>
+  <data name="Pdf_BookmarksNone" xml:space="preserve"><value>沒有書籤。</value></data>
+  <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>已儲存 {0}（{1} 個書籤）。</value></data>
 </root>

@@ -445,6 +445,56 @@ public sealed class ToolsUiTests : IDisposable
         Assert.False(vm.Find.IsOpen);
     }
 
+    [AvaloniaFact]
+    public async Task Bookmarks_are_added_nested_moved_and_saved_into_a_copy()
+    {
+        var pdf = Form("b.pdf", pages: 3);
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "b_bookmarks.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ShowBookmarksPanel = true;
+        await vm.Bookmarks.LoadAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<ListBox>("BookmarkList")!.IsEffectivelyVisible);
+        Assert.True(vm.Bookmarks.IsEmpty);
+        Assert.False(vm.Bookmarks.CanSave);
+
+        await vm.Bookmarks.AddCommand.ExecuteAsync(null);           // page 1
+        vm.Bookmarks.Selected!.Title = "Cover";
+        vm.PageIndex = 1;
+        await vm.Bookmarks.AddCommand.ExecuteAsync(null);           // page 2, after "Cover"
+        vm.Bookmarks.Selected!.Title = "Details";
+        vm.Bookmarks.IndentCommand.Execute(null);                   // under "Cover"
+        vm.PageIndex = 2;
+        vm.Bookmarks.Selected = null;
+        await vm.Bookmarks.AddCommand.ExecuteAsync(null);           // page 3, at the end
+        vm.Bookmarks.Selected!.Title = "Annex";
+        vm.Bookmarks.UpCommand.Execute(null);                       // before "Cover"
+        Assert.Equal(["Annex", "Cover", "Details"], vm.Bookmarks.Rows.Select(r => r.Title));
+        Assert.Equal([0, 0, 1], vm.Bookmarks.Rows.Select(r => r.Level));
+        Assert.True(vm.Bookmarks.CanSave);
+
+        vm.Bookmarks.Selected = vm.Bookmarks.Rows[2];
+        vm.Bookmarks.OutdentCommand.Execute(null);
+        Assert.Equal([0, 0, 0], vm.Bookmarks.Rows.Select(r => r.Level));
+        vm.Bookmarks.IndentCommand.Execute(null);
+
+        vm.Bookmarks.Go(vm.Bookmarks.Rows[0]);                     // a click opens its page
+        Assert.Equal(2, vm.PageIndex);
+
+        await vm.Bookmarks.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        var outline = Washi.Core.Pages.PdfBookmarks.Read(dialogs.SavePdf!);
+        Assert.Equal(["Annex", "Cover"], outline.Select(b => b.Title));
+        Assert.Equal((2, 0), (outline[0].Page, outline[1].Page));
+        Assert.Equal(("Details", 1), (outline[1].Children[0].Title, outline[1].Children[0].Page));
+        Assert.Equal(3, vm.Bookmarks.Rows.Count);                   // the copy's outline is shown
+        Assert.False(vm.Bookmarks.CanSave);
+
+        vm.Bookmarks.Selected = vm.Bookmarks.Rows[1];
+        vm.Bookmarks.RemoveCommand.Execute(null);                   // with "Details" under it
+        Assert.Equal(["Annex"], vm.Bookmarks.Rows.Select(r => r.Title));
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

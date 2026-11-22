@@ -127,7 +127,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
                                           versteckte Informationen entfernen (--list zeigt sie nur)
   washi pdf redact &lt;in.pdf&gt; [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)
-  washi pdf find &lt;in.pdf&gt; &lt;Text&gt; [--case] [--whole-words]   wo der Text steht, Seite für Seite</value></data>
+  washi pdf find &lt;in.pdf&gt; &lt;Text&gt; [--case] [--whole-words]   wo der Text steht, Seite für Seite
+  washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
+                                          Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)
+                                          oder eine Kopie mit denen aus einer solchen Datei schreiben</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} Datei(en) zu {1} zusammengefügt: {2} Seite(n), {3} Formularfeld(er)</value></data>
@@ -568,4 +571,24 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_FindCount" xml:space="preserve"><value>{0} von {1}</value></data>
   <data name="Pdf_FindCount" xml:space="preserve"><value>{0} Treffer auf {1} Seite(n).</value></data>
   <data name="Pdf_FindHit" xml:space="preserve"><value>  Seite {0}: {1}</value></data>
+  <data name="Ui_BookmarksPanel" xml:space="preserve"><value>Lesezeichen</value></data>
+  <data name="Ui_BookmarkAdd" xml:space="preserve"><value>Lesezeichen für diese Seite hinzufügen</value></data>
+  <data name="Ui_BookmarkRemove" xml:space="preserve"><value>Entfernen (mit den Lesezeichen darunter)</value></data>
+  <data name="Ui_BookmarkUp" xml:space="preserve"><value>Nach oben</value></data>
+  <data name="Ui_BookmarkDown" xml:space="preserve"><value>Nach unten</value></data>
+  <data name="Ui_BookmarkOutdent" xml:space="preserve"><value>Eine Ebene höher</value></data>
+  <data name="Ui_BookmarkIndent" xml:space="preserve"><value>Unter das Lesezeichen darüber</value></data>
+  <data name="Ui_BookmarkTitle" xml:space="preserve"><value>Titel</value></data>
+  <data name="Ui_BookmarkUseThisPage" xml:space="preserve"><value>Auf diese Seite zeigen lassen</value></data>
+  <data name="Ui_BookmarksNone" xml:space="preserve"><value>Dieses Dokument hat keine Lesezeichen. Mit + fügen Sie eines für die angezeigte Seite hinzu.</value></data>
+  <data name="Ui_BookmarkPage" xml:space="preserve"><value>Seite {0}</value></data>
+  <data name="Ui_BookmarksSave" xml:space="preserve"><value>Kopie mit Lesezeichen speichern…</value></data>
+  <data name="Ui_BookmarksSaveNote" xml:space="preserve"><value>Nicht geänderte Lesezeichen behalten Verknüpfung und Stil. Das Original bleibt unverändert.</value></data>
+  <data name="Ui_BookmarksNotOriginal" xml:space="preserve"><value>Speichern Sie die Kopie unter einem anderen Namen: das Original bleibt, wie es ist.</value></data>
+  <data name="Ui_BookmarksSaved" xml:space="preserve"><value>{0} mit {1} Lesezeichen gespeichert.</value></data>
+  <data name="Err_BookmarkPage" xml:space="preserve"><value>Lesezeichen „{0}“ zeigt auf Seite {1}, das PDF hat aber {2}.</value></data>
+  <data name="Err_BookmarkTitle" xml:space="preserve"><value>Jedes Lesezeichen braucht einen Titel.</value></data>
+  <data name="Err_BookmarkCheck" xml:space="preserve"><value>Die Lesezeichen der Kopie stimmten nicht; sie wurde nicht behalten.</value></data>
+  <data name="Pdf_BookmarksNone" xml:space="preserve"><value>Keine Lesezeichen.</value></data>
+  <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} mit {1} Lesezeichen gespeichert.</value></data>
 </root>

@@ -928,6 +928,10 @@
                               x:Name="PagesPanelButton">
                     <c:Icon Data="{StaticResource I.Pages}" />
                 </ToggleButton>
+                <ToggleButton Classes="siderail" IsChecked="{Binding ShowBookmarksPanel}" ToolTip.Tip="{l:Tr Ui_BookmarksPanel}"
+                              x:Name="BookmarksPanelButton">
+                    <c:Icon Data="{StaticResource I.Bookmark}" />
+                </ToggleButton>
             </StackPanel>
         </Border>
 
@@ -1047,6 +1051,67 @@
                                         <TextBlock Text="{Binding Name}" IsVisible="{Binding ShowName}" FontSize="10"
                                                    Foreground="{StaticResource MutedBrush}" TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+
+                <!-- Bookmarks: the outline; a click opens its place; edit, then save a copy -->
+                <DockPanel IsVisible="{Binding ShowBookmarksPanel}" Margin="16,16,16,12">
+                    <TextBlock DockPanel.Dock="Top" Text="{l:Tr Ui_BookmarksPanel}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,8" />
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="2" Margin="0,0,0,8">
+                        <Button Command="{Binding Bookmarks.AddCommand}" ToolTip.Tip="{l:Tr Ui_BookmarkAdd}" Padding="6,4" x:Name="BookmarkAddButton">
+                            <c:Icon Data="{StaticResource I.Add}" Size="16" />
+                        </Button>
+                        <Button Command="{Binding Bookmarks.RemoveCommand}" ToolTip.Tip="{l:Tr Ui_BookmarkRemove}" Padding="6,4">
+                            <c:Icon Data="{StaticResource I.Delete}" Size="16" />
+                        </Button>
+                        <Rectangle Width="1" Fill="{StaticResource RuleBrush}" Margin="3,4" />
+                        <Button Command="{Binding Bookmarks.UpCommand}" ToolTip.Tip="{l:Tr Ui_BookmarkUp}" Padding="6,4">
+                            <c:Icon Data="{StaticResource I.ChevronUp}" Size="16" />
+                        </Button>
+                        <Button Command="{Binding Bookmarks.DownCommand}" ToolTip.Tip="{l:Tr Ui_BookmarkDown}" Padding="6,4">
+                            <c:Icon Data="{StaticResource I.ChevronDown}" Size="16" />
+                        </Button>
+                        <Button Command="{Binding Bookmarks.OutdentCommand}" ToolTip.Tip="{l:Tr Ui_BookmarkOutdent}" Padding="6,4">
+                            <c:Icon Data="{StaticResource I.Outdent}" Size="16" />
+                        </Button>
+                        <Button Command="{Binding Bookmarks.IndentCommand}" ToolTip.Tip="{l:Tr Ui_BookmarkIndent}" Padding="6,4">
+                            <c:Icon Data="{StaticResource I.Indent}" Size="16" />
+                        </Button>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0" IsVisible="{Binding Bookmarks.CanSave}">
+                        <Button Classes="accent" Command="{Binding Bookmarks.SaveCommand}" HorizontalAlignment="Stretch" x:Name="BookmarksSaveButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Save}" Size="16" />
+                                <TextBlock Text="{l:Tr Ui_BookmarksSave}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Classes="note" Text="{l:Tr Ui_BookmarksSaveNote}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Spacing="4" Margin="0,8,0,0" IsVisible="{Binding Bookmarks.HasSelection}">
+                        <TextBlock Classes="note" Text="{l:Tr Ui_BookmarkTitle}" />
+                        <TextBox Text="{Binding Bookmarks.Selected.Title}" x:Name="BookmarkTitleBox" />
+                        <Button Content="{l:Tr Ui_BookmarkUseThisPage}" Command="{Binding Bookmarks.UseThisPageCommand}" Padding="8,3" FontSize="12" />
+                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Top" Classes="note" Text="{l:Tr Ui_BookmarksNone}" TextWrapping="Wrap" IsVisible="{Binding Bookmarks.IsEmpty}" />
+                    <TextBlock DockPanel.Dock="Top" Classes="note" Text="{Binding Bookmarks.Note}" TextWrapping="Wrap"
+                               IsVisible="{Binding Bookmarks.Note, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <ListBox ItemsSource="{Binding Bookmarks.Rows}" SelectedItem="{Binding Bookmarks.Selected}" x:Name="BookmarkList"
+                             Background="Transparent">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="6,4" />
+                                <Setter Property="MinHeight" Value="0" />
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BookmarkRow">
+                                <DockPanel Margin="{Binding Indent}">
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding PageLabel}" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                                               VerticalAlignment="Center" Margin="8,0,0,0" />
+                                    <TextBlock Text="{Binding Title}" FontSize="13" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                 </DockPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
