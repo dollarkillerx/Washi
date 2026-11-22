@@ -311,6 +311,14 @@ public sealed class EditorTests : IDisposable
         Shot(w, "protect");
         vm.Protect.Reset();
 
+        vm.ActiveTool = Tool.Redact;
+        vm.Redact.Words = Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_REDACT") ?? "氏名";
+        vm.Redact.Phones = true;
+        await vm.Redact.FindCommand.ExecuteAsync(null);
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "redact");
+        vm.Redact.Reset();
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

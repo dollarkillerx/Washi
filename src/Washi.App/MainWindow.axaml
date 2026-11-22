@@ -271,6 +271,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsProtectTool}" x:Name="ProtectToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Lock}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolProtect}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsRedactTool}" x:Name="RedactToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Redact}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolRedact}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
                 </RadioButton>
@@ -765,6 +768,84 @@
                 </ScrollViewer>
 
                 <!-- Erase printed content -->
+                <DockPanel IsVisible="{Binding IsRedactTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <Button Classes="accent primary" Command="{Binding Redact.RedactCommand}" IsEnabled="{Binding Redact.CanRedact}" x:Name="RedactButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Redact}" Size="18" />
+                                    <TextBlock Text="{Binding Redact.RunText}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_RedactRunNote}" />
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_RedactTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_RedactLead}" />
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_RedactFindTitle}" />
+                            <TextBox Text="{Binding Redact.Words}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" MaxHeight="140"
+                                     PlaceholderText="{l:Tr Ui_RedactWordsHint}" x:Name="RedactWordsBox" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_RedactPatterns}" Margin="0,8,0,2" />
+                            <CheckBox IsChecked="{Binding Redact.Emails}" Content="{l:Tr Ui_RedactEmails}" x:Name="RedactEmailsBox" />
+                            <CheckBox IsChecked="{Binding Redact.Phones}" Content="{l:Tr Ui_RedactPhones}" />
+                            <CheckBox IsChecked="{Binding Redact.Numbers}" Content="{l:Tr Ui_RedactNumbers}" />
+                            <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,4,0,0">
+                                <CheckBox IsChecked="{Binding Redact.MatchCase}" Content="{l:Tr Ui_RedactMatchCase}" />
+                                <CheckBox IsChecked="{Binding Redact.WholeWords}" Content="{l:Tr Ui_RedactWholeWords}" />
+                            </StackPanel>
+                            <Button Content="{l:Tr Ui_RedactFind}" Command="{Binding Redact.FindCommand}" IsEnabled="{Binding Redact.CanFind}"
+                                    Padding="14,5" Margin="0,8,0,0" x:Name="RedactFindButton" />
+
+                            <TextBlock Classes="note" Text="{Binding Redact.FoundText}" Foreground="{StaticResource InkBrush}" Margin="0,10,0,4"
+                                       IsVisible="{Binding Redact.FoundText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="RedactFoundText" />
+                            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Redact.HasMatches}" Margin="0,0,0,4">
+                                <Button Content="{l:Tr Ui_RedactAll}" Command="{Binding Redact.SelectAllCommand}" Padding="8,2" FontSize="12">
+                                    <Button.CommandParameter><x:Boolean>True</x:Boolean></Button.CommandParameter>
+                                </Button>
+                                <Button Content="{l:Tr Ui_RedactNone}" Command="{Binding Redact.SelectAllCommand}" Padding="8,2" FontSize="12">
+                                    <Button.CommandParameter><x:Boolean>False</x:Boolean></Button.CommandParameter>
+                                </Button>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding Redact.Matches}" x:Name="RedactMatchList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:RedactChoice">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Redact}" VerticalAlignment="Top" MinWidth="0" Margin="0,0,4,0" />
+                                            <Button Background="Transparent" Padding="2,1" HorizontalContentAlignment="Left" HorizontalAlignment="Stretch"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Redact.ShowCommand}" CommandParameter="{Binding}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Where}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                                    <TextBlock Text="{Binding Context}" FontSize="12" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_RedactAreasTitle}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_RedactNoAreas}" IsVisible="{Binding !Redact.HasAreas}" />
+                            <ItemsControl ItemsSource="{Binding Redact.Areas}" x:Name="RedactAreaList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:RedactBox">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <Button DockPanel.Dock="Right" Padding="6,2" Background="Transparent" ToolTip.Tip="{l:Tr Ui_Remove}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Redact.RemoveAreaCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Close}" Size="12" />
+                                            </Button>
+                                            <TextBlock Text="{Binding Label}" FontSize="12" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
                 <DockPanel IsVisible="{Binding IsEraseTool}">
                     <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
                         <StackPanel Spacing="6">

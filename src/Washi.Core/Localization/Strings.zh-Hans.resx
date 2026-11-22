@@ -124,7 +124,9 @@
                                           密码会提示输入，或从 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 读取
   washi pdf unlock &lt;in.pdf&gt; -o out.pdf   解除密码（提示输入，或 WASHI_PASSWORD）
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
-                                          删除隐藏信息（--list 只列出）</value></data>
+                                          删除隐藏信息（--list 只列出）
+  washi pdf redact &lt;in.pdf&gt; [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
+                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已保存 {0}：删除了文字 {1} 段、图像 {2} 个、图形 {3} 个。检查：删除处剩余文字 {4} 个，其他地方变化的像素 {5} 个。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 页保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已将 {0} 个文件合并为 {1}：{2} 页，{3} 个表单栏位</value></data>
@@ -519,4 +521,42 @@
   <data name="Pdf_AskPassword" xml:space="preserve"><value>{0} 的密码：</value></data>
   <data name="Pdf_Protected" xml:space="preserve"><value>已保存 {0}（AES-256）。</value></data>
   <data name="Pdf_Unlocked" xml:space="preserve"><value>已保存无密码的 {0}。</value></data>
+  <data name="Ui_ToolRedact" xml:space="preserve"><value>涂黑</value></data>
+  <data name="Ui_RedactTitle" xml:space="preserve"><value>涂黑</value></data>
+  <data name="Ui_RedactLead" xml:space="preserve"><value>查找姓名、号码或地址，或在页面上拖出要涂黑的区域。黑框下的内容会从文件里真正删除，而不只是遮住。另存为副本。</value></data>
+  <data name="Ui_RedactFindTitle" xml:space="preserve"><value>查找</value></data>
+  <data name="Ui_RedactWordsHint" xml:space="preserve"><value>词或短语，每行一个</value></data>
+  <data name="Ui_RedactPatterns" xml:space="preserve"><value>同时查找：</value></data>
+  <data name="Ui_RedactEmails" xml:space="preserve"><value>电子邮件地址</value></data>
+  <data name="Ui_RedactPhones" xml:space="preserve"><value>电话号码</value></data>
+  <data name="Ui_RedactNumbers" xml:space="preserve"><value>证件、账户和卡号（7 位以上数字）</value></data>
+  <data name="Ui_RedactMatchCase" xml:space="preserve"><value>区分大小写</value></data>
+  <data name="Ui_RedactWholeWords" xml:space="preserve"><value>全字匹配</value></data>
+  <data name="Ui_RedactFind" xml:space="preserve"><value>查找</value></data>
+  <data name="Ui_RedactFound" xml:space="preserve"><value>在 {1} 页上找到 {0} 处。要保留的请取消勾选。</value></data>
+  <data name="Ui_RedactNoneFound" xml:space="preserve"><value>没有找到。扫描页需要先做 OCR 才能搜索文字。</value></data>
+  <data name="Ui_RedactAll" xml:space="preserve"><value>全选</value></data>
+  <data name="Ui_RedactNone" xml:space="preserve"><value>全不选</value></data>
+  <data name="Ui_RedactOnPage" xml:space="preserve"><value>第 {0} 页</value></data>
+  <data name="Ui_RedactInField" xml:space="preserve"><value>第 {0} 页，表单栏位（删除）</value></data>
+  <data name="Ui_RedactInComment" xml:space="preserve"><value>第 {0} 页，批注（删除）</value></data>
+  <data name="Ui_RedactAreasTitle" xml:space="preserve"><value>区域</value></data>
+  <data name="Ui_RedactNoAreas" xml:space="preserve"><value>在页面上拖动，可以涂黑任意区域：照片、签名、印章。</value></data>
+  <data name="Ui_RedactRun" xml:space="preserve"><value>涂黑 {0} 处并另存副本…</value></data>
+  <data name="Ui_RedactRunNote" xml:space="preserve"><value>黑框下的文字、图像像素和图形无法从副本中恢复。文档属性和书签中的相同词语也会被遮盖。原文件不会改变。</value></data>
+  <data name="Ui_RedactNotOriginal" xml:space="preserve"><value>请用另一个文件名保存涂黑后的副本（原文件保持不变）。</value></data>
+  <data name="Ui_RedactFailed" xml:space="preserve"><value>无法涂黑：{0}</value></data>
+  <data name="Ui_Redacted" xml:space="preserve"><value>已保存 {0}：删除文字 {1} 个、图像 {2} 处、图形 {3} 个、其他 {4} 项。已检查：再次搜索没有找到，其他部分也没有变化。</value></data>
+  <data name="Err_RedactNothing" xml:space="preserve"><value>没有要涂黑的内容：请先查找或拖出区域。</value></data>
+  <data name="Err_RedactNested" xml:space="preserve"><value>页面内容嵌套太深，无法安全涂黑。</value></data>
+  <data name="Err_RedactInlineImage" xml:space="preserve"><value>有一个内嵌小图像只有一部分在区域内：请让区域盖住整张图像。</value></data>
+  <data name="Err_RedactImage" xml:space="preserve"><value>区域下的图像无法读取，因此没有做任何修改。</value></data>
+  <data name="Err_RedactRegex" xml:space="preserve"><value>正则表达式无效：{0}</value></data>
+  <data name="Err_RedactRegexSlow" xml:space="preserve"><value>正则表达式耗时太长，请简化。</value></data>
+  <data name="Err_RedactLeftover" xml:space="preserve"><value>涂黑后的副本中仍找到 {0} 处，因此没有保留。</value></data>
+  <data name="Err_RedactChanged" xml:space="preserve"><value>涂黑后的副本在黑框以外与原文件不同（{0} 个像素），因此没有保留。</value></data>
+  <data name="Err_RedactUnstable" xml:space="preserve"><value>每次检查结果都不同，因此没有保留涂黑后的副本。</value></data>
+  <data name="Pdf_Redacted" xml:space="preserve"><value>已保存 {0}：删除文字 {1} 个、图像 {2} 处、图形 {3} 个、批注或栏位 {4} 个、其他文字 {5} 处。已检查：再次搜索没有找到，黑框外没有变化。</value></data>
+  <data name="Pdf_RedactMatch" xml:space="preserve"><value>  第 {0} 页（{1}）：{2}</value></data>
+  <data name="Pdf_RedactFound" xml:space="preserve"><value>共 {1} 页 {0} 处。</value></data>
 </root>

@@ -5,10 +5,11 @@ using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words"];
+    private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
     {
@@ -89,10 +90,41 @@ internal static class PageCommands
                     foreach (var item in removed) Console.WriteLine(HiddenLine(item));
                     return 0;
                 }
+                case ["redact", var input] when opt.ContainsKey("--find") || opt.ContainsKey("--pattern") || opt.ContainsKey("--regex") || opt.ContainsKey("--box"):
+                {
+                    var search = new RedactSearch(
+                        opt.TryGetValue("--find", out var words) ? words.Split(Many, StringSplitOptions.RemoveEmptyEntries) : [],
+                        opt.TryGetValue("--pattern", out var pats) ? ParsePatterns(pats) : [],
+                        opt.TryGetValue("--regex", out var rx) ? rx.Split(Many, StringSplitOptions.RemoveEmptyEntries) : [],
+                        MatchCase: opt.ContainsKey("--case"), WholeWords: opt.ContainsKey("--whole-words"));
+                    var found = PdfRedactor.Find(input, search);
+                    Console.WriteLine(L.F("Pdf_RedactFound", found.Count, found.Select(m => m.Page).Distinct().Count()));
+                    foreach (var m in found)
+                        Console.WriteLine(L.F("Pdf_RedactMatch", m.Page + 1, m.Source.ToString().ToLowerInvariant(), m.Context));
+                    if (opt.ContainsKey("--list")) return 0;
+                    var areas = PdfRedactor.Areas(found).ToList();
+                    if (opt.TryGetValue("--box", out var boxes))
+                        areas.AddRange(ParseBoxes(boxes).Select(b => new RedactArea(b.Page, b.Rect)));
+                    if (areas.Count == 0)
+                    {
+                        Console.WriteLine(L.Get("Ui_RedactNoneFound"));   // nothing is written
+                        return 0;
+                    }
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_redacted.pdf"));
+                    var report = PdfRedactor.Redact(input, output, areas, search);
+                    Console.WriteLine(L.F("Pdf_Redacted", output, report.Glyphs, report.Images, report.Paths, report.Annotations, report.Strings));
+                    return 0;
+                }
                 default:
                     Console.Error.WriteLine(L.Get("UsagePdf"));
                     return 2;
             }
+        }
+        catch (RedactException e)
+        {
+            Console.Error.WriteLine(L.F("Pdf_Failed", Washi.Core.Localization.Errors.Text(e)));
+            return 1;
         }
         catch (EraseException e)
         {
@@ -203,6 +235,15 @@ internal static class PageCommands
     }
 
     /// <summary>"1:40,60,200,80;2:10,10,50,30" (page:x0,y0,x1,y1 in points, top-left origin).</summary>
+    private static List<RedactPattern> ParsePatterns(string spec) => [.. spec.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(p => p.ToLowerInvariant() switch
+        {
+            "email" or "mail" => RedactPattern.Email,
+            "phone" or "tel" => RedactPattern.Phone,
+            "number" or "numbers" or "id" => RedactPattern.Number,
+            _ => throw new RedactException($"unknown pattern '{p}': use email, phone or number"),
+        })];
+
     private static List<EraseRegion> ParseBoxes(string spec) => [.. spec.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(b =>
     {
         var parts = b.Split(':', 2);
@@ -220,6 +261,7 @@ internal static class PageCommands
         {
             if (Flags.Contains(args[i])) opt[args[i]] = "";
             else if (args[i] == "--box" && i + 1 < args.Length) opt["--box"] = opt.TryGetValue("--box", out var b) ? b + ";" + args[++i] : args[++i];
+            else if (args[i] is "--find" or "--regex" && i + 1 < args.Length) opt[args[i]] = opt.TryGetValue(args[i], out var f) ? f + Many + args[++i] : args[++i];
             else if (args[i].StartsWith('-') && i + 1 < args.Length) opt[args[i]] = args[++i];
             else pos.Add(args[i]);
         }

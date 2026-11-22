@@ -124,7 +124,9 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
                                           les mots de passe sont demandés, ou lus dans WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD
   washi pdf unlock &lt;in.pdf&gt; -o out.pdf   retire le mot de passe (demandé, ou WASHI_PASSWORD)
   washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
-                                          supprime les informations masquées (--list les affiche seulement)</value></data>
+                                          supprime les informations masquées (--list les affiche seulement)
+  washi pdf redact &lt;in.pdf&gt; [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
+                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
@@ -519,4 +521,42 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Pdf_AskPassword" xml:space="preserve"><value>Mot de passe de {0} :</value></data>
   <data name="Pdf_Protected" xml:space="preserve"><value>{0} enregistré (AES-256).</value></data>
   <data name="Pdf_Unlocked" xml:space="preserve"><value>{0} enregistré sans mot de passe.</value></data>
+  <data name="Ui_ToolRedact" xml:space="preserve"><value>Biffer</value></data>
+  <data name="Ui_RedactTitle" xml:space="preserve"><value>Biffer</value></data>
+  <data name="Ui_RedactLead" xml:space="preserve"><value>Cherchez des noms, des numéros ou des adresses, ou faites glisser sur une partie de la page. Ce qui se trouve sous chaque bande noire est vraiment supprimé du fichier, pas seulement masqué. Enregistre une copie.</value></data>
+  <data name="Ui_RedactFindTitle" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Ui_RedactWordsHint" xml:space="preserve"><value>Mots ou expressions, un par ligne</value></data>
+  <data name="Ui_RedactPatterns" xml:space="preserve"><value>Chercher aussi :</value></data>
+  <data name="Ui_RedactEmails" xml:space="preserve"><value>Adresses e-mail</value></data>
+  <data name="Ui_RedactPhones" xml:space="preserve"><value>Numéros de téléphone</value></data>
+  <data name="Ui_RedactNumbers" xml:space="preserve"><value>Numéros d’identité, de compte, de carte (7 chiffres ou plus)</value></data>
+  <data name="Ui_RedactMatchCase" xml:space="preserve"><value>Respecter la casse</value></data>
+  <data name="Ui_RedactWholeWords" xml:space="preserve"><value>Mots entiers</value></data>
+  <data name="Ui_RedactFind" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="Ui_RedactFound" xml:space="preserve"><value>{0} trouvé(s) sur {1} page(s). Décochez ce qui doit rester.</value></data>
+  <data name="Ui_RedactNoneFound" xml:space="preserve"><value>Rien trouvé. Les pages numérisées doivent d’abord passer par l’OCR pour que leur texte soit cherchable.</value></data>
+  <data name="Ui_RedactAll" xml:space="preserve"><value>Tout</value></data>
+  <data name="Ui_RedactNone" xml:space="preserve"><value>Aucun</value></data>
+  <data name="Ui_RedactOnPage" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_RedactInField" xml:space="preserve"><value>Page {0}, champ de formulaire (supprimé)</value></data>
+  <data name="Ui_RedactInComment" xml:space="preserve"><value>Page {0}, commentaire (supprimé)</value></data>
+  <data name="Ui_RedactAreasTitle" xml:space="preserve"><value>Zones</value></data>
+  <data name="Ui_RedactNoAreas" xml:space="preserve"><value>Faites glisser sur la page pour biffer une zone : une photo, une signature, un tampon.</value></data>
+  <data name="Ui_RedactRun" xml:space="preserve"><value>Biffer {0} et enregistrer une copie…</value></data>
+  <data name="Ui_RedactRunNote" xml:space="preserve"><value>Le texte, les pixels d’image et les dessins sous les bandes ne peuvent pas être récupérés dans la copie. Les mêmes mots sont masqués dans les propriétés et les signets. L’original n’est pas modifié.</value></data>
+  <data name="Ui_RedactNotOriginal" xml:space="preserve"><value>Enregistrez la copie biffée sous un autre nom : l’original reste tel quel.</value></data>
+  <data name="Ui_RedactFailed" xml:space="preserve"><value>Biffage impossible : {0}</value></data>
+  <data name="Ui_Redacted" xml:space="preserve"><value>{0} enregistré : {1} caractère(s), {2} zone(s) d’image, {3} dessin(s), {4} autre(s) élément(s) supprimés. Vérifié : rien retrouvé, rien déplacé.</value></data>
+  <data name="Err_RedactNothing" xml:space="preserve"><value>Rien à biffer : cherchez d’abord ou tracez une zone.</value></data>
+  <data name="Err_RedactNested" xml:space="preserve"><value>Le contenu de la page est trop imbriqué pour être biffé sans risque.</value></data>
+  <data name="Err_RedactInlineImage" xml:space="preserve"><value>Une petite image intégrée n’est qu’en partie sous une zone : tracez la zone sur toute l’image.</value></data>
+  <data name="Err_RedactImage" xml:space="preserve"><value>Une image sous une zone n’a pas pu être lue ; rien n’a été modifié.</value></data>
+  <data name="Err_RedactRegex" xml:space="preserve"><value>Expression régulière non valide : {0}</value></data>
+  <data name="Err_RedactRegexSlow" xml:space="preserve"><value>L’expression régulière prend trop de temps ; simplifiez-la.</value></data>
+  <data name="Err_RedactLeftover" xml:space="preserve"><value>{0} occurrence(s) restaient dans la copie biffée ; elle n’a pas été conservée.</value></data>
+  <data name="Err_RedactChanged" xml:space="preserve"><value>La copie biffée différait de l’original hors des bandes noires ({0} pixels) ; elle n’a pas été conservée.</value></data>
+  <data name="Err_RedactUnstable" xml:space="preserve"><value>La copie biffée changeait d’une vérification à l’autre ; elle n’a pas été conservée.</value></data>
+  <data name="Pdf_Redacted" xml:space="preserve"><value>{0} enregistré : {1} caractère(s), {2} zone(s) d’image, {3} dessin(s), {4} annotation(s) ou champ(s), {5} autre(s) texte(s) supprimés. Vérifié : rien retrouvé, rien changé hors des bandes.</value></data>
+  <data name="Pdf_RedactMatch" xml:space="preserve"><value>  page {0} ({1}) : {2}</value></data>
+  <data name="Pdf_RedactFound" xml:space="preserve"><value>{0} occurrence(s) sur {1} page(s).</value></data>
 </root>

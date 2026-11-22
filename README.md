@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Comment, Sign, Protect, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Comment, Sign, Protect, Redact, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -190,6 +190,9 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   with AES-256; remove protection with the password that allows it; and **remove hidden information** before sending
   a file (see below). A file that needs a password asks for it when it is opened; the password is kept in memory
   until Washi closes and never written anywhere.
+- **Redact**: find words, phrases, e-mail addresses, phone numbers and long ID numbers (or drag over any area: a
+  photo, a signature, a stamp), untick what should stay, then save a copy where what lies under each black box is
+  removed from the file for real (see below).
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your
@@ -350,6 +353,44 @@ washi pdf clean report.pdf                                         # report_clea
   themselves stay. Protection and hidden information are deliberately separate steps: clean first, then protect.
 - Setting passwords is not offered to the AI assistant or MCP clients. `remove_hidden_info` is.
 
+## Redaction
+
+```bash
+washi pdf redact report.pdf --find "山田太郎" --find Yamada --list          # only show the matches
+washi pdf redact report.pdf --find "山田太郎" --pattern email,phone,number   # report_redacted.pdf
+washi pdf redact scan.pdf --box 1:400,60,560,120                             # an area: a photo, a stamp
+```
+
+In the editor: choose **Redact**, type the words (one per line) and tick the kinds of data to find, then *Find*.
+Every match is listed with the text around it and shown as a black box on the page; untick what should stay, drag
+over anything else that must go, then *Redact and save copy*. Agents use the `redact` tool (`dry_run` lists the
+matches).
+
+- **Removed, not covered.** A black box alone leaves the text under it in the file, where anyone can copy it.
+  Washi takes it out: each glyph whose centre lies in a box is cut from its string and replaced by a kerning number
+  of the same width, so the rest of the line stays exactly where it was. The widths come from the font (`/Widths`,
+  `/W`, Type 3 font matrices, the metrics of the 14 standard fonts, embedded CMaps for codes of 1 to 4 bytes,
+  vertical writing). When a width cannot be known (a predefined CJK CMap with proportional widths), the whole run
+  goes, with the runs that follow it on the same line, and its place is covered too.
+- **Images:** the pixels of an image that lie under a box are blanked in a copy of that image (a scan with an OCR
+  text layer loses both the picture and the hidden text). JPEG, JPEG 2000, JBIG2 and CCITT images are decoded with
+  PDFium, in memory, and written back losslessly, so a redacted scan can grow. An image entirely inside a box is
+  dropped. The original image is not saved when nothing else uses it.
+- **Everything else under a box goes too:** drawings that lie entirely inside it (the coordinates as well, so a
+  drawn signature cannot be recovered), comments, links and form fields (with the field's value), and forms nested
+  in the page, each use redacted in its own copy.
+- **Outside the pages:** matched form-field values and comments are removed, and the same words are masked with ■
+  in document properties, XMP metadata, bookmarks, tags (`/ActualText`, `/Alt`) and other strings in the file.
+  Attachments are not searched: remove them with `washi pdf clean`.
+- **Matching** ignores case (unless `--case`), full-width and half-width forms and spaces, so 山田太郎 also finds
+  山田 太郎 and ＹＡＭＡＤＡ. `--whole-words` skips matches inside longer words; `--regex` takes a .NET regular
+  expression. Patterns: e-mail addresses, phone numbers (9 digits or more, in groups), and numbers of 7 digits or
+  more (My Number, account and card numbers). Scanned pages need OCR first so their text can be found.
+- **Checked before it is kept.** The copy is searched again (nothing may be found where a box is), no character
+  may be left under a box, and both versions are rendered (no pixel may change outside the boxes). Matches you
+  unticked stay. If a check fails the copy is deleted, so you never get a half-redacted file.
+- Files whose permissions forbid changes are refused (remove the protection with its password first).
+
 ## Erasing printed text
 
 Forms sometimes arrive with data already printed on them, and some of it is wrong. Making the form
@@ -423,6 +464,7 @@ There are two ways to run it:
 | `list_comments` | review comments already in the PDF: type, page, rect, text, author | no |
 | `add_comments` | new PDF with highlights, underlines, strike-outs, notes, text boxes, pen marks or boxes | writes a **new** file |
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
+| `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
@@ -516,9 +558,9 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 10 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 16 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -567,7 +609,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done. ~~AI assistant with tool calls.~~ Done.
 7. ~~OCR (Apple Vision, Tesseract, AI), merge and split.~~ Done.
 8. ~~Erase printed content: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.~~ Done (`washi pdf erase`, the Erase tool, `erase_content`).
-9. ~~Passwords and permissions; remove hidden information.~~ Done (`washi pdf protect|unlock|clean`, the Protect tool, `remove_hidden_info`). Next: redact by keyword.
+9. ~~Passwords and permissions; remove hidden information.~~ Done (`washi pdf protect|unlock|clean`, the Protect tool, `remove_hidden_info`).
+10. ~~Redaction by keyword, pattern and area.~~ Done (`washi pdf redact`, the Redact tool, `redact`). Next: bookmarks, search and print.
 
 ## License
 
