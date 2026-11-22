@@ -644,4 +644,27 @@
   <data name="Err_FieldNotMask" xml:space="preserve"><value>“{0}”不符合 {1}。</value></data>
   <data name="Err_FieldRange" xml:space="preserve"><value>“{0}”超出范围（{2}）。</value></data>
   <data name="Err_FieldCalcCycle" xml:space="preserve"><value>{0} 的计算依赖它自己。</value></data>
+  <data name="Ui_CommentExistingHint" xml:space="preserve"><value>在列表或页面上点一下批注，就能改文字、换颜色、删除或回复；便签、方框和手绘可以拖动移动。</value></data>
+  <data name="Ui_CommentMoveHint" xml:space="preserve"><value>在页面上拖动即可移动。</value></data>
+  <data name="Ui_CommentReply" xml:space="preserve"><value>回复</value></data>
+  <data name="Ui_CommentReplyHint" xml:space="preserve"><value>写回复</value></data>
+  <data name="Ui_CommentReplies" xml:space="preserve"><value>{0} 条回复</value></data>
+  <data name="Ui_CommentDelete" xml:space="preserve"><value>删除 / 保留</value></data>
+  <data name="Ui_CommentRevert" xml:space="preserve"><value>撤销修改</value></data>
+  <data name="Ui_CommentsSaved" xml:space="preserve"><value>已保存 {0}：新增 {1}、修改 {2}、删除 {3}、回复 {4}。</value></data>
+  <data name="Annot_Highlight" xml:space="preserve"><value>高亮</value></data>
+  <data name="Annot_Underline" xml:space="preserve"><value>下划线</value></data>
+  <data name="Annot_StrikeOut" xml:space="preserve"><value>删除线</value></data>
+  <data name="Annot_Squiggly" xml:space="preserve"><value>波浪线</value></data>
+  <data name="Annot_Text" xml:space="preserve"><value>便签</value></data>
+  <data name="Annot_FreeText" xml:space="preserve"><value>文本框</value></data>
+  <data name="Annot_Ink" xml:space="preserve"><value>手绘</value></data>
+  <data name="Annot_Square" xml:space="preserve"><value>方框</value></data>
+  <data name="Annot_Circle" xml:space="preserve"><value>圆</value></data>
+  <data name="Annot_Line" xml:space="preserve"><value>线条</value></data>
+  <data name="Annot_Stamp" xml:space="preserve"><value>图章</value></data>
+  <data name="Err_NoSuchComment" xml:space="preserve"><value>没有批注“{0}”。</value></data>
+  <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>批注“{0}”由其他程序创建：可以改文字、删除或回复，但不能换颜色。</value></data>
+  <data name="Err_CommentNotMovable" xml:space="preserve"><value>批注“{0}”不能移动（文字标记跟随文字）。</value></data>
+  <data name="Err_CommentCheck" xml:space="preserve"><value>修改后的批注与要求不符，因此没有保留副本。</value></data>
 </root>

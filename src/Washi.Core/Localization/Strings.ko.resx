@@ -644,4 +644,27 @@
   <data name="Err_FieldNotMask" xml:space="preserve"><value>“{0}” 이(가) {1} 형식에 맞지 않습니다.</value></data>
   <data name="Err_FieldRange" xml:space="preserve"><value>“{0}” 이(가) 범위({2})를 벗어났습니다.</value></data>
   <data name="Err_FieldCalcCycle" xml:space="preserve"><value>{0} 의 계산이 자기 자신에 의존합니다.</value></data>
+  <data name="Ui_CommentExistingHint" xml:space="preserve"><value>목록이나 페이지에서 클릭하면 글자·색 변경, 삭제, 답글이 가능합니다. 메모·상자·펜 그림은 끌어서 옮길 수 있습니다.</value></data>
+  <data name="Ui_CommentMoveHint" xml:space="preserve"><value>페이지에서 끌어서 옮길 수 있습니다.</value></data>
+  <data name="Ui_CommentReply" xml:space="preserve"><value>답글</value></data>
+  <data name="Ui_CommentReplyHint" xml:space="preserve"><value>답글 입력</value></data>
+  <data name="Ui_CommentReplies" xml:space="preserve"><value>답글 {0}</value></data>
+  <data name="Ui_CommentDelete" xml:space="preserve"><value>삭제 / 유지</value></data>
+  <data name="Ui_CommentRevert" xml:space="preserve"><value>변경 취소</value></data>
+  <data name="Ui_CommentsSaved" xml:space="preserve"><value>{0} 저장: 추가 {1}, 변경 {2}, 삭제 {3}, 답글 {4}.</value></data>
+  <data name="Annot_Highlight" xml:space="preserve"><value>강조</value></data>
+  <data name="Annot_Underline" xml:space="preserve"><value>밑줄</value></data>
+  <data name="Annot_StrikeOut" xml:space="preserve"><value>취소선</value></data>
+  <data name="Annot_Squiggly" xml:space="preserve"><value>물결선</value></data>
+  <data name="Annot_Text" xml:space="preserve"><value>메모</value></data>
+  <data name="Annot_FreeText" xml:space="preserve"><value>텍스트 상자</value></data>
+  <data name="Annot_Ink" xml:space="preserve"><value>펜</value></data>
+  <data name="Annot_Square" xml:space="preserve"><value>상자</value></data>
+  <data name="Annot_Circle" xml:space="preserve"><value>원</value></data>
+  <data name="Annot_Line" xml:space="preserve"><value>선</value></data>
+  <data name="Annot_Stamp" xml:space="preserve"><value>스탬프</value></data>
+  <data name="Err_NoSuchComment" xml:space="preserve"><value>주석 “{0}” 이(가) 없습니다.</value></data>
+  <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>주석 “{0}” 은(는) 다른 프로그램에서 만들어 글자 변경·삭제·답글만 가능하고 색은 바꿀 수 없습니다.</value></data>
+  <data name="Err_CommentNotMovable" xml:space="preserve"><value>주석 “{0}” 은(는) 옮길 수 없습니다 (글자 표시는 글자에 붙어 있습니다).</value></data>
+  <data name="Err_CommentCheck" xml:space="preserve"><value>변경한 주석이 지정한 대로 되지 않아 사본을 저장하지 않았습니다.</value></data>
 </root>

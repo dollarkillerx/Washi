@@ -197,7 +197,7 @@ public sealed class ToolInvoker : IToolInvoker
             var suffix = tool switch
             {
                 "make_fillable" => "_fillable.pdf", "fill_fields" => "_filled.pdf", "merge_pdfs" => "_merged.pdf",
-                "split_pdf" => "_split/", "organize_pages" => "_organized.pdf", "add_comments" => "_commented.pdf", "remove_hidden_info" => "_cleaned.pdf",
+                "split_pdf" => "_split/", "organize_pages" => "_organized.pdf", "add_comments" or "edit_comments" => "_commented.pdf", "remove_hidden_info" => "_cleaned.pdf",
                 "redact" => "_redacted.pdf", "set_bookmarks" => "_bookmarks.pdf", "ocr_pdf" => "_ocr.pdf", "erase_content" => "_erased.pdf", _ => null,
             };
             if (suffix is not null) output = Path.GetFileNameWithoutExtension(inputs[0]) + suffix;

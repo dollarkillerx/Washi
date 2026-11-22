@@ -32,6 +32,7 @@ public static class WashiTools
         .Add(new OrganizePagesTool(policy))
         .Add(new ListCommentsTool(policy))
         .Add(new AddCommentsTool(policy))
+        .Add(new EditCommentsTool(policy))
         .Add(new RemoveHiddenInfoTool(policy))
         .Add(new RedactTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -783,8 +784,9 @@ public sealed class ListCommentsTool(PathPolicy p) : PdfTool(p)
     public override ToolRisk Risk => ToolRisk.ReadOnly;
     protected override bool HoldsPdfiumLock => false;
     public override string Description =>
-        "Review comments (annotations) already in a PDF: type (Highlight, Text = sticky note, FreeText, Ink, Square ...), page " +
-        "(1-based), rect [x0,y0,x1,y1] in points from the top-left of the upright page, text, author, modified date. Form fields and links are not listed.";
+        "Review comments (annotations) already in a PDF: id (for edit_comments), type (Highlight, Text = sticky note, FreeText, Ink, " +
+        "Square ...), page (1-based), rect [x0,y0,x1,y1] in points from the top-left of the upright page, text, author, modified date, " +
+        "colour, reply_to (the id of the comment a reply answers), and whether Washi can recolour or move it. Form fields and links are not listed.";
     protected override string Schema => """
         {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
         """;
@@ -794,9 +796,61 @@ public sealed class ListCommentsTool(PathPolicy p) : PdfTool(p)
         var path = Policy.Input(Str(a, "path"));
         return new ToolResult(ToJson(PdfComments.List(path).Select(c => new
         {
-            type = c.Type, page = c.Page + 1, rect = new[] { c.Rect.X0, c.Rect.Y0, c.Rect.X1, c.Rect.Y1 }.Select(v => Math.Round(v, 1)),
-            text = c.Text, author = c.Author, modified = c.Modified,
+            id = c.Id, type = c.Type, page = c.Page + 1, rect = new[] { c.Rect.X0, c.Rect.Y0, c.Rect.X1, c.Rect.Y1 }.Select(v => Math.Round(v, 1)),
+            text = c.Text, author = c.Author, modified = c.Modified, color = c.Color.Length > 0 ? c.Color : null,
+            reply_to = c.ReplyTo, can_recolor = c.Redrawable, can_move = c.Movable,
         })));
+    }
+}
+
+public sealed class EditCommentsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "edit_comments";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a NEW PDF with comments that are already in it changed: new text, a new colour (#RRGGBB) or a new place (rect, " +
+        "points from the top-left of the upright page: a note or pen drawing moves there, a text box or box takes the rect), " +
+        "removed (with its pop-up and replies), or answered with a reply. Ids come from list_comments; colour and place can only " +
+        "change where list_comments says can_recolor / can_move. The copy is read back to check. Never overwrites: output " +
+        "defaults to <name>_commented.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "changes":{"type":"array","items":{"type":"object","properties":{
+              "id":{"type":"string"},
+              "text":{"type":"string"},
+              "color":{"type":"string","description":"#RRGGBB"},
+              "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4},
+              "delete":{"type":"boolean"},
+              "reply":{"type":"string","description":"Add a reply with this text"},
+              "author":{"type":"string","description":"Who wrote the reply"}},
+             "required":["id"],"additionalProperties":false}},
+          "output":{"type":"string","description":"New PDF path (default: <name>_commented.pdf next to the input)"}},
+         "required":["path","changes"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (!a.TryGetProperty("changes", out var list) || list.ValueKind != JsonValueKind.Array || list.GetArrayLength() == 0)
+            throw new ToolException("'changes' must be a non-empty list");
+        var changes = new List<CommentChange>();
+        foreach (var e in list.EnumerateArray())
+        {
+            string id = Str(e, "id");
+            PdfRect? rect = null;
+            if (e.TryGetProperty("rect", out var r) && r.ValueKind == JsonValueKind.Array && r.GetArrayLength() == 4)
+            {
+                var v = r.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+                rect = new PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3]));
+            }
+            changes.Add(new CommentChange(id, OptStr(e, "text"), OptStr(e, "color"), rect,
+                e.TryGetProperty("delete", out var d) && d.ValueKind == JsonValueKind.True, OptStr(e, "reply"), OptStr(e, "author") ?? ""));
+        }
+        var output = Policy.Output(OptStr(a, "output"), path, "_commented");
+        var (changed, removed, replies) = PdfComments.Change(path, output, changes);
+        return new ToolResult(ToJson(new { output, changed, removed, replies }));
     }
 }
 

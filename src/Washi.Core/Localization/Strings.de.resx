@@ -644,4 +644,27 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_FieldNotMask" xml:space="preserve"><value>„{0}“ passt nicht zu {1}.</value></data>
   <data name="Err_FieldRange" xml:space="preserve"><value>„{0}“ liegt außerhalb von {2}.</value></data>
   <data name="Err_FieldCalcCycle" xml:space="preserve"><value>Die Berechnung von {0} hängt von sich selbst ab.</value></data>
+  <data name="Ui_CommentExistingHint" xml:space="preserve"><value>Klicken Sie einen Kommentar an (hier oder auf der Seite), um Text oder Farbe zu ändern, ihn zu löschen oder zu beantworten; Notizen, Rahmen und Zeichnungen lassen sich verschieben.</value></data>
+  <data name="Ui_CommentMoveHint" xml:space="preserve"><value>Zum Verschieben auf der Seite ziehen.</value></data>
+  <data name="Ui_CommentReply" xml:space="preserve"><value>Antworten</value></data>
+  <data name="Ui_CommentReplyHint" xml:space="preserve"><value>Antwort schreiben</value></data>
+  <data name="Ui_CommentReplies" xml:space="preserve"><value>{0} Antwort(en)</value></data>
+  <data name="Ui_CommentDelete" xml:space="preserve"><value>Entfernen / behalten</value></data>
+  <data name="Ui_CommentRevert" xml:space="preserve"><value>Änderungen verwerfen</value></data>
+  <data name="Ui_CommentsSaved" xml:space="preserve"><value>{0} gespeichert: {1} neu, {2} geändert, {3} entfernt, {4} Antwort(en).</value></data>
+  <data name="Annot_Highlight" xml:space="preserve"><value>Hervorhebung</value></data>
+  <data name="Annot_Underline" xml:space="preserve"><value>Unterstreichung</value></data>
+  <data name="Annot_StrikeOut" xml:space="preserve"><value>Durchstreichung</value></data>
+  <data name="Annot_Squiggly" xml:space="preserve"><value>Wellenlinie</value></data>
+  <data name="Annot_Text" xml:space="preserve"><value>Notiz</value></data>
+  <data name="Annot_FreeText" xml:space="preserve"><value>Textfeld</value></data>
+  <data name="Annot_Ink" xml:space="preserve"><value>Stift</value></data>
+  <data name="Annot_Square" xml:space="preserve"><value>Rahmen</value></data>
+  <data name="Annot_Circle" xml:space="preserve"><value>Kreis</value></data>
+  <data name="Annot_Line" xml:space="preserve"><value>Linie</value></data>
+  <data name="Annot_Stamp" xml:space="preserve"><value>Stempel</value></data>
+  <data name="Err_NoSuchComment" xml:space="preserve"><value>Es gibt keinen Kommentar „{0}“.</value></data>
+  <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>Kommentar „{0}“ stammt aus einem anderen Programm: Text ändern, löschen oder beantworten geht, die Farbe nicht.</value></data>
+  <data name="Err_CommentNotMovable" xml:space="preserve"><value>Kommentar „{0}“ lässt sich nicht verschieben (Textmarkierungen bleiben am Text).</value></data>
+  <data name="Err_CommentCheck" xml:space="preserve"><value>Die geänderten Kommentare stimmten nicht; die Kopie wurde nicht behalten.</value></data>
 </root>

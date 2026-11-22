@@ -426,6 +426,30 @@ public sealed class EditorTests : IDisposable
         vm.ActiveTool = Tool.Ask;
         Shot(w, "assistant");
 
+        // changing comments a file already has: a copy with comments, one chosen and edited
+        if (vm.PdfPath is { } current && Path.GetDirectoryName(outDir) is not null)
+        {
+            var withComments = Path.Combine(_dir, "with_comments.pdf");
+            Washi.Core.Pages.PdfComments.Add(current, withComments,
+            [
+                new(0, Washi.Core.Pages.CommentKind.Note, new Washi.Core.PdfRect(500, 60, 518, 78), "金額を確認してください", Author: "経理"),
+                new(0, Washi.Core.Pages.CommentKind.Box, new Washi.Core.PdfRect(60, 240, 300, 300)),
+            ]);
+            await vm.LoadAsync(withComments);
+            vm.ActiveTool = Tool.Comment;
+            await vm.Comment.PrepareAsync();
+            if (vm.Comment.Existing.FirstOrDefault() is { } first)
+            {
+                vm.Comment.SelectedExisting = first;
+                first.Text = "確認しました";
+                vm.Comment.ReplyDraft = "ありがとうございます";
+                vm.Comment.ReplyCommand.Execute(null);
+                if (vm.Comment.Existing.Count > 1) vm.Comment.Existing[1].Deleted = true;
+            }
+            Dispatcher.UIThread.RunJobs();
+            Shot(w, "comment-edit");
+        }
+
         w.ShowSettings("mcp");
         Shot(w, "settings_mcp");
         w.ShowSettings("ai");

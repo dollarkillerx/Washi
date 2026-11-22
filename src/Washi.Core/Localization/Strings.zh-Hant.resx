@@ -644,4 +644,27 @@
   <data name="Err_FieldNotMask" xml:space="preserve"><value>「{0}」不符合 {1}。</value></data>
   <data name="Err_FieldRange" xml:space="preserve"><value>「{0}」超出範圍（{2}）。</value></data>
   <data name="Err_FieldCalcCycle" xml:space="preserve"><value>{0} 的計算依賴它自己。</value></data>
+  <data name="Ui_CommentExistingHint" xml:space="preserve"><value>在清單或頁面上點一下註解，就能改文字、換顏色、刪除或回覆；便箋、方框和手繪可以拖曳移動。</value></data>
+  <data name="Ui_CommentMoveHint" xml:space="preserve"><value>在頁面上拖曳即可移動。</value></data>
+  <data name="Ui_CommentReply" xml:space="preserve"><value>回覆</value></data>
+  <data name="Ui_CommentReplyHint" xml:space="preserve"><value>寫回覆</value></data>
+  <data name="Ui_CommentReplies" xml:space="preserve"><value>{0} 則回覆</value></data>
+  <data name="Ui_CommentDelete" xml:space="preserve"><value>刪除 / 保留</value></data>
+  <data name="Ui_CommentRevert" xml:space="preserve"><value>復原修改</value></data>
+  <data name="Ui_CommentsSaved" xml:space="preserve"><value>已儲存 {0}：新增 {1}、修改 {2}、刪除 {3}、回覆 {4}。</value></data>
+  <data name="Annot_Highlight" xml:space="preserve"><value>醒目提示</value></data>
+  <data name="Annot_Underline" xml:space="preserve"><value>底線</value></data>
+  <data name="Annot_StrikeOut" xml:space="preserve"><value>刪除線</value></data>
+  <data name="Annot_Squiggly" xml:space="preserve"><value>波浪線</value></data>
+  <data name="Annot_Text" xml:space="preserve"><value>便箋</value></data>
+  <data name="Annot_FreeText" xml:space="preserve"><value>文字方塊</value></data>
+  <data name="Annot_Ink" xml:space="preserve"><value>手繪</value></data>
+  <data name="Annot_Square" xml:space="preserve"><value>方框</value></data>
+  <data name="Annot_Circle" xml:space="preserve"><value>圓</value></data>
+  <data name="Annot_Line" xml:space="preserve"><value>線條</value></data>
+  <data name="Annot_Stamp" xml:space="preserve"><value>圖章</value></data>
+  <data name="Err_NoSuchComment" xml:space="preserve"><value>沒有註解「{0}」。</value></data>
+  <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>註解「{0}」由其他程式建立：可以改文字、刪除或回覆，但不能換顏色。</value></data>
+  <data name="Err_CommentNotMovable" xml:space="preserve"><value>註解「{0}」不能移動（文字標記跟隨文字）。</value></data>
+  <data name="Err_CommentCheck" xml:space="preserve"><value>修改後的註解與要求不符，因此沒有保留副本。</value></data>
 </root>

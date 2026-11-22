@@ -29,14 +29,24 @@ public sealed record CommentSpec(
     string Author = "");
 
 /// <summary>A comment (annotation) already in a PDF. Widgets (form fields) and links are not comments.</summary>
-public sealed record CommentInfo(int Page, string Type, PdfRect Rect, string Text, string Author, string Modified);
+/// <param name="Id">Names the comment for <see cref="PdfComments.Change"/>: its /NM, or its page and place on the page.</param>
+/// <param name="Color">"#RRGGBB" (empty when it has none).</param>
+/// <param name="ReplyTo">The <see cref="Id"/> of the comment this one answers.</param>
+/// <param name="Redrawable">Washi can redraw it (highlight, underline, strike-out, note, text box, pen, box), so its
+/// colour can change and, except for text markup, it can be moved.</param>
+public sealed record CommentInfo(int Page, string Type, PdfRect Rect, string Text, string Author, string Modified,
+                                 string Id = "", string Color = "", string? ReplyTo = null, bool Redrawable = false)
+{
+    public bool Movable => Redrawable && Type is not ("Highlight" or "Underline" or "StrikeOut");
+    public bool Resizable => Redrawable && Type is "FreeText" or "Square";
+}
 
 /// <summary>
 /// Adds review comments as standard PDF annotations, each with its own appearance so it looks the same in every viewer:
 /// highlight / underline / strike-out (text markup with quad points), sticky notes, text boxes (FreeText), pen (Ink) and
 /// boxes (Square). Lists the comments a PDF already has.
 /// </summary>
-public static class PdfComments
+public static partial class PdfComments
 {
     private const int AnnotPrint = 4;
 
@@ -223,7 +233,8 @@ public static class PdfComments
 
     public static IReadOnlyList<CommentInfo> List(string path)
     {
-        using var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+        using var doc = PdfReader.Open(path, PdfPasswords.For(path) ?? "", PdfDocumentOpenMode.Import);
+        var ids = Ids(doc);
         var result = new List<CommentInfo>();
         for (int i = 0; i < doc.PageCount; i++)
         {
@@ -239,12 +250,54 @@ public static class PdfComments
                 var rect = rc is { Elements.Count: >= 4 }
                     ? map.ToUpright(new PdfRect(rc.Elements.GetReal(0), rc.Elements.GetReal(1), rc.Elements.GetReal(2), rc.Elements.GetReal(3)))
                     : default;
+                string? replyTo = Deref(a.Elements["/IRT"]) is PdfDictionary irt && ids.TryGetValue(irt, out var pid) ? pid : null;
                 result.Add(new CommentInfo(i, type.TrimStart('/'), rect, a.Elements.GetString("/Contents"), a.Elements.GetString("/T"),
-                                           a.Elements.GetString("/M")));
+                                           a.Elements.GetString("/M"), ids[a], Hex(a), replyTo, Redraws.Contains(type)));
             }
         }
         return result;
     }
+
+    /// <summary>Annotation types Washi draws itself (and so can recolour and move).</summary>
+    private static readonly HashSet<string> Redraws = ["/Highlight", "/Underline", "/StrikeOut", "/Text", "/FreeText", "/Ink", "/Square"];
+
+    /// <summary>
+    /// Each comment's id: its /NM when no other annotation has the same one, otherwise "p{page}-{n}" (its place in the
+    /// page's /Annots, both 1-based).
+    /// </summary>
+    private static Dictionary<PdfDictionary, string> Ids(PdfDocument doc)
+    {
+        var all = new List<(PdfDictionary A, int Page, int Index)>();
+        for (int i = 0; i < doc.PageCount; i++)
+            if (doc.Pages[i].Elements.GetArray("/Annots") is { } annots)
+                for (int j = 0; j < annots.Elements.Count; j++)
+                    if (Deref(annots.Elements[j]) is PdfDictionary a) all.Add((a, i, j));
+        var nmCount = all.GroupBy(x => x.A.Elements.GetString("/NM")).ToDictionary(g => g.Key, g => g.Count());
+        var ids = new Dictionary<PdfDictionary, string>(ReferenceEqualityComparer.Instance);
+        foreach (var (a, page, index) in all)
+        {
+            var nm = a.Elements.GetString("/NM");
+            ids[a] = nm.Length > 0 && nmCount[nm] == 1 ? nm : $"p{page + 1}-{index + 1}";
+        }
+        return ids;
+    }
+
+    /// <summary>The annotation's colour (/C) as #RRGGBB; a text box's is the colour of its text.</summary>
+    private static string Hex(PdfDictionary a)
+    {
+        double[]? c = null;
+        if (a.Elements.GetName("/Subtype") == "/FreeText")
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(a.Elements.GetString("/DA"), @"([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+rg");
+            if (m.Success) c = [.. m.Groups.Values.Skip(1).Select(g => double.Parse(g.Value, CultureInfo.InvariantCulture))];
+            else c = [0, 0, 0];
+        }
+        else if (a.Elements.GetArray("/C") is { Elements.Count: 3 } arr) c = [arr.Elements.GetReal(0), arr.Elements.GetReal(1), arr.Elements.GetReal(2)];
+        else if (a.Elements.GetArray("/C") is { Elements.Count: 1 } g) c = [g.Elements.GetReal(0), g.Elements.GetReal(0), g.Elements.GetReal(0)];
+        return c is null ? "" : "#" + string.Concat(c.Select(v => ((int)Math.Round(Math.Clamp(v, 0, 1) * 255)).ToString("X2", CultureInfo.InvariantCulture)));
+    }
+
+    private static PdfItem? Deref(PdfItem? i) => i is PdfReference r ? r.Value : i;
 
     // ------------------------------------------------------------------ geometry
     /// <summary>Upright page (top-down points) ↔ PDF space, for the page's /Rotate (as PDFium maps them).</summary>

@@ -644,4 +644,27 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_FieldNotMask" xml:space="preserve"><value>“{0}” does not fit {1}.</value></data>
   <data name="Err_FieldRange" xml:space="preserve"><value>“{0}” is outside {2}.</value></data>
   <data name="Err_FieldCalcCycle" xml:space="preserve"><value>The calculation of {0} depends on itself.</value></data>
+  <data name="Ui_CommentExistingHint" xml:space="preserve"><value>Click one (here or on the page) to change its words or colour, remove it or reply; drag a note, box or drawing to move it.</value></data>
+  <data name="Ui_CommentMoveHint" xml:space="preserve"><value>Drag it on the page to move it.</value></data>
+  <data name="Ui_CommentReply" xml:space="preserve"><value>Reply</value></data>
+  <data name="Ui_CommentReplyHint" xml:space="preserve"><value>Write a reply</value></data>
+  <data name="Ui_CommentReplies" xml:space="preserve"><value>{0} repl(ies)</value></data>
+  <data name="Ui_CommentDelete" xml:space="preserve"><value>Remove / keep</value></data>
+  <data name="Ui_CommentRevert" xml:space="preserve"><value>Undo changes</value></data>
+  <data name="Ui_CommentsSaved" xml:space="preserve"><value>Saved {0}: {1} new, {2} changed, {3} removed, {4} repl(ies).</value></data>
+  <data name="Annot_Highlight" xml:space="preserve"><value>Highlight</value></data>
+  <data name="Annot_Underline" xml:space="preserve"><value>Underline</value></data>
+  <data name="Annot_StrikeOut" xml:space="preserve"><value>Strike-out</value></data>
+  <data name="Annot_Squiggly" xml:space="preserve"><value>Squiggly</value></data>
+  <data name="Annot_Text" xml:space="preserve"><value>Note</value></data>
+  <data name="Annot_FreeText" xml:space="preserve"><value>Text box</value></data>
+  <data name="Annot_Ink" xml:space="preserve"><value>Pen</value></data>
+  <data name="Annot_Square" xml:space="preserve"><value>Box</value></data>
+  <data name="Annot_Circle" xml:space="preserve"><value>Circle</value></data>
+  <data name="Annot_Line" xml:space="preserve"><value>Line</value></data>
+  <data name="Annot_Stamp" xml:space="preserve"><value>Stamp</value></data>
+  <data name="Err_NoSuchComment" xml:space="preserve"><value>There is no comment “{0}”.</value></data>
+  <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>Comment “{0}” was made by another program; Washi can change its words, remove it or answer it, but not its colour.</value></data>
+  <data name="Err_CommentNotMovable" xml:space="preserve"><value>Comment “{0}” cannot be moved (text markup stays on its text).</value></data>
+  <data name="Err_CommentCheck" xml:space="preserve"><value>The changed comments did not come out as asked, so the copy was not kept.</value></data>
 </root>
