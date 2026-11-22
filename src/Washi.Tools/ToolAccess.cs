@@ -187,13 +187,17 @@ public sealed class ToolInvoker : IToolInvoker
         if (S(a, "path") is { } p) inputs.Add(p);
         if (a.ValueKind == JsonValueKind.Object && a.TryGetProperty("paths", out var arr) && arr.ValueKind == JsonValueKind.Array)
             inputs.AddRange(arr.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!));
+        // organize_pages: pages inserted from other files are inputs too
+        if (a.ValueKind == JsonValueKind.Object && a.TryGetProperty("pages", out var pages) && pages.ValueKind == JsonValueKind.Array)
+            inputs.AddRange(pages.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object).Select(x => S(x, "path"))
+                                 .OfType<string>().Where(x => !inputs.Contains(x)).Distinct());
         var output = S(a, "output") ?? S(a, "output_dir");
         if (output is null && inputs.Count > 0)
         {
             var suffix = tool switch
             {
                 "make_fillable" => "_fillable.pdf", "fill_fields" => "_filled.pdf", "merge_pdfs" => "_merged.pdf",
-                "split_pdf" => "_split/", "ocr_pdf" => "_ocr.pdf", "erase_content" => "_erased.pdf", _ => null,
+                "split_pdf" => "_split/", "organize_pages" => "_organized.pdf", "ocr_pdf" => "_ocr.pdf", "erase_content" => "_erased.pdf", _ => null,
             };
             if (suffix is not null) output = Path.GetFileNameWithoutExtension(inputs[0]) + suffix;
         }

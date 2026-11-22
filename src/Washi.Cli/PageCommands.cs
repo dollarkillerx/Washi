@@ -5,7 +5,7 @@ using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
 
-/// <summary>washi pdf merge|split and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase and washi ocr.</summary>
 internal static class PageCommands
 {
     private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules"];
@@ -31,6 +31,16 @@ internal static class PageCommands
                     var dir = opt.GetValueOrDefault("-o", Path.GetFileNameWithoutExtension(input) + "_split");
                     foreach (var part in PageAssembly.Split(input, ranges, dir))
                         Console.WriteLine(L.F("Pdf_SplitPart", part.Path, part.FirstPage, part.LastPage));
+                    return 0;
+                }
+                case ["organize", var input] when opt.TryGetValue("-o", out var output):
+                {
+                    if (Path.GetFullPath(input) == Path.GetFullPath(output))
+                        throw new PageAssemblyException($"{output} is also the input; choose another output name");
+                    var picks = PageAssembly.ParsePicks(input, opt.GetValueOrDefault("--pages"), opt.GetValueOrDefault("--rotate"),
+                                                        PageAssembly.PageCount(input));
+                    int pages = PageAssembly.Organize(picks, output);
+                    Console.WriteLine(L.F("Pdf_Organized", output, pages, AcroFormFields.List(output).Count));
                     return 0;
                 }
                 case ["erase", var input] when opt.TryGetValue("--box", out var boxes):

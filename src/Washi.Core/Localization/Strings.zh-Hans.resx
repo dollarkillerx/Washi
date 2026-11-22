@@ -110,6 +110,8 @@
   <data name="UsagePdf" xml:space="preserve"><value>页面与 OCR：
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      合并文件（保留表单栏位）
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
+  washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
+                                          调整页面顺序、删除（不列出的页）和旋转页面（保留表单栏位）
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           让扫描页可以搜索（加一层看不见的文字，页面图像不变）
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -117,6 +119,7 @@
   <data name="Pdf_Erased" xml:space="preserve"><value>已保存 {0}：删除了文字 {1} 段、图像 {2} 个、图形 {3} 个。检查：删除处剩余文字 {4} 个，其他地方变化的像素 {5} 个。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 页保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已将 {0} 个文件合并为 {1}：{2} 页，{3} 个表单栏位</value></data>
+  <data name="Pdf_Organized" xml:space="preserve"><value>已写入 {0}：{1} 页，{2} 个表单栏位</value></data>
   <data name="Pdf_SplitPart" xml:space="preserve"><value>  {0}  （第 {1}-{2} 页）</value></data>
   <data name="Pdf_Failed" xml:space="preserve"><value>washi：{0}</value></data>
   <data name="Ocr_Engine" xml:space="preserve"><value>使用 {0} 进行 OCR：需识别 {1} 页</value></data>
@@ -207,6 +210,18 @@
   <data name="Ui_SplitPreview" xml:space="preserve"><value>{0} 个文件：{1}</value></data>
   <data name="Ui_SplitRun" xml:space="preserve"><value>拆分到文件夹…</value></data>
   <data name="Ui_SplitDone" xml:space="preserve"><value>已将 {0} 个文件写入 {1}</value></data>
+  <data name="Ui_ToolOrganize" xml:space="preserve"><value>整理页面</value></data>
+  <data name="Ui_OrganizeTitle" xml:space="preserve"><value>整理页面</value></data>
+  <data name="Ui_OrganizeLead" xml:space="preserve"><value>调整顺序、旋转、删除或插入页面，然后另存为新的 PDF。表单栏位仍可填写。</value></data>
+  <data name="Ui_OrganizeInsert" xml:space="preserve"><value>插入页面…</value></data>
+  <data name="Ui_OrganizeInsertTip" xml:space="preserve"><value>把其他 PDF 的所有页面插到选中页面之后</value></data>
+  <data name="Ui_RotateLeft" xml:space="preserve"><value>向左旋转</value></data>
+  <data name="Ui_RotateRight" xml:space="preserve"><value>向右旋转</value></data>
+  <data name="Ui_OrganizeReset" xml:space="preserve"><value>全部重来</value></data>
+  <data name="Ui_OrganizeSummary" xml:space="preserve"><value>{0} 页 · 删除 {1} · 旋转 {2} · 插入 {3}</value></data>
+  <data name="Ui_OrganizeFrom" xml:space="preserve"><value>{1} 第 {0} 页</value></data>
+  <data name="Ui_OrganizeEmpty" xml:space="preserve"><value>请打开要整理页面的 PDF。</value></data>
+  <data name="Ui_OrganizeRun" xml:space="preserve"><value>另存为新 PDF…</value></data>
   <data name="Ui_Save" xml:space="preserve"><value>保存</value></data>
   <data name="Ui_Copy" xml:space="preserve"><value>复制</value></data>
   <data name="Ui_Copied" xml:space="preserve"><value>已复制。</value></data>
@@ -365,6 +380,10 @@
   <data name="Err_NothingToMerge" xml:space="preserve"><value>没有可合并的文件。</value></data>
   <data name="Err_RangeOutside" xml:space="preserve"><value>页码范围 {0} 超出了 1-{1}。</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>“{0}”不是有效的页码范围（例如 1-3,5）。</value></data>
+  <data name="Err_NoPages" xml:space="preserve"><value>没有要写入的页面。</value></data>
+  <data name="Err_BadRotation" xml:space="preserve"><value>旋转 {0}° 不是 90 的倍数。</value></data>
+  <data name="Err_BadRotateSpec" xml:space="preserve"><value>“{0}”不是有效的旋转设置（例如 2:90,5:-90）。</value></data>
+  <data name="Err_PageTwice" xml:space="preserve"><value>{1} 的第 {0} 页出现了两次；每页只能用一次。</value></data>
   <data name="Ui_Value" xml:space="preserve"><value>值</value></data>
   <data name="Ui_Ticked" xml:space="preserve"><value>已勾选</value></data>
   <data name="Ui_FilledOnPage" xml:space="preserve"><value>本页已填写：{0} / {1}</value></data>

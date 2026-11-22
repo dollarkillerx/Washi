@@ -10,6 +10,7 @@ using Washi.App;
 using Washi.App.ViewModels;
 using Washi.Core;
 using Washi.Core.Forms;
+using Washi.Core.Localization;
 using Washi.Core.Pdfium;
 
 namespace Washi.App.Tests;
@@ -120,6 +121,88 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(zoomed, vm.Zoom);
         vm.FitWidthCommand.Execute(null);
         Assert.True(vm.Zoom < fitted);
+    }
+
+    /// <summary>A UI context that has stopped: posted continuations never run (a closed app, an ended headless test).</summary>
+    private sealed class StoppedContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state) { }
+        public override void Send(SendOrPostCallback d, object? state) { }
+    }
+
+    [Fact]
+    public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
+    {
+        // before: the lock was released only after a hop back to the caller's context, so a thumbnail render still
+        // running when one headless test ended kept it forever, and the next test that used PDFium hung
+        var old = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(new StoppedContext());
+        try { _ = MainViewModel.Pdfium(() => 42); }
+        finally { SynchronizationContext.SetSynchronizationContext(old); }
+
+        Assert.True(await PdfiumDocument.Gate.WaitAsync(TimeSpan.FromSeconds(5)));
+        PdfiumDocument.Gate.Release();
+    }
+
+    [AvaloniaFact]
+    public async Task Organize_turns_moves_removes_and_inserts_pages_then_opens_the_result()
+    {
+        var a = Form("a.pdf", pages: 3);
+        var b = Form("b.pdf");
+        var output = Path.Combine(_dir, "organized.pdf");
+        var (w, vm) = await Open(a, new FakeDialogs { Pdfs = [b], SavePdf = output });
+        var org = vm.Organize;
+
+        vm.ActiveTool = Tool.Organize;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(["1", "2", "3"], org.Pages.Select(p => p.Label));
+        Assert.False(org.CanSave);                          // nothing changed yet
+        Assert.False(org.RemoveCommand.CanExecute(null));   // nothing selected
+
+        // the grid's selection is the view model's selection, and one page selected shows it
+        var list = w.FindControl<ListBox>("OrganizeList")!;
+        list.SelectedItem = org.Pages[2];
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal([org.Pages[2]], org.Selected);
+        Assert.Equal(2, vm.PageIndex);
+
+        org.MoveUpCommand.Execute(null);
+        org.RotateRightCommand.Execute(null);
+        Assert.Equal(["1", "3", "2"], org.Pages.Select(p => p.Label));
+        Assert.Equal(90, org.Pages[1].Rotate);
+        Assert.Equal("↻ 90°", org.Pages[1].RotateText);
+
+        org.Selected.Clear();
+        org.Selected.Add(org.Pages[0]);
+        org.RemoveCommand.Execute(null);                     // the selection moves to the next page, now "3"
+        Assert.Equal(["3", "2"], org.Pages.Select(p => p.Label));
+        await org.InsertFilesCommand.ExecuteAsync(null);     // b.pdf goes in after the selected page
+        Assert.Equal(3, org.Pages.Count);
+        Assert.True(org.Pages[1].Inserted);
+        Assert.Contains("b.pdf", org.Pages[1].Label);
+        Assert.Equal(L.F("Ui_OrganizeSummary", 3, 1, 1, 1), org.Summary);
+        Assert.True(org.CanSave);
+
+        await org.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(output, vm.PdfPath);
+        Assert.Equal(3, vm.PageCount);
+        Assert.Equal(["1", "2", "3"], org.Pages.Select(p => p.Label));   // the new file, fresh
+        Assert.False(org.CanSave);
+        using var doc = PdfSharp.Pdf.IO.PdfReader.Open(output, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+        Assert.Equal([90, 0, 0], doc.Pages.Cast<PdfPage>().Select(p => p.Rotate));
+    }
+
+    [AvaloniaFact]
+    public async Task Pdfs_dropped_on_the_organize_tool_are_inserted_not_opened()
+    {
+        var a = Form("a.pdf", pages: 2);
+        var (_, vm) = await Open(a, new FakeDialogs());
+        vm.ActiveTool = Tool.Organize;
+        Dispatcher.UIThread.RunJobs();
+        await vm.DropAsync([Form("b.pdf", pages: 2)]);
+        Assert.Equal(a, vm.PdfPath);
+        Assert.Equal(4, vm.Organize.Pages.Count);
+        Assert.Equal(2, vm.Organize.Pages.Count(p => p.Inserted));
     }
 
     [AvaloniaFact]

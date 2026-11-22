@@ -39,7 +39,7 @@ public static class PrintedText
         EraseReport report;
         IReadOnlyList<EraseTarget> targets;
         var readablePages = new HashSet<int>();
-        await PdfiumDocument.Gate.WaitAsync(ct);
+        await PdfiumDocument.Gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             await Task.Run(() =>
@@ -47,16 +47,16 @@ public static class PrintedText
                 using var doc = PdfiumDocument.Open(input);
                 foreach (var page in cells.Select(c => c.Page).Distinct())
                     if (page >= 0 && page < doc.PageCount && TextQuality.Readable(doc.GetPageText(page))) readablePages.Add(page);
-            }, ct);
-            (targets, var kept) = await Task.Run(() => PdfEraser.Plan(input, boxes, options), ct);
+            }, ct).ConfigureAwait(false);
+            (targets, var kept) = await Task.Run(() => PdfEraser.Plan(input, boxes, options), ct).ConfigureAwait(false);
             foreach (var k in kept.Where(k => k.Kind == EraseKind.Text && k.Why is EraseKeptWhy.RunsOutside or EraseKeptWhy.Chained))
             {
                 var (x, y) = k.Rect.Center;
                 if (cells.Any(c => c.Page == k.Page && c.Rect.Contains(x, y)))
                     boxes.Add(new EraseRegion(k.Page, new PdfRect(k.Rect.X0 - 1, k.Rect.Y0 - 1, k.Rect.X1 + 1, k.Rect.Y1 + 1)));
             }
-            (targets, _) = await Task.Run(() => PdfEraser.Plan(input, boxes, options), ct);
-            report = await Task.Run(() => PdfEraser.Erase(input, output, boxes, options), ct);
+            (targets, _) = await Task.Run(() => PdfEraser.Plan(input, boxes, options), ct).ConfigureAwait(false);
+            report = await Task.Run(() => PdfEraser.Erase(input, output, boxes, options), ct).ConfigureAwait(false);
         }
         finally { PdfiumDocument.Gate.Release(); }
 
@@ -88,7 +88,7 @@ public static class PrintedText
             var engine = ocr();
             double scale = Math.Min(engine.Dpi, 300) / 72.0;
             var crops = new List<(PrintedCell Cell, RgbImage Image)>();
-            await PdfiumDocument.Gate.WaitAsync(ct);
+            await PdfiumDocument.Gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
                 await Task.Run(() =>
@@ -101,7 +101,7 @@ public static class PrintedText
                         var b = after.RenderPage(page.Key, scale);
                         foreach (var cell in page) crops.Add((cell, ErasedInk(a, b, cell.Rect, scale)));
                     }
-                }, ct);
+                }, ct).ConfigureAwait(false);
             }
             finally { PdfiumDocument.Gate.Release(); }
 

@@ -14,6 +14,10 @@ public sealed class PageAssemblyException(string message, string? key = null, pa
 
 public sealed record SplitPart(string Path, int FirstPage, int LastPage);
 
+/// <summary>One page of an organized document: page <paramref name="Page"/> (1-based) of <paramref name="Source"/>,
+/// turned clockwise by <paramref name="Rotate"/> degrees (a multiple of 90) on top of its own rotation.</summary>
+public sealed record PagePick(string Source, int Page, int Rotate = 0);
+
 /// <summary>
 /// Merging and splitting (PDFsharp). Copied pages keep their form fields: the fields are
 /// registered again in the new document's AcroForm, names that would collide get a suffix
@@ -38,6 +42,92 @@ public static class PageAssembly
         target.Options.CompressContentStreams = true;
         target.Save(output);
         return count;
+    }
+
+    /// <summary>
+    /// Writes the pages in <paramref name="pages"/>, in that order: reorder, delete (leave a page out), rotate, and
+    /// insert pages from other files in one go. Form fields are kept, as in <see cref="Merge"/>; on a turned page their
+    /// widgets turn with it (/MK /R), so text typed later still reads upright. Returns the number of pages written.
+    /// </summary>
+    public static int Organize(IReadOnlyList<PagePick> pages, string output)
+    {
+        if (pages.Count == 0) throw new PageAssemblyException("no pages to write", "Err_NoPages");
+        var seen = new HashSet<(string, int)>();
+        foreach (var pick in pages)
+        {
+            if (pick.Rotate % 90 != 0)
+                throw new PageAssemblyException($"rotation {pick.Rotate} is not a multiple of 90", "Err_BadRotation", pick.Rotate);
+            // the same page twice would share its form fields (one value in two places): not supported
+            if (!seen.Add((Path.GetFullPath(pick.Source), pick.Page)))
+                throw new PageAssemblyException($"page {pick.Page} of {Path.GetFileName(pick.Source)} is listed twice", "Err_PageTwice",
+                                                pick.Page, Path.GetFileName(pick.Source));
+        }
+        var sources = new Dictionary<string, PdfDocument>();
+        try
+        {
+            foreach (var path in pages.Select(p => Path.GetFullPath(p.Source)).Distinct())
+                sources[path] = Open(path);                                  // all checked before anything is written
+            foreach (var pick in pages)
+            {
+                int n = sources[Path.GetFullPath(pick.Source)].PageCount;
+                if (pick.Page < 1 || pick.Page > n)
+                    throw new PageAssemblyException($"page {pick.Page} is outside 1-{n}", "Err_RangeOutside", pick.Page.ToString(System.Globalization.CultureInfo.InvariantCulture), n);
+            }
+            using var target = new PdfDocument();
+            foreach (var pick in pages)
+            {
+                var page = target.AddPage(sources[Path.GetFullPath(pick.Source)].Pages[pick.Page - 1]);
+                if (Norm(pick.Rotate) is var turn and not 0) Turn(page, turn);
+            }
+            RebuildForm(target);
+            int count = target.PageCount;
+            target.Options.CompressContentStreams = true;
+            target.Save(output);
+            return count;
+        }
+        finally
+        {
+            foreach (var d in sources.Values) d.Dispose();
+        }
+    }
+
+    private static int Norm(int degrees) => ((degrees % 360) + 360) % 360;
+
+    /// <summary>Turns the page clockwise; its form widgets get the same /MK /R, as Acrobat does.</summary>
+    private static void Turn(PdfPage page, int degrees)
+    {
+        page.Rotate = Norm(page.Rotate + degrees);
+        if (page.Elements.GetArray("/Annots") is not { } annots) return;
+        foreach (var a in annots.Elements)
+        {
+            if (Deref(a) is not PdfDictionary w || w.Elements.GetName("/Subtype") != "/Widget") continue;
+            if (Deref(w.Elements["/MK"]) is not PdfDictionary mk)
+            {
+                mk = new PdfDictionary(page.Owner);
+                w.Elements["/MK"] = mk;
+            }
+            mk.Elements["/R"] = new PdfInteger(Norm(mk.Elements.GetInteger("/R") + degrees));
+        }
+    }
+
+    /// <summary>
+    /// "3,1-2,5" → pages 3, 1, 2, 5 of <paramref name="input"/> in that order (pages not listed are dropped);
+    /// <paramref name="rotate"/> "2:90,5:-90" turns source pages 2 and 5. Empty <paramref name="order"/> keeps every page.
+    /// </summary>
+    public static List<PagePick> ParsePicks(string input, string? order, string? rotate, int pageCount)
+    {
+        var turns = new Dictionary<int, int>();
+        foreach (var part in (rotate ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var kv = part.Split(':', StringSplitOptions.TrimEntries);
+            if (kv.Length != 2 || !int.TryParse(kv[0], out var pg) || !int.TryParse(kv[1], out var deg) || deg % 90 != 0)
+                throw new PageAssemblyException($"bad rotation '{part}' (use e.g. 2:90,5:-90)", "Err_BadRotateSpec", part);
+            if (pg < 1 || pg > pageCount) throw new PageAssemblyException($"page '{part}' is outside 1-{pageCount}", "Err_RangeOutside", part, pageCount);
+            turns[pg] = deg;
+        }
+        var ranges = string.IsNullOrWhiteSpace(order) ? [(1, pageCount)] : ParseRanges(order, pageCount);
+        return [.. ranges.SelectMany(r => Enumerable.Range(r.From, r.To - r.From + 1))
+                         .Select(p => new PagePick(input, p, turns.GetValueOrDefault(p)))];
     }
 
     /// <summary>
