@@ -119,7 +119,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   Free OFL fonts that work well: Noto Sans JP / SC / TC / KR (static TTF or
   OTF) and BIZ UDGothic.
 - **Tested**: we typed into generated forms through PDFium's own form-filling API
-  (the code path Chrome uses). The text was 王 燁 陳大文 臺北市 홍길동, Éloïse
+  (the code path Chrome uses). The text was 林 燁 陳大文 臺北市 홍길동, Éloïse
   Müller-Straße ç 张伟 and マイナンバー, and every character showed in the
   embedded font. The resource name that makes PDFium use the embedded font is
   explained in `AcroFormWriter.EmbeddedKey`.
@@ -279,7 +279,7 @@ washi ocr scan.pdf --engine ai --yes       # the configured AI model reads the p
   the UTF-16 values, so Japanese, Chinese, Korean and Latin text all copy correctly.
   Rotated pages (`/Rotate`) get the layer where the user sees the text.
 - **Tested**: on an image-only scan of the 扶養控除 form, Vision found 205 lines in about 3 s
-  per page (王燁, the address, the 13-digit company number). Both PDFium and macOS PDFKit
+  per page (the name, the address and the 13-digit company number). Both PDFium and macOS PDFKit
   (Preview) find the text at the right spots.
 
 ## Merge, split and organize
@@ -420,7 +420,7 @@ claude mcp add --transport http washi http://127.0.0.1:PORT/mcp --header "Author
 `washi-mcp --app` starts Washi in the background when it is not running (macOS app bundle) and exits
 with code 3 when the app's MCP server is off.
 
-Then ask, for example: *"Make ~/Documents/forms/application.pdf fillable and fill in my name 王燁"*.
+Then ask, for example: *"Make ~/Documents/forms/application.pdf fillable and fill in my name 林燁"*.
 The agent calls `pdf_info` → `make_fillable` → `list_fields` → `fill_fields` → `render_page` to check.
 
 ### AI & MCP access (desktop app)

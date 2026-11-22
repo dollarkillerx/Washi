@@ -85,7 +85,7 @@ public sealed class OcrTests : IDisposable
     {
         var scan = Path.Combine(_dir, "scan.pdf");
         MakeScan(scan);
-        var engine = new FakeOcrEngine(("Washi 王燁 2026", 40, 76, 240, 104));
+        var engine = new FakeOcrEngine(("Washi 林燁 2026", 40, 76, 240, 104));
         var output = Path.Combine(_dir, "out.pdf");
 
         Assert.Equal([1], OcrPipeline.Plan(scan));
@@ -93,7 +93,7 @@ public sealed class OcrTests : IDisposable
 
         Assert.Equal(1, r.Recognized);
         Assert.Equal(output, r.Output);
-        using (var d = PdfiumDocument.Open(output)) Assert.Equal("Washi 王燁 2026", d.GetPageText(0).Trim());
+        using (var d = PdfiumDocument.Open(output)) Assert.Equal("Washi 林燁 2026", d.GetPageText(0).Trim());
         var chars = Chars(output).Where(c => c.Text.Trim().Length > 0).ToList();
         Assert.InRange(chars.First().Rect.X0, 38, 42);
         Assert.InRange(chars.Last().Rect.X1, 236, 242);
@@ -185,11 +185,11 @@ public sealed class OcrTests : IDisposable
             level	page_num	block_num	par_num	line_num	word_num	left	top	width	height	conf	text
             5	1	1	1	1	1	10	20	30	12	96	Hello
             5	1	1	1	1	2	45	20	40	12	90	world
-            5	1	1	1	2	1	10	40	12	12	80	王
+            5	1	1	1	2	1	10	40	12	12	80	林
             5	1	1	1	2	2	22	40	12	12	70	燁
             """;
         var lines = TesseractOcr.ParseTsv(tsv.Replace("\r", ""), cjk: true);
-        Assert.Equal(["Hello world", "王燁"], lines.Select(l => l.Text));
+        Assert.Equal(["Hello world", "林燁"], lines.Select(l => l.Text));
         Assert.Equal(new PdfRect(10, 20, 85, 32), lines[0].Box);
     }
 
@@ -221,7 +221,7 @@ public class AiOcrTests
             {
                 lines = new object[]
                 {
-                    new { text = "王 燁", box = new[] { 100, 200, 300, 250 } },
+                    new { text = "林 燁", box = new[] { 100, 200, 300, 250 } },
                     new { text = "", box = new[] { 0, 0, 10, 10 } },          // empty: dropped
                     new { text = "bad box", box = new[] { 1, 2, 3 } },        // not 4 numbers: dropped
                 },
@@ -230,7 +230,7 @@ public class AiOcrTests
         var engine = new AiOcrEngine(model);
         var lines = await engine.RecognizeAsync(new OcrImage([0x89, (byte)'P', (byte)'N', (byte)'G'], 2000, 1000), ["ja"]);
         var line = Assert.Single(lines);
-        Assert.Equal("王 燁", line.Text);
+        Assert.Equal("林 燁", line.Text);
         Assert.Equal(new PdfRect(200, 200, 600, 250), line.Box);
         Assert.Equal(3, AiOcrEngine.DescribeOcr(model, 3).PageImages);
     }

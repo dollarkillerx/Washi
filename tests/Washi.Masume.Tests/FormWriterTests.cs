@@ -133,7 +133,7 @@ public sealed class FormWriterTests : IDisposable
         }
         double Size(string ap) => double.Parse(System.Text.RegularExpressions.Regex.Match(ap, @"/KozGo ([\d.]+) Tf").Groups[1].Value,
                                                System.Globalization.CultureInfo.InvariantCulture);
-        var shortAp = Appearance("王 燁");
+        var shortAp = Appearance("林 燁");
         Assert.Equal(14, Size(shortAp));
         Assert.Contains("0.753 0.224 0.169 rg", shortAp);
         int many = (int)(text.Rect.Width / 6);                              // needs about 6 pt to fit: under 14, over the 4 pt floor
