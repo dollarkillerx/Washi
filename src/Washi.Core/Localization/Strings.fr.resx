@@ -384,6 +384,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_RangeOutside" xml:space="preserve"><value>La plage de pages {0} sort de 1-{1}.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>« {0} » n’est pas une plage de pages (p. ex. 1-3,5).</value></data>
   <data name="Err_NoSignature" xml:space="preserve"><value>Il n’y a aucune signature à placer.</value></data>
+  <data name="Err_NoComment" xml:space="preserve"><value>Il n’y a aucun commentaire à ajouter.</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>Il n’y a aucune page à écrire.</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>Une rotation de {0}° n’est pas un multiple de 90.</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>« {0} » n’est pas une rotation (p. ex. 2:90,5:-90).</value></data>
@@ -426,6 +427,32 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_SignDrawFirst" xml:space="preserve"><value>Dessinez d’abord votre signature dans le panneau.</value></data>
   <data name="Ui_SignRun" xml:space="preserve"><value>Enregistrer la copie signée…</value></data>
   <data name="Ui_Signed" xml:space="preserve"><value>{0} enregistré avec {1} signature(s).</value></data>
+  <data name="Ui_ToolComment" xml:space="preserve"><value>Commenter</value></data>
+  <data name="Ui_CommentTitle" xml:space="preserve"><value>Commenter</value></data>
+  <data name="Ui_CommentLead" xml:space="preserve"><value>Marquez du texte, ajoutez des notes, zones de texte, traits ou cadres, puis enregistrez une copie. Ce sont des annotations PDF standard, visibles dans tout lecteur.</value></data>
+  <data name="Comment_Highlight" xml:space="preserve"><value>Surligner</value></data>
+  <data name="Comment_Underline" xml:space="preserve"><value>Souligner</value></data>
+  <data name="Comment_StrikeOut" xml:space="preserve"><value>Barrer</value></data>
+  <data name="Comment_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Comment_TextBox" xml:space="preserve"><value>Zone de texte</value></data>
+  <data name="Comment_Pen" xml:space="preserve"><value>Crayon</value></data>
+  <data name="Comment_Box" xml:space="preserve"><value>Cadre</value></data>
+  <data name="Ui_CommentHintHighlight" xml:space="preserve"><value>Faites glisser sur le texte à surligner.</value></data>
+  <data name="Ui_CommentHintUnderline" xml:space="preserve"><value>Faites glisser sur le texte à souligner.</value></data>
+  <data name="Ui_CommentHintStrikeOut" xml:space="preserve"><value>Faites glisser sur le texte à barrer.</value></data>
+  <data name="Ui_CommentHintNote" xml:space="preserve"><value>Saisissez la note ci-dessous, puis cliquez à l’endroit voulu.</value></data>
+  <data name="Ui_CommentHintTextBox" xml:space="preserve"><value>Saisissez le texte ci-dessous, puis tracez un cadre (ou cliquez) sur la page.</value></data>
+  <data name="Ui_CommentHintPen" xml:space="preserve"><value>Dessinez sur la page.</value></data>
+  <data name="Ui_CommentHintBox" xml:space="preserve"><value>Tracez un cadre sur la page.</value></data>
+  <data name="Ui_CommentText" xml:space="preserve"><value>Texte</value></data>
+  <data name="Ui_CommentAuthor" xml:space="preserve"><value>Auteur (facultatif)</value></data>
+  <data name="Ui_CommentNew" xml:space="preserve"><value>Nouveaux commentaires</value></data>
+  <data name="Ui_CommentExisting" xml:space="preserve"><value>Déjà dans le fichier</value></data>
+  <data name="Ui_CommentItem" xml:space="preserve"><value>{0} · page {1}</value></data>
+  <data name="Ui_CommentNoText" xml:space="preserve"><value>Il n’y a pas de texte sous ce cadre.</value></data>
+  <data name="Ui_CommentTypeFirst" xml:space="preserve"><value>Saisissez d’abord le texte.</value></data>
+  <data name="Ui_CommentRun" xml:space="preserve"><value>Enregistrer avec les commentaires…</value></data>
+  <data name="Ui_Commented" xml:space="preserve"><value>{0} enregistré avec {1} commentaire(s).</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>Appliquer à tous les champs</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>Taille, couleur et police appliquées à {0} champ(s).</value></data>
 </root>

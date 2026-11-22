@@ -39,6 +39,7 @@ public sealed class FieldCanvas : Control
     private (bool Left, bool Top) _corner; // which corner is being dragged
     private FieldViewModel? _dragged;
     private PdfRect? _eraseBox;           // the erase box being drawn, page points
+    private List<(double X, double Y)>? _penStroke;   // the comment pen's stroke being drawn, page points
 
     static FieldCanvas()
     {
@@ -64,6 +65,7 @@ public sealed class FieldCanvas : Control
         vm.PropertyChanged += OnEditorChanged;
         vm.Erase.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
+        vm.Comment.Changed += InvalidateVisual;
         vm.Fields.CollectionChanged += OnFieldsChanged;
         foreach (var f in vm.Fields) f.PropertyChanged += OnFieldChanged;
     }
@@ -73,6 +75,7 @@ public sealed class FieldCanvas : Control
         vm.PropertyChanged -= OnEditorChanged;
         vm.Erase.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
+        vm.Comment.Changed -= InvalidateVisual;
         vm.Fields.CollectionChanged -= OnFieldsChanged;
         foreach (var f in vm.Fields) f.PropertyChanged -= OnFieldChanged;
     }
@@ -130,6 +133,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsSignTool: true } sg)
         {
             RenderSign(ctx, sg);
+            return;
+        }
+        if (Editor is { IsCommentTool: true } cm)
+        {
+            RenderComments(ctx, cm);
             return;
         }
         var selected = Editor?.SelectedField;
@@ -373,13 +381,86 @@ public sealed class FieldCanvas : Control
         }
     }
 
+    /// <summary>Comment tool: the comments added so far, roughly as viewers will show them, and what is being drawn.</summary>
+    private void RenderComments(DrawingContext ctx, MainViewModel vm)
+    {
+        int page = vm.PageIndex;
+        static Color C(string hex) => Color.Parse(hex);
+        foreach (var spec in vm.Comment.Pending.Select(p => p.Spec).Where(s => s.Page == page))
+        {
+            var col = C(spec.Color.Length > 0 ? spec.Color : Washi.Core.Pages.PdfComments.DefaultColor(spec.Kind));
+            switch (spec.Kind)
+            {
+                case Washi.Core.Pages.CommentKind.Highlight:
+                    foreach (var l in spec.Lines ?? [spec.Rect]) ctx.DrawRectangle(new SolidColorBrush(col, 0.45), null, Screen(l));
+                    break;
+                case Washi.Core.Pages.CommentKind.Underline or Washi.Core.Pages.CommentKind.StrikeOut:
+                    foreach (var l in spec.Lines ?? [spec.Rect])
+                    {
+                        var r = Screen(l);
+                        double y = r.Y + r.Height * (spec.Kind == Washi.Core.Pages.CommentKind.Underline ? 0.92 : 0.55);
+                        ctx.DrawLine(new Pen(new SolidColorBrush(col), Math.Max(1, r.Height * 0.07)), new Point(r.X, y), new Point(r.Right, y));
+                    }
+                    break;
+                case Washi.Core.Pages.CommentKind.Note:
+                {
+                    var r = Screen(spec.Rect);
+                    ctx.DrawRectangle(new SolidColorBrush(col), new Pen(Brushes.DimGray, 1), r, 2, 2);
+                    break;
+                }
+                case Washi.Core.Pages.CommentKind.TextBox:
+                {
+                    var r = Screen(spec.Rect);
+                    ctx.DrawRectangle(null, new Pen(new SolidColorBrush(col, 0.35), 1, new DashStyle([3, 2], 0)), r);
+                    var t = new FormattedText(spec.Text, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface("Inter"),
+                                              Math.Clamp(Math.Min(12, spec.Rect.Height - 4), 6, 12) * Zoom, new SolidColorBrush(col))
+                    { MaxTextWidth = Math.Max(1, r.Width - 4 * Zoom), MaxTextHeight = Math.Max(1, r.Height - 2 * Zoom) };
+                    ctx.DrawText(t, new Point(r.X + 2 * Zoom, r.Y + 2 * Zoom));
+                    break;
+                }
+                case Washi.Core.Pages.CommentKind.Pen:
+                    foreach (var stroke in spec.Strokes ?? []) DrawStroke(ctx, stroke, col);
+                    break;
+                default:
+                    ctx.DrawRectangle(null, new Pen(new SolidColorBrush(col), 1.5 * Zoom), Screen(spec.Rect));
+                    break;
+            }
+        }
+        if (_penStroke is { } live) DrawStroke(ctx, live, C(Washi.Core.Pages.PdfComments.DefaultColor(Washi.Core.Pages.CommentKind.Pen)));
+        if (_eraseBox is { } drawing)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1, new DashStyle([5, 3], 0)), Screen(drawing));
+    }
+
+    private void DrawStroke(DrawingContext ctx, IReadOnlyList<(double X, double Y)> pts, Color col)
+    {
+        if (pts.Count == 0) return;
+        var g = new StreamGeometry();
+        using (var c = g.Open())
+        {
+            c.BeginFigure(new Point(pts[0].X * Zoom, pts[0].Y * Zoom), false);
+            foreach (var p in pts.Skip(1)) c.LineTo(new Point(p.X * Zoom, p.Y * Zoom));
+            if (pts.Count == 1) c.LineTo(new Point(pts[0].X * Zoom + 0.5, pts[0].Y * Zoom));
+            c.EndFigure(false);
+        }
+        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(col), 1.5 * Zoom, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), g);
+    }
+
     private static PdfRect Normal(Point a, Point b) =>
         new(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsSignTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Editor is { HasDocument: true, IsCommentTool: true } cv && cv.Comment.Mode == Washi.Core.Pages.CommentKind.Pen
+            && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            var p0 = ToPage(e.GetPosition(this));
+            _penStroke = [(p0.X, p0.Y)];
+            e.Pointer.Capture(this);
+            e.Handled = true;
+            return;
+        }
+        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsSignTool || ev.IsCommentTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _start = ToPage(e.GetPosition(this));
             _eraseBox = Normal(_start, _start);
@@ -435,6 +516,14 @@ public sealed class FieldCanvas : Control
     {
         base.OnPointerMoved(e);
         var screen = e.GetPosition(this);
+        if (_penStroke is { } stroke)
+        {
+            var p1 = ToPage(screen);
+            var last = stroke[^1];
+            if (Math.Abs(p1.X - last.X) + Math.Abs(p1.Y - last.Y) >= 0.75) { stroke.Add((p1.X, p1.Y)); InvalidateVisual(); }
+            e.Handled = true;
+            return;
+        }
         if (_eraseBox is not null)
         {
             _eraseBox = Normal(_start, ToPage(screen));
@@ -467,6 +556,22 @@ public sealed class FieldCanvas : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+        if (_penStroke is { } done)
+        {
+            _penStroke = null;
+            e.Pointer.Capture(null);
+            Editor?.Comment.AddStroke(done);
+            InvalidateVisual();
+            return;
+        }
+        if (_eraseBox is { } cbox && Editor is { IsCommentTool: true } cvm)
+        {
+            _eraseBox = null;
+            e.Pointer.Capture(null);
+            _ = cvm.Comment.PlaceAsync(cbox);    // a click is a tiny box: a note goes there
+            InvalidateVisual();
+            return;
+        }
         if (_eraseBox is { } box)
         {
             _eraseBox = null;
@@ -507,7 +612,7 @@ public sealed class FieldCanvas : Control
             type = over.Kind is FieldKind.Checkbox or FieldKind.Radio or FieldKind.Choice ? StandardCursorType.Hand
                  : over.Kind == FieldKind.Signature ? StandardCursorType.Arrow : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
-        else if (vm.DrawMode || vm.IsEraseTool || vm.IsSignTool) type = StandardCursorType.Cross;
+        else if (vm.DrawMode || vm.IsEraseTool || vm.IsSignTool || vm.IsCommentTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
     }

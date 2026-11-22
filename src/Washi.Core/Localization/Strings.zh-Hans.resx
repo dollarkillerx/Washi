@@ -384,6 +384,7 @@
   <data name="Err_RangeOutside" xml:space="preserve"><value>页码范围 {0} 超出了 1-{1}。</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>“{0}”不是有效的页码范围（例如 1-3,5）。</value></data>
   <data name="Err_NoSignature" xml:space="preserve"><value>没有要放置的签名。</value></data>
+  <data name="Err_NoComment" xml:space="preserve"><value>没有要添加的批注。</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>没有要写入的页面。</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>旋转 {0}° 不是 90 的倍数。</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>“{0}”不是有效的旋转设置（例如 2:90,5:-90）。</value></data>
@@ -426,6 +427,32 @@
   <data name="Ui_SignDrawFirst" xml:space="preserve"><value>请先在面板里签名。</value></data>
   <data name="Ui_SignRun" xml:space="preserve"><value>保存已签名的副本…</value></data>
   <data name="Ui_Signed" xml:space="preserve"><value>已保存 {0}（{1} 处签名）。</value></data>
+  <data name="Ui_ToolComment" xml:space="preserve"><value>批注</value></data>
+  <data name="Ui_CommentTitle" xml:space="preserve"><value>添加批注</value></data>
+  <data name="Ui_CommentLead" xml:space="preserve"><value>标记文字，添加便签、文本框、画笔或方框，然后另存一份。批注是标准 PDF 注释，任何阅读器都能显示。</value></data>
+  <data name="Comment_Highlight" xml:space="preserve"><value>高亮</value></data>
+  <data name="Comment_Underline" xml:space="preserve"><value>下划线</value></data>
+  <data name="Comment_StrikeOut" xml:space="preserve"><value>删除线</value></data>
+  <data name="Comment_Note" xml:space="preserve"><value>便签</value></data>
+  <data name="Comment_TextBox" xml:space="preserve"><value>文本框</value></data>
+  <data name="Comment_Pen" xml:space="preserve"><value>画笔</value></data>
+  <data name="Comment_Box" xml:space="preserve"><value>方框</value></data>
+  <data name="Ui_CommentHintHighlight" xml:space="preserve"><value>在要高亮的文字上拖动。</value></data>
+  <data name="Ui_CommentHintUnderline" xml:space="preserve"><value>在要加下划线的文字上拖动。</value></data>
+  <data name="Ui_CommentHintStrikeOut" xml:space="preserve"><value>在要划掉的文字上拖动。</value></data>
+  <data name="Ui_CommentHintNote" xml:space="preserve"><value>先在下面输入便签内容，再点击要放的位置。</value></data>
+  <data name="Ui_CommentHintTextBox" xml:space="preserve"><value>先在下面输入文字，再在页面上拖一个框（或点击）。</value></data>
+  <data name="Ui_CommentHintPen" xml:space="preserve"><value>在页面上画。</value></data>
+  <data name="Ui_CommentHintBox" xml:space="preserve"><value>在页面上拖一个框。</value></data>
+  <data name="Ui_CommentText" xml:space="preserve"><value>文字</value></data>
+  <data name="Ui_CommentAuthor" xml:space="preserve"><value>作者（可选）</value></data>
+  <data name="Ui_CommentNew" xml:space="preserve"><value>新批注</value></data>
+  <data name="Ui_CommentExisting" xml:space="preserve"><value>文件里已有的批注</value></data>
+  <data name="Ui_CommentItem" xml:space="preserve"><value>{0} · 第 {1} 页</value></data>
+  <data name="Ui_CommentNoText" xml:space="preserve"><value>这个框下面没有文字。</value></data>
+  <data name="Ui_CommentTypeFirst" xml:space="preserve"><value>请先输入文字。</value></data>
+  <data name="Ui_CommentRun" xml:space="preserve"><value>保存带批注的副本…</value></data>
+  <data name="Ui_Commented" xml:space="preserve"><value>已保存 {0}（{1} 条批注）。</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>应用到所有栏位</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>已把字号、颜色和字体应用到 {0} 个栏位。</value></data>
 </root>

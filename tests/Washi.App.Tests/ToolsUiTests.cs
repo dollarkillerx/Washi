@@ -199,6 +199,78 @@ public sealed class ToolsUiTests : IDisposable
         Assert.False(File.Exists(store));
     }
 
+    /// <summary>A 600 × 400 page with one line of real (Helvetica) text at the top: "Please check this sentence".</summary>
+    private string TextPdf(string name)
+    {
+        static byte[] A(string t) => System.Text.Encoding.ASCII.GetBytes(t);
+        const string content = "BT /F1 14 Tf 40 340 Td (Please check this sentence) Tj ET";
+        var objects = new[]
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 400] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+            $"<< /Length {content.Length} >>\nstream\n{content}\nendstream",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        };
+        using var ms = new MemoryStream();
+        ms.Write(A("%PDF-1.7\n"));
+        var offsets = new List<long>();
+        for (int i = 0; i < objects.Length; i++) { offsets.Add(ms.Position); ms.Write(A($"{i + 1} 0 obj\n{objects[i]}\nendobj\n")); }
+        long xref = ms.Position;
+        var sb = new System.Text.StringBuilder($"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        foreach (var o in offsets) sb.Append($"{o:D10} 00000 n \n");
+        sb.Append($"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        ms.Write(A(sb.ToString()));
+        var path = Path.Combine(_dir, name);
+        File.WriteAllBytes(path, ms.ToArray());
+        return path;
+    }
+
+    [AvaloniaFact]
+    public async Task Comment_tool_marks_text_adds_notes_boxes_and_ink_then_saves_them_as_annotations()
+    {
+        var doc = TextPdf("text.pdf");
+        var output = Path.Combine(_dir, "text_commented.pdf");
+        var (_, vm) = await Open(doc, new FakeDialogs { SavePdf = output });
+        var c = vm.Comment;
+        vm.ActiveTool = Tool.Comment;
+        await c.PrepareAsync();
+        Assert.Empty(c.Existing);
+
+        // highlight: drag over the text line (upright y ≈ 46-60); an empty area gives a message, not a comment
+        await c.PlaceAsync(new PdfRect(30, 300, 300, 350));
+        Assert.Empty(c.Pending);
+        await c.PlaceAsync(new PdfRect(30, 35, 400, 70));
+        var hl = Assert.Single(c.Pending).Spec;
+        Assert.Equal(Washi.Core.Pages.CommentKind.Highlight, hl.Kind);
+        Assert.Single(hl.Lines!);
+
+        c.Mode = Washi.Core.Pages.CommentKind.Note;
+        Assert.True(c.NeedsText);
+        await c.PlaceAsync(new PdfRect(450, 40, 451, 41));   // no text typed yet: nothing added
+        Assert.Single(c.Pending);
+        c.Draft = "要確認";
+        await c.PlaceAsync(new PdfRect(450, 40, 451, 41));
+        Assert.Equal("", c.Draft);                          // ready for the next one
+
+        c.Mode = Washi.Core.Pages.CommentKind.TextBox;
+        c.Draft = "OK";
+        await c.PlaceAsync(new PdfRect(40, 100, 200, 140));
+        c.Mode = Washi.Core.Pages.CommentKind.Pen;
+        c.AddStroke([(40.0, 200.0), (80.0, 240.0), (120.0, 200.0)]);
+        c.Mode = Washi.Core.Pages.CommentKind.Box;
+        await c.PlaceAsync(new PdfRect(300, 200, 500, 300));
+        Assert.Equal(5, c.Pending.Count);
+        c.RemovePendingCommand.Execute(c.Pending[^1]);
+        Assert.Equal(4, c.Pending.Count);
+
+        await c.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(output, vm.PdfPath);
+        Assert.Empty(c.Pending);
+        Assert.Equal(["Highlight", "Text", "FreeText", "Ink"], c.Existing.Select(e => e.Info.Type));
+        Assert.Equal("要確認", c.Existing[1].Info.Text);
+    }
+
     /// <summary>A UI context that has stopped: posted continuations never run (a closed app, an ended headless test).</summary>
     private sealed class StoppedContext : SynchronizationContext
     {

@@ -384,6 +384,7 @@
   <data name="Err_RangeOutside" xml:space="preserve"><value>페이지 범위 {0} 이(가) 1-{1} 밖입니다.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>'{0}' 은(는) 페이지 범위가 아닙니다(예: 1-3,5).</value></data>
   <data name="Err_NoSignature" xml:space="preserve"><value>배치할 서명이 없습니다.</value></data>
+  <data name="Err_NoComment" xml:space="preserve"><value>추가할 주석이 없습니다.</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>저장할 페이지가 없습니다.</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>{0}° 회전은 90의 배수가 아닙니다.</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>'{0}' 은(는) 회전 지정이 아닙니다(예: 2:90,5:-90).</value></data>
@@ -426,6 +427,32 @@
   <data name="Ui_SignDrawFirst" xml:space="preserve"><value>먼저 패널에 서명하세요.</value></data>
   <data name="Ui_SignRun" xml:space="preserve"><value>서명한 사본 저장…</value></data>
   <data name="Ui_Signed" xml:space="preserve"><value>{0} 저장 (서명 {1}개).</value></data>
+  <data name="Ui_ToolComment" xml:space="preserve"><value>주석</value></data>
+  <data name="Ui_CommentTitle" xml:space="preserve"><value>주석 달기</value></data>
+  <data name="Ui_CommentLead" xml:space="preserve"><value>텍스트를 표시하고 메모, 텍스트 상자, 펜, 상자를 추가한 뒤 사본을 저장합니다. 주석은 표준 PDF 주석이라 어떤 뷰어에서나 보입니다.</value></data>
+  <data name="Comment_Highlight" xml:space="preserve"><value>형광펜</value></data>
+  <data name="Comment_Underline" xml:space="preserve"><value>밑줄</value></data>
+  <data name="Comment_StrikeOut" xml:space="preserve"><value>취소선</value></data>
+  <data name="Comment_Note" xml:space="preserve"><value>메모</value></data>
+  <data name="Comment_TextBox" xml:space="preserve"><value>텍스트 상자</value></data>
+  <data name="Comment_Pen" xml:space="preserve"><value>펜</value></data>
+  <data name="Comment_Box" xml:space="preserve"><value>상자</value></data>
+  <data name="Ui_CommentHintHighlight" xml:space="preserve"><value>형광펜을 칠할 텍스트 위로 끄세요.</value></data>
+  <data name="Ui_CommentHintUnderline" xml:space="preserve"><value>밑줄을 그을 텍스트 위로 끄세요.</value></data>
+  <data name="Ui_CommentHintStrikeOut" xml:space="preserve"><value>취소선을 그을 텍스트 위로 끄세요.</value></data>
+  <data name="Ui_CommentHintNote" xml:space="preserve"><value>아래에 메모를 입력한 뒤 둘 곳을 클릭하세요.</value></data>
+  <data name="Ui_CommentHintTextBox" xml:space="preserve"><value>아래에 텍스트를 입력한 뒤 페이지에서 상자를 끌거나 클릭하세요.</value></data>
+  <data name="Ui_CommentHintPen" xml:space="preserve"><value>페이지에 그리세요.</value></data>
+  <data name="Ui_CommentHintBox" xml:space="preserve"><value>페이지에서 상자를 끄세요.</value></data>
+  <data name="Ui_CommentText" xml:space="preserve"><value>텍스트</value></data>
+  <data name="Ui_CommentAuthor" xml:space="preserve"><value>작성자 (선택)</value></data>
+  <data name="Ui_CommentNew" xml:space="preserve"><value>새 주석</value></data>
+  <data name="Ui_CommentExisting" xml:space="preserve"><value>파일에 있는 주석</value></data>
+  <data name="Ui_CommentItem" xml:space="preserve"><value>{0} · {1}페이지</value></data>
+  <data name="Ui_CommentNoText" xml:space="preserve"><value>그 상자 아래에 텍스트가 없습니다.</value></data>
+  <data name="Ui_CommentTypeFirst" xml:space="preserve"><value>먼저 텍스트를 입력하세요.</value></data>
+  <data name="Ui_CommentRun" xml:space="preserve"><value>주석과 함께 저장…</value></data>
+  <data name="Ui_Commented" xml:space="preserve"><value>{0} 저장 (주석 {1}개).</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>모든 입력란에 적용</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>크기, 색, 글꼴을 입력란 {0}개에 적용했습니다.</value></data>
 </root>

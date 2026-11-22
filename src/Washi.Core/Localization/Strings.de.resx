@@ -384,6 +384,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_RangeOutside" xml:space="preserve"><value>Seitenbereich {0} liegt außerhalb von 1-{1}.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>„{0}“ ist kein Seitenbereich (z. B. 1-3,5).</value></data>
   <data name="Err_NoSignature" xml:space="preserve"><value>Es gibt keine Unterschrift zum Platzieren.</value></data>
+  <data name="Err_NoComment" xml:space="preserve"><value>Es gibt keinen Kommentar zum Hinzufügen.</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>Es gibt keine Seiten zum Schreiben.</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>Eine Drehung um {0}° ist kein Vielfaches von 90.</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>„{0}“ ist keine Drehung (z. B. 2:90,5:-90).</value></data>
@@ -426,6 +427,32 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_SignDrawFirst" xml:space="preserve"><value>Zuerst die Unterschrift im Bereich zeichnen.</value></data>
   <data name="Ui_SignRun" xml:space="preserve"><value>Unterschriebene Kopie speichern…</value></data>
   <data name="Ui_Signed" xml:space="preserve"><value>{0} mit {1} Unterschrift(en) gespeichert.</value></data>
+  <data name="Ui_ToolComment" xml:space="preserve"><value>Kommentar</value></data>
+  <data name="Ui_CommentTitle" xml:space="preserve"><value>Kommentieren</value></data>
+  <data name="Ui_CommentLead" xml:space="preserve"><value>Text markieren und Notizen, Textfelder, Stiftstriche oder Rahmen hinzufügen, dann eine Kopie speichern. Kommentare sind normale PDF-Anmerkungen, die jeder Viewer zeigt.</value></data>
+  <data name="Comment_Highlight" xml:space="preserve"><value>Hervorheben</value></data>
+  <data name="Comment_Underline" xml:space="preserve"><value>Unterstreichen</value></data>
+  <data name="Comment_StrikeOut" xml:space="preserve"><value>Durchstreichen</value></data>
+  <data name="Comment_Note" xml:space="preserve"><value>Notiz</value></data>
+  <data name="Comment_TextBox" xml:space="preserve"><value>Textfeld</value></data>
+  <data name="Comment_Pen" xml:space="preserve"><value>Stift</value></data>
+  <data name="Comment_Box" xml:space="preserve"><value>Rahmen</value></data>
+  <data name="Ui_CommentHintHighlight" xml:space="preserve"><value>Über den Text ziehen, der hervorgehoben werden soll.</value></data>
+  <data name="Ui_CommentHintUnderline" xml:space="preserve"><value>Über den Text ziehen, der unterstrichen werden soll.</value></data>
+  <data name="Ui_CommentHintStrikeOut" xml:space="preserve"><value>Über den Text ziehen, der durchgestrichen werden soll.</value></data>
+  <data name="Ui_CommentHintNote" xml:space="preserve"><value>Notiz unten eingeben, dann auf die Stelle klicken.</value></data>
+  <data name="Ui_CommentHintTextBox" xml:space="preserve"><value>Text unten eingeben, dann auf der Seite einen Rahmen ziehen (oder klicken).</value></data>
+  <data name="Ui_CommentHintPen" xml:space="preserve"><value>Auf der Seite zeichnen.</value></data>
+  <data name="Ui_CommentHintBox" xml:space="preserve"><value>Auf der Seite einen Rahmen ziehen.</value></data>
+  <data name="Ui_CommentText" xml:space="preserve"><value>Text</value></data>
+  <data name="Ui_CommentAuthor" xml:space="preserve"><value>Verfasser (optional)</value></data>
+  <data name="Ui_CommentNew" xml:space="preserve"><value>Neue Kommentare</value></data>
+  <data name="Ui_CommentExisting" xml:space="preserve"><value>Bereits in der Datei</value></data>
+  <data name="Ui_CommentItem" xml:space="preserve"><value>{0} · Seite {1}</value></data>
+  <data name="Ui_CommentNoText" xml:space="preserve"><value>Unter diesem Rahmen ist kein Text.</value></data>
+  <data name="Ui_CommentTypeFirst" xml:space="preserve"><value>Zuerst den Text eingeben.</value></data>
+  <data name="Ui_CommentRun" xml:space="preserve"><value>Mit Kommentaren speichern…</value></data>
+  <data name="Ui_Commented" xml:space="preserve"><value>{0} mit {1} Kommentar(en) gespeichert.</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>Für alle Felder übernehmen</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>Größe, Farbe und Schrift auf {0} Feld(er) angewendet.</value></data>
 </root>

@@ -262,6 +262,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsOrganizeTool}" x:Name="OrganizeToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Organize}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolOrganize}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCommentTool}" x:Name="CommentToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Comment}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolComment}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSignTool}" x:Name="SignToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Sign}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSign}" /></StackPanel>
                 </RadioButton>
@@ -549,6 +552,72 @@
                         <TextBlock Classes="note" Text="{l:Tr Ui_OrganizeEmpty}" TextAlignment="Center" VerticalAlignment="Center" Margin="24"
                                    IsVisible="{Binding !HasDocument}" IsHitTestVisible="False" />
                     </Panel>
+                </DockPanel>
+
+                <!-- Comment -->
+                <DockPanel IsVisible="{Binding IsCommentTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <Button Classes="accent primary" Command="{Binding Comment.SaveCommand}" IsEnabled="{Binding Comment.CanSave}" x:Name="CommentSaveButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Comment}" Size="18" />
+                                <TextBlock Text="{l:Tr Ui_CommentRun}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_CommentTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_CommentLead}" />
+                            <ListBox ItemsSource="{x:Static vm:CommentToolViewModel.Modes}" SelectedItem="{Binding Comment.SelectedMode}"
+                                     Margin="0,14,0,0" Background="Transparent" x:Name="CommentModes">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="10,4" />
+                                        <Setter Property="Margin" Value="0,0,6,6" />
+                                        <Setter Property="BorderBrush" Value="{StaticResource RuleBrush}" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                    </Style>
+                                </ListBox.Styles>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CommentMode">
+                                        <TextBlock Text="{Binding Text}" FontSize="12" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Classes="note" Text="{Binding Comment.Hint}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                            <StackPanel IsVisible="{Binding Comment.NeedsText}">
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_CommentText}" />
+                                <TextBox Text="{Binding Comment.Draft}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="56" x:Name="CommentDraftBox" />
+                            </StackPanel>
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_CommentAuthor}" />
+                            <TextBox Text="{Binding Comment.Author}" />
+                            <TextBlock Classes="section" Text="{l:Tr Ui_CommentNew}" IsVisible="{Binding Comment.HasPending}" />
+                            <ItemsControl ItemsSource="{Binding Comment.Pending}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PendingComment">
+                                        <DockPanel Margin="0,2">
+                                            <Button DockPanel.Dock="Right" Padding="5" ToolTip.Tip="{l:Tr Ui_Remove}"
+                                                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).Comment.RemovePendingCommand}" CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Delete}" Size="14" />
+                                            </Button>
+                                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Classes="section" Text="{l:Tr Ui_CommentExisting}" IsVisible="{Binding Comment.Existing.Count}" />
+                            <ItemsControl ItemsSource="{Binding Comment.Existing}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ExistingComment">
+                                        <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
                 </DockPanel>
 
                 <!-- Fill & Sign -->

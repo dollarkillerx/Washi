@@ -281,6 +281,25 @@ public sealed class EditorTests : IDisposable
         Shot(w, "sign");
         File.Delete(store);
 
+        // Comment: a highlight across the top lines, a note, a text box, a pen mark and a box
+        vm.ActiveTool = Tool.Comment;
+        await vm.Comment.PrepareAsync();
+        vm.PageIndex = 0;
+        await vm.Comment.PlaceAsync(new Washi.Core.PdfRect(30, 60, 600, 110));
+        vm.Comment.Mode = Washi.Core.Pages.CommentKind.Note;
+        vm.Comment.Draft = "確認してください";
+        await vm.Comment.PlaceAsync(new Washi.Core.PdfRect(560, 40, 561, 41));
+        vm.Comment.Mode = Washi.Core.Pages.CommentKind.TextBox;
+        vm.Comment.Draft = "Line 1 is missing";
+        await vm.Comment.PlaceAsync(new Washi.Core.PdfRect(330, 140, 520, 170));
+        vm.Comment.Mode = Washi.Core.Pages.CommentKind.Pen;
+        vm.Comment.AddStroke([.. Enumerable.Range(0, 40).Select(i => (60.0 + i * 4, 200.0 + 12 * Math.Sin(i / 4.0)))]);
+        vm.Comment.Mode = Washi.Core.Pages.CommentKind.Box;
+        await vm.Comment.PlaceAsync(new Washi.Core.PdfRect(40, 240, 300, 300));
+        vm.Comment.Mode = Washi.Core.Pages.CommentKind.Highlight;
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "comment");
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

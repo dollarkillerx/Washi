@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Sign, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -60,6 +60,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Split = new SplitToolViewModel(this);
         Organize = new OrganizeToolViewModel(this);
         Sign = new SignToolViewModel(this);
+        Comment = new CommentToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -74,6 +75,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public SplitToolViewModel Split { get; }
     public OrganizeToolViewModel Organize { get; }
     public SignToolViewModel Sign { get; }
+    public CommentToolViewModel Comment { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -134,7 +136,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -151,6 +153,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsSplitTool { get => ActiveTool == Tool.Split; set { if (value) ActiveTool = Tool.Split; } }
     public bool IsOrganizeTool { get => ActiveTool == Tool.Organize; set { if (value) ActiveTool = Tool.Organize; } }
     public bool IsSignTool { get => ActiveTool == Tool.Sign; set { if (value) ActiveTool = Tool.Sign; } }
+    public bool IsCommentTool { get => ActiveTool == Tool.Comment; set { if (value) ActiveTool = Tool.Comment; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -192,6 +195,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Combine) Combine.OfferCurrentDocument();
         if (value == Tool.Organize) Organize.Prepare();
         if (value == Tool.Sign) _ = Sign.PrepareAsync();
+        if (value == Tool.Comment) _ = Comment.PrepareAsync();
     }
 
     private string? _detectedFor;
@@ -394,14 +398,15 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
         Erase.Reset();
-        Organize.Clear();
-        Sign.Reset();                       // a reloaded file (even the same path) starts a fresh page list
+        Organize.Clear();                       // a reloaded file (even the same path) starts fresh in every tool
         Sign.Reset();
+        Comment.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
         else if (ActiveTool == Tool.Organize) Organize.Prepare();
         else if (ActiveTool == Tool.Sign) await Sign.PrepareAsync();
+        else if (ActiveTool == Tool.Comment) await Comment.PrepareAsync();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
@@ -419,6 +424,8 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     {
         Erase.Reset();
         Organize.Clear();
+        Sign.Reset();
+        Comment.Reset();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();
