@@ -29,7 +29,7 @@
   <data name="PagesStraightened" xml:space="preserve"><value>  已將 {0} 個旋轉過的頁面轉正，讓填寫欄方向正確</value></data>
   <data name="Warning" xml:space="preserve"><value>  注意：{0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>無法開啟 {0}：{1}</value></data>
-  <data name="ProtectedPdf" xml:space="preserve"><value>{0} 設有禁止修改的保護（需要擁有者密碼）。Washi 不會解除保護，請向作者索取未加保護的檔案。</value></data>
+  <data name="ProtectedPdf" xml:space="preserve"><value>{0} 有保護：修改需要權限密碼。在「保護」中輸入後可另存無保護的副本，或向作者索取。</value></data>
   <data name="FontEmbedded" xml:space="preserve"><value>  已內嵌字型 {0}（{1} MB），任何閱讀器都能顯示其中所有字元</value></data>
   <data name="FontNotAllowed" xml:space="preserve"><value>{0} 的授權不允許內嵌到可編輯的 PDF 中（OS/2 fsType {1}）。請改用其他字型。</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>無法內嵌 {0}：不支援可變字型，也不支援 TrueType/OpenType 以外的檔案。請使用固定字重的 .ttf、.otf 或 .ttc。</value></data>
@@ -118,7 +118,13 @@
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
-                                          真正刪除框內已印的文字和影像（單位為點，左上角為原點；彩色的表格印刷保留）</value></data>
+                                          真正刪除框內已印的文字和影像（單位為點，左上角為原點；彩色的表格印刷保留）
+  washi pdf protect &lt;in.pdf&gt; -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]
+                                          加上開啟密碼（--open）和/或限制（--allow：仍允許的操作），AES-256；
+                                          密碼會提示輸入，或從 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 讀取
+  washi pdf unlock &lt;in.pdf&gt; -o out.pdf   解除密碼（提示輸入，或 WASHI_PASSWORD）
+  washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
+                                          刪除隱藏資訊（--list 只列出）</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了文字 {1} 段、影像 {2} 個、圖形 {3} 個。檢查：刪除處剩餘文字 {4} 個，其他地方變化的像素 {5} 個。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 頁保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已將 {0} 個檔案合併為 {1}：{2} 頁，{3} 個表單欄位</value></data>
@@ -455,4 +461,62 @@
   <data name="Ui_Commented" xml:space="preserve"><value>已儲存 {0}（{1} 則註解）。</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>套用到所有欄位</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>已把字級、顏色和字體套用到 {0} 個欄位。</value></data>
+  <data name="Ui_ToolProtect" xml:space="preserve"><value>保護</value></data>
+  <data name="Ui_ProtectTitle" xml:space="preserve"><value>保護</value></data>
+  <data name="Ui_ProtectLead" xml:space="preserve"><value>加上密碼、限制讀者能做的操作，或刪除頁面上看不到的資訊。每項操作都會另存一份副本。</value></data>
+  <data name="Ui_ProtectLocked" xml:space="preserve"><value>開啟 {0} 需要密碼。</value></data>
+  <data name="Ui_ProtectPassword" xml:space="preserve"><value>密碼</value></data>
+  <data name="Ui_ProtectOpen" xml:space="preserve"><value>開啟</value></data>
+  <data name="Ui_ProtectOpenNote" xml:space="preserve"><value>密碼只保留在記憶體中，直到關閉 Washi，不會寫入任何地方。</value></data>
+  <data name="Ui_ProtectWrongPassword" xml:space="preserve"><value>密碼不對。</value></data>
+  <data name="Ui_ProtectStateTitle" xml:space="preserve"><value>目前保護</value></data>
+  <data name="Ui_ProtectNone" xml:space="preserve"><value>未加保護：任何人都能開啟、複製和修改。</value></data>
+  <data name="Ui_ProtectStateOpen" xml:space="preserve"><value>開啟需要密碼（{0}）。</value></data>
+  <data name="Ui_ProtectStateRestricted" xml:space="preserve"><value>無需密碼即可開啟，但權限密碼限制了讀者的操作（{0}）。</value></data>
+  <data name="Ui_ProtectNotAllowed" xml:space="preserve"><value>不允許：{0}。</value></data>
+  <data name="Ui_ProtectCurrentPassword" xml:space="preserve"><value>權限密碼（修改或解除時需要）</value></data>
+  <data name="Ui_ProtectRemove" xml:space="preserve"><value>另存為無密碼副本…</value></data>
+  <data name="Ui_ProtectRemoved" xml:space="preserve"><value>已儲存無保護的 {0}。</value></data>
+  <data name="Ui_ProtectAddTitle" xml:space="preserve"><value>加上密碼</value></data>
+  <data name="Ui_ProtectOpenPassword" xml:space="preserve"><value>開啟密碼（選填）</value></data>
+  <data name="Ui_ProtectRestrict" xml:space="preserve"><value>限制列印、複製和修改</value></data>
+  <data name="Ui_ProtectPermissionsPassword" xml:space="preserve"><value>權限密碼</value></data>
+  <data name="Ui_ProtectAllow" xml:space="preserve"><value>允許讀者：</value></data>
+  <data name="Ui_PermPrint" xml:space="preserve"><value>列印</value></data>
+  <data name="Ui_PermCopy" xml:space="preserve"><value>複製文字和影像</value></data>
+  <data name="Ui_PermEdit" xml:space="preserve"><value>修改內容</value></data>
+  <data name="Ui_PermComment" xml:space="preserve"><value>加入註解</value></data>
+  <data name="Ui_PermFill" xml:space="preserve"><value>填寫表單和簽名</value></data>
+  <data name="Ui_PermAssemble" xml:space="preserve"><value>插入、刪除和旋轉頁面</value></data>
+  <data name="Ui_ProtectShow" xml:space="preserve"><value>顯示密碼</value></data>
+  <data name="Ui_ProtectRun" xml:space="preserve"><value>儲存加密副本…</value></data>
+  <data name="Ui_ProtectRunNote" xml:space="preserve"><value>使用 AES-256 加密。忘記開啟密碼將無法復原，請妥善保管。</value></data>
+  <data name="Ui_Protected" xml:space="preserve"><value>已儲存加密副本 {0}。</value></data>
+  <data name="Ui_HiddenTitle" xml:space="preserve"><value>刪除隱藏資訊</value></data>
+  <data name="Ui_HiddenLead" xml:space="preserve"><value>傳送檔案前檢查：頁面以外附帶的資訊。</value></data>
+  <data name="Ui_HiddenNothing" xml:space="preserve"><value>沒有發現隱藏資訊。</value></data>
+  <data name="Ui_HiddenProtected" xml:space="preserve"><value>請先解除密碼，清理副本後再重新加密。</value></data>
+  <data name="Ui_HiddenMetadata" xml:space="preserve"><value>文件內容與中繼資料（{0}）</value></data>
+  <data name="Ui_HiddenAttachments" xml:space="preserve"><value>附件（{0}）</value></data>
+  <data name="Ui_HiddenScripts" xml:space="preserve"><value>指令碼和動作（{0}）</value></data>
+  <data name="Ui_HiddenComments" xml:space="preserve"><value>註解（{0}）</value></data>
+  <data name="Ui_HiddenPrivateData" xml:space="preserve"><value>程式私有資料和縮圖（{0}）</value></data>
+  <data name="Ui_HiddenEarlierVersions" xml:space="preserve"><value>檔案中保留的舊版本（{0}），一律刪除</value></data>
+  <data name="Ui_HiddenRun" xml:space="preserve"><value>儲存清理後的副本…</value></data>
+  <data name="Ui_Cleaned" xml:space="preserve"><value>已儲存 {0}（刪除 {1} 項隱藏資訊）。</value></data>
+  <data name="Err_NeedsPermissionsPassword" xml:space="preserve"><value>{0}：此操作需要權限密碼。</value></data>
+  <data name="Err_NeedsPassword" xml:space="preserve"><value>{0} 有密碼保護。</value></data>
+  <data name="Err_WrongPassword" xml:space="preserve"><value>{0} 的密碼不對。</value></data>
+  <data name="Err_ProtectNoPassword" xml:space="preserve"><value>請輸入開啟密碼、權限密碼，或兩者都輸入。</value></data>
+  <data name="Err_ProtectPermissionsPassword" xml:space="preserve"><value>限制操作需要一個與開啟密碼不同的權限密碼。</value></data>
+  <data name="Err_ProtectCheck" xml:space="preserve"><value>副本未通過檢查，因此沒有保留。</value></data>
+  <data name="Err_NotProtected" xml:space="preserve"><value>{0} 沒有加保護。</value></data>
+  <data name="Err_CleanNothingChosen" xml:space="preserve"><value>請選擇要刪除的內容。</value></data>
+  <data name="Err_CleanProtected" xml:space="preserve"><value>{0} 有保護：請先解除密碼並清理，再重新加密。</value></data>
+  <data name="Err_CleanIncomplete" xml:space="preserve"><value>清理後的副本仍有 {0}，因此沒有保留。</value></data>
+  <data name="Pdf_AskOpenPassword" xml:space="preserve"><value>開啟密碼：</value></data>
+  <data name="Pdf_AskPermissionsPassword" xml:space="preserve"><value>權限密碼：</value></data>
+  <data name="Pdf_AskPassword" xml:space="preserve"><value>{0} 的密碼：</value></data>
+  <data name="Pdf_Protected" xml:space="preserve"><value>已儲存 {0}（AES-256）。</value></data>
+  <data name="Pdf_Unlocked" xml:space="preserve"><value>已儲存無密碼的 {0}。</value></data>
 </root>

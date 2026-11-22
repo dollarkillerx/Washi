@@ -394,7 +394,7 @@ public static class PdfEraser
 
     private static FpdfDocumentT Load(string path)
     {
-        var doc = fpdfview.FPDF_LoadDocument(path, "");
+        var doc = fpdfview.FPDF_LoadDocument(path, PdfPasswords.For(path) ?? "");
         if (doc is null || doc.__Instance == IntPtr.Zero)
             throw new EraseException($"could not open {Path.GetFileName(path)} (PDFium error {fpdfview.FPDF_GetLastError()})", "Err_CannotOpen", Path.GetFileName(path));
         return doc;

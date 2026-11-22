@@ -26,10 +26,21 @@ public sealed class PdfiumDocument : IDisposable
     public static PdfiumDocument Open(string path, string? password = null)
     {
         EnsureInit();
-        var doc = fpdfview.FPDF_LoadDocument(path, password ?? "");
+        var doc = fpdfview.FPDF_LoadDocument(path, password ?? Pages.PdfPasswords.For(path) ?? "");
         if (doc is null || doc.__Instance == IntPtr.Zero)
             throw new IOException($"PDFium could not open '{path}' (error {fpdfview.FPDF_GetLastError()})");
         return new PdfiumDocument(doc);
+    }
+
+    /// <summary>True when <paramref name="path"/> cannot be opened without a password (none, or the remembered one, works).
+    /// Callers hold <see cref="Gate"/>.</summary>
+    public static bool NeedsPassword(string path, string? password = null)
+    {
+        EnsureInit();
+        var doc = fpdfview.FPDF_LoadDocument(path, password ?? Pages.PdfPasswords.For(path) ?? "");
+        if (doc is null || doc.__Instance == IntPtr.Zero) return fpdfview.FPDF_GetLastError() == 4;   // FPDF_ERR_PASSWORD
+        fpdfview.FPDF_CloseDocument(doc);
+        return false;
     }
 
     internal static void EnsureInit()

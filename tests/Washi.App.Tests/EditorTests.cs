@@ -300,6 +300,17 @@ public sealed class EditorTests : IDisposable
         Dispatcher.UIThread.RunJobs();
         Shot(w, "comment");
 
+        // Protect: the panel with limits ticked (nothing is written)
+        vm.Comment.Reset();
+        vm.ActiveTool = Tool.Protect;
+        await vm.Protect.PrepareAsync();
+        vm.Protect.OpenPassword = "example";
+        vm.Protect.Restrict = true;
+        vm.Protect.PermissionsPassword = "example-2";
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "protect");
+        vm.Protect.Reset();
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

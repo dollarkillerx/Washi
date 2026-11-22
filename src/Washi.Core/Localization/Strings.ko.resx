@@ -29,7 +29,7 @@
   <data name="PagesStraightened" xml:space="preserve"><value>  회전된 페이지 {0}개를 입력란이 바로 보이도록 바로잡았습니다</value></data>
   <data name="Warning" xml:space="preserve"><value>  주의: {0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>{0} 을(를) 열 수 없습니다: {1}</value></data>
-  <data name="ProtectedPdf" xml:space="preserve"><value>{0} 은(는) 변경할 수 없도록 보호되어 있습니다 (소유자 암호 필요). Washi 는 보호를 해제하지 않습니다. 작성자에게 보호되지 않은 파일을 요청하세요.</value></data>
+  <data name="ProtectedPdf" xml:space="preserve"><value>{0} 은(는) 보호되어 있습니다. 변경하려면 권한 암호가 필요합니다. '보호'에서 입력하면 보호 없는 사본을 저장할 수 있으며, 모르면 작성자에게 요청하세요.</value></data>
   <data name="FontEmbedded" xml:space="preserve"><value>  글꼴 {0} 을(를) 포함했습니다 ({1} MB). 어떤 뷰어에서도 이 글꼴의 모든 문자를 표시할 수 있습니다</value></data>
   <data name="FontNotAllowed" xml:space="preserve"><value>{0} 의 라이선스는 편집 가능한 PDF 에 포함하는 것을 허용하지 않습니다 (OS/2 fsType {1}). 다른 글꼴을 선택하세요.</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} 을(를) 포함할 수 없습니다. 가변 글꼴과 TrueType/OpenType 이 아닌 파일은 지원하지 않습니다. 고정 굵기의 .ttf, .otf, .ttc 를 사용하세요.</value></data>
@@ -118,7 +118,13 @@
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           스캔한 페이지를 검색 가능하게 (보이지 않는 텍스트 레이어 추가, 페이지 이미지는 그대로)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
-                                          상자 안의 인쇄된 글자·이미지를 실제로 삭제 (포인트 단위, 왼쪽 위 원점; 색상 양식 인쇄는 유지)</value></data>
+                                          상자 안의 인쇄된 글자·이미지를 실제로 삭제 (포인트 단위, 왼쪽 위 원점; 색상 양식 인쇄는 유지)
+  washi pdf protect &lt;in.pdf&gt; -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]
+                                          열기 암호(--open)나 제한(--allow: 허용할 작업)을 추가, AES-256;
+                                          암호는 입력을 요청하거나 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 에서 읽습니다
+  washi pdf unlock &lt;in.pdf&gt; -o out.pdf   암호 해제 (입력 요청 또는 WASHI_PASSWORD)
+  washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
+                                          숨은 정보 삭제 (--list 는 보여주기만)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>파일 {0}개를 {1}(으)로 합쳤습니다: {2}페이지, 입력란 {3}개</value></data>
@@ -455,4 +461,62 @@
   <data name="Ui_Commented" xml:space="preserve"><value>{0} 저장 (주석 {1}개).</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>모든 입력란에 적용</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>크기, 색, 글꼴을 입력란 {0}개에 적용했습니다.</value></data>
+  <data name="Ui_ToolProtect" xml:space="preserve"><value>보호</value></data>
+  <data name="Ui_ProtectTitle" xml:space="preserve"><value>보호</value></data>
+  <data name="Ui_ProtectLead" xml:space="preserve"><value>암호를 추가하거나, 읽는 사람이 할 수 있는 일을 제한하거나, 페이지에 보이지 않는 정보를 삭제합니다. 모두 사본으로 저장됩니다.</value></data>
+  <data name="Ui_ProtectLocked" xml:space="preserve"><value>{0} 을(를) 열려면 암호가 필요합니다.</value></data>
+  <data name="Ui_ProtectPassword" xml:space="preserve"><value>암호</value></data>
+  <data name="Ui_ProtectOpen" xml:space="preserve"><value>열기</value></data>
+  <data name="Ui_ProtectOpenNote" xml:space="preserve"><value>암호는 Washi 를 닫을 때까지 메모리에만 보관되며 저장되지 않습니다.</value></data>
+  <data name="Ui_ProtectWrongPassword" xml:space="preserve"><value>암호가 맞지 않습니다.</value></data>
+  <data name="Ui_ProtectStateTitle" xml:space="preserve"><value>현재 보호</value></data>
+  <data name="Ui_ProtectNone" xml:space="preserve"><value>보호 없음: 누구나 열고 복사하고 변경할 수 있습니다.</value></data>
+  <data name="Ui_ProtectStateOpen" xml:space="preserve"><value>열려면 암호가 필요합니다 ({0}).</value></data>
+  <data name="Ui_ProtectStateRestricted" xml:space="preserve"><value>암호 없이 열리지만 권한 암호로 할 수 있는 일이 제한됩니다 ({0}).</value></data>
+  <data name="Ui_ProtectNotAllowed" xml:space="preserve"><value>허용되지 않음: {0}.</value></data>
+  <data name="Ui_ProtectCurrentPassword" xml:space="preserve"><value>권한 암호 (변경·해제에 필요)</value></data>
+  <data name="Ui_ProtectRemove" xml:space="preserve"><value>암호 없이 저장…</value></data>
+  <data name="Ui_ProtectRemoved" xml:space="preserve"><value>{0} 을(를) 보호 없이 저장했습니다.</value></data>
+  <data name="Ui_ProtectAddTitle" xml:space="preserve"><value>암호 추가</value></data>
+  <data name="Ui_ProtectOpenPassword" xml:space="preserve"><value>열기 암호 (선택)</value></data>
+  <data name="Ui_ProtectRestrict" xml:space="preserve"><value>인쇄·복사·변경 제한</value></data>
+  <data name="Ui_ProtectPermissionsPassword" xml:space="preserve"><value>권한 암호</value></data>
+  <data name="Ui_ProtectAllow" xml:space="preserve"><value>읽는 사람에게 허용:</value></data>
+  <data name="Ui_PermPrint" xml:space="preserve"><value>인쇄</value></data>
+  <data name="Ui_PermCopy" xml:space="preserve"><value>글자와 이미지 복사</value></data>
+  <data name="Ui_PermEdit" xml:space="preserve"><value>내용 변경</value></data>
+  <data name="Ui_PermComment" xml:space="preserve"><value>주석 추가</value></data>
+  <data name="Ui_PermFill" xml:space="preserve"><value>양식 작성과 서명</value></data>
+  <data name="Ui_PermAssemble" xml:space="preserve"><value>페이지 삽입·삭제·회전</value></data>
+  <data name="Ui_ProtectShow" xml:space="preserve"><value>암호 표시</value></data>
+  <data name="Ui_ProtectRun" xml:space="preserve"><value>보호된 사본 저장…</value></data>
+  <data name="Ui_ProtectRunNote" xml:space="preserve"><value>AES-256 으로 암호화합니다. 열기 암호를 잊으면 복구할 수 없으니 잘 보관하세요.</value></data>
+  <data name="Ui_Protected" xml:space="preserve"><value>보호된 사본 {0} 저장.</value></data>
+  <data name="Ui_HiddenTitle" xml:space="preserve"><value>숨은 정보 삭제</value></data>
+  <data name="Ui_HiddenLead" xml:space="preserve"><value>파일을 보내기 전에: 페이지 외에 담긴 정보입니다.</value></data>
+  <data name="Ui_HiddenNothing" xml:space="preserve"><value>숨은 정보가 없습니다.</value></data>
+  <data name="Ui_HiddenProtected" xml:space="preserve"><value>먼저 암호를 해제하고 사본을 정리한 뒤 다시 보호하세요.</value></data>
+  <data name="Ui_HiddenMetadata" xml:space="preserve"><value>문서 속성과 메타데이터 ({0})</value></data>
+  <data name="Ui_HiddenAttachments" xml:space="preserve"><value>첨부 파일 ({0})</value></data>
+  <data name="Ui_HiddenScripts" xml:space="preserve"><value>스크립트와 동작 ({0})</value></data>
+  <data name="Ui_HiddenComments" xml:space="preserve"><value>주석 ({0})</value></data>
+  <data name="Ui_HiddenPrivateData" xml:space="preserve"><value>프로그램 전용 데이터와 미리보기 ({0})</value></data>
+  <data name="Ui_HiddenEarlierVersions" xml:space="preserve"><value>파일에 남은 이전 버전 ({0}), 항상 삭제</value></data>
+  <data name="Ui_HiddenRun" xml:space="preserve"><value>정리한 사본 저장…</value></data>
+  <data name="Ui_Cleaned" xml:space="preserve"><value>{0} 저장 (숨은 정보 {1}개 삭제).</value></data>
+  <data name="Err_NeedsPermissionsPassword" xml:space="preserve"><value>{0}: 이 작업에는 권한 암호가 필요합니다.</value></data>
+  <data name="Err_NeedsPassword" xml:space="preserve"><value>{0} 은(는) 암호로 보호되어 있습니다.</value></data>
+  <data name="Err_WrongPassword" xml:space="preserve"><value>{0} 의 암호가 맞지 않습니다.</value></data>
+  <data name="Err_ProtectNoPassword" xml:space="preserve"><value>열기 암호나 권한 암호(또는 둘 다)를 입력하세요.</value></data>
+  <data name="Err_ProtectPermissionsPassword" xml:space="preserve"><value>제한하려면 열기 암호와 다른 권한 암호가 필요합니다.</value></data>
+  <data name="Err_ProtectCheck" xml:space="preserve"><value>사본 확인에 실패하여 저장하지 않았습니다.</value></data>
+  <data name="Err_NotProtected" xml:space="preserve"><value>{0} 은(는) 보호되어 있지 않습니다.</value></data>
+  <data name="Err_CleanNothingChosen" xml:space="preserve"><value>삭제할 항목을 고르세요.</value></data>
+  <data name="Err_CleanProtected" xml:space="preserve"><value>{0} 은(는) 보호되어 있습니다. 먼저 암호를 해제하고 정리한 뒤 다시 보호하세요.</value></data>
+  <data name="Err_CleanIncomplete" xml:space="preserve"><value>정리한 사본에 {0} 이(가) 남아 있어 저장하지 않았습니다.</value></data>
+  <data name="Pdf_AskOpenPassword" xml:space="preserve"><value>열기 암호:</value></data>
+  <data name="Pdf_AskPermissionsPassword" xml:space="preserve"><value>권한 암호:</value></data>
+  <data name="Pdf_AskPassword" xml:space="preserve"><value>{0} 의 암호:</value></data>
+  <data name="Pdf_Protected" xml:space="preserve"><value>{0} 저장 (AES-256).</value></data>
+  <data name="Pdf_Unlocked" xml:space="preserve"><value>{0} 을(를) 암호 없이 저장했습니다.</value></data>
 </root>
