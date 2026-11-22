@@ -288,6 +288,28 @@ public sealed class PageToolsTests : IDisposable
     }
 
     [Fact]
+    public async Task Comment_tools_add_to_a_new_file_and_list_what_is_there()
+    {
+        var r = await Call("add_comments", new
+        {
+            path = "a.pdf",
+            comments = new object[]
+            {
+                new { page = 1, kind = "note", rect = new[] { 20, 20, 38, 38 }, text = "check", author = "agent" },
+                new { page = 1, kind = "box", rect = new[] { 100, 100, 200, 150 } },
+            },
+        });
+        Assert.False(r.IsError, r.Text);
+        Assert.True(File.Exists(Path.Combine(_root, "a_commented.pdf")));
+        var list = JsonDocument.Parse((await Call("list_comments", new { path = "a_commented.pdf" })).Text).RootElement;
+        Assert.Equal(2, list.GetArrayLength());
+        Assert.Equal("check", list[0].GetProperty("text").GetString());
+        Assert.Contains("needs 'text'", (await Call("add_comments", new { path = "a.pdf", output = "x.pdf", comments = new[] { new { page = 1, kind = "note", rect = new[] { 1, 1, 2, 2 } } } })).Text);
+        Assert.Contains("unknown kind", (await Call("add_comments", new { path = "a.pdf", output = "y.pdf", comments = new[] { new { page = 1, kind = "stamp", rect = new[] { 1, 1, 2, 2 } } } })).Text);
+        Assert.Contains("already exists", (await Call("add_comments", new { path = "a.pdf", comments = new[] { new { page = 1, kind = "box", rect = new[] { 1, 1, 9, 9 } } } })).Text);
+    }
+
+    [Fact]
     public async Task Ocr_tool_reports_text_or_a_clear_error()
     {
         var r = await Call("ocr_pdf", new { path = "scan.pdf", lang = "en" });

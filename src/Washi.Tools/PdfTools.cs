@@ -27,6 +27,8 @@ public static class WashiTools
         .Add(new MergePdfsTool(policy))
         .Add(new SplitPdfTool(policy))
         .Add(new OrganizePagesTool(policy))
+        .Add(new ListCommentsTool(policy))
+        .Add(new AddCommentsTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -508,6 +510,97 @@ public sealed class OrganizePagesTool(PathPolicy p) : PdfTool(p)
         var output = Policy.Output(OptStr(a, "output"), path, "_organized");
         int pages = PageAssembly.Organize(picks, output);
         return new ToolResult(ToJson(new { output, pages, form_fields = AcroFormFields.List(output).Count }));
+    }
+}
+
+public sealed class ListCommentsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_comments";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Review comments (annotations) already in a PDF: type (Highlight, Text = sticky note, FreeText, Ink, Square ...), page " +
+        "(1-based), rect [x0,y0,x1,y1] in points from the top-left of the upright page, text, author, modified date. Form fields and links are not listed.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        return new ToolResult(ToJson(PdfComments.List(path).Select(c => new
+        {
+            type = c.Type, page = c.Page + 1, rect = new[] { c.Rect.X0, c.Rect.Y0, c.Rect.X1, c.Rect.Y1 }.Select(v => Math.Round(v, 1)),
+            text = c.Text, author = c.Author, modified = c.Modified,
+        })));
+    }
+}
+
+public sealed class AddCommentsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "add_comments";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a NEW PDF with review comments added as standard annotations that every viewer shows. Each comment: page (1-based), " +
+        "kind (highlight, underline, strike_out, note, text_box, pen, box), rect [x0,y0,x1,y1] in points from the top-left of the " +
+        "upright page (as extract_text / detect_fields report), text (for note and text_box), optional color \"#RRGGBB\", optional " +
+        "lines (one rect per marked line, for highlight/underline/strike_out; default: rect), optional strokes ([[[x,y],...],...] for pen), " +
+        "optional author. Form fields are kept. Never overwrites: output defaults to <name>_commented.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "comments":{"type":"array","minItems":1,"items":{"type":"object","properties":{
+            "page":{"type":"integer","minimum":1},
+            "kind":{"type":"string","enum":["highlight","underline","strike_out","note","text_box","pen","box"]},
+            "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4},
+            "text":{"type":"string"},
+            "color":{"type":"string"},
+            "lines":{"type":"array","items":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4}},
+            "strokes":{"type":"array","items":{"type":"array","items":{"type":"array","items":{"type":"number"},"minItems":2,"maxItems":2}}},
+            "author":{"type":"string"}},
+            "required":["page","kind","rect"],"additionalProperties":false}},
+          "output":{"type":"string","description":"New PDF path (default: <name>_commented.pdf next to the input)"}},
+         "required":["path","comments"],"additionalProperties":false}
+        """;
+
+    private static PdfRect Rect(JsonElement e)
+    {
+        var v = e.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+        if (v.Length != 4) throw new ToolException("a rect is [x0, y0, x1, y1]");
+        return new PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3]));
+    }
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (!a.TryGetProperty("comments", out var arr) || arr.ValueKind != JsonValueKind.Array || arr.GetArrayLength() == 0)
+            throw new ToolException("'comments' must list at least one comment");
+        var specs = new List<CommentSpec>();
+        foreach (var c in arr.EnumerateArray())
+        {
+            if (!c.TryGetProperty("page", out var pg) || !pg.TryGetInt32(out var page) || page < 1) throw new ToolException("each comment needs a 1-based 'page'");
+            var kind = (c.TryGetProperty("kind", out var k) ? k.GetString() : null) switch
+            {
+                "highlight" => CommentKind.Highlight, "underline" => CommentKind.Underline, "strike_out" => CommentKind.StrikeOut,
+                "note" => CommentKind.Note, "text_box" => CommentKind.TextBox, "pen" => CommentKind.Pen, "box" => CommentKind.Box,
+                var other => throw new ToolException($"unknown kind '{other}'"),
+            };
+            if (!c.TryGetProperty("rect", out var re)) throw new ToolException("each comment needs a 'rect'");
+            var rect = Rect(re);
+            string text = c.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "";
+            if (kind is CommentKind.Note or CommentKind.TextBox && text.Trim().Length == 0) throw new ToolException($"a {kind} needs 'text'");
+            IReadOnlyList<PdfRect>? lines = c.TryGetProperty("lines", out var ls) ? [.. ls.EnumerateArray().Select(Rect)] : null;
+            IReadOnlyList<IReadOnlyList<(double, double)>>? strokes = c.TryGetProperty("strokes", out var st)
+                ? [.. st.EnumerateArray().Select(s => (IReadOnlyList<(double, double)>)[.. s.EnumerateArray().Select(pt => (pt[0].GetDouble(), pt[1].GetDouble()))])]
+                : null;
+            if (kind == CommentKind.Pen && strokes is not { Count: > 0 }) throw new ToolException("a pen comment needs 'strokes'");
+            specs.Add(new CommentSpec(page - 1, kind, rect, text, c.TryGetProperty("color", out var col) ? col.GetString() ?? "" : "",
+                                      lines, strokes, c.TryGetProperty("author", out var au) ? au.GetString() ?? "" : ""));
+        }
+        var output = Policy.Output(OptStr(a, "output"), path, "_commented");
+        int n = PdfComments.Add(path, output, specs);
+        return new ToolResult(ToJson(new { output, comments = n }));
     }
 }
 

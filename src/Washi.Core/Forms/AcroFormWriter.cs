@@ -358,6 +358,15 @@ public static class AcroFormWriter
         return fonts;
     }
 
+    /// <summary>A font object for drawing text of a script (Helvetica for Latin, the script's Gothic CID font
+    /// otherwise; not embedded), added to the document. Codes: WinAnsi bytes for Latin, UTF-16BE for CJK.</summary>
+    internal static PdfDictionary TextFont(PdfDocument doc, FormScript script)
+    {
+        var f = script == FormScript.Latin ? Simple(doc, "Helvetica", withEncoding: true) : Cid(doc, CidSansFonts[script]);
+        doc.Internals.AddObject(f);
+        return f;
+    }
+
     private static PdfDictionary Simple(PdfDocument doc, string baseFont, bool withEncoding)
     {
         var f = new PdfDictionary(doc);

@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Sign, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Comment, Sign, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -175,6 +175,10 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 - **Organize** shows the pages as a grid. Select one or more (⌘/Ctrl or Shift + click) to turn them left or right,
   move them, or remove them (Delete), and insert every page of other PDFs after the selection (button, or drop
   the files). **Save as new PDF** writes the result, keeps the form fields fillable, and opens it.
+- **Comment**: highlight, underline or strike out text (drag over it), add sticky notes (type, then click) and text
+  boxes (type, then drag), draw with a pen, or draw boxes. **Save with comments** writes a copy with standard PDF
+  annotations, each with its own appearance, so every viewer shows them the same way (rotated pages included). The
+  panel also lists the comments the file already has.
 - **Sign** (Fill & Sign): sign once on the pad with a mouse, trackpad or pen. The signature is kept as vector strokes
   in `~/.config/washi/signature.txt` if you tick "Remember" (never sent anywhere; untick to delete it). Drag a box on
   the page, or press **Sign here** next to a signature field, for each place to sign. **Save signed copy** draws the
@@ -385,6 +389,8 @@ There are two ways to run it:
 | `merge_pdfs` | new PDF with the pages of several PDFs; form fields kept | writes a **new** file |
 | `split_pdf` | new PDFs, one per page range | writes **new** files |
 | `organize_pages` | new PDF with the listed pages in order: reorder, drop, rotate, insert pages from other PDFs; form fields kept | writes a **new** file |
+| `list_comments` | review comments already in the PDF: type, page, rect, text, author | no |
+| `add_comments` | new PDF with highlights, underlines, strike-outs, notes, text boxes, pen marks or boxes | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
