@@ -222,7 +222,9 @@ public sealed class ListFieldsTool(PathPolicy p) : PdfTool(p)
     public override ToolRisk Risk => ToolRisk.ReadOnly;
     public override string Description =>
         "Form fields already in a PDF: full name, type (text, checkbox, radio, choice, signature, button), current value, page (1-based), " +
-        "rect [x0,y0,x1,y1] in points from the top-left of the upright page, max_len/comb for boxed digits, options or checkbox states, tooltip. " +
+        "rect [x0,y0,x1,y1] in points from the top-left of the upright page, max_len/comb for boxed digits, options or checkbox states, tooltip, " +
+        "and the form's rules: format (number with decimals and currency, percent, date pattern, mask such as 999-9999), range (min/max) " +
+        "and calc (a sum, product, average, min or max of other fields, which fill_fields works out). 'shown' is the value as displayed. " +
         "Call this before fill_fields to learn the names.";
     protected override string Schema => """
         {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
@@ -247,6 +249,16 @@ public sealed class ListFieldsTool(PathPolicy p) : PdfTool(p)
             read_only = f.ReadOnly ? true : (bool?)null,
             options = f.Options.Count > 0 ? f.Options : null,
             tooltip = f.Tooltip.Length > 0 ? f.Tooltip : null,
+            shown = f.Shown != f.Value ? f.Shown : null,
+            format = f.Logic?.Format is { Kind: not FieldFormatKind.None } fm ? new
+            {
+                kind = fm.Kind.ToString().ToLowerInvariant(),
+                decimals = fm.Kind is FieldFormatKind.Number or FieldFormatKind.Percent ? fm.Decimals : (int?)null,
+                currency = fm.Currency.Length > 0 ? fm.Currency : null,
+                pattern = fm.Pattern.Length > 0 ? fm.Pattern : null,
+            } : null,
+            range = f.Logic?.Range is { } rg ? new { min = rg.Min, max = rg.Max } : null,
+            calc = f.Logic?.Calc is { } cc ? new { op = cc.Op.ToString().ToLowerInvariant(), sources = cc.Sources } : null,
         })));
     }
 }
@@ -323,7 +335,10 @@ public sealed class MakeFillableTool(PathPolicy p) : PdfTool(p)
         "Writes a NEW fillable PDF from a flat one: detects the fields (or uses the given fields.json items) and adds a real AcroForm. " +
         "Rotated pages are straightened. 'lang' picks the font viewers use for typed text (auto reads the page). " +
         "Kinds: text, amount, comb, checkbox, radio (one PDF field per 'group', one button per 'export' option), choice (a drop-down " +
-        "list of 'options') and signature (an empty signature field). " +
+        "list of 'options') and signature (an empty signature field). Typed fields may carry rules that viewers enforce and fill_fields " +
+        "applies: \"format\":{\"kind\":\"number\",\"decimals\":0,\"currency\":\"¥\"} (or percent, date with \"pattern\":\"yyyy/mm/dd\", " +
+        "mask with \"pattern\":\"999-9999\"), \"range\":{\"min\":0,\"max\":100}, \"calc\":{\"op\":\"sum\",\"sources\":[field names]} " +
+        "(op: sum, product, average, min, max). " +
         "Set embed_font to a .ttf/.otf/.ttc to embed it whole, so rare CJK characters (e.g. 燁) show in every viewer; this adds the font's size. " +
         "Never overwrites: output defaults to <name>_fillable.pdf and must not exist.";
     protected override string Schema => """
@@ -381,7 +396,9 @@ public sealed class FillFieldsTool(PathPolicy p) : PdfTool(p)
     public override string Description =>
         "Writes a NEW PDF with form fields filled in. 'values' maps full field names (from list_fields) to values: text as strings, " +
         "checkboxes as true/false, radio groups and choices as one of their options. Washi draws each value itself, so it looks the " +
-        "same in every viewer. Set embed_font to embed a font for characters the form's font lacks. " +
+        "same in every viewer. The form's own rules apply: a value that is not a number, a date or within range is not filled (the note " +
+        "says why), numbers are stored plainly and shown formatted (1234 shows as 1,234), and calculated fields (totals) are worked " +
+        "out from the values. Set embed_font to embed a font for characters the form's font lacks. " +
         "Never overwrites: output defaults to <name>_filled.pdf and must not exist. Check the result with render_page.";
     protected override string Schema => """
         {"type":"object","properties":{

@@ -958,6 +958,10 @@
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Value}" />
                                 <TextBox Text="{Binding SelectedField.Value}" IsVisible="{Binding SelectedField.IsTyped, FallbackValue=False}"
                                          TextWrapping="Wrap" x:Name="FieldValueBox" />
+                                <TextBlock Text="{Binding SelectedField.Error, FallbackValue={x:Null}}" Foreground="#da1e28" FontSize="12" TextWrapping="Wrap"
+                                           IsVisible="{Binding SelectedField.HasError, FallbackValue=False}" x:Name="FieldErrorText" />
+                                <TextBlock Classes="note" Text="{Binding SelectedField.Shown, StringFormat={}→ {0}, FallbackValue={x:Null}}"
+                                           IsVisible="{Binding SelectedField.HasRules, FallbackValue=False}" />
                                 <CheckBox IsChecked="{Binding SelectedField.Ticked}" Content="{l:Tr Ui_Ticked}"
                                           IsVisible="{Binding SelectedField.IsCheckbox, FallbackValue=False}" />
                                 <ComboBox ItemsSource="{Binding SelectedField.OptionList, FallbackValue={x:Null}}" SelectedItem="{Binding SelectedField.Value}"
@@ -1003,6 +1007,45 @@
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_ChoiceOptions}" />
                                 <TextBox Text="{Binding SelectedField.Options}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64"
                                          x:Name="FieldOptionsBox" />
+                            </StackPanel>
+                            <!-- rules: how the value is shown, what it accepts, how it is calculated (Acrobat's field actions) -->
+                            <StackPanel IsVisible="{Binding SelectedField.IsTyped, FallbackValue=False}" x:Name="FieldRulesPanel">
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_FieldFormat}" />
+                                <ComboBox x:Name="FormatBox" ItemsSource="{x:Static vm:MainViewModel.FormatKinds}" HorizontalAlignment="Stretch"
+                                          SelectedValue="{Binding SelectedField.Format}" />
+                                <Grid ColumnDefinitions="*,8,*" IsVisible="{Binding SelectedField.HasNumberFormat, FallbackValue=False}">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_FieldDecimals}" />
+                                        <NumericUpDown Value="{Binding SelectedField.Decimals}" Minimum="0" Maximum="6" Increment="1" FormatString="0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" IsVisible="{Binding SelectedField.IsNumberFormat, FallbackValue=False}">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_FieldCurrency}" />
+                                        <TextBox Text="{Binding SelectedField.Currency}" PlaceholderText="¥" x:Name="FieldCurrencyBox" />
+                                    </StackPanel>
+                                </Grid>
+                                <StackPanel IsVisible="{Binding SelectedField.HasPattern, FallbackValue=False}">
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_FieldPattern}" />
+                                    <TextBox Text="{Binding SelectedField.Pattern}" x:Name="FieldPatternBox" />
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_FieldPatternHint}" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Grid ColumnDefinitions="*,8,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_FieldMin}" />
+                                        <TextBox Text="{Binding SelectedField.RangeMin}" x:Name="FieldMinBox" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_FieldMax}" />
+                                        <TextBox Text="{Binding SelectedField.RangeMax}" x:Name="FieldMaxBox" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_FieldCalc}" />
+                                <ComboBox x:Name="CalcBox" ItemsSource="{x:Static vm:MainViewModel.CalcOps}" HorizontalAlignment="Stretch"
+                                          SelectedValue="{Binding SelectedField.CalcOp}" />
+                                <StackPanel IsVisible="{Binding SelectedField.IsCalculated, FallbackValue=False}">
+                                    <TextBlock Classes="caption" Text="{l:Tr Ui_FieldCalcSources}" />
+                                    <TextBox Text="{Binding SelectedField.CalcSources}" TextWrapping="Wrap" x:Name="FieldCalcSourcesBox" />
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_FieldCalcHint}" TextWrapping="Wrap" />
+                                </StackPanel>
                             </StackPanel>
                             <StackPanel IsVisible="{Binding SelectedField.Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Label}" />

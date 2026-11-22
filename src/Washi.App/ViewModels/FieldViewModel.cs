@@ -41,10 +41,89 @@ public sealed partial class FieldViewModel : ObservableObject
     /// <summary>What the user typed in Preview ("true" for a ticked checkbox or the chosen radio button). Written into the saved PDF.</summary>
     [ObservableProperty] private string _value = "";
 
+    // ------------------------------------------------------------------ rules (typed fields): format, range, calculation
+    /// <summary>"" (none), "number", "percent", "date" or "mask".</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasNumberFormat), nameof(IsNumberFormat), nameof(HasPattern), nameof(HasRules))] private string _format = "";
+    [ObservableProperty] private int _decimals;
+    /// <summary>Number: a currency mark shown before the number ("¥", "$"); empty = none.</summary>
+    [ObservableProperty] private string _currency = "";
+    /// <summary>Date: yyyy/mm/dd and the like; mask: 9 a digit, A a letter ("999-9999").</summary>
+    [ObservableProperty] private string _pattern = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasRules))] private string _rangeMin = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasRules))] private string _rangeMax = "";
+    /// <summary>"" (typed by hand), "sum", "product", "average", "min" or "max" of <see cref="CalcSources"/>.</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsCalculated), nameof(HasRules))] private string _calcOp = "";
+    /// <summary>The names of the fields the calculation uses, separated by commas.</summary>
+    [ObservableProperty] private string _calcSources = "";
+    /// <summary>Why the value does not fit the field's rules (empty when it does).</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasError))] private string _error = "";
+
+    public bool HasNumberFormat => Format is "number" or "percent";
+    public bool IsNumberFormat => Format == "number";
+    public bool HasPattern => Format is "date" or "mask";
+    public bool IsCalculated => CalcOp.Length > 0;
+    public bool HasError => Error.Length > 0;
+    public bool HasRules => Logic is not null;
+
+    partial void OnFormatChanged(string value)
+    {
+        if (value == "date" && !Pattern.Contains('y')) Pattern = "yyyy/mm/dd";
+        if (value == "mask" && Pattern.Contains('y')) Pattern = "999-9999";
+        if (value == "mask" && Pattern.Length == 0) Pattern = "999-9999";
+        Check();
+    }
+    partial void OnDecimalsChanged(int value) => Check();
+    partial void OnCurrencyChanged(string value) => Check();
+    partial void OnPatternChanged(string value) => Check();
+    partial void OnRangeMinChanged(string value) => Check();
+    partial void OnRangeMaxChanged(string value) => Check();
+
+    /// <summary>The rules as the PDF will hold them (null when there are none, or the kind takes none).</summary>
+    public Washi.Core.Forms.FieldLogic? Logic
+    {
+        get
+        {
+            if (Kind is not (FieldKind.Text or FieldKind.Amount or FieldKind.Comb)) return null;
+            var format = Format switch
+            {
+                "number" => new Washi.Core.Forms.FieldFormat(Washi.Core.Forms.FieldFormatKind.Number, Math.Clamp(Decimals, 0, 10), 0, Currency.Trim()),
+                "percent" => new Washi.Core.Forms.FieldFormat(Washi.Core.Forms.FieldFormatKind.Percent, Math.Clamp(Decimals, 0, 10)),
+                "date" => Washi.Core.Forms.FieldFormat.Date(Pattern.Trim().Length > 0 ? Pattern.Trim() : "yyyy/mm/dd"),
+                "mask" when Pattern.Trim().Length > 0 => Washi.Core.Forms.FieldFormat.Mask(Pattern.Trim()),
+                _ => null,
+            };
+            double? min = Washi.Core.Forms.FieldLogic.ParseNumber(RangeMin), max = Washi.Core.Forms.FieldLogic.ParseNumber(RangeMax);
+            var range = min is null && max is null ? null : new Washi.Core.Forms.FieldRange(min, max);
+            var sources = CalcSources.Split([',', '、', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            Washi.Core.Forms.CalcOp? op = CalcOp switch
+            {
+                "sum" => Washi.Core.Forms.CalcOp.Sum, "product" => Washi.Core.Forms.CalcOp.Product, "average" => Washi.Core.Forms.CalcOp.Average,
+                "min" => Washi.Core.Forms.CalcOp.Min, "max" => Washi.Core.Forms.CalcOp.Max, _ => null,
+            };
+            var calc = op is { } o && sources.Length > 0 ? new Washi.Core.Forms.FieldCalc(o, sources) : null;
+            var logic = new Washi.Core.Forms.FieldLogic(format, range, calc);
+            return logic.IsEmpty ? null : logic;
+        }
+    }
+
+    /// <summary>What the field shows: the value as its format writes it ("¥1,200" for "1200"), or as typed when it does not fit.</summary>
+    public string Shown => Logic is { } l && l.Accept(Value) is { Error: null, Value: { } stored } ? l.Display(stored) : Value;
+
+    /// <summary>Checks the value against the rules (the message is in the UI language).</summary>
+    public void Check()
+    {
+        Error = Logic is { } l && Value.Length > 0 && l.Accept(Value) is { Error: not null } r
+            ? L.F(r.Key!, Value, l.Format?.Pattern ?? "", l.Range is { } rg ? Washi.Core.Forms.FieldLogic.RangeText(rg) : "")
+            : "";
+        OnPropertyChanged(nameof(Shown));
+        OnPropertyChanged(nameof(HasRules));
+    }
+
     public bool IsChecked => Value == "true";
 
     partial void OnValueChanged(string value)
     {
+        Check();
         OnPropertyChanged(nameof(IsChecked));
         OnPropertyChanged(nameof(HasValue));
         OnPropertyChanged(nameof(Display));
@@ -148,6 +227,15 @@ public sealed partial class FieldViewModel : ObservableObject
         Name = f.Name, MaxLen = f.MaxLen, Align = f.Align, Label = f.Label, Prefilled = f.Prefilled,
         FontSize = f.FontSize, Color = f.Color, Font = f.Font,
         Group = f.Group, Export = f.Export, Options = string.Join("\n", f.Options),
+        Format = f.Format?.Kind switch
+        {
+            Washi.Core.Forms.FieldFormatKind.Number => "number", Washi.Core.Forms.FieldFormatKind.Percent => "percent",
+            Washi.Core.Forms.FieldFormatKind.Date => "date", Washi.Core.Forms.FieldFormatKind.Mask => "mask", _ => "",
+        },
+        Decimals = f.Format?.Decimals ?? 0, Currency = f.Format?.Currency ?? "", Pattern = f.Format?.Pattern ?? "",
+        RangeMin = f.Range?.Min is { } mn ? Washi.Core.Forms.FieldLogic.RangeText(new(mn, null))[2..] : "",
+        RangeMax = f.Range?.Max is { } mx ? Washi.Core.Forms.FieldLogic.RangeText(new(null, mx))[2..] : "",
+        CalcOp = f.Calc?.Op.ToString().ToLowerInvariant() ?? "", CalcSources = f.Calc is { } c ? string.Join(", ", c.Sources) : "",
     };
 
     public DetectedField ToDetected() => new()
@@ -156,5 +244,6 @@ public sealed partial class FieldViewModel : ObservableObject
         Align = Align, Label = Label, Prefilled = Prefilled, FontSize = FontSize, Color = Color, Font = Font,
         Group = Kind == FieldKind.Radio ? Group : "", Export = Kind == FieldKind.Radio ? Export : "",
         Options = Kind == FieldKind.Choice ? OptionList : [],
+        Format = Logic?.Format, Range = Logic?.Range, Calc = Logic?.Calc,
     };
 }

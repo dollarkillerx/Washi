@@ -193,6 +193,63 @@ public sealed class EditorTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Fields_with_rules_format_check_and_add_up_in_preview_and_in_the_saved_pdf()
+    {
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "rules.pdf"), SaveJson = Path.Combine(_dir, "rules.json"), OpenJson = Path.Combine(_dir, "rules.json") };
+        var (w, vm, _) = await Open(FlatForm(), dialogs);
+        vm.Fields.Clear();
+        FieldViewModel Amount(string name, double y)
+        {
+            var f = vm.AddField(new Washi.Core.PdfRect(40, y, 240, y + 20), 0);
+            f.Kind = FieldKind.Amount;
+            f.Name = name;
+            f.Format = "number";
+            f.Currency = "¥";
+            f.RangeMin = "0";
+            return f;
+        }
+        var a = Amount("a", 40);
+        var b = Amount("b", 70);
+        var total = Amount("total", 100);
+        total.CalcOp = "sum";
+        total.CalcSources = "a, b";
+        var date = vm.AddField(new Washi.Core.PdfRect(40, 130, 240, 150), 0);
+        date.Name = "date";
+        date.Format = "date";
+        Assert.Equal("yyyy/mm/dd", date.Pattern);
+
+        vm.SelectedField = a;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<StackPanel>("FieldRulesPanel")!.IsVisible);
+
+        a.Value = "1,200";
+        b.Value = "３００";
+        Assert.Equal("1500", total.Value);                // worked out as soon as the values are typed
+        Assert.Equal("¥1,500", total.Shown);
+        Assert.Equal("¥1,200", a.Shown);
+        b.Value = "-3";
+        Assert.True(b.HasError);                           // below the minimum
+        Assert.Equal("1197", total.Value);                 // still added (as a viewer would before it refuses it)
+        b.Value = "300";
+        Assert.False(b.HasError);
+        date.Value = "令和8年11月22日";
+        Assert.Equal("2026/11/22", date.Shown);
+        date.Value = "soon";
+        Assert.True(date.HasError);
+        date.Value = "2026-11-22";
+
+        // the rules survive fields.json and go into the PDF, with the values stored as Acrobat keeps them
+        await vm.SaveFieldsCommand.ExecuteAsync(null);
+        Assert.Contains("\"calc\"", File.ReadAllText(dialogs.SaveJson!));
+        await vm.MakeFillableCommand.ExecuteAsync(null);
+        var written = AcroFormFields.List(dialogs.SavePdf!).ToDictionary(f => f.Name);
+        Assert.Equal(("1200", "¥1,200"), (written["a"].Value, written["a"].Shown));
+        Assert.Equal(("1500", "¥1,500"), (written["total"].Value, written["total"].Shown));
+        Assert.Equal(["a", "b"], written["total"].Logic!.Calc!.Sources);
+        Assert.Equal("2026/11/22", written["date"].Value);
+    }
+
+    [AvaloniaFact]
     public async Task Changing_the_type_in_the_panel_updates_the_field()
     {
         var (_, vm, _) = await Open(FlatForm());
@@ -243,6 +300,22 @@ public sealed class EditorTests : IDisposable
         if (combs.Count > 1) { vm.ActivateField(combs[1]); Dispatcher.UIThread.RunJobs(); w.FindControl<TextBox>("FieldEditor")!.Text = "4020"; }
         Shot(w, "preview");
         vm.PreviewMode = false;
+
+        // rules: an amount shown as yen, worked out from two others
+        var amounts = vm.PageFields.Where(f => f.Kind is FieldKind.Text or FieldKind.Amount).Take(3).ToList();
+        if (amounts.Count == 3)
+        {
+            amounts[0].Format = amounts[1].Format = amounts[2].Format = "number";
+            amounts[0].Currency = amounts[1].Currency = amounts[2].Currency = "¥";
+            amounts[2].CalcOp = "sum";
+            amounts[2].CalcSources = $"{amounts[0].Name}, {amounts[1].Name}";
+            amounts[0].Value = "12000";
+            amounts[1].Value = "3,500";
+            vm.SelectedField = amounts[2];
+            Dispatcher.UIThread.RunJobs();
+            Shot(w, "rules");
+            foreach (var f in amounts) { f.CalcOp = ""; f.Format = ""; f.Value = ""; }
+        }
 
         vm.ShowPagesPanel = true;
         await Task.Delay(1500);   // thumbnails render in the background

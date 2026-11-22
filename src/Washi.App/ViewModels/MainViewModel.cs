@@ -142,7 +142,60 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     private void OnFieldPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(FieldViewModel.Value)) RefreshListFields();
+        if (e.PropertyName is nameof(FieldViewModel.Value) or nameof(FieldViewModel.CalcOp) or nameof(FieldViewModel.CalcSources)
+                           or nameof(FieldViewModel.Name) or nameof(FieldViewModel.Format) or nameof(FieldViewModel.Decimals))
+            Recalculate();
     }
+
+    private bool _recalculating;
+
+    /// <summary>
+    /// Works out the calculated fields (totals) from the values typed so far, sources first, as a viewer will. A
+    /// calculation that depends on itself is reported and left alone.
+    /// </summary>
+    internal void Recalculate()
+    {
+        if (_recalculating) return;
+        var calcs = new Dictionary<string, (FieldViewModel Field, Washi.Core.Forms.FieldCalc Calc)>(StringComparer.Ordinal);
+        foreach (var f in Fields)
+            if (f.Logic?.Calc is { } c && f.Name.Length > 0) calcs.TryAdd(f.Name, (f, c));
+        if (calcs.Count == 0) return;
+        _recalculating = true;
+        try
+        {
+            var order = Washi.Core.Forms.FieldLogic.CalculationOrder(calcs.ToDictionary(p => p.Key, p => p.Value.Calc));
+            // what each field holds, as stored (numbers plain)
+            var stored = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var f in Fields.Where(f => f.Name.Length > 0 && f.Value.Length > 0))
+                stored.TryAdd(f.Name, f.Logic is { } l && l.Accept(f.Value) is { Error: null, Value: { } v } ? v : f.Value);
+            foreach (var name in order)
+            {
+                var (field, calc) = calcs[name];
+                var result = Washi.Core.Forms.FieldLogic.Calculate(calc, stored);
+                if (field.Logic?.Format is { Kind: Washi.Core.Forms.FieldFormatKind.Number or Washi.Core.Forms.FieldFormatKind.Percent } fm
+                    && double.TryParse(result, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var r))
+                    result = Washi.Core.Forms.FieldLogic.Plain(Math.Round(r, fm.Decimals + (fm.Kind == Washi.Core.Forms.FieldFormatKind.Percent ? 2 : 0)));
+                stored[name] = result;
+                if (field.Value != result) field.Value = result;
+            }
+        }
+        catch (Washi.Core.Pages.PageAssemblyException e) { Status = Errors.Text(e); }
+        finally { _recalculating = false; }
+    }
+
+    /// <summary>Format choices for typed fields.</summary>
+    public static IReadOnlyList<Choice<string>> FormatKinds =>
+    [
+        new("", L.Get("Ui_FormatNone")), new("number", L.Get("Ui_FormatNumber")), new("percent", L.Get("Ui_FormatPercent")),
+        new("date", L.Get("Ui_FormatDate")), new("mask", L.Get("Ui_FormatMask")),
+    ];
+
+    /// <summary>Calculation choices for typed fields.</summary>
+    public static IReadOnlyList<Choice<string>> CalcOps =>
+    [
+        new("", L.Get("Ui_CalcNone")), new("sum", L.Get("Ui_CalcSum")), new("product", L.Get("Ui_CalcProduct")),
+        new("average", L.Get("Ui_CalcAverage")), new("min", L.Get("Ui_CalcMin")), new("max", L.Get("Ui_CalcMax")),
+    ];
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels

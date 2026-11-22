@@ -412,6 +412,26 @@ matches).
   unticked stay. If a check fails the copy is deleted, so you never get a half-redacted file.
 - Files whose permissions forbid changes are refused (remove the protection with its password first).
 
+## Formats, ranges and calculations
+
+A typed field can carry rules, set in its properties (Form tool) or in `fields.json`:
+
+- **Format**: a number (decimals, a currency mark such as ¥), a percentage, a date (`yyyy/mm/dd`, `dd.mm.yyyy`, …) or
+  a pattern (`999-9999` for a Japanese postal code: 9 a digit, A a letter).
+- **Range**: the smallest and largest number accepted.
+- **Calculated**: the sum, product, average, smallest or largest of other fields (a total).
+
+They are written as the field actions Acrobat itself writes (`AFNumber_Format`, `AFDate_FormatEx`,
+`AFSpecial_KeystrokeEx`, `AFRange_Validate`, `AFSimple_Calculate`, and the form's calculation order), so Acrobat,
+Reader, Foxit and other full viewers format, check and add up as the user types. Washi applies the same rules itself:
+in Preview a total is worked out as values are typed and a value that does not fit is outlined in red; when filling
+(`fill_fields`, Make fillable), what people type is accepted the way they type it (`1,200`, `１２００円`,
+`令和8年11月22日`, `1500001`), stored the way Acrobat stores it (numbers plain, `1200`) and shown formatted
+(`¥1,200`, `150-0001`). A value that is not a number or a date, or is out of range, is not filled, and the note says
+why. Forms made elsewhere keep working: the same AF calls are read from their fields, as on the USCIS I-9 (postal
+codes, phone numbers) and the 国税庁 input forms (amounts). Other scripts are left as they are and not run. These
+actions are JavaScript: *Remove hidden information* lists them under scripts.
+
 ## Erasing printed text
 
 Forms sometimes arrive with data already printed on them, and some of it is wrong. Making the form
@@ -637,7 +657,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 10. ~~Redaction by keyword, pattern and area.~~ Done (`washi pdf redact`, the Redact tool, `redact`).
 11. ~~Find in the document.~~ Done (the find bar, `washi pdf find`, `search_text`).
 12. ~~Bookmarks: read, navigate, edit.~~ Done (the Bookmarks panel, `washi pdf bookmarks`, `list_bookmarks`, `set_bookmarks`).
-13. ~~Print.~~ Done (the print card, `washi pdf print`). Next: calculation and validation in forms.
+13. ~~Print.~~ Done (the print card, `washi pdf print`).
+14. ~~Formats, ranges and calculations in forms.~~ Done (field rules, written as Acrobat's field actions and applied when filling).
 
 ## License
 

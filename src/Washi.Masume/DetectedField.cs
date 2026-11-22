@@ -40,6 +40,17 @@ public sealed record DetectedField
     public string Export { get; init; } = "";
     /// <summary>Drop-down lists: the items to choose from.</summary>
     public IReadOnlyList<string> Options { get; init; } = [];
+    /// <summary>Typed fields: how the value is shown and what it accepts (number, percent, date, mask).</summary>
+    public Washi.Core.Forms.FieldFormat? Format { get; init; }
+    /// <summary>Typed fields: the smallest and largest number accepted.</summary>
+    public Washi.Core.Forms.FieldRange? Range { get; init; }
+    /// <summary>Typed fields: computed from other fields (sum, product, average, min, max of their names).</summary>
+    public Washi.Core.Forms.FieldCalc? Calc { get; init; }
+
+    /// <summary>The format, range and calculation together (null when there are none, or the kind takes none).</summary>
+    [JsonIgnore]
+    public Washi.Core.Forms.FieldLogic? Logic =>
+        Kind is FieldKind.Text or FieldKind.Amount or FieldKind.Comb && new Washi.Core.Forms.FieldLogic(Format, Range, Calc) is { IsEmpty: false } l ? l : null;
 
     /// <summary>The PDF field this becomes. A radio button is named by its group, so the group's buttons form one field.</summary>
     public Washi.Core.Forms.FormField ToFormField() => new(
@@ -58,7 +69,8 @@ public sealed record DetectedField
         Color.Length > 0 ? Color : null,
         Font switch { "serif" => Washi.Core.Forms.FormFontFace.Serif, "sans" => Washi.Core.Forms.FormFontFace.Sans, _ => Washi.Core.Forms.FormFontFace.Auto },
         Kind == FieldKind.Radio ? (Export.Trim().Length > 0 ? Export.Trim() : Label) : "",
-        Kind == FieldKind.Choice ? Options : null);
+        Kind == FieldKind.Choice ? Options : null,
+        Logic);
 }
 
 public static class FieldsJson
@@ -66,7 +78,13 @@ public static class FieldsJson
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        Converters = { new RectArrayConverter(), new JsonStringEnumConverter<FieldKind>(JsonNamingPolicy.SnakeCaseLower) },
+        Converters =
+        {
+            new RectArrayConverter(), new JsonStringEnumConverter<FieldKind>(JsonNamingPolicy.SnakeCaseLower),
+            new JsonStringEnumConverter<Washi.Core.Forms.FieldFormatKind>(JsonNamingPolicy.SnakeCaseLower),
+            new JsonStringEnumConverter<Washi.Core.Forms.CalcOp>(JsonNamingPolicy.SnakeCaseLower),
+        },
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         WriteIndented = true,
     };
 
