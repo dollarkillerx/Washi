@@ -618,4 +618,30 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_PrintNoPrinter" xml:space="preserve"><value>Es gibt keinen Drucker namens {0}.</value></data>
   <data name="Pdf_PrintersNone" xml:space="preserve"><value>Keine Drucker.</value></data>
   <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0} (Standard)</value></data>
+  <data name="Ui_FieldFormat" xml:space="preserve"><value>Format</value></data>
+  <data name="Ui_FormatNone" xml:space="preserve"><value>Keins (freier Text)</value></data>
+  <data name="Ui_FormatNumber" xml:space="preserve"><value>Zahl</value></data>
+  <data name="Ui_FormatPercent" xml:space="preserve"><value>Prozent</value></data>
+  <data name="Ui_FormatDate" xml:space="preserve"><value>Datum</value></data>
+  <data name="Ui_FormatMask" xml:space="preserve"><value>Muster (PLZ, Telefon …)</value></data>
+  <data name="Ui_FieldDecimals" xml:space="preserve"><value>Nachkommastellen</value></data>
+  <data name="Ui_FieldCurrency" xml:space="preserve"><value>Währungszeichen</value></data>
+  <data name="Ui_FieldPattern" xml:space="preserve"><value>Muster</value></data>
+  <data name="Ui_FieldPatternHint" xml:space="preserve"><value>Datum: yyyy mm dd (yyyy/mm/dd, dd.mm.yyyy). Muster: 9 eine Ziffer, A ein Buchstabe, alles andere bleibt (999-9999).</value></data>
+  <data name="Ui_FieldMin" xml:space="preserve"><value>Minimum</value></data>
+  <data name="Ui_FieldMax" xml:space="preserve"><value>Maximum</value></data>
+  <data name="Ui_FieldCalc" xml:space="preserve"><value>Berechnung</value></data>
+  <data name="Ui_CalcNone" xml:space="preserve"><value>Nein (eingegeben)</value></data>
+  <data name="Ui_CalcSum" xml:space="preserve"><value>Summe von</value></data>
+  <data name="Ui_CalcProduct" xml:space="preserve"><value>Produkt von</value></data>
+  <data name="Ui_CalcAverage" xml:space="preserve"><value>Durchschnitt von</value></data>
+  <data name="Ui_CalcMin" xml:space="preserve"><value>Kleinster Wert von</value></data>
+  <data name="Ui_CalcMax" xml:space="preserve"><value>Größter Wert von</value></data>
+  <data name="Ui_FieldCalcSources" xml:space="preserve"><value>Felder</value></data>
+  <data name="Ui_FieldCalcHint" xml:space="preserve"><value>Feldnamen, durch Kommas getrennt. Der Wert wird in der Vorschau, im gespeicherten PDF und in Programmen wie Acrobat berechnet.</value></data>
+  <data name="Err_FieldNotNumber" xml:space="preserve"><value>„{0}“ ist keine Zahl.</value></data>
+  <data name="Err_FieldNotDate" xml:space="preserve"><value>„{0}“ ist kein Datum.</value></data>
+  <data name="Err_FieldNotMask" xml:space="preserve"><value>„{0}“ passt nicht zu {1}.</value></data>
+  <data name="Err_FieldRange" xml:space="preserve"><value>„{0}“ liegt außerhalb von {2}.</value></data>
+  <data name="Err_FieldCalcCycle" xml:space="preserve"><value>Die Berechnung von {0} hängt von sich selbst ab.</value></data>
 </root>

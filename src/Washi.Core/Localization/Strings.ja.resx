@@ -618,4 +618,30 @@
   <data name="Err_PrintNoPrinter" xml:space="preserve"><value>{0} というプリンターはありません。</value></data>
   <data name="Pdf_PrintersNone" xml:space="preserve"><value>プリンターはありません。</value></data>
   <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0}（既定）</value></data>
+  <data name="Ui_FieldFormat" xml:space="preserve"><value>表示形式</value></data>
+  <data name="Ui_FormatNone" xml:space="preserve"><value>なし（自由入力）</value></data>
+  <data name="Ui_FormatNumber" xml:space="preserve"><value>数値</value></data>
+  <data name="Ui_FormatPercent" xml:space="preserve"><value>パーセント</value></data>
+  <data name="Ui_FormatDate" xml:space="preserve"><value>日付</value></data>
+  <data name="Ui_FormatMask" xml:space="preserve"><value>パターン（郵便番号・電話など）</value></data>
+  <data name="Ui_FieldDecimals" xml:space="preserve"><value>小数点以下の桁数</value></data>
+  <data name="Ui_FieldCurrency" xml:space="preserve"><value>通貨記号</value></data>
+  <data name="Ui_FieldPattern" xml:space="preserve"><value>パターン</value></data>
+  <data name="Ui_FieldPatternHint" xml:space="preserve"><value>日付: yyyy mm dd（yyyy/mm/dd など）。パターン: 9 は数字、A は文字、その他はそのまま（999-9999）。</value></data>
+  <data name="Ui_FieldMin" xml:space="preserve"><value>最小値</value></data>
+  <data name="Ui_FieldMax" xml:space="preserve"><value>最大値</value></data>
+  <data name="Ui_FieldCalc" xml:space="preserve"><value>計算</value></data>
+  <data name="Ui_CalcNone" xml:space="preserve"><value>しない（手入力）</value></data>
+  <data name="Ui_CalcSum" xml:space="preserve"><value>合計</value></data>
+  <data name="Ui_CalcProduct" xml:space="preserve"><value>積</value></data>
+  <data name="Ui_CalcAverage" xml:space="preserve"><value>平均</value></data>
+  <data name="Ui_CalcMin" xml:space="preserve"><value>最小</value></data>
+  <data name="Ui_CalcMax" xml:space="preserve"><value>最大</value></data>
+  <data name="Ui_FieldCalcSources" xml:space="preserve"><value>対象の記入欄</value></data>
+  <data name="Ui_FieldCalcHint" xml:space="preserve"><value>記入欄の名前をカンマ区切りで。値はプレビュー・保存した PDF・Acrobat などのビューアで計算されます。</value></data>
+  <data name="Err_FieldNotNumber" xml:space="preserve"><value>「{0}」は数値ではありません。</value></data>
+  <data name="Err_FieldNotDate" xml:space="preserve"><value>「{0}」は日付ではありません。</value></data>
+  <data name="Err_FieldNotMask" xml:space="preserve"><value>「{0}」は {1} の形になっていません。</value></data>
+  <data name="Err_FieldRange" xml:space="preserve"><value>「{0}」は範囲（{2}）の外です。</value></data>
+  <data name="Err_FieldCalcCycle" xml:space="preserve"><value>{0} の計算が自分自身に依存しています。</value></data>
 </root>

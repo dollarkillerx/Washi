@@ -20,7 +20,9 @@ public sealed record FieldInfo(
     bool Multiline,
     bool ReadOnly,
     IReadOnlyList<string> Options,   // choice options, or the on-states of a checkbox / radio group
-    string Tooltip);
+    string Tooltip,
+    FieldLogic? Logic = null,        // format, range and calculation (Acrobat's AF field actions)
+    string Shown = "");              // the value as the field shows it ("1,234" for a stored "1234")
 
 public sealed record FillResult(int Filled, IReadOnlyList<string> UnknownNames, IReadOnlyList<string> Notes);
 
@@ -78,9 +80,10 @@ public static class AcroFormFields
             if (type is "checkbox" or "radio" && ButtonStates(field, widgets).FirstOrDefault(st => st.State == value) is { Label: { } shown })
                 value = shown;                                    // 0 / 1 with an /Opt list: show the option's label
             int maxLen = Inherited(field, "/MaxLen") is PdfInteger ml ? ml.Value : 0;
+            var logic = type == "text" ? FieldScripts.Read(field) : null;
             result.Add(new FieldInfo(name, type, value, page, rect, maxLen,
                 type == "text" && (ff & FfComb) != 0 && maxLen > 0, type == "text" && (ff & FfMultiline) != 0,
-                (ff & FfReadOnly) != 0, options, field.Elements.GetString("/TU")));
+                (ff & FfReadOnly) != 0, options, field.Elements.GetString("/TU"), logic, logic?.Display(value) ?? value));
         }
         return result;
     }
@@ -119,17 +122,51 @@ public static class AcroFormFields
             fonts.Elements.SetReference("/" + embeddedKey, PdfFontEmbedder.Embed(doc, embedFont));
         }
 
+        // field logic: values are checked and stored as Acrobat keeps them, then calculated fields are worked out
+        var terminals = Terminals(doc).ToList();
+        var logics = new Dictionary<string, FieldLogic>(StringComparer.Ordinal);
+        foreach (var (field, name, _) in terminals)
+            if (Inherited(field, "/FT") is PdfName { Value: "/Tx" } && FieldScripts.Read(field) is { } fl) logics[name] = fl;
+        var accepted = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (name, raw) in values)
+        {
+            if (!logics.TryGetValue(name, out var fl)) { accepted[name] = raw; continue; }
+            if (fl.Calc is not null) { notes.Add($"{name}: calculated from {string.Join(", ", fl.Calc.Sources)}; the value given was not used"); continue; }
+            var (stored, error, _) = fl.Accept(raw);
+            if (error is not null) notes.Add($"{name}: {error}; not filled");
+            else accepted[name] = stored!;
+        }
+        var calculated = new HashSet<string>(StringComparer.Ordinal);
+        var calcs = logics.Where(p => p.Value.Calc is not null).ToDictionary(p => p.Key, p => p.Value.Calc!);
+        if (calcs.Count > 0)
+        {
+            var current = List(doc).GroupBy(f => f.Name).ToDictionary(g => g.Key, g => g.First().Value, StringComparer.Ordinal);
+            foreach (var (k, v) in accepted) current[k] = v;
+            foreach (var name in FieldLogic.CalculationOrder(calcs))
+            {
+                var fmt = logics[name].Format;
+                var result = FieldLogic.Calculate(calcs[name], current, fmt?.Separator ?? 0);
+                if (fmt is { Kind: FieldFormatKind.Number or FieldFormatKind.Percent } && double.TryParse(result, NumberStyles.Float, CultureInfo.InvariantCulture, out var r))
+                    result = FieldLogic.Plain(Math.Round(r, Math.Clamp(fmt.Decimals + (fmt.Kind == FieldFormatKind.Percent ? 2 : 0), 0, 10)));
+                if (current.GetValueOrDefault(name) == result) continue;
+                current[name] = accepted[name] = result;
+                calculated.Add(name);
+            }
+        }
+        values = accepted;
+
         var encoders = new Dictionary<string, FontEncoder?>();
         int filled = 0;
         bool needAppearances = false;
         var known = new HashSet<string>();
-        foreach (var (field, name, widgets) in Terminals(doc))
+        foreach (var (field, name, widgets) in terminals)
         {
             known.Add(name);
             if (!values.TryGetValue(name, out var value)) continue;
+            var shown = logics.TryGetValue(name, out var logic) ? logic.Display(value) : value;
             string ft = Inherited(field, "/FT") is PdfName n ? n.Value : "";
             int ff = Inherited(field, "/Ff") is PdfInteger i ? i.Value : 0;
-            if ((ff & FfReadOnly) != 0) { notes.Add($"{name}: read-only, not changed"); continue; }
+            if ((ff & FfReadOnly) != 0 && !calculated.Contains(name)) { notes.Add($"{name}: read-only, not changed"); continue; }
 
             switch (ft)
             {
@@ -159,10 +196,10 @@ public static class AcroFormFields
                     {
                         int maxLen = Inherited(field, "/MaxLen") is PdfInteger ml ? ml.Value : 0;
                         int q = Inherited(field, "/Q") is PdfInteger qi ? qi.Value : 0;
-                        var missing = enc.Missing(value);
+                        var missing = enc.Missing(shown);
                         if (missing.Length > 0) notes.Add($"{name}: the font has no glyph for '{missing}'");
                         foreach (var w in widgets)
-                            SetAppearance(doc, w, TextAppearance(w, enc, key!, size, color, value, q,
+                            SetAppearance(doc, w, TextAppearance(w, enc, key!, size, color, shown, q,
                                 comb: (ff & FfComb) != 0 && maxLen > 0 ? maxLen : 0, multiline: (ff & FfMultiline) != 0), fonts!, key!);
                     }
                     filled++;
@@ -222,7 +259,30 @@ public static class AcroFormFields
             }
         }
         if (needAppearances) form.Elements.SetBoolean("/NeedAppearances", true);
-        return new FillResult(filled, values.Keys.Where(k => !known.Contains(k)).ToList(), notes);
+        foreach (var name in calculated) notes.Add($"{name}: calculated as {(logics[name].Display(values[name]))}");
+        return new FillResult(filled - calculated.Count, values.Keys.Where(k => !known.Contains(k)).ToList(), notes);
+    }
+
+    /// <summary>
+    /// Sets the AcroForm's /CO (calculation order) from the calculated fields it has. A calculation that depends on
+    /// itself, or on a field the form does not have, is reported.
+    /// </summary>
+    internal static void RebuildCalculationOrder(PdfDocument doc, List<string> warnings)
+    {
+        var form = doc.Internals.Catalog.Elements.GetDictionary("/AcroForm");
+        if (form is null) return;
+        var all = Terminals(doc).ToList();
+        var names = all.Select(t => t.Name).ToHashSet(StringComparer.Ordinal);
+        var calculated = new List<(string, PdfDictionary, FieldCalc)>();
+        foreach (var (field, name, _) in all)
+            if (FieldScripts.Read(field) is { Calc: { } c })
+            {
+                foreach (var missing in c.Sources.Where(s => !names.Contains(s)))
+                    warnings.Add($"field '{name}': its calculation uses '{missing}', which the form does not have");
+                calculated.Add((name, field, c));
+            }
+        try { FieldScripts.WriteOrder(doc, form, calculated); }
+        catch (Pages.PageAssemblyException e) { warnings.Add(e.Message); form.Elements.Remove("/CO"); }
     }
 
     private static bool IsTrue(string v) =>

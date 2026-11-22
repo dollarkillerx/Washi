@@ -28,6 +28,8 @@ public partial class MainWindow : Window
         SizeBox.SelectedValueBinding = new Binding(nameof(Choice<double>.Value));
         ColorBox.SelectedValueBinding = new Binding(nameof(Choice<string>.Value));
         FaceBox.SelectedValueBinding = new Binding(nameof(Choice<string>.Value));
+        FormatBox.SelectedValueBinding = new Binding(nameof(Choice<string>.Value));
+        CalcBox.SelectedValueBinding = new Binding(nameof(Choice<string>.Value));
         ViewModel = new MainViewModel(dialogs ?? new AvaloniaDialogs(this));
         DataContext = ViewModel;
 

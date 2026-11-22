@@ -618,4 +618,30 @@
   <data name="Err_PrintNoPrinter" xml:space="preserve"><value>{0} (이)라는 프린터가 없습니다.</value></data>
   <data name="Pdf_PrintersNone" xml:space="preserve"><value>프린터가 없습니다.</value></data>
   <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0} (기본)</value></data>
+  <data name="Ui_FieldFormat" xml:space="preserve"><value>형식</value></data>
+  <data name="Ui_FormatNone" xml:space="preserve"><value>없음 (자유 입력)</value></data>
+  <data name="Ui_FormatNumber" xml:space="preserve"><value>숫자</value></data>
+  <data name="Ui_FormatPercent" xml:space="preserve"><value>백분율</value></data>
+  <data name="Ui_FormatDate" xml:space="preserve"><value>날짜</value></data>
+  <data name="Ui_FormatMask" xml:space="preserve"><value>패턴 (우편번호·전화 등)</value></data>
+  <data name="Ui_FieldDecimals" xml:space="preserve"><value>소수 자릿수</value></data>
+  <data name="Ui_FieldCurrency" xml:space="preserve"><value>통화 기호</value></data>
+  <data name="Ui_FieldPattern" xml:space="preserve"><value>패턴</value></data>
+  <data name="Ui_FieldPatternHint" xml:space="preserve"><value>날짜: yyyy mm dd (yyyy/mm/dd 등). 패턴: 9 는 숫자, A 는 문자, 나머지는 그대로 (999-9999).</value></data>
+  <data name="Ui_FieldMin" xml:space="preserve"><value>최솟값</value></data>
+  <data name="Ui_FieldMax" xml:space="preserve"><value>최댓값</value></data>
+  <data name="Ui_FieldCalc" xml:space="preserve"><value>계산</value></data>
+  <data name="Ui_CalcNone" xml:space="preserve"><value>안 함 (직접 입력)</value></data>
+  <data name="Ui_CalcSum" xml:space="preserve"><value>합계</value></data>
+  <data name="Ui_CalcProduct" xml:space="preserve"><value>곱</value></data>
+  <data name="Ui_CalcAverage" xml:space="preserve"><value>평균</value></data>
+  <data name="Ui_CalcMin" xml:space="preserve"><value>최솟값</value></data>
+  <data name="Ui_CalcMax" xml:space="preserve"><value>최댓값</value></data>
+  <data name="Ui_FieldCalcSources" xml:space="preserve"><value>대상 입력란</value></data>
+  <data name="Ui_FieldCalcHint" xml:space="preserve"><value>입력란 이름을 쉼표로 구분. 값은 미리보기·저장한 PDF·Acrobat 등 뷰어에서 계산됩니다.</value></data>
+  <data name="Err_FieldNotNumber" xml:space="preserve"><value>“{0}” 은(는) 숫자가 아닙니다.</value></data>
+  <data name="Err_FieldNotDate" xml:space="preserve"><value>“{0}” 은(는) 날짜가 아닙니다.</value></data>
+  <data name="Err_FieldNotMask" xml:space="preserve"><value>“{0}” 이(가) {1} 형식에 맞지 않습니다.</value></data>
+  <data name="Err_FieldRange" xml:space="preserve"><value>“{0}” 이(가) 범위({2})를 벗어났습니다.</value></data>
+  <data name="Err_FieldCalcCycle" xml:space="preserve"><value>{0} 의 계산이 자기 자신에 의존합니다.</value></data>
 </root>

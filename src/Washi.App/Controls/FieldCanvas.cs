@@ -224,6 +224,7 @@ public sealed class FieldCanvas : Control
         var r = Screen(f);
         ctx.DrawRectangle(new SolidColorBrush(Blue, selected ? 0.12 : 0.06),
                           new Pen(new SolidColorBrush(selected ? Active : Blue, selected ? 1 : 0.35), selected ? 1.5 : 0.75), r);
+        if (f.HasError) ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(218, 30, 40), 0.08), new Pen(new SolidColorBrush(Color.FromRgb(218, 30, 40)), 1.5), r);
         if (f.Kind == FieldKind.Choice && r.Height >= 8) DrawCaret(ctx, r, new SolidColorBrush(Blue, 0.6));
         if (f.Value.Length == 0) return;
 
@@ -271,17 +272,18 @@ public sealed class FieldCanvas : Control
         fs = Math.Min(fs, Math.Max(4 * Zoom, r.Height - 2 * Zoom));
         var face = new Typeface(TextFamily(f));
         var brush = TextBrush(f);
-        var text = Text(f.Value, face, fs, brush);
+        var shown = f.Shown;   // as its format writes it ("¥1,200")
+        var text = Text(shown, face, fs, brush);
         double room = Math.Max(1, r.Width - 2 * pad);
         if (f.Y1 - f.Y0 > 24)
         {
             // tall fields wrap (as the saved PDF does); lines that still do not fit get smaller
             for (text.MaxTextWidth = room; text.Height > r.Height - pad && fs > 4 * Zoom; text.MaxTextWidth = room)
-                text = Text(f.Value, face, fs = Math.Max(4 * Zoom, fs - 0.5 * Zoom), brush);
+                text = Text(shown, face, fs = Math.Max(4 * Zoom, fs - 0.5 * Zoom), brush);
             ctx.DrawText(text, new Point(r.X + pad, r.Y + pad / 2));
             return;
         }
-        if (text.Width > room) text = Text(f.Value, face, Math.Max(4 * Zoom, fs * room / text.Width), brush);
+        if (text.Width > room) text = Text(shown, face, Math.Max(4 * Zoom, fs * room / text.Width), brush);
         text.MaxTextWidth = Math.Max(1, r.Width - pad);
         text.MaxLineCount = 1;
         text.Trimming = TextTrimming.CharacterEllipsis;

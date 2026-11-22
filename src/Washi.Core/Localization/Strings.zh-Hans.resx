@@ -618,4 +618,30 @@
   <data name="Err_PrintNoPrinter" xml:space="preserve"><value>没有名为 {0} 的打印机。</value></data>
   <data name="Pdf_PrintersNone" xml:space="preserve"><value>没有打印机。</value></data>
   <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0}（默认）</value></data>
+  <data name="Ui_FieldFormat" xml:space="preserve"><value>格式</value></data>
+  <data name="Ui_FormatNone" xml:space="preserve"><value>无（任意文字）</value></data>
+  <data name="Ui_FormatNumber" xml:space="preserve"><value>数字</value></data>
+  <data name="Ui_FormatPercent" xml:space="preserve"><value>百分比</value></data>
+  <data name="Ui_FormatDate" xml:space="preserve"><value>日期</value></data>
+  <data name="Ui_FormatMask" xml:space="preserve"><value>格式模板（邮编、电话等）</value></data>
+  <data name="Ui_FieldDecimals" xml:space="preserve"><value>小数位数</value></data>
+  <data name="Ui_FieldCurrency" xml:space="preserve"><value>货币符号</value></data>
+  <data name="Ui_FieldPattern" xml:space="preserve"><value>模板</value></data>
+  <data name="Ui_FieldPatternHint" xml:space="preserve"><value>日期：yyyy mm dd（如 yyyy/mm/dd）。模板：9 为数字，A 为字母，其他字符原样保留（999-9999）。</value></data>
+  <data name="Ui_FieldMin" xml:space="preserve"><value>最小值</value></data>
+  <data name="Ui_FieldMax" xml:space="preserve"><value>最大值</value></data>
+  <data name="Ui_FieldCalc" xml:space="preserve"><value>计算</value></data>
+  <data name="Ui_CalcNone" xml:space="preserve"><value>不计算（手动填写）</value></data>
+  <data name="Ui_CalcSum" xml:space="preserve"><value>合计</value></data>
+  <data name="Ui_CalcProduct" xml:space="preserve"><value>乘积</value></data>
+  <data name="Ui_CalcAverage" xml:space="preserve"><value>平均值</value></data>
+  <data name="Ui_CalcMin" xml:space="preserve"><value>最小值</value></data>
+  <data name="Ui_CalcMax" xml:space="preserve"><value>最大值</value></data>
+  <data name="Ui_FieldCalcSources" xml:space="preserve"><value>所用栏位</value></data>
+  <data name="Ui_FieldCalcHint" xml:space="preserve"><value>栏位名称，用逗号分隔。数值会在预览、保存的 PDF 以及 Acrobat 等阅读器中计算。</value></data>
+  <data name="Err_FieldNotNumber" xml:space="preserve"><value>“{0}”不是数字。</value></data>
+  <data name="Err_FieldNotDate" xml:space="preserve"><value>“{0}”不是日期。</value></data>
+  <data name="Err_FieldNotMask" xml:space="preserve"><value>“{0}”不符合 {1}。</value></data>
+  <data name="Err_FieldRange" xml:space="preserve"><value>“{0}”超出范围（{2}）。</value></data>
+  <data name="Err_FieldCalcCycle" xml:space="preserve"><value>{0} 的计算依赖它自己。</value></data>
 </root>

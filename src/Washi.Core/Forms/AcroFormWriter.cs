@@ -230,6 +230,7 @@ public static class AcroFormWriter
                 var ap = new PdfDictionary(doc);
                 ap.Elements.SetReference("/N", FormXObject(doc, w, fh, null, null, "/Tx BMC EMC"));
                 widget.Elements["/AP"] = ap;
+                if (f.Kind != FormFieldKind.Choice && f.Logic is { IsEmpty: false } logic) FieldScripts.Write(doc, widget, logic);
             }
 
             GetOrCreateArray(doc, page, "/Annots").Elements.Add(widget.Reference!);
@@ -237,6 +238,7 @@ public static class AcroFormWriter
         }
 
         foreach (var (_, (parent, kids)) in radios) FinishRadioGroup(doc, parent, kids);
+        AcroFormFields.RebuildCalculationOrder(doc, warnings);
         return new AcroFormResult(fields.Count, straightened, warnings);
     }
 
