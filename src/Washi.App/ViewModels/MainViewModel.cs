@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Protect, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields }
@@ -61,6 +61,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Organize = new OrganizeToolViewModel(this);
         Sign = new SignToolViewModel(this);
         Comment = new CommentToolViewModel(this);
+        Protect = new ProtectToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -76,6 +77,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public OrganizeToolViewModel Organize { get; }
     public SignToolViewModel Sign { get; }
     public CommentToolViewModel Comment { get; }
+    public ProtectToolViewModel Protect { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -136,7 +138,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -154,6 +156,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsOrganizeTool { get => ActiveTool == Tool.Organize; set { if (value) ActiveTool = Tool.Organize; } }
     public bool IsSignTool { get => ActiveTool == Tool.Sign; set { if (value) ActiveTool = Tool.Sign; } }
     public bool IsCommentTool { get => ActiveTool == Tool.Comment; set { if (value) ActiveTool = Tool.Comment; } }
+    public bool IsProtectTool { get => ActiveTool == Tool.Protect; set { if (value) ActiveTool = Tool.Protect; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -196,6 +199,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Organize) Organize.Prepare();
         if (value == Tool.Sign) _ = Sign.PrepareAsync();
         if (value == Tool.Comment) _ = Comment.PrepareAsync();
+        if (value == Tool.Protect) _ = Protect.PrepareAsync();
     }
 
     private string? _detectedFor;
@@ -378,10 +382,16 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     /// <summary>Opens a PDF and detects its fields.</summary>
     public async Task LoadAsync(string path)
     {
-        bool opened = false;
+        bool opened = false, locked = false;
         await Run(async () =>
         {
-            int count = await Pdfium(() => { using var d = PdfiumDocument.Open(path); return d.PageCount; });
+            int count = await Pdfium(() =>
+            {
+                if (PdfiumDocument.NeedsPassword(path)) return -1;
+                using var d = PdfiumDocument.Open(path);
+                return d.PageCount;
+            });
+            if (count < 0) { locked = true; return; }
             PdfPath = path;
             _detectedFor = null;
             Fields.Clear();
@@ -394,19 +404,29 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
             Status = L.F("Ui_Opened", Path.GetFileName(path), count);
             opened = true;
         });
+        if (locked)
+        {
+            // it cannot be shown without its password: the Protect tool asks for it
+            ActiveTool = Tool.Protect;
+            Protect.AskPassword(path);
+            return;
+        }
         if (!opened) return;
+        Protect.LockedPath = null;
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
         Erase.Reset();
         Organize.Clear();                       // a reloaded file (even the same path) starts fresh in every tool
         Sign.Reset();
         Comment.Reset();
+        Protect.Reset();
         if (ActiveTool == Tool.Form) await DetectAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
         else if (ActiveTool == Tool.Organize) Organize.Prepare();
         else if (ActiveTool == Tool.Sign) await Sign.PrepareAsync();
         else if (ActiveTool == Tool.Comment) await Comment.PrepareAsync();
+        else if (ActiveTool == Tool.Protect) await Protect.PrepareAsync();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
@@ -426,6 +446,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Organize.Clear();
         Sign.Reset();
         Comment.Reset();
+        Protect.Reset();
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();
@@ -823,7 +844,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
             Status = L.F("Ui_Error", L.F("FontNotAllowed", Path.GetFileName(EmbedFontPath ?? ""), $"0x{e.FsType:X4}"));
         }
         catch (FontNotUsableException) { Status = L.F("Ui_Error", L.F("FontNotSupported", "")); }
-        catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("owner password", StringComparison.OrdinalIgnoreCase))
+        catch (PdfSharp.Pdf.IO.PdfReaderException e) when (e.Message.Contains("password", StringComparison.OrdinalIgnoreCase))
         {
             Status = L.F("Ui_Error", L.F("ProtectedPdf", Path.GetFileName(PdfPath ?? "")));
         }

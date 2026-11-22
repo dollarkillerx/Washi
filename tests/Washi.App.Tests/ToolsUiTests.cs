@@ -278,6 +278,66 @@ public sealed class ToolsUiTests : IDisposable
         public override void Send(SendOrPostCallback d, object? state) { }
     }
 
+    [AvaloniaFact]
+    public async Task Protect_adds_a_password_asks_for_it_on_opening_then_takes_it_off_and_cleans()
+    {
+        var a = Form("a.pdf");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "a_protected.pdf") };
+        var (w, vm) = await Open(a, dialogs);
+        vm.ActiveTool = Tool.Protect;
+        await vm.Protect.PrepareAsync();
+        Assert.Equal(L.Get("Ui_ProtectNone"), vm.Protect.StateText);
+        Assert.False(vm.Protect.CanProtect);
+        vm.Protect.Restrict = true;                       // limits without their own password do not protect anything
+        vm.Protect.OpenPassword = vm.Protect.PermissionsPassword = "same";
+        Assert.False(vm.Protect.CanProtect);
+        vm.Protect.Restrict = false;
+        vm.Protect.OpenPassword = "pw-1";
+        Assert.True(vm.Protect.CanProtect);
+        await vm.Protect.ProtectCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);         // the protected copy is open (its password is remembered)
+        Assert.Equal(L.F("Ui_ProtectStateOpen", "AES-256"), vm.Protect.StateText);
+        Assert.Equal("", vm.Protect.OpenPassword);          // not left in the box
+        Assert.True(vm.Protect.CanRemoveProtection);
+        Assert.False(vm.Protect.CanClean);
+
+        // opened again later: it asks for the password, and only the right one opens it
+        var locked = dialogs.SavePdf!;
+        vm.CloseDocumentCommand.Execute(null);
+        Washi.Core.Pages.PdfPasswords.Forget(locked);
+        vm.ActiveTool = Tool.Form;
+        await vm.LoadAsync(locked);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(Tool.Protect, vm.ActiveTool);
+        Assert.True(vm.Protect.IsLocked);
+        Assert.False(vm.HasDocument);
+        Assert.True(w.FindControl<TextBox>("UnlockPasswordBox")!.IsEffectivelyVisible);
+        vm.Protect.UnlockPassword = "nope";
+        await vm.Protect.OpenLockedCommand.ExecuteAsync(null);
+        Assert.True(vm.Protect.IsLocked);
+        Assert.Equal(L.Get("Ui_ProtectWrongPassword"), vm.Status);
+        vm.Protect.UnlockPassword = "pw-1";
+        await vm.Protect.OpenLockedCommand.ExecuteAsync(null);
+        Assert.False(vm.Protect.IsLocked);
+        Assert.Equal(locked, vm.PdfPath);
+        Assert.Equal(1, vm.PageCount);
+
+        // the open password allows everything (no separate permissions password): it takes the protection off
+        dialogs.SavePdf = Path.Combine(_dir, "a_unlocked.pdf");
+        Assert.Equal("pw-1", vm.Protect.CurrentPassword);
+        await vm.Protect.RemoveProtectionCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(L.Get("Ui_ProtectNone"), vm.Protect.StateText);
+
+        // hidden information: PDFsharp's metadata (dates) is found and cleaned
+        var meta = Assert.Single(vm.Protect.Hidden, h => h.Item.Kind == Washi.Core.Pages.HiddenInfo.Metadata);
+        Assert.True(meta.Remove);
+        dialogs.SavePdf = Path.Combine(_dir, "a_cleaned.pdf");
+        await vm.Protect.CleanCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.True(vm.Protect.NothingHidden);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

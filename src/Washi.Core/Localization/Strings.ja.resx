@@ -29,7 +29,7 @@
   <data name="PagesStraightened" xml:space="preserve"><value>  回転していた {0} ページを、記入欄が正しい向きになるよう補正しました</value></data>
   <data name="Warning" xml:space="preserve"><value>  注意: {0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>{0} を開けませんでした: {1}</value></data>
-  <data name="ProtectedPdf" xml:space="preserve"><value>{0} は変更できないよう保護されています（所有者パスワードが必要です）。Washi は保護を解除しません。作成者に保護のないファイルを依頼してください。</value></data>
+  <data name="ProtectedPdf" xml:space="preserve"><value>{0} は保護されています。変更には権限パスワードが必要です。「保護」で入力すると保護のないコピーを保存できます。わからない場合は作成者に依頼してください。</value></data>
   <data name="FontEmbedded" xml:space="preserve"><value>  フォント {0} を埋め込みました（{1} MB）。どのビューアでもこのフォントの全文字を表示できます</value></data>
   <data name="FontNotAllowed" xml:space="preserve"><value>{0} のライセンスでは、編集できる PDF への埋め込みが許可されていません（OS/2 fsType {1}）。別のフォントを選んでください。</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} は埋め込めません。可変フォントや TrueType/OpenType 以外のファイルには対応していません。固定ウェイトの .ttf / .otf / .ttc を使ってください。</value></data>
@@ -118,7 +118,13 @@
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           スキャンしたページを検索できるようにする（見えない文字層を追加。ページの画像は変わりません）
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
-                                          枠内の印字（文字・画像）を本当に削除（ポイント単位・左上原点。色付きの様式の印刷は残ります）</value></data>
+                                          枠内の印字（文字・画像）を本当に削除（ポイント単位・左上原点。色付きの様式の印刷は残ります）
+  washi pdf protect &lt;in.pdf&gt; -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]
+                                          開くパスワード（--open）や制限（--allow: 許可する操作）を付ける。AES-256。
+                                          パスワードは入力を求めるか、WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD から読みます
+  washi pdf unlock &lt;in.pdf&gt; -o out.pdf   パスワードを外す（入力を求めるか WASHI_PASSWORD）
+  washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
+                                          隠れた情報を削除（--list は表示だけ）</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} 個のファイルを {1} に結合しました: {2} ページ、記入欄 {3} 個</value></data>
@@ -455,4 +461,62 @@
   <data name="Ui_Commented" xml:space="preserve"><value>{0} を保存しました（注釈 {1} 件）。</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>すべての記入欄に適用</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>サイズ・色・書体を {0} 個の記入欄に適用しました。</value></data>
+  <data name="Ui_ToolProtect" xml:space="preserve"><value>保護</value></data>
+  <data name="Ui_ProtectTitle" xml:space="preserve"><value>保護</value></data>
+  <data name="Ui_ProtectLead" xml:space="preserve"><value>パスワードを付ける、閲覧者ができることを制限する、ページに表示されない情報を削除する。いずれもコピーを保存します。</value></data>
+  <data name="Ui_ProtectLocked" xml:space="preserve"><value>{0} を開くにはパスワードが必要です。</value></data>
+  <data name="Ui_ProtectPassword" xml:space="preserve"><value>パスワード</value></data>
+  <data name="Ui_ProtectOpen" xml:space="preserve"><value>開く</value></data>
+  <data name="Ui_ProtectOpenNote" xml:space="preserve"><value>パスワードは Washi を閉じるまでメモリにだけ保持され、保存されません。</value></data>
+  <data name="Ui_ProtectWrongPassword" xml:space="preserve"><value>パスワードが違います。</value></data>
+  <data name="Ui_ProtectStateTitle" xml:space="preserve"><value>現在の保護</value></data>
+  <data name="Ui_ProtectNone" xml:space="preserve"><value>保護なし：だれでも開いてコピー・変更できます。</value></data>
+  <data name="Ui_ProtectStateOpen" xml:space="preserve"><value>開くにはパスワードが必要です（{0}）。</value></data>
+  <data name="Ui_ProtectStateRestricted" xml:space="preserve"><value>パスワードなしで開けますが、権限パスワードで操作が制限されています（{0}）。</value></data>
+  <data name="Ui_ProtectNotAllowed" xml:space="preserve"><value>許可されていない操作：{0}。</value></data>
+  <data name="Ui_ProtectCurrentPassword" xml:space="preserve"><value>権限パスワード（変更・解除に必要）</value></data>
+  <data name="Ui_ProtectRemove" xml:space="preserve"><value>パスワードなしで保存…</value></data>
+  <data name="Ui_ProtectRemoved" xml:space="preserve"><value>{0} を保護なしで保存しました。</value></data>
+  <data name="Ui_ProtectAddTitle" xml:space="preserve"><value>パスワードを付ける</value></data>
+  <data name="Ui_ProtectOpenPassword" xml:space="preserve"><value>開くときのパスワード（任意）</value></data>
+  <data name="Ui_ProtectRestrict" xml:space="preserve"><value>印刷・コピー・変更を制限する</value></data>
+  <data name="Ui_ProtectPermissionsPassword" xml:space="preserve"><value>権限パスワード</value></data>
+  <data name="Ui_ProtectAllow" xml:space="preserve"><value>閲覧者に許可する操作：</value></data>
+  <data name="Ui_PermPrint" xml:space="preserve"><value>印刷</value></data>
+  <data name="Ui_PermCopy" xml:space="preserve"><value>文字や画像のコピー</value></data>
+  <data name="Ui_PermEdit" xml:space="preserve"><value>内容の変更</value></data>
+  <data name="Ui_PermComment" xml:space="preserve"><value>注釈の追加</value></data>
+  <data name="Ui_PermFill" xml:space="preserve"><value>フォーム入力と署名</value></data>
+  <data name="Ui_PermAssemble" xml:space="preserve"><value>ページの挿入・削除・回転</value></data>
+  <data name="Ui_ProtectShow" xml:space="preserve"><value>パスワードを表示</value></data>
+  <data name="Ui_ProtectRun" xml:space="preserve"><value>保護したコピーを保存…</value></data>
+  <data name="Ui_ProtectRunNote" xml:space="preserve"><value>AES-256 で暗号化します。開くパスワードを忘れると元に戻せないので、大切に保管してください。</value></data>
+  <data name="Ui_Protected" xml:space="preserve"><value>保護したコピー {0} を保存しました。</value></data>
+  <data name="Ui_HiddenTitle" xml:space="preserve"><value>隠れた情報の削除</value></data>
+  <data name="Ui_HiddenLead" xml:space="preserve"><value>ファイルを送る前に：ページ以外に含まれている情報です。</value></data>
+  <data name="Ui_HiddenNothing" xml:space="preserve"><value>隠れた情報は見つかりませんでした。</value></data>
+  <data name="Ui_HiddenProtected" xml:space="preserve"><value>先にパスワードを外し、コピーを整理してから、もう一度保護してください。</value></data>
+  <data name="Ui_HiddenMetadata" xml:space="preserve"><value>文書のプロパティとメタデータ（{0}）</value></data>
+  <data name="Ui_HiddenAttachments" xml:space="preserve"><value>添付ファイル（{0}）</value></data>
+  <data name="Ui_HiddenScripts" xml:space="preserve"><value>スクリプトとアクション（{0}）</value></data>
+  <data name="Ui_HiddenComments" xml:space="preserve"><value>注釈（{0}）</value></data>
+  <data name="Ui_HiddenPrivateData" xml:space="preserve"><value>アプリ固有のデータとサムネイル（{0}）</value></data>
+  <data name="Ui_HiddenEarlierVersions" xml:space="preserve"><value>ファイルに残っている以前の版（{0}）：常に削除</value></data>
+  <data name="Ui_HiddenRun" xml:space="preserve"><value>整理したコピーを保存…</value></data>
+  <data name="Ui_Cleaned" xml:space="preserve"><value>{0} を保存しました（隠れた情報 {1} 件を削除）。</value></data>
+  <data name="Err_NeedsPermissionsPassword" xml:space="preserve"><value>{0}：この操作には権限パスワードが必要です。</value></data>
+  <data name="Err_NeedsPassword" xml:space="preserve"><value>{0} はパスワードで保護されています。</value></data>
+  <data name="Err_WrongPassword" xml:space="preserve"><value>{0} のパスワードが違います。</value></data>
+  <data name="Err_ProtectNoPassword" xml:space="preserve"><value>開くパスワードか権限パスワード（または両方）を入力してください。</value></data>
+  <data name="Err_ProtectPermissionsPassword" xml:space="preserve"><value>制限には、開くパスワードとは別の権限パスワードが必要です。</value></data>
+  <data name="Err_ProtectCheck" xml:space="preserve"><value>コピーの確認に失敗したため、保存しませんでした。</value></data>
+  <data name="Err_NotProtected" xml:space="preserve"><value>{0} は保護されていません。</value></data>
+  <data name="Err_CleanNothingChosen" xml:space="preserve"><value>削除するものを選んでください。</value></data>
+  <data name="Err_CleanProtected" xml:space="preserve"><value>{0} は保護されています。先にパスワードを外して整理し、もう一度保護してください。</value></data>
+  <data name="Err_CleanIncomplete" xml:space="preserve"><value>整理したコピーに {0} が残っていたため、保存しませんでした。</value></data>
+  <data name="Pdf_AskOpenPassword" xml:space="preserve"><value>開くときのパスワード:</value></data>
+  <data name="Pdf_AskPermissionsPassword" xml:space="preserve"><value>権限パスワード:</value></data>
+  <data name="Pdf_AskPassword" xml:space="preserve"><value>{0} のパスワード:</value></data>
+  <data name="Pdf_Protected" xml:space="preserve"><value>{0} を保存しました（AES-256）。</value></data>
+  <data name="Pdf_Unlocked" xml:space="preserve"><value>{0} をパスワードなしで保存しました。</value></data>
 </root>

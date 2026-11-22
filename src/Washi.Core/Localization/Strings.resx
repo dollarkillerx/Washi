@@ -29,7 +29,7 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="PagesStraightened" xml:space="preserve"><value>  {0} rotated page(s) straightened so the fields stay upright</value></data>
   <data name="Warning" xml:space="preserve"><value>  warning: {0}</value></data>
   <data name="OpenFailed" xml:space="preserve"><value>Could not open {0}: {1}</value></data>
-  <data name="ProtectedPdf" xml:space="preserve"><value>{0} is protected against changes (it needs the owner password). Washi does not remove protection: ask the author for an unprotected copy.</value></data>
+  <data name="ProtectedPdf" xml:space="preserve"><value>{0} is protected: changes need its permissions password. Enter it in Protect to save an unprotected copy, or ask the author for one.</value></data>
   <data name="FontEmbedded" xml:space="preserve"><value>  embedded font {0} ({1} MB): every viewer can show all of its characters</value></data>
   <data name="FontNotAllowed" xml:space="preserve"><value>The licence of {0} does not allow embedding it in a PDF people can edit (OS/2 fsType {1}). Choose another font.</value></data>
   <data name="FontNotSupported" xml:space="preserve"><value>{0} cannot be embedded: variable fonts and files that are not TrueType/OpenType fonts are not supported. Use a static .ttf, .otf or .ttc.</value></data>
@@ -118,7 +118,13 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           make scanned pages searchable (an invisible text layer; the page image is unchanged)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
-                                          remove printed text/images under boxes for real (points, top-left origin; coloured form printing stays)</value></data>
+                                          remove printed text/images under boxes for real (points, top-left origin; coloured form printing stays)
+  washi pdf protect &lt;in.pdf&gt; -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]
+                                          add a password to open (--open) and/or limits (--allow: what stays allowed), AES-256;
+                                          passwords are asked for, or read from WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD
+  washi pdf unlock &lt;in.pdf&gt; -o out.pdf   remove the password (asked for, or WASHI_PASSWORD)
+  washi pdf clean &lt;in.pdf&gt; [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]
+                                          remove hidden information (--list only shows it)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
@@ -455,4 +461,62 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_Commented" xml:space="preserve"><value>Saved {0} with {1} comment(s).</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>Use for all fields</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>Size, colour and typeface applied to {0} field(s).</value></data>
+  <data name="Ui_ToolProtect" xml:space="preserve"><value>Protect</value></data>
+  <data name="Ui_ProtectTitle" xml:space="preserve"><value>Protect</value></data>
+  <data name="Ui_ProtectLead" xml:space="preserve"><value>Add a password, limit what readers can do, or remove information the pages don’t show. Each saves a copy.</value></data>
+  <data name="Ui_ProtectLocked" xml:space="preserve"><value>{0} needs a password to open.</value></data>
+  <data name="Ui_ProtectPassword" xml:space="preserve"><value>Password</value></data>
+  <data name="Ui_ProtectOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="Ui_ProtectOpenNote" xml:space="preserve"><value>The password is kept in memory until Washi closes, never saved.</value></data>
+  <data name="Ui_ProtectWrongPassword" xml:space="preserve"><value>That password is not right.</value></data>
+  <data name="Ui_ProtectStateTitle" xml:space="preserve"><value>Current protection</value></data>
+  <data name="Ui_ProtectNone" xml:space="preserve"><value>Not protected: anyone can open, copy and change it.</value></data>
+  <data name="Ui_ProtectStateOpen" xml:space="preserve"><value>Needs a password to open ({0}).</value></data>
+  <data name="Ui_ProtectStateRestricted" xml:space="preserve"><value>Opens without a password, but a permissions password limits what readers can do ({0}).</value></data>
+  <data name="Ui_ProtectNotAllowed" xml:space="preserve"><value>Not allowed: {0}.</value></data>
+  <data name="Ui_ProtectCurrentPassword" xml:space="preserve"><value>Permissions password (to change or remove)</value></data>
+  <data name="Ui_ProtectRemove" xml:space="preserve"><value>Save without password…</value></data>
+  <data name="Ui_ProtectRemoved" xml:space="preserve"><value>Saved {0} without protection.</value></data>
+  <data name="Ui_ProtectAddTitle" xml:space="preserve"><value>Add a password</value></data>
+  <data name="Ui_ProtectOpenPassword" xml:space="preserve"><value>Password to open (optional)</value></data>
+  <data name="Ui_ProtectRestrict" xml:space="preserve"><value>Limit printing, copying and changes</value></data>
+  <data name="Ui_ProtectPermissionsPassword" xml:space="preserve"><value>Permissions password</value></data>
+  <data name="Ui_ProtectAllow" xml:space="preserve"><value>Readers may:</value></data>
+  <data name="Ui_PermPrint" xml:space="preserve"><value>Print</value></data>
+  <data name="Ui_PermCopy" xml:space="preserve"><value>Copy text and images</value></data>
+  <data name="Ui_PermEdit" xml:space="preserve"><value>Change the content</value></data>
+  <data name="Ui_PermComment" xml:space="preserve"><value>Add comments</value></data>
+  <data name="Ui_PermFill" xml:space="preserve"><value>Fill in forms and sign</value></data>
+  <data name="Ui_PermAssemble" xml:space="preserve"><value>Insert, remove and turn pages</value></data>
+  <data name="Ui_ProtectShow" xml:space="preserve"><value>Show passwords</value></data>
+  <data name="Ui_ProtectRun" xml:space="preserve"><value>Save protected copy…</value></data>
+  <data name="Ui_ProtectRunNote" xml:space="preserve"><value>AES-256 encryption. A forgotten password to open cannot be recovered: keep it safe.</value></data>
+  <data name="Ui_Protected" xml:space="preserve"><value>Saved protected copy {0}.</value></data>
+  <data name="Ui_HiddenTitle" xml:space="preserve"><value>Remove hidden information</value></data>
+  <data name="Ui_HiddenLead" xml:space="preserve"><value>Before sending a file: what it carries besides its pages.</value></data>
+  <data name="Ui_HiddenNothing" xml:space="preserve"><value>Nothing hidden found.</value></data>
+  <data name="Ui_HiddenProtected" xml:space="preserve"><value>Remove the password first, clean the copy, then protect it again.</value></data>
+  <data name="Ui_HiddenMetadata" xml:space="preserve"><value>Document properties and metadata ({0})</value></data>
+  <data name="Ui_HiddenAttachments" xml:space="preserve"><value>Attached files ({0})</value></data>
+  <data name="Ui_HiddenScripts" xml:space="preserve"><value>Scripts and actions ({0})</value></data>
+  <data name="Ui_HiddenComments" xml:space="preserve"><value>Comments ({0})</value></data>
+  <data name="Ui_HiddenPrivateData" xml:space="preserve"><value>Private program data and thumbnails ({0})</value></data>
+  <data name="Ui_HiddenEarlierVersions" xml:space="preserve"><value>Earlier versions kept in the file ({0}), always removed</value></data>
+  <data name="Ui_HiddenRun" xml:space="preserve"><value>Save cleaned copy…</value></data>
+  <data name="Ui_Cleaned" xml:space="preserve"><value>Saved {0}: {1} hidden item(s) removed.</value></data>
+  <data name="Err_NeedsPermissionsPassword" xml:space="preserve"><value>{0}: this needs its permissions password.</value></data>
+  <data name="Err_NeedsPassword" xml:space="preserve"><value>{0} is protected with a password.</value></data>
+  <data name="Err_WrongPassword" xml:space="preserve"><value>The password for {0} is not right.</value></data>
+  <data name="Err_ProtectNoPassword" xml:space="preserve"><value>Give a password to open, a permissions password, or both.</value></data>
+  <data name="Err_ProtectPermissionsPassword" xml:space="preserve"><value>Limits need a permissions password that differs from the password to open.</value></data>
+  <data name="Err_ProtectCheck" xml:space="preserve"><value>The copy did not check out, so it was not kept.</value></data>
+  <data name="Err_NotProtected" xml:space="preserve"><value>{0} is not protected.</value></data>
+  <data name="Err_CleanNothingChosen" xml:space="preserve"><value>Choose what to remove.</value></data>
+  <data name="Err_CleanProtected" xml:space="preserve"><value>{0} is protected: remove its password first, clean it, then protect it again.</value></data>
+  <data name="Err_CleanIncomplete" xml:space="preserve"><value>The cleaned copy still had {0}, so it was not kept.</value></data>
+  <data name="Pdf_AskOpenPassword" xml:space="preserve"><value>Password to open:</value></data>
+  <data name="Pdf_AskPermissionsPassword" xml:space="preserve"><value>Permissions password:</value></data>
+  <data name="Pdf_AskPassword" xml:space="preserve"><value>Password for {0}:</value></data>
+  <data name="Pdf_Protected" xml:space="preserve"><value>Saved {0} (AES-256).</value></data>
+  <data name="Pdf_Unlocked" xml:space="preserve"><value>Saved {0} without a password.</value></data>
 </root>

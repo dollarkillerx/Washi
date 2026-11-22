@@ -268,6 +268,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSignTool}" x:Name="SignToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Sign}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSign}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsProtectTool}" x:Name="ProtectToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Lock}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolProtect}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
                 </RadioButton>
@@ -674,6 +677,92 @@
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
+
+                <!-- Protect: passwords and hidden information -->
+                <ScrollViewer IsVisible="{Binding IsProtectTool}">
+                    <StackPanel Margin="20,18,20,18">
+                        <TextBlock Classes="title" Text="{l:Tr Ui_ProtectTitle}" />
+                        <TextBlock Classes="lead" Text="{l:Tr Ui_ProtectLead}" />
+
+                        <!-- a file that needs its password to open -->
+                        <StackPanel IsVisible="{Binding Protect.IsLocked}" Spacing="8" Margin="0,16,0,0">
+                            <TextBlock Text="{Binding Protect.LockedText}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                            <TextBox PasswordChar="•" Text="{Binding Protect.UnlockPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" x:Name="UnlockPasswordBox">
+                                <TextBox.KeyBindings>
+                                    <KeyBinding Gesture="Enter" Command="{Binding Protect.OpenLockedCommand}" />
+                                </TextBox.KeyBindings>
+                            </TextBox>
+                            <Button Classes="accent" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Protect.OpenLockedCommand}" x:Name="UnlockOpenButton" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_ProtectOpenNote}" />
+                        </StackPanel>
+
+                        <StackPanel IsVisible="{Binding HasDocument}">
+                            <!-- current protection -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_ProtectStateTitle}" />
+                            <TextBlock Text="{Binding Protect.StateText}" TextWrapping="Wrap" FontSize="12" x:Name="ProtectStateText" />
+                            <TextBlock Text="{Binding Protect.PermissionsText}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                                       IsVisible="{Binding Protect.PermissionsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <StackPanel IsVisible="{Binding Protect.IsEncrypted}" Spacing="6" Margin="0,8,0,0">
+                                <TextBlock Classes="note" Text="{l:Tr Ui_ProtectCurrentPassword}" />
+                                <TextBox PasswordChar="{Binding Protect.Mask}" Text="{Binding Protect.CurrentPassword}" />
+                                <Button Content="{l:Tr Ui_ProtectRemove}" Command="{Binding Protect.RemoveProtectionCommand}" x:Name="RemoveProtectionButton" />
+                            </StackPanel>
+
+                            <!-- add a password -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_ProtectAddTitle}" />
+                            <StackPanel Spacing="6" IsEnabled="{Binding Protect.CanAdd}">
+                                <StackPanel Spacing="3">
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_ProtectOpenPassword}" />
+                                    <TextBox PasswordChar="{Binding Protect.Mask}" Text="{Binding Protect.OpenPassword}" x:Name="OpenPasswordBox" />
+                                </StackPanel>
+                                <CheckBox IsChecked="{Binding Protect.Restrict}" Content="{l:Tr Ui_ProtectRestrict}" x:Name="RestrictBox" />
+                                <StackPanel IsVisible="{Binding Protect.Restrict}" Spacing="2" Margin="26,0,0,0">
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_ProtectPermissionsPassword}" Margin="0,0,0,1" />
+                                    <TextBox PasswordChar="{Binding Protect.Mask}" Text="{Binding Protect.PermissionsPassword}" Margin="0,0,0,6" x:Name="PermissionsPasswordBox" />
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_ProtectAllow}" />
+                                    <CheckBox IsChecked="{Binding Protect.AllowPrint}" Content="{l:Tr Ui_PermPrint}" FontSize="12" />
+                                    <CheckBox IsChecked="{Binding Protect.AllowCopy}" Content="{l:Tr Ui_PermCopy}" FontSize="12" />
+                                    <CheckBox IsChecked="{Binding Protect.AllowEdit}" Content="{l:Tr Ui_PermEdit}" FontSize="12" />
+                                    <CheckBox IsChecked="{Binding Protect.AllowComment}" Content="{l:Tr Ui_PermComment}" FontSize="12" />
+                                    <CheckBox IsChecked="{Binding Protect.AllowFill}" Content="{l:Tr Ui_PermFill}" FontSize="12" />
+                                    <CheckBox IsChecked="{Binding Protect.AllowAssemble}" Content="{l:Tr Ui_PermAssemble}" FontSize="12" />
+                                </StackPanel>
+                                <CheckBox IsChecked="{Binding Protect.ShowPasswords}" Content="{l:Tr Ui_ProtectShow}" FontSize="12" />
+                                <Button Classes="accent" Command="{Binding Protect.ProtectCommand}" IsEnabled="{Binding Protect.CanProtect}" x:Name="ProtectButton">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <c:Icon Data="{StaticResource I.Lock}" Size="16" />
+                                        <TextBlock Text="{l:Tr Ui_ProtectRun}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_ProtectRunNote}" />
+                            </StackPanel>
+
+                            <!-- hidden information -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_HiddenTitle}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_HiddenLead}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_HiddenNothing}" IsVisible="{Binding Protect.NothingHidden}" Margin="0,6,0,0" />
+                            <TextBlock Classes="note" Text="{Binding Protect.CleanBlockedText}" IsVisible="{Binding Protect.IsEncrypted}" Margin="0,6,0,0" />
+                            <ItemsControl ItemsSource="{Binding Protect.Hidden}" Margin="0,6,0,0" x:Name="HiddenList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:HiddenChoice">
+                                        <CheckBox IsChecked="{Binding Remove}" IsEnabled="{Binding CanChoose}" Margin="0,1">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" />
+                                                <TextBlock Classes="note" Text="{Binding Details}" IsVisible="{Binding HasDetails}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Command="{Binding Protect.CleanCommand}" IsEnabled="{Binding Protect.CanClean}" Margin="0,8,0,0" x:Name="CleanButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Erase}" Size="16" />
+                                    <TextBlock Text="{l:Tr Ui_HiddenRun}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
 
                 <!-- Erase printed content -->
                 <DockPanel IsVisible="{Binding IsEraseTool}">

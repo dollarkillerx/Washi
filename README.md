@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Comment, Sign, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Comment, Sign, Protect, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -185,6 +185,11 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   signature into the page as smooth curves (it prints sharply and is part of the page, like Acrobat's Fill & Sign)
   and keeps the form fields. Signing is deliberately not offered to the AI assistant or MCP clients. This is a
   hand-drawn signature, not a certificate-based digital signature.
+- **Protect**: shows how the open file is protected and what it does not allow. Add a password to open it and/or
+  limits (printing, copying, changes, comments, filling in, page changes) guarded by a separate permissions password,
+  with AES-256; remove protection with the password that allows it; and **remove hidden information** before sending
+  a file (see below). A file that needs a password asks for it when it is opened; the password is kept in memory
+  until Washi closes and never written anywhere.
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your
@@ -313,11 +318,37 @@ washi pdf organize all.pdf --pages 3,1-2 --rotate 3:90 -o new.pdf   # page 3 fir
   same name, the second gets `_2`, so filling one does not fill the other. Merging the three
   filled 年末調整 forms kept all 405 fields and their values.
 - **Protected files**: if a file's permissions forbid reusing its pages (as the 国税庁 PDFs
-  do), Washi refuses it. Washi does not remove protection.
+  do), Washi refuses it. Washi does not remove protection without its password (see
+  [Passwords and hidden information](#passwords-and-hidden-information)).
 - `split` never overwrites existing parts.
 - `organize` writes exactly the listed pages in that order, so pages left out are dropped. A turned
   page's form fields turn with it (`/MK /R`), so text typed later still reads upright. A page may
   appear only once, because two copies would share their fields' values.
+
+## Passwords and hidden information
+
+```bash
+washi pdf protect form.pdf -o locked.pdf --open                    # asks for a password to open it
+washi pdf protect form.pdf -o limited.pdf --allow print,fill       # opens freely; only printing and filling in allowed
+washi pdf unlock locked.pdf -o open.pdf                            # asks for the password
+washi pdf clean report.pdf --list                                  # what the file carries besides its pages
+washi pdf clean report.pdf                                         # report_cleaned.pdf without it
+```
+
+- **Passwords**: AES-256 (PDF 2.0; Acrobat X and every current viewer open it). Limits need their own permissions
+  password, different from the one to open, or anyone who can open the file could lift them. Passwords are asked for
+  at the terminal or read from `WASHI_OPEN_PASSWORD`, `WASHI_PERMISSIONS_PASSWORD` and `WASHI_PASSWORD`, never taken
+  as arguments (those end up in the shell history). Every protected copy is opened again to check it asks for what
+  it should.
+- **Removing protection** needs the password that allows it: the permissions password, or the password to open when
+  there is no separate one. Washi never removes protection without it, so files whose permissions forbid changes
+  (as the 国税庁 PDFs do) are still refused by the other tools.
+- **Hidden information**: document properties and XMP metadata, attached files, scripts and actions (JavaScript,
+  actions that run on opening, launching programs, sending form data, XFA), comments, private program data
+  (`/PieceInfo`, which can hold a whole editable copy) and thumbnails, and earlier versions that incremental saves
+  leave in the file. The cleaned copy is checked again for every kind removed. Form fields, links and the pages
+  themselves stay. Protection and hidden information are deliberately separate steps: clean first, then protect.
+- Setting passwords is not offered to the AI assistant or MCP clients. `remove_hidden_info` is.
 
 ## Erasing printed text
 
@@ -391,6 +422,7 @@ There are two ways to run it:
 | `organize_pages` | new PDF with the listed pages in order: reorder, drop, rotate, insert pages from other PDFs; form fields kept | writes a **new** file |
 | `list_comments` | review comments already in the PDF: type, page, rect, text, author | no |
 | `add_comments` | new PDF with highlights, underlines, strike-outs, notes, text boxes, pen marks or boxes | writes a **new** file |
+| `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
@@ -535,6 +567,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 6. ~~Built-in AI: name and type fields from the page image, fill from a profile, ask about a document.~~ Done. ~~AI assistant with tool calls.~~ Done.
 7. ~~OCR (Apple Vision, Tesseract, AI), merge and split.~~ Done.
 8. ~~Erase printed content: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.~~ Done (`washi pdf erase`, the Erase tool, `erase_content`).
+9. ~~Passwords and permissions; remove hidden information.~~ Done (`washi pdf protect|unlock|clean`, the Protect tool, `remove_hidden_info`). Next: redact by keyword.
 
 ## License
 

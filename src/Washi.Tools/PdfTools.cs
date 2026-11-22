@@ -29,6 +29,7 @@ public static class WashiTools
         .Add(new OrganizePagesTool(policy))
         .Add(new ListCommentsTool(policy))
         .Add(new AddCommentsTool(policy))
+        .Add(new RemoveHiddenInfoTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -510,6 +511,56 @@ public sealed class OrganizePagesTool(PathPolicy p) : PdfTool(p)
         var output = Policy.Output(OptStr(a, "output"), path, "_organized");
         int pages = PageAssembly.Organize(picks, output);
         return new ToolResult(ToJson(new { output, pages, form_fields = AcroFormFields.List(output).Count }));
+    }
+}
+
+public sealed class RemoveHiddenInfoTool(PathPolicy p) : PdfTool(p)
+{
+    private static readonly Dictionary<string, HiddenInfo> Kinds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["metadata"] = HiddenInfo.Metadata, ["attachments"] = HiddenInfo.Attachments, ["scripts"] = HiddenInfo.Scripts,
+        ["comments"] = HiddenInfo.Comments, ["private_data"] = HiddenInfo.PrivateData,
+    };
+
+    public override string Name => "remove_hidden_info";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Finds and removes information a PDF carries besides its pages: metadata (title, author, dates, the program that made it, " +
+        "XMP), attachments, scripts and actions (JavaScript, launching programs, submitting data, XFA), comments, private " +
+        "application data and thumbnails, and earlier versions kept by incremental saves (always removed). With dry_run it only " +
+        "lists what is there. Pages, form fields and links stay. Password-protected files are refused. Never overwrites: output " +
+        "defaults to <name>_cleaned.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "remove":{"type":"array","items":{"type":"string","enum":["metadata","attachments","scripts","comments","private_data"]},
+                    "description":"What to remove (default: all of it)"},
+          "dry_run":{"type":"boolean","description":"Only list what the file carries; write nothing"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_cleaned.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    private static object Describe(IEnumerable<HiddenItem> items) => items.Select(i => new
+    {
+        kind = Kinds.FirstOrDefault(k => k.Value == i.Kind).Key ?? "earlier_versions", count = i.Count, details = i.Details,
+    });
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (a.TryGetProperty("dry_run", out var dry) && dry.ValueKind == JsonValueKind.True)
+            return new ToolResult(ToJson(new { found = Describe(PdfCleaner.Inspect(path)) }));
+        var remove = new HashSet<HiddenInfo> { HiddenInfo.EarlierVersions };
+        if (a.TryGetProperty("remove", out var list) && list.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var e in list.EnumerateArray())
+                remove.Add(e.GetString() is { } k && Kinds.TryGetValue(k, out var kind) ? kind : throw new ToolException($"unknown kind '{e}'"));
+        }
+        else remove.UnionWith(Kinds.Values);
+        var output = Policy.Output(OptStr(a, "output"), path, "_cleaned");
+        var removed = PdfCleaner.Clean(path, output, remove);
+        return new ToolResult(ToJson(new { output, removed = Describe(removed), left = Describe(PdfCleaner.Inspect(output)) }));
     }
 }
 

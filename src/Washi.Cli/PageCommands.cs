@@ -5,10 +5,10 @@ using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
 
-/// <summary>washi pdf merge|split|organize|erase and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list"];
 
     public static int Pdf(string[] args)
     {
@@ -52,6 +52,41 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_Erased", output, report.TextRemoved, report.ImagesRemoved, report.DrawingsRemoved,
                         report.RemainingChars, report.ChangedPixelsOutside));
                     foreach (var k in report.Kept) Console.WriteLine(L.F("Pdf_EraseKept", k.Page + 1, L.Get("Erase_Kept" + k.Why)));
+                    return 0;
+                }
+                case ["protect", var input] when opt.TryGetValue("-o", out var output) && (opt.ContainsKey("--open") || opt.ContainsKey("--allow")):
+                {
+                    var perms = opt.TryGetValue("--allow", out var allow) ? ParseAllow(allow) : PdfPermissions.All;
+                    var open = opt.ContainsKey("--open") ? Password("WASHI_OPEN_PASSWORD", L.Get("Pdf_AskOpenPassword")) : null;
+                    var owner = opt.ContainsKey("--allow") ? Password("WASHI_PERMISSIONS_PASSWORD", L.Get("Pdf_AskPermissionsPassword")) : null;
+                    var current = PdfSecurity.Inspect(input).Encrypted ? Password("WASHI_PASSWORD", L.F("Pdf_AskPassword", Path.GetFileName(input))) : null;
+                    PdfSecurity.Protect(input, output, open, owner, perms, current);
+                    Console.WriteLine(L.F("Pdf_Protected", output));
+                    return 0;
+                }
+                case ["unlock", var input] when opt.TryGetValue("-o", out var output):
+                {
+                    PdfSecurity.Unlock(input, output, Password("WASHI_PASSWORD", L.F("Pdf_AskPassword", Path.GetFileName(input))));
+                    Console.WriteLine(L.F("Pdf_Unlocked", output));
+                    return 0;
+                }
+                case ["clean", var input] when opt.ContainsKey("--list"):
+                {
+                    var found = PdfCleaner.Inspect(input);
+                    if (found.Count == 0) Console.WriteLine(L.Get("Ui_HiddenNothing"));
+                    foreach (var item in found) Console.WriteLine(HiddenLine(item));
+                    return 0;
+                }
+                case ["clean", var input]:
+                {
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_cleaned.pdf"));
+                    if (File.Exists(output)) throw new PageAssemblyException($"{output} already exists; choose another output name");
+                    var remove = opt.TryGetValue("--only", out var only) ? ParseHidden(only) : [.. Enum.GetValues<HiddenInfo>()];
+                    remove.Add(HiddenInfo.EarlierVersions);
+                    var removed = PdfCleaner.Clean(input, output, remove);
+                    Console.WriteLine(L.F("Ui_Cleaned", output, removed.Sum(r => r.Count)));
+                    foreach (var item in removed) Console.WriteLine(HiddenLine(item));
                     return 0;
                 }
                 default:
@@ -120,6 +155,51 @@ internal static class PageCommands
             Console.Error.WriteLine(L.F("Pdf_Failed", e.Message));
             return 1;
         }
+    }
+
+    private static string HiddenLine(HiddenItem item) =>
+        "  " + L.F("Ui_Hidden" + item.Kind, item.Count) + (item.Details.Count > 0 ? ": " + string.Join(", ", item.Details) : "");
+
+    /// <summary>"print,fill": what stays allowed; everything else is restricted ("none" restricts all).</summary>
+    private static PdfPermissions ParseAllow(string spec)
+    {
+        var words = spec.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(w => w.ToLowerInvariant()).ToHashSet();
+        var known = new HashSet<string> { "print", "copy", "edit", "comment", "fill", "assemble", "none" };
+        if (words.FirstOrDefault(w => !known.Contains(w)) is { } bad)
+            throw new PageAssemblyException($"--allow: unknown permission '{bad}' (use print, copy, edit, comment, fill, assemble or none)");
+        return new PdfPermissions(words.Contains("print"), words.Contains("copy"), words.Contains("edit"), words.Contains("comment"),
+                                  words.Contains("fill"), words.Contains("assemble"));
+    }
+
+    private static HashSet<HiddenInfo> ParseHidden(string spec) => [.. spec.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(w => w.ToLowerInvariant() switch
+        {
+            "metadata" => HiddenInfo.Metadata, "attachments" => HiddenInfo.Attachments, "scripts" => HiddenInfo.Scripts,
+            "comments" => HiddenInfo.Comments, "private" or "private_data" => HiddenInfo.PrivateData,
+            _ => throw new PageAssemblyException($"--only: unknown kind '{w}' (use metadata, attachments, scripts, comments or private)"),
+        })];
+
+    /// <summary>
+    /// A password from an environment variable, or typed at the terminal without showing it. Never a command-line
+    /// argument: those end up in the shell history and the process list.
+    /// </summary>
+    private static string Password(string variable, string prompt)
+    {
+        if (Environment.GetEnvironmentVariable(variable) is { Length: > 0 } fromEnv) return fromEnv;
+        if (Console.IsInputRedirected)
+            throw new PageAssemblyException($"set {variable} (no terminal to ask for the password)");
+        Console.Error.Write(prompt + " ");
+        var sb = new System.Text.StringBuilder();
+        while (true)
+        {
+            var k = Console.ReadKey(intercept: true);
+            if (k.Key == ConsoleKey.Enter) break;
+            if (k.Key == ConsoleKey.Backspace) { if (sb.Length > 0) sb.Length--; continue; }
+            if (!char.IsControl(k.KeyChar)) sb.Append(k.KeyChar);
+        }
+        Console.Error.WriteLine();
+        if (sb.Length == 0) throw new PageAssemblyException("no password given");
+        return sb.ToString();
     }
 
     /// <summary>"1:40,60,200,80;2:10,10,50,30" (page:x0,y0,x1,y1 in points, top-left origin).</summary>
