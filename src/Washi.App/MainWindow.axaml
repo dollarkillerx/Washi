@@ -625,13 +625,56 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBlock Classes="section" Text="{l:Tr Ui_CommentExisting}" IsVisible="{Binding Comment.Existing.Count}" />
-                            <ItemsControl ItemsSource="{Binding Comment.Existing}">
-                                <ItemsControl.ItemTemplate>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CommentExistingHint}" TextWrapping="Wrap" IsVisible="{Binding Comment.Existing.Count}" />
+                            <ListBox ItemsSource="{Binding Comment.Existing}" SelectedItem="{Binding Comment.SelectedExisting}" Background="Transparent"
+                                     x:Name="ExistingCommentList">
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="6,3" />
+                                        <Setter Property="MinHeight" Value="0" />
+                                    </Style>
+                                </ListBox.Styles>
+                                <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:ExistingComment">
-                                        <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,2" />
+                                        <TextBlock Text="{Binding Label}" FontSize="12" TextWrapping="Wrap" />
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <!-- the chosen comment: its words, colour, removal and replies -->
+                            <Border IsVisible="{Binding Comment.HasSelectedExisting}" Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,8,0,0"
+                                    x:Name="ExistingCommentEditor">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding Comment.SelectedExisting.Kind, FallbackValue={x:Null}}" FontWeight="SemiBold" />
+                                    <TextBox Text="{Binding Comment.SelectedExisting.Text, FallbackValue={x:Null}}" AcceptsReturn="True" TextWrapping="Wrap"
+                                             MinHeight="48" IsEnabled="{Binding !Comment.SelectedExisting.Deleted, FallbackValue=False}" x:Name="ExistingCommentText" />
+                                    <ItemsControl ItemsSource="{x:Static vm:CommentToolViewModel.Colors}"
+                                                  IsVisible="{Binding Comment.SelectedExisting.Info.Redrawable, FallbackValue=False}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:CommentSwatch">
+                                                <Button Width="22" Height="22" Padding="0" Background="{Binding Brush}" BorderBrush="#8d8d8d" BorderThickness="1"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Comment.SetColorCommand}"
+                                                        CommandParameter="{Binding Hex}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Classes="note" Text="{l:Tr Ui_CommentMoveHint}" TextWrapping="Wrap"
+                                               IsVisible="{Binding Comment.SelectedExisting.Info.Movable, FallbackValue=False}" />
+                                    <TextBlock Classes="note" Text="{Binding Comment.SelectedExisting.ThreadText, FallbackValue={x:Null}}" TextWrapping="Wrap"
+                                               IsVisible="{Binding Comment.SelectedExisting.HasThread, FallbackValue=False}" />
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Content="{l:Tr Ui_CommentReply}" Command="{Binding Comment.ReplyCommand}" Padding="10,4"
+                                                Margin="6,0,0,0" />
+                                        <TextBox Text="{Binding Comment.ReplyDraft}" PlaceholderText="{l:Tr Ui_CommentReplyHint}" x:Name="CommentReplyBox" />
+                                    </DockPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Button Content="{l:Tr Ui_CommentDelete}" Command="{Binding Comment.ToggleDeleteCommand}" Padding="10,4" FontSize="12"
+                                                x:Name="CommentDeleteButton" />
+                                        <Button Content="{l:Tr Ui_CommentRevert}" Command="{Binding Comment.RevertCommand}" Padding="10,4" FontSize="12"
+                                                IsVisible="{Binding Comment.SelectedExisting.IsChanged, FallbackValue=False}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>

@@ -16,12 +16,71 @@ public sealed record PendingComment(CommentSpec Spec)
                            + (Spec.Text.Length > 0 ? " · " + (Spec.Text.Length > 30 ? Spec.Text[..30] + "…" : Spec.Text) : "");
 }
 
-/// <summary>A comment the PDF already has (shown, not changed).</summary>
-public sealed record ExistingComment(CommentInfo Info)
+/// <summary>
+/// A comment the PDF already has, with the changes made to it in this session (its text, colour and place, removal, new
+/// replies). They are written when the copy is saved.
+/// </summary>
+public sealed partial class ExistingComment : ObservableObject
 {
-    public string Label => L.F("Ui_CommentItem", Info.Type, Info.Page + 1)
+    public ExistingComment(CommentInfo info, IEnumerable<CommentInfo> replies)
+    {
+        Info = info;
+        _text = info.Text;
+        _color = info.Color;
+        _rect = info.Rect;
+        Thread = [.. replies];
+    }
+
+    public CommentInfo Info { get; }
+    /// <summary>The replies it already has, oldest first.</summary>
+    public IReadOnlyList<CommentInfo> Thread { get; }
+    public ObservableCollection<string> NewReplies { get; } = [];
+
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsChanged), nameof(Label))] private string _text;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsChanged), nameof(Label))] private string _color;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsChanged), nameof(Label))] private PdfRect _rect;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsChanged), nameof(Label))] private bool _deleted;
+
+    public bool IsChanged => Deleted || Text != Info.Text || !string.Equals(Color, Info.Color, StringComparison.OrdinalIgnoreCase)
+                             || Rect != Info.Rect || NewReplies.Count > 0;
+    public bool Moved => Rect != Info.Rect;
+
+    public string Kind => L.Get("Annot_" + Info.Type) is var k && k != "Annot_" + Info.Type ? k : Info.Type;
+
+    public string Label => (Deleted ? "✕ " : IsChanged ? "✎ " : "") + L.F("Ui_CommentItem", Kind, Info.Page + 1)
                            + (Info.Author.Length > 0 ? " · " + Info.Author : "")
-                           + (Info.Text.Length > 0 ? " · " + (Info.Text.Length > 30 ? Info.Text[..30] + "…" : Info.Text) : "");
+                           + (Text.Length > 0 ? " · " + (Text.Length > 30 ? Text[..30] + "…" : Text) : "")
+                           + (Thread.Count + NewReplies.Count > 0 ? " · " + L.F("Ui_CommentReplies", Thread.Count + NewReplies.Count) : "");
+
+    public string ThreadText => string.Join("\n", Thread.Select(r => (r.Author.Length > 0 ? r.Author + ": " : "") + r.Text)
+                                                     .Concat(NewReplies.Select(r => "→ " + r)));
+    public bool HasThread => Thread.Count + NewReplies.Count > 0;
+
+    public void AddReply(string text)
+    {
+        NewReplies.Add(text);
+        OnPropertyChanged(nameof(IsChanged));
+        OnPropertyChanged(nameof(Label));
+        OnPropertyChanged(nameof(ThreadText));
+        OnPropertyChanged(nameof(HasThread));
+    }
+
+    /// <summary>What to ask <see cref="PdfComments.Change"/> for.</summary>
+    public IEnumerable<CommentChange> Changes(string author)
+    {
+        if (Deleted) { yield return new CommentChange(Info.Id, Delete: true); yield break; }
+        bool edited = Text != Info.Text || !string.Equals(Color, Info.Color, StringComparison.OrdinalIgnoreCase) || Moved;
+        if (edited)
+            yield return new CommentChange(Info.Id, Text != Info.Text ? Text : null,
+                                           !string.Equals(Color, Info.Color, StringComparison.OrdinalIgnoreCase) ? Color : null, Moved ? Rect : null);
+        foreach (var r in NewReplies) yield return new CommentChange(Info.Id, Reply: r, Author: author);
+    }
+}
+
+/// <summary>A colour to give a comment.</summary>
+public sealed record CommentSwatch(string Hex)
+{
+    public Avalonia.Media.IBrush Brush { get; } = Avalonia.Media.Brush.Parse(Hex);
 }
 
 /// <summary>A choice in the comment toolbar.</summary>
@@ -59,33 +118,113 @@ public sealed partial class CommentToolViewModel(MainViewModel main) : Observabl
     public ObservableCollection<PendingComment> Pending { get; } = [];
     public ObservableCollection<ExistingComment> Existing { get; } = [];
 
+    /// <summary>The existing comment being looked at or changed (chosen in the list or clicked on the page).</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasSelectedExisting))] private ExistingComment? _selectedExisting;
+    [ObservableProperty] private string _replyDraft = "";
+
+    public bool HasSelectedExisting => SelectedExisting is not null;
     public bool NeedsText => Mode is CommentKind.Note or CommentKind.TextBox;
     public string Hint => L.Get("Ui_CommentHint" + Mode);
     public bool HasPending => Pending.Count > 0;
-    public bool CanSave => HasPending && main.HasDocument;
+    public bool HasChanges => Existing.Any(e => e.IsChanged);
+    public bool CanSave => (HasPending || HasChanges) && main.HasDocument;
+
+    /// <summary>Colours an existing comment can take.</summary>
+    public static IReadOnlyList<CommentSwatch> Colors { get; } =
+        [.. new[] { "#FFE14D", "#DA1E28", "#0F62FE", "#24A148", "#8A3FFC", "#161616" }.Select(h => new CommentSwatch(h))];
+
+    partial void OnSelectedExistingChanged(ExistingComment? value)
+    {
+        ReplyDraft = "";
+        if (value is not null && value.Info.Page != main.PageIndex && value.Info.Page < main.PageCount) main.PageIndex = value.Info.Page;
+        Changed?.Invoke();
+    }
+
+    [RelayCommand]
+    private void SetColor(string? color)
+    {
+        if (SelectedExisting is not { Info.Redrawable: true } c || color is null) return;
+        c.Color = color;
+        Refresh();
+    }
+
+    [RelayCommand]
+    private void ToggleDelete()
+    {
+        if (SelectedExisting is not { } c) return;
+        c.Deleted = !c.Deleted;
+        Refresh();
+    }
+
+    [RelayCommand]
+    private void Reply()
+    {
+        if (SelectedExisting is not { Deleted: false } c || ReplyDraft.Trim().Length == 0) return;
+        c.AddReply(ReplyDraft.Trim());
+        ReplyDraft = "";
+        Refresh();
+    }
+
+    [RelayCommand]
+    private void Revert()
+    {
+        if (SelectedExisting is not { } c) return;
+        var fresh = Watch(new ExistingComment(c.Info, c.Thread));
+        Existing[Existing.IndexOf(c)] = fresh;
+        SelectedExisting = fresh;
+        Refresh();
+    }
+
+    /// <summary>The existing comment under a point of the current page (the smallest, so a note on a box wins).</summary>
+    public ExistingComment? HitExisting(double x, double y) =>
+        Existing.Where(e => e.Info.Page == main.PageIndex && new PdfRect(e.Rect.X0 - 2, e.Rect.Y0 - 2, e.Rect.X1 + 2, e.Rect.Y1 + 2).Contains(x, y))
+                .OrderBy(e => e.Rect.Area).FirstOrDefault();
+
+    /// <summary>A comment dragged on the page (it must be one that can move).</summary>
+    public void MoveExisting(ExistingComment c, PdfRect to)
+    {
+        if (!c.Info.Movable || c.Deleted) return;
+        c.Rect = to;
+        Refresh();
+    }
 
     /// <summary>Redraws the page.</summary>
     public event Action? Changed;
 
     private readonly Dictionary<int, IReadOnlyList<PdfChar>> _chars = [];
+    private int _prepared;
 
     /// <summary>When the tool opens or a document loads: the comments already in the file.</summary>
     public async Task PrepareAsync()
     {
-        Existing.Clear();
-        if (main.PdfPath is not { } pdf) return;
+        int version = ++_prepared;
+        if (main.PdfPath is not { } pdf) { Existing.Clear(); return; }
         var list = await Task.Run(() =>
         {
             try { return PdfComments.List(pdf); }
             catch (Exception e) when (e is IOException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException) { return []; }
         });
-        foreach (var c in list) Existing.Add(new ExistingComment(c));
+        if (version != _prepared || main.PdfPath != pdf) return;   // a newer call (or another file) won
+        SelectedExisting = null;
+        Existing.Clear();
+        // threads: each comment with the replies to it (replies are not listed on their own)
+        var replies = list.Where(c => c.ReplyTo is not null).GroupBy(c => c.ReplyTo!).ToDictionary(g => g.Key, g => g.ToList());
+        foreach (var c in list.Where(c => c.ReplyTo is null))
+            Existing.Add(Watch(new ExistingComment(c, replies.GetValueOrDefault(c.Id) ?? [])));
+        Refresh();
+    }
+
+    private ExistingComment Watch(ExistingComment c)
+    {
+        c.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ExistingComment.IsChanged)) Refresh(); };
+        return c;
     }
 
     public void Reset()
     {
         Pending.Clear();
         Existing.Clear();
+        SelectedExisting = null;
         _chars.Clear();
         Refresh();
     }
@@ -93,6 +232,7 @@ public sealed partial class CommentToolViewModel(MainViewModel main) : Observabl
     private void Refresh()
     {
         OnPropertyChanged(nameof(HasPending));
+        OnPropertyChanged(nameof(HasChanges));
         OnPropertyChanged(nameof(CanSave));
         Changed?.Invoke();
     }
@@ -176,25 +316,39 @@ public sealed partial class CommentToolViewModel(MainViewModel main) : Observabl
 
     private static PdfRect Union(List<PdfRect> rs) => new(rs.Min(r => r.X0), rs.Min(r => r.Y0), rs.Max(r => r.X1), rs.Max(r => r.Y1));
 
-    /// <summary>Writes &lt;name&gt;_commented.pdf with the new comments and opens it.</summary>
+    /// <summary>Writes &lt;name&gt;_commented.pdf with the changes to existing comments and the new ones, and opens it.</summary>
     [RelayCommand]
     private async Task SaveAsync()
     {
         if (!CanSave || main.PdfPath is not { } pdf) return;
         if (await main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_commented.pdf") is not { } output) return;
+        if (Path.GetFullPath(output) == Path.GetFullPath(pdf)) { main.Status = L.Get("Ui_BookmarksNotOriginal"); return; }
         var specs = Pending.Select(p => p.Spec).ToList();
+        var changes = Existing.SelectMany(e => e.Changes(Author.Trim())).ToList();
         string? written = null;
         await main.Run(async () =>
         {
             var tmp = output + ".tmp";
+            var tmp2 = output + ".changed.tmp";
+            foreach (var t in new[] { tmp, tmp2 }) if (File.Exists(t)) File.Delete(t);
             try
             {
-                int n = await Task.Run(() => PdfComments.Add(pdf, tmp, specs));
+                // existing comments are changed first: new ones are added after them, so their ids stay valid
+                var source = pdf;
+                (int Changed, int Removed, int Replies) r = default;
+                if (changes.Count > 0)
+                {
+                    r = await Task.Run(() => PdfComments.Change(pdf, tmp2, changes));
+                    source = tmp2;
+                }
+                int n = 0;
+                if (specs.Count > 0) n = await Task.Run(() => PdfComments.Add(source, tmp, specs));
+                else File.Move(tmp2, tmp);
                 File.Move(tmp, output, overwrite: true);
                 written = output;
-                main.Status = L.F("Ui_Commented", Path.GetFileName(output), n);
+                main.Status = L.F("Ui_CommentsSaved", Path.GetFileName(output), n, r.Changed, r.Removed, r.Replies);
             }
-            finally { if (File.Exists(tmp)) File.Delete(tmp); }
+            finally { foreach (var t in new[] { tmp, tmp2 }) if (File.Exists(t)) File.Delete(t); }
         });
         if (written is not null)
         {

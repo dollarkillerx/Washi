@@ -39,6 +39,8 @@ public sealed class FieldCanvas : Control
     private (bool Left, bool Top) _corner; // which corner is being dragged
     private FieldViewModel? _dragged;
     private PdfRect? _eraseBox;           // the erase box being drawn, page points
+    private ViewModels.ExistingComment? _movingComment;   // an existing comment being dragged (Comment tool)
+    private PdfRect _movingFrom;
     private List<(double X, double Y)>? _penStroke;   // the comment pen's stroke being drawn, page points
 
     static FieldCanvas()
@@ -464,6 +466,30 @@ public sealed class FieldCanvas : Control
                     break;
             }
         }
+        // existing comments with changes: removed ones crossed out, moved ones outlined where they go, the chosen one outlined
+        var blue = new SolidColorBrush(Color.FromRgb(15, 98, 254));
+        foreach (var ex in vm.Comment.Existing.Where(x => x.Info.Page == page))
+        {
+            bool chosen = ReferenceEquals(ex, vm.Comment.SelectedExisting);
+            if (ex.Deleted)
+            {
+                var r = Screen(ex.Info.Rect);
+                var red = new Pen(new SolidColorBrush(Color.FromRgb(218, 30, 40)), 2);
+                ctx.DrawRectangle(new SolidColorBrush(Colors.White, 0.55), red, r);
+                ctx.DrawLine(red, r.TopLeft, r.BottomRight);
+                ctx.DrawLine(red, r.TopRight, r.BottomLeft);
+                continue;
+            }
+            if (ex.Moved)
+            {
+                ctx.DrawRectangle(new SolidColorBrush(Colors.White, 0.5), null, Screen(ex.Info.Rect));
+                ctx.DrawRectangle(new SolidColorBrush(C(ex.Color.Length > 0 ? ex.Color : "#0F62FE"), 0.25),
+                                  new Pen(blue, 1.5, new DashStyle([4, 3], 0)), Screen(ex.Rect));
+            }
+            else if (!string.Equals(ex.Color, ex.Info.Color, StringComparison.OrdinalIgnoreCase) && ex.Color.Length > 0)
+                ctx.DrawRectangle(new SolidColorBrush(C(ex.Color), 0.35), null, Screen(ex.Rect));
+            if (chosen) ctx.DrawRectangle(null, new Pen(blue, 2), Screen(ex.Rect).Inflate(2));
+        }
         if (_penStroke is { } live) DrawStroke(ctx, live, C(Washi.Core.Pages.PdfComments.DefaultColor(Washi.Core.Pages.CommentKind.Pen)));
         if (_eraseBox is { } drawing)
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1, new DashStyle([5, 3], 0)), Screen(drawing));
@@ -489,6 +515,22 @@ public sealed class FieldCanvas : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        // Comment tool: a press on an existing comment chooses it (and drags it, when it can move)
+        if (Editor is { HasDocument: true, IsCommentTool: true } ce && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+            && ToPage(e.GetPosition(this)) is var at && ce.Comment.HitExisting(at.X, at.Y) is { } chosen)
+        {
+            ce.Comment.SelectedExisting = chosen;
+            if (chosen.Info.Movable && !chosen.Deleted)
+            {
+                _movingComment = chosen;
+                _movingFrom = chosen.Rect;
+                _start = at;
+                e.Pointer.Capture(this);
+            }
+            e.Handled = true;
+            InvalidateVisual();
+            return;
+        }
         if (Editor is { HasDocument: true, IsCommentTool: true } cv && cv.Comment.Mode == Washi.Core.Pages.CommentKind.Pen
             && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
@@ -554,6 +596,15 @@ public sealed class FieldCanvas : Control
     {
         base.OnPointerMoved(e);
         var screen = e.GetPosition(this);
+        if (_movingComment is { } mc)
+        {
+            var at = ToPage(screen);
+            double mx = at.X - _start.X, my = at.Y - _start.Y;
+            mc.Rect = new PdfRect(_movingFrom.X0 + mx, _movingFrom.Y0 + my, _movingFrom.X1 + mx, _movingFrom.Y1 + my);
+            InvalidateVisual();
+            e.Handled = true;
+            return;
+        }
         if (_penStroke is { } stroke)
         {
             var p1 = ToPage(screen);
@@ -599,6 +650,17 @@ public sealed class FieldCanvas : Control
             _penStroke = null;
             e.Pointer.Capture(null);
             Editor?.Comment.AddStroke(done);
+            InvalidateVisual();
+            return;
+        }
+        if (_movingComment is { } moved && Editor is { IsCommentTool: true } mvm)
+        {
+            _movingComment = null;
+            e.Pointer.Capture(null);
+            var to = moved.Rect;
+            moved.Rect = _movingFrom;
+            // a click without a drag only chooses it
+            if (Math.Abs(to.X0 - _movingFrom.X0) + Math.Abs(to.Y0 - _movingFrom.Y0) >= 1) mvm.Comment.MoveExisting(moved, to);
             InvalidateVisual();
             return;
         }

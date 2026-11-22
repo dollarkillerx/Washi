@@ -551,6 +551,59 @@ public sealed class ToolsUiTests : IDisposable
         Assert.False(vm.Print.CanPrint);
     }
 
+    [AvaloniaFact]
+    public async Task Existing_comments_are_chosen_changed_moved_removed_and_answered()
+    {
+        var flat = Form("c.pdf");
+        var commented = Path.Combine(_dir, "c_with.pdf");
+        Washi.Core.Pages.PdfComments.Add(flat, commented,
+        [
+            new(0, Washi.Core.Pages.CommentKind.Note, new Washi.Core.PdfRect(500, 40, 518, 58), "Please check", Author: "Aoi"),
+            new(0, Washi.Core.Pages.CommentKind.Box, new Washi.Core.PdfRect(100, 300, 200, 360)),
+            new(0, Washi.Core.Pages.CommentKind.TextBox, new Washi.Core.PdfRect(300, 100, 460, 130), "Draft"),
+        ]);
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "c_commented.pdf") };
+        var (w, vm) = await Open(commented, dialogs);
+        vm.ActiveTool = Tool.Comment;
+        await vm.Comment.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(3, vm.Comment.Existing.Count);
+        Assert.False(vm.Comment.CanSave);
+
+        var note = vm.Comment.HitExisting(505, 45)!;               // a click on the note's icon
+        Assert.Equal("Please check", note.Text);
+        vm.Comment.SelectedExisting = note;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Border>("ExistingCommentEditor")!.IsEffectivelyVisible);
+        note.Text = "Checked";
+        vm.Comment.ReplyDraft = "Thanks!";
+        vm.Comment.ReplyCommand.Execute(null);
+        vm.Comment.SetColorCommand.Execute("#24A148");
+        vm.Comment.MoveExisting(note, new Washi.Core.PdfRect(520, 60, 538, 78));
+        Assert.True(note.IsChanged);
+        Assert.StartsWith("✎", note.Label);
+
+        vm.Comment.SelectedExisting = vm.Comment.HitExisting(150, 330);   // the box
+        vm.Comment.ToggleDeleteCommand.Execute(null);
+        Assert.True(vm.Comment.CanSave);
+
+        var text = vm.Comment.Existing.Single(e => e.Info.Type == "FreeText");
+        vm.Comment.SelectedExisting = text;
+        text.Text = "Final words";
+        vm.Comment.RevertCommand.Execute(null);                     // changed my mind
+        Assert.Equal("Draft", vm.Comment.SelectedExisting!.Text);
+
+        await vm.Comment.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        var after = Washi.Core.Pages.PdfComments.List(dialogs.SavePdf!);
+        var n = after.Single(c => c.Type == "Text" && c.ReplyTo is null);
+        Assert.Equal(("Checked", "#24A148"), (n.Text, n.Color));
+        Assert.Equal(520, n.Rect.X0, 1);
+        Assert.Equal("Thanks!", after.Single(c => c.ReplyTo == n.Id).Text);
+        Assert.DoesNotContain(after, c => c.Type == "Square");
+        Assert.Equal("Draft", after.Single(c => c.Type == "FreeText").Text);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

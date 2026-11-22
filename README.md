@@ -177,8 +177,12 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   the files). **Save as new PDF** writes the result, keeps the form fields fillable, and opens it.
 - **Comment**: highlight, underline or strike out text (drag over it), add sticky notes (type, then click) and text
   boxes (type, then drag), draw with a pen, or draw boxes. **Save with comments** writes a copy with standard PDF
-  annotations, each with its own appearance, so every viewer shows them the same way (rotated pages included). The
-  panel also lists the comments the file already has.
+  annotations, each with its own appearance, so every viewer shows them the same way (rotated pages included).
+  Comments the file already has (from Acrobat, Preview or anyone else) are listed with their replies: click one, here
+  or on the page, to change its words, give it another colour, remove it (with its replies) or reply to it, and drag
+  a note, box, text box or pen drawing to move it. Washi redraws what it changes; comments of kinds it does not draw
+  (circles, stamps…) can still be reworded, removed and answered. Agents use `list_comments` (which gives each
+  comment's id) and `edit_comments`.
 - **Sign** (Fill & Sign): sign once on the pad with a mouse, trackpad or pen. The signature is kept as vector strokes
   in `~/.config/washi/signature.txt` if you tick "Remember" (never sent anywhere; untick to delete it). Drag a box on
   the page, or press **Sign here** next to a signature field, for each place to sign. **Save signed copy** draws the
@@ -507,6 +511,7 @@ There are two ways to run it:
 | `organize_pages` | new PDF with the listed pages in order: reorder, drop, rotate, insert pages from other PDFs; form fields kept | writes a **new** file |
 | `list_comments` | review comments already in the PDF: type, page, rect, text, author | no |
 | `add_comments` | new PDF with highlights, underlines, strike-outs, notes, text boxes, pen marks or boxes | writes a **new** file |
+| `edit_comments` | new PDF with existing comments reworded, recoloured, moved, removed (with replies) or answered, by id | writes a **new** file |
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
@@ -604,7 +609,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 19 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 20 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -659,6 +664,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 12. ~~Bookmarks: read, navigate, edit.~~ Done (the Bookmarks panel, `washi pdf bookmarks`, `list_bookmarks`, `set_bookmarks`).
 13. ~~Print.~~ Done (the print card, `washi pdf print`).
 14. ~~Formats, ranges and calculations in forms.~~ Done (field rules, written as Acrobat's field actions and applied when filling).
+15. ~~Edit existing comments.~~ Done (the Comment tool, `edit_comments`).
 
 ## License
 
