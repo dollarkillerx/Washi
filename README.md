@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Comment, Sign, Protect, Redact, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -436,6 +436,31 @@ why. Forms made elsewhere keep working: the same AF calls are read from their fi
 codes, phone numbers) and the 国税庁 input forms (amounts). Other scripts are left as they are and not run. These
 actions are JavaScript: *Remove hidden information* lists them under scripts.
 
+## Compression
+
+```bash
+washi pdf compress scan.pdf                    # scan_compressed.pdf, standard level
+washi pdf compress report.pdf --level strong   # for e-mail size limits
+```
+
+In the editor: **Compress** in the tool rail, pick a level, *Compress and save copy*. Agents use `compress_pdf`.
+
+- **Light** cleans up without losing anything and only scales down images far more detailed than needed (above
+  300 dpi, to 200). **Standard** scales images above 225 dpi to 150 and stores photos as JPEG (quality 75): sharp on
+  screen and in print. **Strong** goes to 100 dpi and quality 60, for e-mail limits.
+- The resolution is measured where each image is shown (its size on the page), not from the image alone. Line art,
+  charts and screenshots (few colours) stay lossless, as do one-bit scans and CMYK, spot-colour and indexed images.
+  A new image is kept only when it is clearly smaller.
+- Lossless savings for every file: streams compressed (or compressed better), identical images, fonts and profiles
+  stored once (a logo on every page, a font embedded twice), page thumbnails dropped, earlier versions removed, and
+  the small objects packed into compressed object streams with a cross-reference stream (PDF 1.5): forms with
+  thousands of fields shrink by a quarter or more.
+- **Checked before it is kept:** every page of the copy is rendered next to the original and compared. Form fields,
+  links, bookmarks and text are not touched. Password-protected files are refused (the save would drop the
+  protection), and a signed file is flagged: its signatures do not hold for the copy.
+- Run over the public forms and documents Washi is tested with: IRS Pub 15-T 2.4 MB → 1.7 MB, Form 1040 −27%, a
+  法務省 form −18%; a scan-style test document (photos at 436 dpi) loses over 60% at the standard level.
+
 ## Erasing printed text
 
 Forms sometimes arrive with data already printed on them, and some of it is wrong. Making the form
@@ -514,6 +539,7 @@ There are two ways to run it:
 | `edit_comments` | new PDF with existing comments reworded, recoloured, moved, removed (with replies) or answered, by id | writes a **new** file |
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
+| `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
@@ -609,7 +635,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 20 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 21 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -665,6 +691,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 13. ~~Print.~~ Done (the print card, `washi pdf print`).
 14. ~~Formats, ranges and calculations in forms.~~ Done (field rules, written as Acrobat's field actions and applied when filling).
 15. ~~Edit existing comments.~~ Done (the Comment tool, `edit_comments`).
+16. ~~Compression.~~ Done (`washi pdf compress`, the Compress tool, `compress_pdf`). Next: certificate signatures.
 
 ## License
 

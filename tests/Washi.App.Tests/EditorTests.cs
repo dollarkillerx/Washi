@@ -407,6 +407,11 @@ public sealed class EditorTests : IDisposable
         Shot(w, "bookmarks");
         vm.ShowPagesPanel = true;
 
+        vm.ActiveTool = Tool.Compress;
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "compress");
+        vm.ActiveTool = Tool.Form;
+
         await vm.Print.OpenCommand.ExecuteAsync(null);
         Dispatcher.UIThread.RunJobs();
         Shot(w, "print");

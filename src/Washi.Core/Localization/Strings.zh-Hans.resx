@@ -132,7 +132,8 @@
                                           列出书签（每行一个：每级缩进两个空格，制表符，页码），
                                           或用同样格式的文件写出带书签的副本
   washi pdf print &lt;in.pdf&gt; [--printer 名称] [--copies 份数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
-  washi pdf printers                      列出打印机</value></data>
+  washi pdf printers                      列出打印机
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已保存 {0}：删除了文字 {1} 段、图像 {2} 个、图形 {3} 个。检查：删除处剩余文字 {4} 个，其他地方变化的像素 {5} 个。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 页保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已将 {0} 个文件合并为 {1}：{2} 页，{3} 个表单栏位</value></data>
@@ -667,4 +668,23 @@
   <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>批注“{0}”由其他程序创建：可以改文字、删除或回复，但不能换颜色。</value></data>
   <data name="Err_CommentNotMovable" xml:space="preserve"><value>批注“{0}”不能移动（文字标记跟随文字）。</value></data>
   <data name="Err_CommentCheck" xml:space="preserve"><value>修改后的批注与要求不符，因此没有保留副本。</value></data>
+  <data name="Ui_ToolCompress" xml:space="preserve"><value>压缩</value></data>
+  <data name="Ui_CompressTitle" xml:space="preserve"><value>压缩文件</value></data>
+  <data name="Ui_CompressLead" xml:space="preserve"><value>生成一份更小的副本，方便发邮件或上传。页面外观不变；保存前会逐页与原文件比对。</value></data>
+  <data name="Ui_CompressSize" xml:space="preserve"><value>当前：{0}</value></data>
+  <data name="Ui_CompressLight" xml:space="preserve"><value>轻度</value></data>
+  <data name="Ui_CompressLightNote" xml:space="preserve"><value>只做无损整理；仅缩小远超屏幕和打印所需的高分辨率图像（300 dpi 以上）。</value></data>
+  <data name="Ui_CompressStandard" xml:space="preserve"><value>标准</value></data>
+  <data name="Ui_CompressStandardNote" xml:space="preserve"><value>图像降至 150 dpi，照片用 JPEG：屏幕和打印都清晰。一般选这个。</value></data>
+  <data name="Ui_CompressStrong" xml:space="preserve"><value>强力</value></data>
+  <data name="Ui_CompressStrongNote" xml:space="preserve"><value>图像降至 100 dpi，JPEG 压缩更强：文件最小，适合邮件大小限制。扫描件中的小字可能稍模糊。</value></data>
+  <data name="Ui_CompressRun" xml:space="preserve"><value>压缩并另存副本…</value></data>
+  <data name="Ui_CompressRunNote" xml:space="preserve"><value>表单栏位、链接、书签和文字保持不变。原文件不会改变。</value></data>
+  <data name="Ui_Compressing" xml:space="preserve"><value>正在压缩…</value></data>
+  <data name="Ui_Compressed" xml:space="preserve"><value>已保存 {0}：{1} → {2}（减小 {3}%）。</value></data>
+  <data name="Ui_CompressDetails" xml:space="preserve"><value>缩小图像 {0} 张（其中降低分辨率 {1} 张），合并重复 {2} 处，压缩数据流 {3} 个。</value></data>
+  <data name="Ui_CompressSigned" xml:space="preserve"><value>此文件带有数字签名：压缩后的副本中签名不再有效。</value></data>
+  <data name="Err_CompressProtected" xml:space="preserve"><value>{0} 有保护：请先在“保护”中解除密码，压缩后再重新加密。</value></data>
+  <data name="Err_CompressChanged" xml:space="preserve"><value>压缩后的副本与原文件看起来不同（差异 {0}），因此没有保留。请试试较轻的级别。</value></data>
+  <data name="Err_CompressNoGain" xml:space="preserve"><value>在此级别下，{0} 已无法再缩小。</value></data>
 </root>

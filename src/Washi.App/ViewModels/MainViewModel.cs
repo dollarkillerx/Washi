@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Comment, Sign, Protect, Redact, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields, Bookmarks }
@@ -66,6 +66,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Find = new FindViewModel(this);
         Bookmarks = new BookmarksViewModel(this);
         Print = new PrintViewModel(this);
+        Compress = new CompressToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -86,6 +87,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public FindViewModel Find { get; }
     public BookmarksViewModel Bookmarks { get; }
     public PrintViewModel Print { get; }
+    public CompressToolViewModel Compress { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -199,7 +201,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsCompressTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -219,6 +221,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsCommentTool { get => ActiveTool == Tool.Comment; set { if (value) ActiveTool = Tool.Comment; } }
     public bool IsProtectTool { get => ActiveTool == Tool.Protect; set { if (value) ActiveTool = Tool.Protect; } }
     public bool IsRedactTool { get => ActiveTool == Tool.Redact; set { if (value) ActiveTool = Tool.Redact; } }
+    public bool IsCompressTool { get => ActiveTool == Tool.Compress; set { if (value) ActiveTool = Tool.Compress; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -273,6 +276,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Sign) _ = Sign.PrepareAsync();
         if (value == Tool.Comment) _ = Comment.PrepareAsync();
         if (value == Tool.Protect) _ = Protect.PrepareAsync();
+        if (value == Tool.Compress) Compress.Prepare();
     }
 
     private string? _detectedFor;
@@ -504,6 +508,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         else if (ActiveTool == Tool.Sign) await Sign.PrepareAsync();
         else if (ActiveTool == Tool.Comment) await Comment.PrepareAsync();
         else if (ActiveTool == Tool.Protect) await Protect.PrepareAsync();
+        else if (ActiveTool == Tool.Compress) Compress.Prepare();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>

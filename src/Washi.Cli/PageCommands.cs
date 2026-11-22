@@ -6,7 +6,7 @@ using Washi.Core.Ocr;
 using Washi.Core.Pages;
 using Washi.Core.Printing;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress and washi ocr.</summary>
 internal static class PageCommands
 {
     private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size"];
@@ -105,6 +105,23 @@ internal static class PageCommands
                     var outline = PdfBookmarks.Read(input);
                     if (outline.Count == 0) Console.WriteLine(L.Get("Pdf_BookmarksNone"));
                     foreach (var line in PdfBookmarks.ToLines(outline)) Console.WriteLine(line);
+                    return 0;
+                }
+                case ["compress", var input]:
+                {
+                    var level = opt.GetValueOrDefault("--level", "standard").ToLowerInvariant() switch
+                    {
+                        "light" => CompressLevel.Light,
+                        "strong" => CompressLevel.Strong,
+                        "standard" => CompressLevel.Standard,
+                        var x => throw new PageAssemblyException($"unknown level '{x}': use light, standard or strong"),
+                    };
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_compressed.pdf"));
+                    var r = PdfCompressor.Compress(input, output, level);
+                    Console.WriteLine(L.F("Ui_Compressed", output, Washi.Core.Pages.CompressFormat.Size(r.Before), Washi.Core.Pages.CompressFormat.Size(r.After), (int)Math.Round(r.Saved * 100)));
+                    Console.WriteLine(L.F("Ui_CompressDetails", r.Images, r.Downsampled, r.Duplicates, r.Streams));
+                    foreach (var n in r.Notes) Console.WriteLine("  " + n);
                     return 0;
                 }
                 case ["printers"]:

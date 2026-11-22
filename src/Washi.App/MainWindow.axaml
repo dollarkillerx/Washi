@@ -69,7 +69,7 @@
         <Style Selector="RadioButton.rail">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border Name="bg" Background="Transparent" Height="68">
+                    <Border Name="bg" Background="Transparent" Height="60">
                         <Grid>
                             <Border Name="bar" Width="3" HorizontalAlignment="Left" Background="Transparent" />
                             <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -256,6 +256,8 @@
                 <RadioButton DockPanel.Dock="Bottom" Classes="rail" GroupName="tools" IsChecked="{Binding IsSettingsTool}" x:Name="SettingsToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Settings}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_Settings}" /></StackPanel>
                 </RadioButton>
+                <!-- the tools scroll when the window is too short for all of them -->
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" x:Name="RailScroller">
                 <StackPanel>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsFormTool}" x:Name="FormToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Form}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolForm}" /></StackPanel>
@@ -271,6 +273,9 @@
                 </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsOrganizeTool}" x:Name="OrganizeToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Organize}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolOrganize}" /></StackPanel>
+                </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCompressTool}" x:Name="CompressToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Compress}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCompress}" /></StackPanel>
                 </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCommentTool}" x:Name="CommentToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Comment}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolComment}" /></StackPanel>
@@ -291,6 +296,7 @@
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Ask}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolAsk}" /></StackPanel>
                 </RadioButton>
                 </StackPanel>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 
@@ -821,6 +827,37 @@
                 </ScrollViewer>
 
                 <!-- Erase printed content -->
+                <DockPanel IsVisible="{Binding IsCompressTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <Button Classes="accent primary" Command="{Binding Compress.CompressCommand}" IsEnabled="{Binding Compress.CanCompress}" x:Name="CompressButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Compress}" Size="18" />
+                                    <TextBlock Text="{l:Tr Ui_CompressRun}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CompressRunNote}" />
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18" Spacing="4">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_CompressTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_CompressLead}" />
+                            <TextBlock Text="{Binding Compress.SizeText}" FontWeight="SemiBold" Margin="0,4,0,8" x:Name="CompressSize" />
+                            <RadioButton GroupName="compress" IsChecked="{Binding Compress.Light}" Content="{l:Tr Ui_CompressLight}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CompressLightNote}" Margin="28,0,0,6" TextWrapping="Wrap" />
+                            <RadioButton GroupName="compress" IsChecked="{Binding Compress.Standard}" Content="{l:Tr Ui_CompressStandard}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CompressStandardNote}" Margin="28,0,0,6" TextWrapping="Wrap" />
+                            <RadioButton GroupName="compress" IsChecked="{Binding Compress.Strong}" Content="{l:Tr Ui_CompressStrong}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CompressStrongNote}" Margin="28,0,0,6" TextWrapping="Wrap" />
+                            <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,10,0,0"
+                                    IsVisible="{Binding Compress.Result, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Text="{Binding Compress.Result}" TextWrapping="Wrap" FontSize="12" x:Name="CompressResult" />
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
                 <DockPanel IsVisible="{Binding IsRedactTool}">
                     <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
                         <StackPanel Spacing="6">

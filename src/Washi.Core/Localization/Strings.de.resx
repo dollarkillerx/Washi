@@ -132,7 +132,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
                                           Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)
                                           oder eine Kopie mit denen aus einer solchen Datei schreiben
   washi pdf print &lt;in.pdf&gt; [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
-  washi pdf printers                      Drucker auflisten</value></data>
+  washi pdf printers                      Drucker auflisten
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} Datei(en) zu {1} zusammengefügt: {2} Seite(n), {3} Formularfeld(er)</value></data>
@@ -667,4 +668,23 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>Kommentar „{0}“ stammt aus einem anderen Programm: Text ändern, löschen oder beantworten geht, die Farbe nicht.</value></data>
   <data name="Err_CommentNotMovable" xml:space="preserve"><value>Kommentar „{0}“ lässt sich nicht verschieben (Textmarkierungen bleiben am Text).</value></data>
   <data name="Err_CommentCheck" xml:space="preserve"><value>Die geänderten Kommentare stimmten nicht; die Kopie wurde nicht behalten.</value></data>
+  <data name="Ui_ToolCompress" xml:space="preserve"><value>Verkleinern</value></data>
+  <data name="Ui_CompressTitle" xml:space="preserve"><value>Verkleinern</value></data>
+  <data name="Ui_CompressLead" xml:space="preserve"><value>Erstellt eine kleinere Kopie zum Mailen oder Hochladen. Die Seiten sehen gleich aus; jede Kopie wird vor dem Speichern Seite für Seite mit dem Original verglichen.</value></data>
+  <data name="Ui_CompressSize" xml:space="preserve"><value>Jetzt: {0}</value></data>
+  <data name="Ui_CompressLight" xml:space="preserve"><value>Leicht</value></data>
+  <data name="Ui_CompressLightNote" xml:space="preserve"><value>Verlustfreies Aufräumen; nur Bilder mit weit mehr Auflösung als nötig (über 300 dpi) werden verkleinert.</value></data>
+  <data name="Ui_CompressStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="Ui_CompressStandardNote" xml:space="preserve"><value>Bilder mit 150 dpi, Fotos als JPEG: scharf am Bildschirm und im Druck. Meist die richtige Wahl.</value></data>
+  <data name="Ui_CompressStrong" xml:space="preserve"><value>Stark</value></data>
+  <data name="Ui_CompressStrongNote" xml:space="preserve"><value>Bilder mit 100 dpi, stärkeres JPEG: die kleinste Datei, für E-Mail-Grenzen. Kleine Schrift in Scans kann weicher werden.</value></data>
+  <data name="Ui_CompressRun" xml:space="preserve"><value>Verkleinern und Kopie speichern…</value></data>
+  <data name="Ui_CompressRunNote" xml:space="preserve"><value>Formularfelder, Links, Lesezeichen und Text bleiben erhalten. Das Original bleibt unverändert.</value></data>
+  <data name="Ui_Compressing" xml:space="preserve"><value>Wird verkleinert …</value></data>
+  <data name="Ui_Compressed" xml:space="preserve"><value>{0} gespeichert: {1} → {2} ({3} % kleiner).</value></data>
+  <data name="Ui_CompressDetails" xml:space="preserve"><value>{0} Bild(er) verkleinert ({1} mit geringerer Auflösung), {2} Duplikat(e) zusammengelegt, {3} Stream(s) komprimiert.</value></data>
+  <data name="Ui_CompressSigned" xml:space="preserve"><value>Die Datei war digital signiert: für die verkleinerte Kopie gelten die Signaturen nicht.</value></data>
+  <data name="Err_CompressProtected" xml:space="preserve"><value>{0} ist geschützt: zuerst das Passwort entfernen (Schützen), verkleinern, dann wieder schützen.</value></data>
+  <data name="Err_CompressChanged" xml:space="preserve"><value>Die verkleinerte Kopie sah anders aus als das Original (Abweichung {0}) und wurde nicht behalten. Versuchen Sie eine leichtere Stufe.</value></data>
+  <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} lässt sich auf dieser Stufe nicht weiter verkleinern.</value></data>
 </root>

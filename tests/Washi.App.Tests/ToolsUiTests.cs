@@ -604,6 +604,38 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal("Draft", after.Single(c => c.Type == "FreeText").Text);
     }
 
+    [AvaloniaFact]
+    public async Task Compress_saves_a_smaller_copy_and_says_by_how_much()
+    {
+        // four pages whose content is stored uncompressed (as some programs write it)
+        var pdf = Path.Combine(_dir, "big.pdf");
+        var doc = new PdfDocument();
+        for (int i = 0; i < 4; i++)
+        {
+            var page = doc.AddPage();
+            using var g = XGraphics.FromPdfPage(page);
+            for (int k = 0; k < 200; k++) g.DrawLine(XPens.Black, 40 + k, 40, 40 + k, 400);
+        }
+        doc.Options.CompressContentStreams = false;
+        doc.Options.NoCompression = true;
+        doc.Save(pdf);
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "big_compressed.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Compress;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("CompressButton")!.IsEffectivelyVisible);
+        Assert.StartsWith(L.F("Ui_CompressSize", "")[..2], vm.Compress.SizeText);
+        Assert.Equal(Washi.Core.Pages.CompressLevel.Standard, vm.Compress.Level);
+        vm.Compress.Light = true;
+        Assert.Equal(Washi.Core.Pages.CompressLevel.Light, vm.Compress.Level);
+
+        await vm.Compress.CompressCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.True(new FileInfo(dialogs.SavePdf!).Length < new FileInfo(pdf).Length);
+        Assert.Contains("→", vm.Compress.Result);
+        Assert.Equal(4, vm.PageCount);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

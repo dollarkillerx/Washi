@@ -132,7 +132,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
                                           liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),
                                           ou écrit une copie avec ceux d’un fichier de cette forme
   washi pdf print &lt;in.pdf&gt; [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
-  washi pdf printers                      liste les imprimantes</value></data>
+  washi pdf printers                      liste les imprimantes
+  washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
@@ -667,4 +668,23 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_CommentNotRedrawable" xml:space="preserve"><value>Le commentaire « {0} » vient d’un autre programme : Washi peut changer ses mots, le supprimer ou y répondre, mais pas sa couleur.</value></data>
   <data name="Err_CommentNotMovable" xml:space="preserve"><value>Le commentaire « {0} » ne peut pas être déplacé (un marquage reste sur son texte).</value></data>
   <data name="Err_CommentCheck" xml:space="preserve"><value>Les commentaires modifiés ne correspondaient pas ; la copie n’a pas été conservée.</value></data>
+  <data name="Ui_ToolCompress" xml:space="preserve"><value>Compresser</value></data>
+  <data name="Ui_CompressTitle" xml:space="preserve"><value>Compresser</value></data>
+  <data name="Ui_CompressLead" xml:space="preserve"><value>Crée une copie plus légère pour l’e-mail ou le dépôt en ligne. Les pages restent identiques ; chaque copie est comparée à l’original, page par page, avant d’être conservée.</value></data>
+  <data name="Ui_CompressSize" xml:space="preserve"><value>Actuellement : {0}</value></data>
+  <data name="Ui_CompressLight" xml:space="preserve"><value>Léger</value></data>
+  <data name="Ui_CompressLightNote" xml:space="preserve"><value>Nettoyage sans perte ; seules les images bien trop détaillées (plus de 300 dpi) sont allégées.</value></data>
+  <data name="Ui_CompressStandard" xml:space="preserve"><value>Standard</value></data>
+  <data name="Ui_CompressStandardNote" xml:space="preserve"><value>Images à 150 dpi et photos en JPEG : net à l’écran comme à l’impression. Le choix habituel.</value></data>
+  <data name="Ui_CompressStrong" xml:space="preserve"><value>Fort</value></data>
+  <data name="Ui_CompressStrongNote" xml:space="preserve"><value>Images à 100 dpi, JPEG plus fort : le fichier le plus léger, pour les limites d’e-mail. Les petits caractères des scans peuvent s’adoucir.</value></data>
+  <data name="Ui_CompressRun" xml:space="preserve"><value>Compresser et enregistrer une copie…</value></data>
+  <data name="Ui_CompressRunNote" xml:space="preserve"><value>Les champs, liens, signets et le texte restent tels quels. L’original n’est pas modifié.</value></data>
+  <data name="Ui_Compressing" xml:space="preserve"><value>Compression…</value></data>
+  <data name="Ui_Compressed" xml:space="preserve"><value>{0} enregistré : {1} → {2} ({3} % de moins).</value></data>
+  <data name="Ui_CompressDetails" xml:space="preserve"><value>{0} image(s) allégée(s) (dont {1} en résolution réduite), {2} doublon(s) gardé(s) une fois, {3} flux compressé(s).</value></data>
+  <data name="Ui_CompressSigned" xml:space="preserve"><value>Le fichier était signé numériquement : les signatures ne valent plus pour la copie compressée.</value></data>
+  <data name="Err_CompressProtected" xml:space="preserve"><value>{0} est protégé : retirez d’abord son mot de passe (Protéger), compressez-le, puis protégez-le de nouveau.</value></data>
+  <data name="Err_CompressChanged" xml:space="preserve"><value>La copie compressée différait visiblement de l’original (écart {0}) ; elle n’a pas été conservée. Essayez un niveau plus léger.</value></data>
+  <data name="Err_CompressNoGain" xml:space="preserve"><value>{0} est déjà aussi léger que Washi peut le rendre à ce niveau.</value></data>
 </root>

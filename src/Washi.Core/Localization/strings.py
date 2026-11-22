@@ -499,13 +499,188 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
     "Kind_choice": {"en": "drop-down list", "ja": "ドロップダウン", "zh-Hans": "下拉列表", "zh-Hant": "下拉式清單", "ko": "드롭다운 목록", "fr": "liste déroulante", "de": "Dropdown-Liste"},
     "Kind_signature": {"en": "signature", "ja": "署名", "zh-Hans": "签名", "zh-Hant": "簽名", "ko": "서명", "fr": "signature", "de": "Unterschrift"},
     "UsagePdf": {
-        "en": 'Pages and OCR:\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      join files (form fields are kept)\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          reorder, drop (leave out) and turn pages (form fields are kept)\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          make scanned pages searchable (an invisible text layer; the page image is unchanged)\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          remove printed text/images under boxes for real (points, top-left origin; coloured form printing stays)\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          add a password to open (--open) and/or limits (--allow: what stays allowed), AES-256;\n                                          passwords are asked for, or read from WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD\n  washi pdf unlock <in.pdf> -o out.pdf   remove the password (asked for, or WASHI_PASSWORD)\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          remove hidden information (--list only shows it)\n  washi pdf redact <in.pdf> [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)\n  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          list the bookmarks (one per line: two spaces per level, a tab, the page),\n                                          or write a copy with the ones in a file of that form\n  washi pdf print <in.pdf> [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      list the printers',
-        "ja": 'ページと OCR:\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      ファイルを結合（記入欄はそのまま残ります）\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          ページの並べ替え・削除（指定しないページ）・回転（記入欄はそのまま残ります）\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          スキャンしたページを検索できるようにする（見えない文字層を追加。ページの画像は変わりません）\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          枠内の印字（文字・画像）を本当に削除（ポイント単位・左上原点。色付きの様式の印刷は残ります）\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          開くパスワード（--open）や制限（--allow: 許可する操作）を付ける。AES-256。\n                                          パスワードは入力を求めるか、WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD から読みます\n  washi pdf unlock <in.pdf> -o out.pdf   パスワードを外す（入力を求めるか WASHI_PASSWORD）\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          隠れた情報を削除（--list は表示だけ）\n  washi pdf redact <in.pdf> [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）\n  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、\n                                          または同じ形式のファイルのしおりでコピーを作成\n  washi pdf print <in.pdf> [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      プリンターの一覧',
-        "zh-Hans": '页面与 OCR：\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      合并文件（保留表单栏位）\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          调整页面顺序、删除（不列出的页）和旋转页面（保留表单栏位）\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          让扫描页可以搜索（加一层看不见的文字，页面图像不变）\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          真正删除框内已印的文字和图像（单位为点，左上角为原点；彩色的表格印刷保留）\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          添加打开密码（--open）和/或限制（--allow：仍允许的操作），AES-256；\n                                          密码会提示输入，或从 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 读取\n  washi pdf unlock <in.pdf> -o out.pdf   解除密码（提示输入，或 WASHI_PASSWORD）\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          删除隐藏信息（--list 只列出）\n  washi pdf redact <in.pdf> [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）\n  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          列出书签（每行一个：每级缩进两个空格，制表符，页码），\n                                          或用同样格式的文件写出带书签的副本\n  washi pdf print <in.pdf> [--printer 名称] [--copies 份数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      列出打印机',
-        "zh-Hant": '頁面與 OCR：\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      合併檔案（保留表單欄位）\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          調整頁面順序、刪除（不列出的頁）和旋轉頁面（保留表單欄位）\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          真正刪除框內已印的文字和影像（單位為點，左上角為原點；彩色的表格印刷保留）\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          加上開啟密碼（--open）和/或限制（--allow：仍允許的操作），AES-256；\n                                          密碼會提示輸入，或從 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 讀取\n  washi pdf unlock <in.pdf> -o out.pdf   解除密碼（提示輸入，或 WASHI_PASSWORD）\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          刪除隱藏資訊（--list 只列出）\n  washi pdf redact <in.pdf> [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）\n  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），\n                                          或用同樣格式的檔案寫出帶書籤的副本\n  washi pdf print <in.pdf> [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      列出印表機',
-        "ko": '페이지와 OCR:\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      파일 합치기 (입력란 유지)\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          페이지 순서 바꾸기, 삭제(나열하지 않은 페이지), 회전 (입력란 유지)\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          스캔한 페이지를 검색 가능하게 (보이지 않는 텍스트 레이어 추가, 페이지 이미지는 그대로)\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          상자 안의 인쇄된 글자·이미지를 실제로 삭제 (포인트 단위, 왼쪽 위 원점; 색상 양식 인쇄는 유지)\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          열기 암호(--open)나 제한(--allow: 허용할 작업)을 추가, AES-256;\n                                          암호는 입력을 요청하거나 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 에서 읽습니다\n  washi pdf unlock <in.pdf> -o out.pdf   암호 해제 (입력 요청 또는 WASHI_PASSWORD)\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          숨은 정보 삭제 (--list 는 보여주기만)\n  washi pdf redact <in.pdf> [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)\n  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),\n                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성\n  washi pdf print <in.pdf> [--printer 이름] [--copies 매수] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      프린터 목록',
-        "fr": 'Pages et OCR :\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      assemble des fichiers (les champs de formulaire sont conservés)\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dossier]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          réordonne, retire (pages non listées) et fait pivoter les pages (les champs de formulaire sont conservés)\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          supprime pour de bon le texte et les images imprimés dans les cadres (points, origine en haut à gauche ; l’impression en couleur du formulaire reste)\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          ajoute un mot de passe d’ouverture (--open) et/ou des limites (--allow : ce qui reste permis), AES-256 ;\n                                          les mots de passe sont demandés, ou lus dans WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD\n  washi pdf unlock <in.pdf> -o out.pdf   retire le mot de passe (demandé, ou WASHI_PASSWORD)\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          supprime les informations masquées (--list les affiche seulement)\n  washi pdf redact <in.pdf> [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)\n  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),\n                                          ou écrit une copie avec ceux d’un fichier de cette forme\n  washi pdf print <in.pdf> [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      liste les imprimantes',
-        "de": 'Seiten und OCR:\n  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      Dateien zusammenfügen (Formularfelder bleiben erhalten)\n  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o Ordner]\n  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n                                          Seiten umordnen, entfernen (nicht aufgeführte) und drehen (Formularfelder bleiben erhalten)\n  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n                                          gescannte Seiten durchsuchbar machen (unsichtbare Textebene; das Seitenbild bleibt unverändert)\n  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n                                          gedruckten Text und Bilder in Rahmen wirklich entfernen (Punkte, Ursprung oben links; farbiger Formulardruck bleibt)\n  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n                                          Öffnungspasswort (--open) und/oder Einschränkungen (--allow: was erlaubt bleibt) hinzufügen, AES-256;\n                                          Passwörter werden abgefragt oder aus WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD gelesen\n  washi pdf unlock <in.pdf> -o out.pdf   Passwort entfernen (abgefragt, oder WASHI_PASSWORD)\n  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n                                          versteckte Informationen entfernen (--list zeigt sie nur)\n  washi pdf redact <in.pdf> [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)\n  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n                                          Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)\n                                          oder eine Kopie mit denen aus einer solchen Datei schreiben\n  washi pdf print <in.pdf> [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n  washi pdf printers                      Drucker auflisten',
+        "en": (
+            'Pages and OCR:\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      join files (form fields are kept)\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          reorder, drop (leave out) and turn pages (form fields are kept)\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          make scanned pages searchable (an invisible text layer; the page image is unchanged)\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          remove printed text/images under boxes for real (points, top-left origin; coloured form printing stays)\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          add a password to open (--open) and/or limits (--allow: what stays allowed), AES-256;\n'
+            '                                          passwords are asked for, or read from WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   remove the password (asked for, or WASHI_PASSWORD)\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          remove hidden information (--list only shows it)\n'
+            '  washi pdf redact <in.pdf> [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)\n'
+            '  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          list the bookmarks (one per line: two spaces per level, a tab, the page),\n'
+            '                                          or write a copy with the ones in a file of that form\n'
+            '  washi pdf print <in.pdf> [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      list the printers\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)'
+        ),
+        "ja": (
+            'ページと OCR:\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      ファイルを結合（記入欄はそのまま残ります）\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          ページの並べ替え・削除（指定しないページ）・回転（記入欄はそのまま残ります）\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          スキャンしたページを検索できるようにする（見えない文字層を追加。ページの画像は変わりません）\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          枠内の印字（文字・画像）を本当に削除（ポイント単位・左上原点。色付きの様式の印刷は残ります）\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          開くパスワード（--open）や制限（--allow: 許可する操作）を付ける。AES-256。\n'
+            '                                          パスワードは入力を求めるか、WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD から読みます\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   パスワードを外す（入力を求めるか WASHI_PASSWORD）\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          隠れた情報を削除（--list は表示だけ）\n'
+            '  washi pdf redact <in.pdf> [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）\n'
+            '  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、\n'
+            '                                          または同じ形式のファイルのしおりでコピーを作成\n'
+            '  washi pdf print <in.pdf> [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      プリンターの一覧\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）'
+        ),
+        "zh-Hans": (
+            '页面与 OCR：\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      合并文件（保留表单栏位）\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          调整页面顺序、删除（不列出的页）和旋转页面（保留表单栏位）\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          让扫描页可以搜索（加一层看不见的文字，页面图像不变）\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          真正删除框内已印的文字和图像（单位为点，左上角为原点；彩色的表格印刷保留）\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          添加打开密码（--open）和/或限制（--allow：仍允许的操作），AES-256；\n'
+            '                                          密码会提示输入，或从 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 读取\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   解除密码（提示输入，或 WASHI_PASSWORD）\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          删除隐藏信息（--list 只列出）\n'
+            '  washi pdf redact <in.pdf> [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）\n'
+            '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          列出书签（每行一个：每级缩进两个空格，制表符，页码），\n'
+            '                                          或用同样格式的文件写出带书签的副本\n'
+            '  washi pdf print <in.pdf> [--printer 名称] [--copies 份数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      列出打印机\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）'
+        ),
+        "zh-Hant": (
+            '頁面與 OCR：\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      合併檔案（保留表單欄位）\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          調整頁面順序、刪除（不列出的頁）和旋轉頁面（保留表單欄位）\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          真正刪除框內已印的文字和影像（單位為點，左上角為原點；彩色的表格印刷保留）\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          加上開啟密碼（--open）和/或限制（--allow：仍允許的操作），AES-256；\n'
+            '                                          密碼會提示輸入，或從 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 讀取\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   解除密碼（提示輸入，或 WASHI_PASSWORD）\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          刪除隱藏資訊（--list 只列出）\n'
+            '  washi pdf redact <in.pdf> [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）\n'
+            '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），\n'
+            '                                          或用同樣格式的檔案寫出帶書籤的副本\n'
+            '  washi pdf print <in.pdf> [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      列出印表機\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）'
+        ),
+        "ko": (
+            '페이지와 OCR:\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      파일 합치기 (입력란 유지)\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          페이지 순서 바꾸기, 삭제(나열하지 않은 페이지), 회전 (입력란 유지)\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          스캔한 페이지를 검색 가능하게 (보이지 않는 텍스트 레이어 추가, 페이지 이미지는 그대로)\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          상자 안의 인쇄된 글자·이미지를 실제로 삭제 (포인트 단위, 왼쪽 위 원점; 색상 양식 인쇄는 유지)\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          열기 암호(--open)나 제한(--allow: 허용할 작업)을 추가, AES-256;\n'
+            '                                          암호는 입력을 요청하거나 WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD 에서 읽습니다\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   암호 해제 (입력 요청 또는 WASHI_PASSWORD)\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          숨은 정보 삭제 (--list 는 보여주기만)\n'
+            '  washi pdf redact <in.pdf> [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)\n'
+            '  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),\n'
+            '                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성\n'
+            '  washi pdf print <in.pdf> [--printer 이름] [--copies 매수] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      프린터 목록\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   더 작은 사본 (저장 전 페이지 비교)'
+        ),
+        "fr": (
+            'Pages et OCR :\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      assemble des fichiers (les champs de formulaire sont conservés)\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dossier]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          réordonne, retire (pages non listées) et fait pivoter les pages (les champs de formulaire sont conservés)\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          supprime pour de bon le texte et les images imprimés dans les cadres (points, origine en haut à gauche ; l’impression en couleur du formulaire reste)\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          ajoute un mot de passe d’ouverture (--open) et/ou des limites (--allow : ce qui reste permis), AES-256 ;\n'
+            '                                          les mots de passe sont demandés, ou lus dans WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   retire le mot de passe (demandé, ou WASHI_PASSWORD)\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          supprime les informations masquées (--list les affiche seulement)\n'
+            '  washi pdf redact <in.pdf> [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)\n'
+            '  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),\n'
+            '                                          ou écrit une copie avec ceux d’un fichier de cette forme\n'
+            '  washi pdf print <in.pdf> [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      liste les imprimantes\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)'
+        ),
+        "de": (
+            'Seiten und OCR:\n'
+            '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      Dateien zusammenfügen (Formularfelder bleiben erhalten)\n'
+            '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o Ordner]\n'
+            '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
+            '                                          Seiten umordnen, entfernen (nicht aufgeführte) und drehen (Formularfelder bleiben erhalten)\n'
+            '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
+            '                                          gescannte Seiten durchsuchbar machen (unsichtbare Textebene; das Seitenbild bleibt unverändert)\n'
+            '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
+            '                                          gedruckten Text und Bilder in Rahmen wirklich entfernen (Punkte, Ursprung oben links; farbiger Formulardruck bleibt)\n'
+            '  washi pdf protect <in.pdf> -o out.pdf [--open] [--allow print,copy,edit,comment,fill,assemble|none]\n'
+            '                                          Öffnungspasswort (--open) und/oder Einschränkungen (--allow: was erlaubt bleibt) hinzufügen, AES-256;\n'
+            '                                          Passwörter werden abgefragt oder aus WASHI_OPEN_PASSWORD / WASHI_PERMISSIONS_PASSWORD gelesen\n'
+            '  washi pdf unlock <in.pdf> -o out.pdf   Passwort entfernen (abgefragt, oder WASHI_PASSWORD)\n'
+            '  washi pdf clean <in.pdf> [--list] [--only metadata,attachments,scripts,comments,private] [-o out.pdf]\n'
+            '                                          versteckte Informationen entfernen (--list zeigt sie nur)\n'
+            '  washi pdf redact <in.pdf> [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
+            '                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)\n'
+            '  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n'
+            '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
+            '                                          Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)\n'
+            '                                          oder eine Kopie mit denen aus einer solchen Datei schreiben\n'
+            '  washi pdf print <in.pdf> [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
+            '  washi pdf printers                      Drucker auflisten\n'
+            '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)'
+        ),
     },
     "Pdf_Erased": {
         "en": "Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.",
@@ -1350,6 +1525,25 @@ _UI = {
     "Err_CommentNotRedrawable": ["Comment “{0}” was made by another program; Washi can change its words, remove it or answer it, but not its colour.", "コメント「{0}」は別のアプリで作られたため、文字の変更・削除・返信はできますが、色は変えられません。", "批注“{0}”由其他程序创建：可以改文字、删除或回复，但不能换颜色。", "註解「{0}」由其他程式建立：可以改文字、刪除或回覆，但不能換顏色。", "주석 “{0}” 은(는) 다른 프로그램에서 만들어 글자 변경·삭제·답글만 가능하고 색은 바꿀 수 없습니다.", "Le commentaire « {0} » vient d’un autre programme : Washi peut changer ses mots, le supprimer ou y répondre, mais pas sa couleur.", "Kommentar „{0}“ stammt aus einem anderen Programm: Text ändern, löschen oder beantworten geht, die Farbe nicht."],
     "Err_CommentNotMovable": ["Comment “{0}” cannot be moved (text markup stays on its text).", "コメント「{0}」は移動できません（文字への注釈は文字に付いたままです）。", "批注“{0}”不能移动（文字标记跟随文字）。", "註解「{0}」不能移動（文字標記跟隨文字）。", "주석 “{0}” 은(는) 옮길 수 없습니다 (글자 표시는 글자에 붙어 있습니다).", "Le commentaire « {0} » ne peut pas être déplacé (un marquage reste sur son texte).", "Kommentar „{0}“ lässt sich nicht verschieben (Textmarkierungen bleiben am Text)."],
     "Err_CommentCheck": ["The changed comments did not come out as asked, so the copy was not kept.", "変更したコメントが指定どおりにならなかったため、コピーを保存しませんでした。", "修改后的批注与要求不符，因此没有保留副本。", "修改後的註解與要求不符，因此沒有保留副本。", "변경한 주석이 지정한 대로 되지 않아 사본을 저장하지 않았습니다.", "Les commentaires modifiés ne correspondaient pas ; la copie n’a pas été conservée.", "Die geänderten Kommentare stimmten nicht; die Kopie wurde nicht behalten."],
+    "Ui_ToolCompress": ["Compress", "圧縮", "压缩", "壓縮", "압축", "Compresser", "Verkleinern"],
+    "Ui_CompressTitle": ["Compress", "ファイルを小さく", "压缩文件", "壓縮檔案", "파일 압축", "Compresser", "Verkleinern"],
+    "Ui_CompressLead": ["Make a smaller copy for e-mail or upload. Pages look the same; each copy is compared with the original, page by page, before it is kept.", "メール送信やアップロード用に小さなコピーを作ります。見た目は変わりません。保存前に元のファイルとページごとに比べて確認します。", "生成一份更小的副本，方便发邮件或上传。页面外观不变；保存前会逐页与原文件比对。", "產生一份更小的副本，方便寄信或上傳。頁面外觀不變；儲存前會逐頁與原檔案比對。", "메일이나 업로드용으로 더 작은 사본을 만듭니다. 보이는 모습은 그대로이며, 저장 전에 원본과 페이지별로 비교합니다.", "Crée une copie plus légère pour l’e-mail ou le dépôt en ligne. Les pages restent identiques ; chaque copie est comparée à l’original, page par page, avant d’être conservée.", "Erstellt eine kleinere Kopie zum Mailen oder Hochladen. Die Seiten sehen gleich aus; jede Kopie wird vor dem Speichern Seite für Seite mit dem Original verglichen."],
+    "Ui_CompressSize": ["Now: {0}", "現在: {0}", "当前：{0}", "目前：{0}", "현재: {0}", "Actuellement : {0}", "Jetzt: {0}"],
+    "Ui_CompressLight": ["Light", "軽め", "轻度", "輕度", "가볍게", "Léger", "Leicht"],
+    "Ui_CompressLightNote": ["Lossless clean-up; only images far more detailed than any screen or printer needs (above 300 dpi) are made smaller.", "画質を落とさない整理のみ。画面や印刷に必要以上の高解像度（300 dpi 超）の画像だけ小さくします。", "只做无损整理；仅缩小远超屏幕和打印所需的高分辨率图像（300 dpi 以上）。", "只做無損整理；僅縮小遠超螢幕和列印所需的高解析度影像（300 dpi 以上）。", "무손실 정리만 하며, 화면·인쇄에 필요 이상인 고해상도(300 dpi 초과) 이미지만 줄입니다.", "Nettoyage sans perte ; seules les images bien trop détaillées (plus de 300 dpi) sont allégées.", "Verlustfreies Aufräumen; nur Bilder mit weit mehr Auflösung als nötig (über 300 dpi) werden verkleinert."],
+    "Ui_CompressStandard": ["Standard", "標準", "标准", "標準", "표준", "Standard", "Standard"],
+    "Ui_CompressStandardNote": ["Images at 150 dpi and photos as JPEG: sharp on screen and in print. Usually the right choice.", "画像を 150 dpi に、写真は JPEG に。画面でも印刷でもきれいです。通常はこれで十分です。", "图像降至 150 dpi，照片用 JPEG：屏幕和打印都清晰。一般选这个。", "影像降至 150 dpi，照片用 JPEG：螢幕和列印都清晰。一般選這個。", "이미지는 150 dpi, 사진은 JPEG 로. 화면과 인쇄 모두 선명합니다. 보통은 이것을 고르세요.", "Images à 150 dpi et photos en JPEG : net à l’écran comme à l’impression. Le choix habituel.", "Bilder mit 150 dpi, Fotos als JPEG: scharf am Bildschirm und im Druck. Meist die richtige Wahl."],
+    "Ui_CompressStrong": ["Strong", "強め", "强力", "強力", "강하게", "Fort", "Stark"],
+    "Ui_CompressStrongNote": ["Images at 100 dpi, stronger JPEG: the smallest file, for e-mail limits. Fine print in scans may soften.", "画像を 100 dpi に、JPEG も強めに。最も小さくなり、メールの容量制限向け。スキャンの細かい文字はやや甘くなることがあります。", "图像降至 100 dpi，JPEG 压缩更强：文件最小，适合邮件大小限制。扫描件中的小字可能稍模糊。", "影像降至 100 dpi，JPEG 壓縮更強：檔案最小，適合郵件大小限制。掃描件中的小字可能稍模糊。", "이미지 100 dpi, 더 강한 JPEG: 가장 작은 파일로 메일 용량 제한용입니다. 스캔의 작은 글자는 조금 흐려질 수 있습니다.", "Images à 100 dpi, JPEG plus fort : le fichier le plus léger, pour les limites d’e-mail. Les petits caractères des scans peuvent s’adoucir.", "Bilder mit 100 dpi, stärkeres JPEG: die kleinste Datei, für E-Mail-Grenzen. Kleine Schrift in Scans kann weicher werden."],
+    "Ui_CompressRun": ["Compress and save copy…", "圧縮してコピーを保存…", "压缩并另存副本…", "壓縮並另存副本…", "압축하여 사본 저장…", "Compresser et enregistrer une copie…", "Verkleinern und Kopie speichern…"],
+    "Ui_CompressRunNote": ["Form fields, links, bookmarks and text stay as they are. The original is not changed.", "記入欄・リンク・しおり・文字はそのまま残ります。元のファイルは変わりません。", "表单栏位、链接、书签和文字保持不变。原文件不会改变。", "表單欄位、連結、書籤和文字保持不變。原檔案不會改變。", "입력란·링크·책갈피·텍스트는 그대로 유지됩니다. 원본은 바뀌지 않습니다.", "Les champs, liens, signets et le texte restent tels quels. L’original n’est pas modifié.", "Formularfelder, Links, Lesezeichen und Text bleiben erhalten. Das Original bleibt unverändert."],
+    "Ui_Compressing": ["Compressing…", "圧縮しています…", "正在压缩…", "正在壓縮…", "압축 중…", "Compression…", "Wird verkleinert …"],
+    "Ui_Compressed": ["Saved {0}: {1} → {2} ({3}% smaller).", "{0} を保存しました: {1} → {2}（{3}% 削減）。", "已保存 {0}：{1} → {2}（减小 {3}%）。", "已儲存 {0}：{1} → {2}（減少 {3}%）。", "{0} 저장: {1} → {2} ({3}% 감소).", "{0} enregistré : {1} → {2} ({3} % de moins).", "{0} gespeichert: {1} → {2} ({3} % kleiner)."],
+    "Ui_CompressDetails": ["{0} image(s) made smaller ({1} at a lower resolution), {2} duplicate(s) kept once, {3} stream(s) compressed.", "画像 {0} 件を縮小（うち解像度を下げたもの {1}）、重複 {2} 件を 1 つに、ストリーム {3} 件を圧縮。", "缩小图像 {0} 张（其中降低分辨率 {1} 张），合并重复 {2} 处，压缩数据流 {3} 个。", "縮小影像 {0} 張（其中降低解析度 {1} 張），合併重複 {2} 處，壓縮資料流 {3} 個。", "이미지 {0}개 축소(해상도 낮춤 {1}), 중복 {2}개 합침, 스트림 {3}개 압축.", "{0} image(s) allégée(s) (dont {1} en résolution réduite), {2} doublon(s) gardé(s) une fois, {3} flux compressé(s).", "{0} Bild(er) verkleinert ({1} mit geringerer Auflösung), {2} Duplikat(e) zusammengelegt, {3} Stream(s) komprimiert."],
+    "Ui_CompressSigned": ["The file was digitally signed: the signatures do not hold for the compressed copy.", "このファイルにはデジタル署名がありました。圧縮したコピーでは署名は有効になりません。", "此文件带有数字签名：压缩后的副本中签名不再有效。", "此檔案帶有數位簽章：壓縮後的副本中簽章不再有效。", "이 파일에는 디지털 서명이 있었습니다. 압축한 사본에서는 서명이 유효하지 않습니다.", "Le fichier était signé numériquement : les signatures ne valent plus pour la copie compressée.", "Die Datei war digital signiert: für die verkleinerte Kopie gelten die Signaturen nicht."],
+    "Err_CompressProtected": ["{0} is protected: remove its password first (Protect), compress it, then protect it again.", "{0} は保護されています。先に「保護」でパスワードを外してから圧縮し、もう一度保護してください。", "{0} 有保护：请先在“保护”中解除密码，压缩后再重新加密。", "{0} 有保護：請先在「保護」中解除密碼，壓縮後再重新加密。", "{0} 은(는) 보호되어 있습니다. 먼저 '보호'에서 암호를 해제하고 압축한 뒤 다시 보호하세요.", "{0} est protégé : retirez d’abord son mot de passe (Protéger), compressez-le, puis protégez-le de nouveau.", "{0} ist geschützt: zuerst das Passwort entfernen (Schützen), verkleinern, dann wieder schützen."],
+    "Err_CompressChanged": ["The compressed copy looked different from the original (difference {0}), so it was not kept. Try a lighter level.", "圧縮したコピーの見た目が元と違った（差 {0}）ため、保存しませんでした。もっと軽いレベルをお試しください。", "压缩后的副本与原文件看起来不同（差异 {0}），因此没有保留。请试试较轻的级别。", "壓縮後的副本與原檔案看起來不同（差異 {0}），因此沒有保留。請試試較輕的級別。", "압축한 사본이 원본과 다르게 보여(차이 {0}) 저장하지 않았습니다. 더 가벼운 단계를 시도하세요.", "La copie compressée différait visiblement de l’original (écart {0}) ; elle n’a pas été conservée. Essayez un niveau plus léger.", "Die verkleinerte Kopie sah anders aus als das Original (Abweichung {0}) und wurde nicht behalten. Versuchen Sie eine leichtere Stufe."],
+    "Err_CompressNoGain": ["{0} is already as small as Washi can make it at this level.", "{0} はこのレベルではこれ以上小さくできません。", "在此级别下，{0} 已无法再缩小。", "在此級別下，{0} 已無法再縮小。", "{0} 은(는) 이 단계에서 더 이상 줄일 수 없습니다.", "{0} est déjà aussi léger que Washi peut le rendre à ce niveau.", "{0} lässt sich auf dieser Stufe nicht weiter verkleinern."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k
