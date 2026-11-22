@@ -28,7 +28,17 @@ public sealed partial class FieldViewModel : ObservableObject
     /// <summary>"" (the form language's usual face), "serif" or "sans".</summary>
     [ObservableProperty] private string _font = "";
 
-    /// <summary>What the user typed in Preview ("true" for a ticked checkbox). Written into the saved PDF.</summary>
+    /// <summary>Radio buttons: buttons with the same group form one choice.</summary>
+    [ObservableProperty] private string _group = "";
+    /// <summary>Radio buttons: the option this button stands for.</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(Display))] private string _export = "";
+    /// <summary>Drop-down lists: the items, one per line.</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(OptionList))] private string _options = "";
+
+    public IReadOnlyList<string> OptionList =>
+        [.. Options.Split('\n').Select(o => o.Trim()).Where(o => o.Length > 0).Distinct()];
+
+    /// <summary>What the user typed in Preview ("true" for a ticked checkbox or the chosen radio button). Written into the saved PDF.</summary>
     [ObservableProperty] private string _value = "";
 
     public bool IsChecked => Value == "true";
@@ -47,7 +57,9 @@ public sealed partial class FieldViewModel : ObservableObject
     /// What the field list shows: what is in the field (its value), else what the form calls it (the printed label),
     /// else its name. An auto-made name such as p1_text_006 says nothing to the person filling the form.
     /// </summary>
-    public string Display => Value.Length > 0 ? (Kind == FieldKind.Checkbox ? "✓" : Value) : Label.Length > 0 ? Label : Name;
+    public string Display => Value.Length > 0
+        ? Kind switch { FieldKind.Checkbox => "✓", FieldKind.Radio => "● " + (Export.Length > 0 ? Export : Label), _ => Value }
+        : Label.Length > 0 ? Label : Name;
 
     /// <summary>The name under the row, when the row itself shows something else.</summary>
     public bool ShowName => Display != Name;
@@ -59,6 +71,13 @@ public sealed partial class FieldViewModel : ObservableObject
     public bool Ticked { get => IsChecked; set { Value = value ? "true" : ""; OnPropertyChanged(); } }
 
     public bool IsCheckbox => Kind == FieldKind.Checkbox;
+    public bool IsRadio => Kind == FieldKind.Radio;
+    public bool IsChoice => Kind == FieldKind.Choice;
+    public bool IsSignature => Kind == FieldKind.Signature;
+    /// <summary>Typed into: text, amount, comb and drop-down values have a size, colour and face.</summary>
+    public bool HasTextStyle => Kind is FieldKind.Text or FieldKind.Amount or FieldKind.Comb or FieldKind.Choice;
+    /// <summary>Filled in Preview by typing (or choosing an item); checkboxes, radio buttons and signatures are not.</summary>
+    public bool IsTyped => Kind is FieldKind.Text or FieldKind.Amount or FieldKind.Comb;
 
     public PdfRect Rect => new(X0, Y0, X1, Y1);
 
@@ -88,9 +107,19 @@ public sealed partial class FieldViewModel : ObservableObject
     {
         Value = "";   // a value of one type means nothing for another
         if (value == FieldKind.Comb && MaxLen <= 0) MaxLen = 10;
+        if (value == FieldKind.Radio)
+        {
+            if (Group.Length == 0) Group = Name;
+            if (Export.Length == 0) Export = Label.Length > 0 ? Label : Name;
+        }
         Align = value switch { FieldKind.Amount => 2, FieldKind.Comb => 1, _ => Align == 2 ? 0 : Align };
         OnPropertyChanged(nameof(KindText));
         OnPropertyChanged(nameof(IsCheckbox));
+        OnPropertyChanged(nameof(IsRadio));
+        OnPropertyChanged(nameof(IsChoice));
+        OnPropertyChanged(nameof(IsSignature));
+        OnPropertyChanged(nameof(HasTextStyle));
+        OnPropertyChanged(nameof(IsTyped));
         OnPropertyChanged(nameof(Display));
         OnPropertyChanged(nameof(IsComb));
     }
@@ -118,11 +147,14 @@ public sealed partial class FieldViewModel : ObservableObject
         Page = f.Page, Kind = f.Kind, X0 = f.Rect.X0, Y0 = f.Rect.Y0, X1 = f.Rect.X1, Y1 = f.Rect.Y1,
         Name = f.Name, MaxLen = f.MaxLen, Align = f.Align, Label = f.Label, Prefilled = f.Prefilled,
         FontSize = f.FontSize, Color = f.Color, Font = f.Font,
+        Group = f.Group, Export = f.Export, Options = string.Join("\n", f.Options),
     };
 
     public DetectedField ToDetected() => new()
     {
         Page = Page, Kind = Kind, Rect = Rect, Name = Name, MaxLen = Kind == FieldKind.Comb ? Math.Max(1, MaxLen) : 0,
         Align = Align, Label = Label, Prefilled = Prefilled, FontSize = FontSize, Color = Color, Font = Font,
+        Group = Kind == FieldKind.Radio ? Group : "", Export = Kind == FieldKind.Radio ? Export : "",
+        Options = Kind == FieldKind.Choice ? OptionList : [],
     };
 }

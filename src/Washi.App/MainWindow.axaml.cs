@@ -31,7 +31,7 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
 
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
-        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, EraseToolButton, AskToolButton })
+        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, SignToolButton, EraseToolButton, AskToolButton })
             rail.AddHandler(PointerPressedEvent, (_, _) =>
             {
                 // a second click on the active tool folds its panel away; any tool click opens it
@@ -58,6 +58,7 @@ public partial class MainWindow : Window
                 SettingsPage.DataContext = ViewModel.Settings;
         };
         ViewModel.EditRequested += BeginEdit;
+        SignPad.InkCompleted += ink => ViewModel.Sign.SetInk(ink);
         FieldEditor.KeyDown += OnEditorKeyDown;
         FieldEditor.LostFocus += (_, _) => EndEdit(commit: true);
         ViewModel.PropertyChanged += (_, e) =>

@@ -107,6 +107,9 @@
   <data name="Kind_amount" xml:space="preserve"><value>금액</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>칸 나눔</value></data>
   <data name="Kind_checkbox" xml:space="preserve"><value>체크박스</value></data>
+  <data name="Kind_radio" xml:space="preserve"><value>라디오 버튼</value></data>
+  <data name="Kind_choice" xml:space="preserve"><value>드롭다운 목록</value></data>
+  <data name="Kind_signature" xml:space="preserve"><value>서명</value></data>
   <data name="UsagePdf" xml:space="preserve"><value>페이지와 OCR:
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      파일 합치기 (입력란 유지)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
@@ -380,6 +383,7 @@
   <data name="Err_NothingToMerge" xml:space="preserve"><value>합칠 파일이 없습니다.</value></data>
   <data name="Err_RangeOutside" xml:space="preserve"><value>페이지 범위 {0} 이(가) 1-{1} 밖입니다.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>'{0}' 은(는) 페이지 범위가 아닙니다(예: 1-3,5).</value></data>
+  <data name="Err_NoSignature" xml:space="preserve"><value>배치할 서명이 없습니다.</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>저장할 페이지가 없습니다.</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>{0}° 회전은 90의 배수가 아닙니다.</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>'{0}' 은(는) 회전 지정이 아닙니다(예: 2:90,5:-90).</value></data>
@@ -402,6 +406,26 @@
   <data name="Ui_FaceAuto" xml:space="preserve"><value>양식 기본</value></data>
   <data name="Ui_FaceSerif" xml:space="preserve"><value>명조 (세리프)</value></data>
   <data name="Ui_FaceSans" xml:space="preserve"><value>고딕 (산세리프)</value></data>
+  <data name="Ui_RadioGroup" xml:space="preserve"><value>그룹</value></data>
+  <data name="Ui_RadioGroupHint" xml:space="preserve"><value>같은 그룹의 버튼은 하나의 선택지가 되며, 그중 하나만 고를 수 있습니다.</value></data>
+  <data name="Ui_RadioExport" xml:space="preserve"><value>선택지</value></data>
+  <data name="Ui_ChoiceOptions" xml:space="preserve"><value>항목 (한 줄에 하나)</value></data>
+  <data name="Ui_ChooseOption" xml:space="preserve"><value>이 선택지 고르기</value></data>
+  <data name="Ui_SignHere" xml:space="preserve"><value>서명 도구로 여기에 서명하세요.</value></data>
+  <data name="Ui_ToolSign" xml:space="preserve"><value>서명</value></data>
+  <data name="Ui_SignTitle" xml:space="preserve"><value>작성 및 서명</value></data>
+  <data name="Ui_SignLead" xml:space="preserve"><value>아래에 한 번 서명한 뒤, 서명할 곳마다 페이지에서 상자를 끌거나 서명란을 고르세요. 서명이 페이지에 들어간 사본을 저장합니다.</value></data>
+  <data name="Ui_SignPadHint" xml:space="preserve"><value>마우스·트랙패드·펜으로 여기에 서명</value></data>
+  <data name="Ui_SignClear" xml:space="preserve"><value>지우기</value></data>
+  <data name="Ui_SignRemember" xml:space="preserve"><value>이 컴퓨터에 저장</value></data>
+  <data name="Ui_SignSpots" xml:space="preserve"><value>서명란</value></data>
+  <data name="Ui_SignSpot" xml:space="preserve"><value>{0} ({1}페이지)</value></data>
+  <data name="Ui_SignHereButton" xml:space="preserve"><value>여기에 서명</value></data>
+  <data name="Ui_SignPlacedTitle" xml:space="preserve"><value>배치한 서명</value></data>
+  <data name="Ui_SignPlaced" xml:space="preserve"><value>{0}페이지 서명</value></data>
+  <data name="Ui_SignDrawFirst" xml:space="preserve"><value>먼저 패널에 서명하세요.</value></data>
+  <data name="Ui_SignRun" xml:space="preserve"><value>서명한 사본 저장…</value></data>
+  <data name="Ui_Signed" xml:space="preserve"><value>{0} 저장 (서명 {1}개).</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>모든 입력란에 적용</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>크기, 색, 글꼴을 입력란 {0}개에 적용했습니다.</value></data>
 </root>

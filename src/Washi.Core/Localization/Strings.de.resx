@@ -107,6 +107,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Kind_amount" xml:space="preserve"><value>Betrag</value></data>
   <data name="Kind_comb" xml:space="preserve"><value>Kästchen</value></data>
   <data name="Kind_checkbox" xml:space="preserve"><value>Kontrollkästchen</value></data>
+  <data name="Kind_radio" xml:space="preserve"><value>Optionsfeld</value></data>
+  <data name="Kind_choice" xml:space="preserve"><value>Dropdown-Liste</value></data>
+  <data name="Kind_signature" xml:space="preserve"><value>Unterschrift</value></data>
   <data name="UsagePdf" xml:space="preserve"><value>Seiten und OCR:
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      Dateien zusammenfügen (Formularfelder bleiben erhalten)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o Ordner]
@@ -380,6 +383,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_NothingToMerge" xml:space="preserve"><value>Es gibt nichts zusammenzuführen.</value></data>
   <data name="Err_RangeOutside" xml:space="preserve"><value>Seitenbereich {0} liegt außerhalb von 1-{1}.</value></data>
   <data name="Err_BadRange" xml:space="preserve"><value>„{0}“ ist kein Seitenbereich (z. B. 1-3,5).</value></data>
+  <data name="Err_NoSignature" xml:space="preserve"><value>Es gibt keine Unterschrift zum Platzieren.</value></data>
   <data name="Err_NoPages" xml:space="preserve"><value>Es gibt keine Seiten zum Schreiben.</value></data>
   <data name="Err_BadRotation" xml:space="preserve"><value>Eine Drehung um {0}° ist kein Vielfaches von 90.</value></data>
   <data name="Err_BadRotateSpec" xml:space="preserve"><value>„{0}“ ist keine Drehung (z. B. 2:90,5:-90).</value></data>
@@ -402,6 +406,26 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_FaceAuto" xml:space="preserve"><value>Formularstandard</value></data>
   <data name="Ui_FaceSerif" xml:space="preserve"><value>Mincho / Song (Serifen)</value></data>
   <data name="Ui_FaceSans" xml:space="preserve"><value>Gothic / Hei (serifenlos)</value></data>
+  <data name="Ui_RadioGroup" xml:space="preserve"><value>Gruppe</value></data>
+  <data name="Ui_RadioGroupHint" xml:space="preserve"><value>Optionsfelder derselben Gruppe bilden eine Auswahl: nur eines davon kann gewählt sein.</value></data>
+  <data name="Ui_RadioExport" xml:space="preserve"><value>Option</value></data>
+  <data name="Ui_ChoiceOptions" xml:space="preserve"><value>Einträge (einer pro Zeile)</value></data>
+  <data name="Ui_ChooseOption" xml:space="preserve"><value>Diese Option wählen</value></data>
+  <data name="Ui_SignHere" xml:space="preserve"><value>Hier mit dem Werkzeug „Unterschreiben“ unterschreiben.</value></data>
+  <data name="Ui_ToolSign" xml:space="preserve"><value>Unterschreiben</value></data>
+  <data name="Ui_SignTitle" xml:space="preserve"><value>Ausfüllen und unterschreiben</value></data>
+  <data name="Ui_SignLead" xml:space="preserve"><value>Unten einmal unterschreiben, dann für jede Stelle einen Rahmen auf der Seite ziehen (oder ein Unterschriftsfeld wählen). Eine Kopie mit der Unterschrift in der Seite wird gespeichert.</value></data>
+  <data name="Ui_SignPadHint" xml:space="preserve"><value>Hier mit Maus, Trackpad oder Stift unterschreiben</value></data>
+  <data name="Ui_SignClear" xml:space="preserve"><value>Löschen</value></data>
+  <data name="Ui_SignRemember" xml:space="preserve"><value>Auf diesem Computer merken</value></data>
+  <data name="Ui_SignSpots" xml:space="preserve"><value>Unterschriftsfelder</value></data>
+  <data name="Ui_SignSpot" xml:space="preserve"><value>{0} (Seite {1})</value></data>
+  <data name="Ui_SignHereButton" xml:space="preserve"><value>Hier unterschreiben</value></data>
+  <data name="Ui_SignPlacedTitle" xml:space="preserve"><value>Platzierte Unterschriften</value></data>
+  <data name="Ui_SignPlaced" xml:space="preserve"><value>Unterschrift auf Seite {0}</value></data>
+  <data name="Ui_SignDrawFirst" xml:space="preserve"><value>Zuerst die Unterschrift im Bereich zeichnen.</value></data>
+  <data name="Ui_SignRun" xml:space="preserve"><value>Unterschriebene Kopie speichern…</value></data>
+  <data name="Ui_Signed" xml:space="preserve"><value>{0} mit {1} Unterschrift(en) gespeichert.</value></data>
   <data name="Ui_StyleApplyAll" xml:space="preserve"><value>Für alle Felder übernehmen</value></data>
   <data name="Ui_StyleApplied" xml:space="preserve"><value>Größe, Farbe und Schrift auf {0} Feld(er) angewendet.</value></data>
 </root>

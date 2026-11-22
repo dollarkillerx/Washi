@@ -64,7 +64,7 @@ public static class AcroFormFields
             var options = type switch
             {
                 "choice" => ChoiceOptions(field),
-                "checkbox" or "radio" => widgets.SelectMany(OnStates).Distinct().ToList(),
+                "checkbox" or "radio" => ButtonStates(field, widgets).Select(st => st.Label).ToList(),
                 _ => (IReadOnlyList<string>)[],
             };
             string value = Inherited(field, "/V") switch
@@ -75,6 +75,8 @@ public static class AcroFormFields
                 PdfArray a => string.Join(", ", a.Elements.Select(e => e is PdfString es ? es.Value : e.ToString())),
                 _ => "",
             };
+            if (type is "checkbox" or "radio" && ButtonStates(field, widgets).FirstOrDefault(st => st.State == value) is { Label: { } shown })
+                value = shown;                                    // 0 / 1 with an /Opt list: show the option's label
             int maxLen = Inherited(field, "/MaxLen") is PdfInteger ml ? ml.Value : 0;
             result.Add(new FieldInfo(name, type, value, page, rect, maxLen,
                 type == "text" && (ff & FfComb) != 0 && maxLen > 0, type == "text" && (ff & FfMultiline) != 0,
@@ -168,14 +170,17 @@ public static class AcroFormFields
                 }
                 case "/Btn" when (ff & FfPushButton) == 0:
                 {
-                    var states = widgets.SelectMany(OnStates).Distinct().ToList();
-                    string? on = (ff & FfRadio) != 0
-                        ? states.FirstOrDefault(s => s.Equals(value, StringComparison.OrdinalIgnoreCase))
+                    var pairs = ButtonStates(field, widgets);
+                    var states = pairs.Select(p => p.State).ToList();
+                    // a radio value may be the state name or the option's label (有 for state 0 with /Opt [(有) (無)])
+                    string? Match(string v) => pairs.FirstOrDefault(p => p.State.Equals(v, StringComparison.OrdinalIgnoreCase)
+                                                                         || p.Label.Equals(v.Trim(), StringComparison.OrdinalIgnoreCase)).State;
+                    string? on = (ff & FfRadio) != 0 ? Match(value)
                         : IsTrue(value) ? states.FirstOrDefault() ?? "Yes"
-                        : states.FirstOrDefault(s => s.Equals(value, StringComparison.OrdinalIgnoreCase));
+                        : Match(value);
                     if ((ff & FfRadio) != 0 && on is null)
                     {
-                        notes.Add($"{name}: '{value}' is not one of {string.Join(", ", states)}");
+                        notes.Add($"{name}: '{value}' is not one of {string.Join(", ", pairs.Select(p => p.Label))}");
                         continue;
                     }
                     field.Elements.SetName("/V", "/" + (on ?? "Off"));
@@ -185,10 +190,32 @@ public static class AcroFormFields
                     break;
                 }
                 case "/Ch":
+                {
                     field.Elements["/V"] = new PdfString(value, PdfStringEncoding.Unicode);
-                    needAppearances = true;
+                    // drawn like a one-line text field, so the chosen item shows the same everywhere
+                    string da = Inherited(field, "/DA") switch
+                    {
+                        PdfString d => d.Value,
+                        PdfStringObject d => d.Value,
+                        _ => form.Elements.GetString("/DA"),
+                    };
+                    if (embeddedKey is not null)
+                    {
+                        da = ReplaceFont(da, embeddedKey);
+                        foreach (var w in widgets.Append(field).Distinct()) w.Elements.SetString("/DA", da);
+                    }
+                    var (key, size, color) = ParseDa(da);
+                    var enc = key is null || fonts is null ? null : Encoder(key, fonts, encoders);
+                    if (enc is null) needAppearances = true;
+                    else
+                    {
+                        int q = Inherited(field, "/Q") is PdfInteger qi ? qi.Value : 0;
+                        foreach (var w in widgets)
+                            SetAppearance(doc, w, TextAppearance(w, enc, key!, size, color, value, q, comb: 0, multiline: false), fonts!, key!);
+                    }
                     filled++;
                     break;
+                }
                 default:
                     notes.Add($"{name}: {(ft == "/Sig" ? "signature" : "button")} fields are not filled");
                     break;
@@ -471,6 +498,16 @@ public static class AcroFormFields
     private static IEnumerable<string> OnStates(PdfDictionary widget) =>
         (Deref(widget.Elements.GetDictionary("/AP")?.Elements["/N"]) as PdfDictionary)?.Elements.Keys
             .Select(k => k.TrimStart('/')).Where(k => k != "Off") ?? [];
+
+    /// <summary>A button field's on-states with what they stand for: the /Opt item when the parent has one (states
+    /// 0, 1, 2 ... index it), else the state name itself.</summary>
+    private static List<(string State, string Label)> ButtonStates(PdfDictionary field, List<PdfDictionary> widgets)
+    {
+        var states = widgets.SelectMany(OnStates).Distinct().ToList();
+        var opt = ChoiceOptions(field);
+        return [.. states.Select(st => (st, opt.Count > 0 && int.TryParse(st, NumberStyles.None, CultureInfo.InvariantCulture, out var i) && i < opt.Count
+                                              ? opt[i] : st))];
+    }
 
     private static List<string> ChoiceOptions(PdfDictionary field) =>
         (Inherited(field, "/Opt") as PdfArray ?? Deref(Inherited(field, "/Opt")) as PdfArray)?.Elements.Select(e => Deref(e) switch

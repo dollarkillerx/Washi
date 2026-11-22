@@ -63,6 +63,7 @@ public sealed class FieldCanvas : Control
     {
         vm.PropertyChanged += OnEditorChanged;
         vm.Erase.Changed += InvalidateVisual;
+        vm.Sign.Changed += InvalidateVisual;
         vm.Fields.CollectionChanged += OnFieldsChanged;
         foreach (var f in vm.Fields) f.PropertyChanged += OnFieldChanged;
     }
@@ -71,6 +72,7 @@ public sealed class FieldCanvas : Control
     {
         vm.PropertyChanged -= OnEditorChanged;
         vm.Erase.Changed -= InvalidateVisual;
+        vm.Sign.Changed -= InvalidateVisual;
         vm.Fields.CollectionChanged -= OnFieldsChanged;
         foreach (var f in vm.Fields) f.PropertyChanged -= OnFieldChanged;
     }
@@ -101,6 +103,9 @@ public sealed class FieldCanvas : Control
         [FieldKind.Amount] = Color.FromRgb(140, 51, 217),
         [FieldKind.Comb] = Color.FromRgb(226, 112, 0),
         [FieldKind.Checkbox] = Color.FromRgb(13, 150, 64),
+        [FieldKind.Radio] = Color.FromRgb(0, 125, 121),
+        [FieldKind.Choice] = Color.FromRgb(0, 99, 168),
+        [FieldKind.Signature] = Color.FromRgb(138, 63, 0),
     };
 
     private static readonly Color Active = Color.FromRgb(224, 69, 43);   // vermilion
@@ -122,6 +127,11 @@ public sealed class FieldCanvas : Control
             RenderErase(ctx, er);
             return;
         }
+        if (Editor is { IsSignTool: true } sg)
+        {
+            RenderSign(ctx, sg);
+            return;
+        }
         var selected = Editor?.SelectedField;
         var typeface = new Typeface("Inter");
         if (Editor is { PreviewMode: true })
@@ -135,7 +145,18 @@ public sealed class FieldCanvas : Control
             var r = Screen(f);
             bool sel = ReferenceEquals(f, selected);
             // the selected field is the brand's vermilion: "the field being filled"
-            ctx.DrawRectangle(new SolidColorBrush(sel ? Active : c, sel ? 0.18 : 0.14), new Pen(new SolidColorBrush(sel ? Active : c), sel ? 2 : 1), r);
+            if (f.Kind == FieldKind.Radio)
+                ctx.DrawEllipse(new SolidColorBrush(sel ? Active : c, sel ? 0.18 : 0.14), new Pen(new SolidColorBrush(sel ? Active : c), sel ? 2 : 1), r);
+            else
+                ctx.DrawRectangle(new SolidColorBrush(sel ? Active : c, sel ? 0.18 : 0.14), new Pen(new SolidColorBrush(sel ? Active : c), sel ? 2 : 1), r);
+            if (f.Kind == FieldKind.Signature && r.Height >= 10)
+            {
+                var pen = new FormattedText("✍", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, typeface,
+                                            Math.Clamp(r.Height * 0.5, 9, 18), new SolidColorBrush(c, 0.7));
+                ctx.DrawText(pen, new Point(r.Right - pen.Width - 3, r.Bottom - pen.Height - 1));
+            }
+            if (f.Kind == FieldKind.Choice && r.Height >= 8)
+                DrawCaret(ctx, r, new SolidColorBrush(c));
 
             if (f.Kind == FieldKind.Comb && f.MaxLen > 1)
             {
@@ -161,6 +182,21 @@ public sealed class FieldCanvas : Control
         }
     }
 
+    /// <summary>The ▾ of a drop-down list, at the right end of its box.</summary>
+    private static void DrawCaret(DrawingContext ctx, Rect r, IBrush brush)
+    {
+        double s = Math.Clamp(r.Height * 0.3, 4, 8), x = r.Right - s - 3, y = r.Center.Y - s / 4;
+        var g = new StreamGeometry();
+        using (var c = g.Open())
+        {
+            c.BeginFigure(new Point(x, y), true);
+            c.LineTo(new Point(x + s, y));
+            c.LineTo(new Point(x + s / 2, y + s / 2));
+            c.EndFigure(true);
+        }
+        ctx.DrawGeometry(brush, null, g);
+    }
+
     private static readonly Color Blue = Color.FromRgb(31, 73, 224);
     private static readonly IBrush Ink = new SolidColorBrush(Color.FromRgb(22, 22, 22));
 
@@ -170,7 +206,16 @@ public sealed class FieldCanvas : Control
         var r = Screen(f);
         ctx.DrawRectangle(new SolidColorBrush(Blue, selected ? 0.12 : 0.06),
                           new Pen(new SolidColorBrush(selected ? Active : Blue, selected ? 1 : 0.35), selected ? 1.5 : 0.75), r);
+        if (f.Kind == FieldKind.Choice && r.Height >= 8) DrawCaret(ctx, r, new SolidColorBrush(Blue, 0.6));
         if (f.Value.Length == 0) return;
+
+        if (f.Kind == FieldKind.Radio)
+        {
+            if (!f.IsChecked) return;
+            double d = Math.Min(r.Width, r.Height) * 0.55;
+            ctx.DrawEllipse(Ink, null, r.Center, d / 2, d / 2);
+            return;
+        }
 
         if (f.Kind == FieldKind.Checkbox)
         {
@@ -289,13 +334,52 @@ public sealed class FieldCanvas : Control
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.10), edge, Screen(drawing));
     }
 
+    /// <summary>Sign tool: the signature fields (dashed), the placed signatures as they will print, the box being dragged.</summary>
+    private void RenderSign(DrawingContext ctx, MainViewModel vm)
+    {
+        int page = vm.PageIndex;
+        var spot = new Pen(new SolidColorBrush(Color.FromRgb(138, 63, 0)), 1, new DashStyle([4, 3], 0));
+        foreach (var s in vm.Sign.Spots.Where(s => s.Page == page))
+            ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(138, 63, 0), 0.06), spot, Screen(s.Rect));
+        var edge = new Pen(new SolidColorBrush(Active), 1, new DashStyle([5, 3], 0));
+        foreach (var p in vm.Sign.Placed.Where(p => p.Page == page))
+        {
+            var r = Screen(p.Rect);
+            ctx.DrawRectangle(null, edge, r);
+            if (vm.Sign.Ink is { } ink) DrawInk(ctx, ink, r);
+        }
+        if (_eraseBox is { } drawing)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.10), edge, Screen(drawing));
+    }
+
+    /// <summary>The ink fitted and centred in <paramref name="r"/>, as <see cref="Washi.Core.Pages.PdfSigner"/> draws it.</summary>
+    private static void DrawInk(DrawingContext ctx, Washi.Core.Pages.Ink ink, Rect r)
+    {
+        double h = Math.Min(r.Height, r.Width / Math.Max(ink.Aspect, 0.01)), w = h * ink.Aspect;
+        double ox = r.X + (r.Width - w) / 2, oy = r.Y + (r.Height - h) / 2;
+        var pen = new Pen(Ink, Math.Clamp(h * 0.035, 0.6, 3), lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round);
+        foreach (var s in ink.Strokes)
+        {
+            if (s.Count == 0) continue;
+            var g = new StreamGeometry();
+            using (var c = g.Open())
+            {
+                c.BeginFigure(new Point(ox + s[0].X * w, oy + s[0].Y * h), false);
+                foreach (var p in s.Skip(1)) c.LineTo(new Point(ox + p.X * w, oy + p.Y * h));
+                if (s.Count == 1) c.LineTo(new Point(ox + s[0].X * w + 0.5, oy + s[0].Y * h));
+                c.EndFigure(false);
+            }
+            ctx.DrawGeometry(null, pen, g);
+        }
+    }
+
     private static PdfRect Normal(Point a, Point b) =>
         new(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (Editor is { IsEraseTool: true, HasDocument: true } ev && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsSignTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _start = ToPage(e.GetPosition(this));
             _eraseBox = Normal(_start, _start);
@@ -387,7 +471,11 @@ public sealed class FieldCanvas : Control
         {
             _eraseBox = null;
             e.Pointer.Capture(null);
-            if (box.Width >= MinSizePt && box.Height >= MinSizePt && Editor is { } ed) _ = ed.Erase.AddBoxAsync(box);
+            if (box.Width >= MinSizePt && box.Height >= MinSizePt && Editor is { } ed)
+            {
+                if (ed.IsSignTool) ed.Sign.Place(box);
+                else _ = ed.Erase.AddBoxAsync(box);
+            }
             InvalidateVisual();
             return;
         }
@@ -416,9 +504,10 @@ public sealed class FieldCanvas : Control
         if (vm.SelectedField is { } sel && HitHandle(sel, screen) is { } c)
             type = c.Left == c.Top ? StandardCursorType.TopLeftCorner : StandardCursorType.TopRightCorner;
         else if (vm.PreviewMode && HitField(screen) is { } over)
-            type = over.Kind == FieldKind.Checkbox ? StandardCursorType.Hand : StandardCursorType.Ibeam;
+            type = over.Kind is FieldKind.Checkbox or FieldKind.Radio or FieldKind.Choice ? StandardCursorType.Hand
+                 : over.Kind == FieldKind.Signature ? StandardCursorType.Arrow : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
-        else if (vm.DrawMode || vm.IsEraseTool) type = StandardCursorType.Cross;
+        else if (vm.DrawMode || vm.IsEraseTool || vm.IsSignTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
     }

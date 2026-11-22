@@ -57,6 +57,11 @@ public static class MasumeDetector
         bool readable = Readable(string.Concat(page.Chars.Select(c => c.Text)));
         int pno = page.PageIndex;
 
+        // ○ glyphs in a row with words after each (○有 ○無, ○ Yes ○ No) -> radio groups, removed from the label set
+        var radioGroups = readable ? RadioGroups(labels) : [];
+        var radioGlyphs = radioGroups.SelectMany(gr => gr).Select(r => r.Glyph).ToHashSet();
+        labels = [.. labels.Where(c => !radioGlyphs.Contains(c))];
+
         // □ glyphs -> checkboxes, removed from the label set
         var boxes = new List<PdfRect>();
         var rest = new List<PdfChar>();
@@ -67,6 +72,8 @@ public static class MasumeDetector
             if (sq is { } s) boxes.Add(s); else rest.Add(c);
         }
         labels = rest;
+        // radio buttons count as boxes for the cell rules: a cell of choices is not a blank to write in
+        var boxLike = boxes.Concat(radioGlyphs.Select(c => c.Rect)).ToList();
 
         var cells = new List<Cell>();
         // horizontal rules: they close rows that are open at the sides, and are the lines people write on
@@ -83,7 +90,7 @@ public static class MasumeDetector
                 cell.LabelChars.AddRange(cell.DataChars);
                 cell.DataChars.Clear();
             }
-            cell.Boxes.AddRange(boxes.Where(b => Contains(r, b.Center)));
+            cell.Boxes.AddRange(boxLike.Where(b => Contains(r, b.Center)));
             var interior = g.Slice(Px(r.X0) + 3, Px(r.Y0) + 3, Px(r.X1) - 3, Px(r.Y1) - 3);
             cell.Shaded = interior.Length > 0 && Median(interior) < ShadedLum;
             cell.GraphicFill = innerInk > 0.02;
@@ -237,6 +244,13 @@ public static class MasumeDetector
 
         foreach (var b in boxes)
             fields.Add(new DetectedField { Page = pno, Kind = FieldKind.Checkbox, Rect = b, Notes = ["□ glyph"] });
+        for (int gi = 0; gi < radioGroups.Count; gi++)
+            foreach (var (glyph, export) in radioGroups[gi])
+                fields.Add(new DetectedField
+                {
+                    Page = pno, Kind = FieldKind.Radio, Rect = Inset(glyph.Rect, 0.08), Group = $"p{pno + 1}_radio_{gi + 1:00}",
+                    Export = export, Label = export, Notes = ["○ glyph"],
+                });
 
         // printed text the text layer cannot see: glyphs without a Unicode mapping never reach page.Chars, so a field
         // printed in such a font looked empty (法人番号 digits on some e-Gov forms)
@@ -245,6 +259,9 @@ public static class MasumeDetector
                 fields[i] = fields[i] with { Prefilled = UnreadableMarker };
 
         var named = NameFields(fields, cells, labels, readable, pno);
+        // a blank whose label asks for a signature (署名, Signature, 서명 ...) is a signature field
+        named = [.. named.Select(f => f.Kind is FieldKind.Text && readable && IsSignatureLabel(f.Label + " " + f.Name)
+            ? f with { Kind = FieldKind.Signature, Align = 0, Notes = [.. f.Notes, "signature label"] } : f)];
         if (!readable)
         {
             // a garbled text layer gives mojibake: keep only the fact that something is printed there
@@ -266,14 +283,17 @@ public static class MasumeDetector
             .OrderBy(t => Math.Round(t.f.Rect.Y0 / 6)).ThenBy(t => t.f.Rect.X0).ToList();
         var seen = new Dictionary<string, int>();
         var result = fields.ToArray();
+        var groupHeading = new Dictionary<string, string>();   // radio group id -> the heading of its first button
         for (int k = 0; k < order.Count; k++)
         {
             var (f, idx) = order[k];
             var r = f.Rect;
             string name = "";
+            if (readable && f.Kind == FieldKind.Radio && !groupHeading.ContainsKey(f.Group))
+                groupHeading[f.Group] = Truncate(string.Concat(Heading(r).Where(ch => !char.IsWhiteSpace(ch))), 24);
             if (readable)
             {
-                if (f.Kind == FieldKind.Checkbox)
+                if (f.Kind is FieldKind.Checkbox or FieldKind.Radio)
                 {
                     // the words printed right after the box
                     var right = labels.Where(c => Math.Abs(c.Rect.Center.Y - r.Center.Y) < r.Height
@@ -283,19 +303,7 @@ public static class MasumeDetector
                 }
                 else
                 {
-                    (double D, string Text)? best = null;
-                    foreach (var c in labCells)
-                    {
-                        var cr = c.Rect;
-                        double vo = Math.Min(cr.Y1, r.Y1) - Math.Max(cr.Y0, r.Y0);
-                        double ho = Math.Min(cr.X1, r.X1) - Math.Max(cr.X0, r.X0);
-                        double d;
-                        if (cr.X1 <= r.X0 + 2 && vo > 0.5 * Math.Min(cr.Height, r.Height)) d = r.X0 - cr.X1;
-                        else if (cr.Y1 <= r.Y0 + 2 && ho > 0.5 * Math.Min(cr.Width, r.Width)) d = (r.Y0 - cr.Y1) * 1.5;
-                        else continue;
-                        if (best is null || d < best.Value.D) best = (d, c.Text);
-                    }
-                    name = best?.Text ?? "";
+                    name = Heading(r);
                     // a blank on a line is named by the words printed beside it, not by a heading cell above
                     if (f.Notes.Contains("underline") && f.Label.Length > 0) name = f.Label;
                 }
@@ -306,7 +314,35 @@ public static class MasumeDetector
             seen[baseName] = seen.GetValueOrDefault(baseName) + 1;
             result[idx] = f with { Label = label, Name = seen[baseName] == 1 ? baseName : $"{baseName}_{seen[baseName]}" };
         }
+        // a radio group is named by the heading beside its first button (性別, 有無 ...), when there is one
+        var taken = result.Where(f => f.Kind != FieldKind.Radio).Select(f => f.Name).ToHashSet();
+        foreach (var (id, heading) in groupHeading)
+        {
+            if (heading.Length == 0) continue;
+            var g = heading;
+            for (int k = 2; !taken.Add(g); k++) g = $"{heading}_{k}";
+            for (int i = 0; i < result.Length; i++)
+                if (result[i].Kind == FieldKind.Radio && result[i].Group == id) result[i] = result[i] with { Group = g };
+        }
         return [.. result];
+
+        // the label cell to the left of (or above) a rect
+        string Heading(PdfRect r)
+        {
+            (double D, string Text)? best = null;
+            foreach (var c in labCells)
+            {
+                var cr = c.Rect;
+                double vo = Math.Min(cr.Y1, r.Y1) - Math.Max(cr.Y0, r.Y0);
+                double ho = Math.Min(cr.X1, r.X1) - Math.Max(cr.X0, r.X0);
+                double d;
+                if (cr.X1 <= r.X0 + 2 && vo > 0.5 * Math.Min(cr.Height, r.Height)) d = r.X0 - cr.X1;
+                else if (cr.Y1 <= r.Y0 + 2 && ho > 0.5 * Math.Min(cr.Width, r.Width)) d = (r.Y0 - cr.Y1) * 1.5;
+                else continue;
+                if (best is null || d < best.Value.D) best = (d, c.Text);
+            }
+            return best?.Text ?? "";
+        }
     }
 
     // ------------------------------------------------------------------ text
@@ -393,6 +429,77 @@ public static class MasumeDetector
                 if (++ink >= MinUnmappedInk) return true;
             }
         return false;
+    }
+
+    private static readonly string[] SignatureWords =
+        ["署名", "自署", "サイン", "签名", "簽名", "签字", "簽字", "서명", "signature", "unterschrift", "sign here"];
+
+    /// <summary>A label that asks for a signature. 記名 (a printed name) and 印 (a seal) are not signatures.</summary>
+    internal static bool IsSignatureLabel(string label)
+    {
+        var l = label.ToLowerInvariant();
+        return SignatureWords.Any(l.Contains) && !l.Contains("署名欄") && !l.Contains("記載");
+    }
+
+    private static PdfRect Inset(PdfRect r, double f) =>
+        new(r.X0 + r.Width * f, r.Y0 + r.Height * f, r.X1 - r.Width * f, r.Y1 - r.Height * f);
+
+    /// <summary>
+    /// ○ glyphs that make a choice: two or more on one line, each followed by its words (○有 ○無, ○ Yes ○ No), the
+    /// words running up to the next ○. A lone ○, or ○ with nothing after it (○○市, a bullet), is left as text.
+    /// </summary>
+    internal static List<List<(PdfChar Glyph, string Export)>> RadioGroups(IReadOnlyList<PdfChar> chars)
+    {
+        var groups = new List<List<(PdfChar, string)>>();
+        foreach (var line in Lines(chars))
+        {
+            var row = line.OrderBy(c => c.Rect.X0).ToList();
+            List<(PdfChar, string)> current = [];
+            static bool Ring(PdfChar c) => c.Text is "○" or "◯";
+            for (int i = 0; i < row.Count; i++)
+            {
+                if (!Ring(row[i])) continue;
+                // ○○県 ○丁目 令和○年: a placeholder glued to the words around it, not a button to choose
+                double gw = Math.Max(row[i].Rect.Width, 4);
+                bool glued = i > 0 && row[i - 1] is var prev && !string.IsNullOrWhiteSpace(prev.Text)
+                             && prev.Rect.X1 > row[i].Rect.X0 - 0.25 * gw && !"・、,/／(（[「:：".Contains(prev.Text);
+                bool doubled = (i > 0 && Ring(row[i - 1]) && row[i].Rect.X0 - row[i - 1].Rect.X1 < 0.5 * gw)
+                               || (i + 1 < row.Count && Ring(row[i + 1]) && row[i + 1].Rect.X0 - row[i].Rect.X1 < 0.5 * gw);
+                if (glued || doubled)
+                {
+                    if (current.Count >= 2) groups.Add(current);
+                    current = [];
+                    continue;
+                }
+                // the words after this ○: until the next ○, a gap wider than two glyphs, or 12 characters
+                var words = new List<PdfChar>();
+                double edge = row[i].Rect.X1;
+                for (int j = i + 1; j < row.Count && words.Count < 12; j++)
+                {
+                    var c = row[j];
+                    if (Ring(c) || c.Rect.X0 - edge > 2 * gw) break;
+                    if (!string.IsNullOrWhiteSpace(c.Text)) words.Add(c);
+                    edge = c.Rect.X1;
+                }
+                var export = JoinText(words).Trim().TrimEnd('・', '、', ',', '/', '／').Trim();
+                // ○○市 (a blank place name) or a ○ bullet before a sentence is not a choice
+                if (export.Length == 0 || export.StartsWith('○') || export.Length > 10)
+                {
+                    if (current.Count >= 2) groups.Add(current);
+                    current = [];
+                    continue;
+                }
+                // a new group when this ○ is far from the previous one
+                if (current.Count > 0 && row[i].Rect.X0 - current[^1].Item1.Rect.X1 > 160)
+                {
+                    if (current.Count >= 2) groups.Add(current);
+                    current = [];
+                }
+                current.Add((row[i], export));
+            }
+            if (current.Count >= 2) groups.Add(current);
+        }
+        return groups;
     }
 
     /// <summary>The chars grouped into text lines: chars whose vertical centres are within half a glyph share one.</summary>

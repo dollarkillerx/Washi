@@ -249,7 +249,8 @@ public sealed class DetectFieldsTool(PathPolicy p) : PdfTool(p)
     public override ToolRisk Risk => ToolRisk.ReadOnly;
     public override string Description =>
         "Finds where a flat (non-fillable) PDF form expects input, using Masume's table-cell detection: text, amount (right-aligned, " +
-        "next to a unit like 円), comb (one character per box) and checkbox fields. Returns fields.json items " +
+        "next to a unit like 円), comb (one character per box), checkbox, radio (○ choices on one line; buttons sharing a 'group' " +
+        "form one choice, each with its 'export' option) and signature (a blank labelled 署名 / Signature) fields. Returns fields.json items " +
         "(page is 0-based there; rect in points, top-left origin). Set overlay_page to also get a colour-coded review image. " +
         "Edit the list if needed and pass it to make_fillable.";
     protected override string Schema => """
@@ -284,7 +285,7 @@ public sealed class DetectFieldsTool(PathPolicy p) : PdfTool(p)
         var counts = string.Join(", ", all.GroupBy(f => f.Kind.ToString().ToLowerInvariant()).Select(g => $"{g.Count()} {g.Key}"));
         int pre = all.Count(f => f.Prefilled.Length > 0);
         var head = $"{all.Count} fields ({counts}); {pre} already contain printed data." +
-                   (images.Count > 0 ? " Overlay: blue text, purple amount, orange comb, green checkbox, red dashed = printed data." : "");
+                   (images.Count > 0 ? " Overlay: blue text, purple amount, orange comb, green checkbox, teal radio, brown signature, red dashed = printed data." : "");
         return new ToolResult(head + "\n" + FieldsJson.Serialize(all), images);
     }
 
@@ -313,6 +314,8 @@ public sealed class MakeFillableTool(PathPolicy p) : PdfTool(p)
     public override string Description =>
         "Writes a NEW fillable PDF from a flat one: detects the fields (or uses the given fields.json items) and adds a real AcroForm. " +
         "Rotated pages are straightened. 'lang' picks the font viewers use for typed text (auto reads the page). " +
+        "Kinds: text, amount, comb, checkbox, radio (one PDF field per 'group', one button per 'export' option), choice (a drop-down " +
+        "list of 'options') and signature (an empty signature field). " +
         "Set embed_font to a .ttf/.otf/.ttc to embed it whole, so rare CJK characters (e.g. 燁) show in every viewer; this adds the font's size. " +
         "Never overwrites: output defaults to <name>_fillable.pdf and must not exist.";
     protected override string Schema => """
