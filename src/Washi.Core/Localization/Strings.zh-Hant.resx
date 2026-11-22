@@ -130,7 +130,9 @@
   washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐頁列出文字所在位置
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），
-                                          或用同樣格式的檔案寫出帶書籤的副本</value></data>
+                                          或用同樣格式的檔案寫出帶書籤的副本
+  washi pdf print &lt;in.pdf&gt; [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
+  washi pdf printers                      列出印表機</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了文字 {1} 段、影像 {2} 個、圖形 {3} 個。檢查：刪除處剩餘文字 {4} 個，其他地方變化的像素 {5} 個。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 頁保留：{1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>已將 {0} 個檔案合併為 {1}：{2} 頁，{3} 個表單欄位</value></data>
@@ -591,4 +593,29 @@
   <data name="Err_BookmarkCheck" xml:space="preserve"><value>副本的書籤與要求不符，因此沒有保留。</value></data>
   <data name="Pdf_BookmarksNone" xml:space="preserve"><value>沒有書籤。</value></data>
   <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>已儲存 {0}（{1} 個書籤）。</value></data>
+  <data name="Ui_PrintMenu" xml:space="preserve"><value>列印…</value></data>
+  <data name="Ui_PrintTitle" xml:space="preserve"><value>列印</value></data>
+  <data name="Ui_PrintNote" xml:space="preserve"><value>列印磁碟上儲存的 {0}。</value></data>
+  <data name="Ui_PrintPrinter" xml:space="preserve"><value>印表機</value></data>
+  <data name="Ui_PrintCopies" xml:space="preserve"><value>份數</value></data>
+  <data name="Ui_PrintPages" xml:space="preserve"><value>頁面</value></data>
+  <data name="Ui_PrintAll" xml:space="preserve"><value>全部</value></data>
+  <data name="Ui_PrintCurrentPage" xml:space="preserve"><value>目前頁（第 {0} 頁）</value></data>
+  <data name="Ui_PrintSome" xml:space="preserve"><value>指定頁</value></data>
+  <data name="Ui_PrintTwoSided" xml:space="preserve"><value>雙面</value></data>
+  <data name="Ui_PrintGray" xml:space="preserve"><value>黑白</value></data>
+  <data name="Ui_PrintFit" xml:space="preserve"><value>符合紙張</value></data>
+  <data name="Ui_PrintActual" xml:space="preserve"><value>實際大小</value></data>
+  <data name="Ui_PrintRun" xml:space="preserve"><value>列印</value></data>
+  <data name="Ui_PrintNoPrinters" xml:space="preserve"><value>這台電腦沒有設定印表機。請在系統設定中加入後再試。</value></data>
+  <data name="Ui_Printed" xml:space="preserve"><value>已將 {1} 的 {0} 頁傳送到 {2}。</value></data>
+  <data name="Err_PrintMissing" xml:space="preserve"><value>{0} 不存在。</value></data>
+  <data name="Err_PrintPassword" xml:space="preserve"><value>{0} 開啟需要密碼，列印系統無法開啟它。請先在「保護」中另存一份無開啟密碼的副本，再列印。</value></data>
+  <data name="Err_PrintNotAllowed" xml:space="preserve"><value>{0} 不允許列印。</value></data>
+  <data name="Err_PrintCopies" xml:space="preserve"><value>份數必須是 1 到 999。</value></data>
+  <data name="Err_PrintFailed" xml:space="preserve"><value>列印系統拒絕了此工作：{0}</value></data>
+  <data name="Err_PrintNoSystem" xml:space="preserve"><value>找不到列印系統（CUPS：lp、lpstat）。</value></data>
+  <data name="Err_PrintNoPrinter" xml:space="preserve"><value>沒有名為 {0} 的印表機。</value></data>
+  <data name="Pdf_PrintersNone" xml:space="preserve"><value>沒有印表機。</value></data>
+  <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0}（預設）</value></data>
 </root>

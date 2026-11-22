@@ -210,6 +210,7 @@ public partial class MainWindow : Window
             {
                 case Key.O: vm.OpenCommand.Execute(null); break;
                 case Key.F: vm.Find.OpenCommand.Execute(null); break;
+                case Key.P: vm.Print.OpenCommand.Execute(null); break;
                 case Key.G: vm.Find.NextCommand.Execute(null); break;
                 case Key.S when vm.IsFormTool: vm.MakeFillableCommand.Execute(null); break;
                 case Key.W: vm.CloseDocumentCommand.Execute(null); break;
@@ -219,6 +220,12 @@ public partial class MainWindow : Window
                 case Key.D9 or Key.NumPad9: vm.FitPageCommand.Execute(null); break;
                 default: return;
             }
+            e.Handled = true;
+            return;
+        }
+        if (e.Key == Key.Escape && vm.Print.IsOpen)
+        {
+            vm.Print.CancelCommand.Execute(null);
             e.Handled = true;
             return;
         }

@@ -208,6 +208,14 @@ outline. On the command line, `washi pdf bookmarks in.pdf` lists them one per li
 page) and `--set outline.txt` writes a copy with the ones in such a file; agents use `list_bookmarks` and
 `set_bookmarks`, for example to add a table of contents built from `extract_text`.
 
+**Print:** the printer button in the header (⌘/Ctrl+P) opens a print card: printer, copies, all pages, the current
+page or a list such as `1-3, 5`, two-sided, black and white, fit to the paper or actual size. It prints the file as it
+is saved on disk. On macOS and Linux the job goes to CUPS (`lp`), which prints PDF as it is; on Windows each page is
+rendered with PDFium at the printer's resolution and sent to the Windows print system. Files that do not allow
+printing are refused, and so are files that need a password to open (save a copy without it in Protect first).
+`washi pdf print in.pdf [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]` and
+`washi pdf printers` do the same from the command line. Printing is not offered to the AI assistant or MCP clients.
+
 **Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your
 fingers stays put. The page fits the width when opened, and keeps fitting as panels
 open and close until you zoom by hand.
@@ -628,7 +636,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 9. ~~Passwords and permissions; remove hidden information.~~ Done (`washi pdf protect|unlock|clean`, the Protect tool, `remove_hidden_info`).
 10. ~~Redaction by keyword, pattern and area.~~ Done (`washi pdf redact`, the Redact tool, `redact`).
 11. ~~Find in the document.~~ Done (the find bar, `washi pdf find`, `search_text`).
-12. ~~Bookmarks: read, navigate, edit.~~ Done (the Bookmarks panel, `washi pdf bookmarks`, `list_bookmarks`, `set_bookmarks`). Next: print.
+12. ~~Bookmarks: read, navigate, edit.~~ Done (the Bookmarks panel, `washi pdf bookmarks`, `list_bookmarks`, `set_bookmarks`).
+13. ~~Print.~~ Done (the print card, `washi pdf print`). Next: calculation and validation in forms.
 
 ## License
 

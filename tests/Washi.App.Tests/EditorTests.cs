@@ -334,6 +334,11 @@ public sealed class EditorTests : IDisposable
         Shot(w, "bookmarks");
         vm.ShowPagesPanel = true;
 
+        await vm.Print.OpenCommand.ExecuteAsync(null);
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "print");
+        vm.Print.CancelCommand.Execute(null);
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

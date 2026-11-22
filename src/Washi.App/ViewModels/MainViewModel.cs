@@ -65,6 +65,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Redact = new RedactToolViewModel(this);
         Find = new FindViewModel(this);
         Bookmarks = new BookmarksViewModel(this);
+        Print = new PrintViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -84,6 +85,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public RedactToolViewModel Redact { get; }
     public FindViewModel Find { get; }
     public BookmarksViewModel Bookmarks { get; }
+    public PrintViewModel Print { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -473,6 +475,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Find.CloseCommand.Execute(null);
         Find.Reset();
         Bookmarks.Clear();
+        Print.CancelCommand.Execute(null);
         PdfPath = null;
         Fields.Clear();
         Thumbnails.Clear();

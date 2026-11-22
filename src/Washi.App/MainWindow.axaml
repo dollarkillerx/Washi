@@ -5,6 +5,7 @@
         xmlns:l="using:Washi.App.Localization"
         xmlns:v="using:Washi.App.Views"
         xmlns:svc="using:Washi.App.Services"
+        xmlns:print="using:Washi.Core.Printing"
         x:Class="Washi.App.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="{Binding Title}"
@@ -24,6 +25,7 @@
                 <NativeMenu>
                     <NativeMenuItem Header="{l:Tr Ui_Open}" Command="{Binding OpenCommand}" Gesture="Cmd+O" />
                     <NativeMenuItem Header="{l:Tr Ui_MakeFillable}" Command="{Binding MakeFillableCommand}" Gesture="Cmd+S" />
+                    <NativeMenuItem Header="{l:Tr Ui_PrintMenu}" Command="{Binding Print.OpenCommand}" Gesture="Cmd+P" />
                     <NativeMenuItemSeparator />
                     <NativeMenuItem Header="{l:Tr Ui_Close}" Command="{Binding CloseDocumentCommand}" Gesture="Cmd+W" />
                 </NativeMenu>
@@ -206,6 +208,10 @@
 
                 <Button DockPanel.Dock="Right" Click="OnSettingsClick" ToolTip.Tip="{l:Tr Ui_Settings}" Padding="14,0" x:Name="SettingsButton">
                     <c:Icon Data="{StaticResource I.Settings}" Size="18" />
+                </Button>
+                <Button DockPanel.Dock="Right" Command="{Binding Print.OpenCommand}" IsVisible="{Binding HasDocument}"
+                        ToolTip.Tip="{l:Tr Ui_PrintMenu}" Padding="14,0" x:Name="PrintButton">
+                    <c:Icon Data="{StaticResource I.Print}" Size="18" />
                 </Button>
                 <Button DockPanel.Dock="Right" Command="{Binding OpenCommand}" ToolTip.Tip="⌘O">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -1256,6 +1262,57 @@
                 </StackPanel>
             </Border>
         </Panel>
+
+        <!-- ============================================================ print (a card over the page) -->
+        <Border Background="#66000000" IsVisible="{Binding Print.IsOpen}" x:Name="PrintOverlay">
+            <Border Background="White" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="22,18"
+                    BoxShadow="0 4 24 0 #55000000" BorderBrush="{StaticResource BlueBrush}" BorderThickness="0,3,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{l:Tr Ui_PrintTitle}" FontSize="17" FontWeight="SemiBold" />
+                    <TextBlock Classes="note" Text="{Binding Print.Note}" TextWrapping="Wrap" />
+                    <TextBlock Classes="note" Text="{l:Tr Ui_PrintPrinter}" Margin="0,6,0,0" />
+                    <ComboBox ItemsSource="{Binding Print.Printers}" SelectedItem="{Binding Print.Printer}" HorizontalAlignment="Stretch"
+                              IsEnabled="{Binding !Print.NoPrinters}" x:Name="PrinterBox">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="print:PrinterInfo">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+                        <TextBlock Text="{l:Tr Ui_PrintCopies}" VerticalAlignment="Center" />
+                        <NumericUpDown Value="{Binding Print.Copies}" Minimum="1" Maximum="999" Increment="1" FormatString="0" Width="120"
+                                       x:Name="PrintCopiesBox" />
+                    </StackPanel>
+                    <TextBlock Classes="note" Text="{l:Tr Ui_PrintPages}" Margin="0,4,0,0" />
+                    <RadioButton GroupName="printpages" IsChecked="{Binding Print.AllPages}" Content="{l:Tr Ui_PrintAll}" />
+                    <RadioButton GroupName="printpages" IsChecked="{Binding Print.CurrentPage}" Content="{Binding Print.CurrentPageText}" />
+                    <DockPanel>
+                        <RadioButton GroupName="printpages" IsChecked="{Binding Print.SomePages}" Content="{l:Tr Ui_PrintSome}" />
+                        <TextBox Text="{Binding Print.Range}" PlaceholderText="1-3, 5" Margin="8,0,0,0" IsEnabled="{Binding Print.SomePages}"
+                                 x:Name="PrintRangeBox" />
+                    </DockPanel>
+                    <CheckBox IsChecked="{Binding Print.TwoSided}" Content="{l:Tr Ui_PrintTwoSided}" Margin="0,4,0,0" />
+                    <CheckBox IsChecked="{Binding Print.Grayscale}" Content="{l:Tr Ui_PrintGray}" />
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                        <RadioButton GroupName="printsize" IsChecked="{Binding Print.FitToPage}" Content="{l:Tr Ui_PrintFit}" />
+                        <RadioButton GroupName="printsize" IsChecked="{Binding Print.ActualSize}" Content="{l:Tr Ui_PrintActual}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Print.Error}" Foreground="#da1e28" TextWrapping="Wrap" FontSize="12"
+                               IsVisible="{Binding Print.Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="PrintError" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <Button Content="{l:Tr Ui_Cancel}" Command="{Binding Print.CancelCommand}" Padding="16,6" />
+                        <Button Classes="accent" Command="{Binding Print.PrintCommand}" IsEnabled="{Binding Print.CanPrint}" Padding="16,6"
+                                x:Name="PrintRunButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Print}" Size="16" />
+                                <TextBlock Text="{l:Tr Ui_PrintRun}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
 
         <!-- ============================================================ MCP approvals (cards, not modal windows) -->
         <ItemsControl ItemsSource="{Binding McpApprovals}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="14" Width="360"

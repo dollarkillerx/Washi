@@ -130,7 +130,9 @@
   washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、
-                                          または同じ形式のファイルのしおりでコピーを作成</value></data>
+                                          または同じ形式のファイルのしおりでコピーを作成
+  washi pdf print &lt;in.pdf&gt; [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
+  washi pdf printers                      プリンターの一覧</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} 個のファイルを {1} に結合しました: {2} ページ、記入欄 {3} 個</value></data>
@@ -591,4 +593,29 @@
   <data name="Err_BookmarkCheck" xml:space="preserve"><value>コピーのしおりが指定どおりにならなかったため、保存しませんでした。</value></data>
   <data name="Pdf_BookmarksNone" xml:space="preserve"><value>しおりはありません。</value></data>
   <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} を保存しました（しおり {1} 件）。</value></data>
+  <data name="Ui_PrintMenu" xml:space="preserve"><value>印刷…</value></data>
+  <data name="Ui_PrintTitle" xml:space="preserve"><value>印刷</value></data>
+  <data name="Ui_PrintNote" xml:space="preserve"><value>保存されている {0} を印刷します。</value></data>
+  <data name="Ui_PrintPrinter" xml:space="preserve"><value>プリンター</value></data>
+  <data name="Ui_PrintCopies" xml:space="preserve"><value>部数</value></data>
+  <data name="Ui_PrintPages" xml:space="preserve"><value>ページ</value></data>
+  <data name="Ui_PrintAll" xml:space="preserve"><value>すべて</value></data>
+  <data name="Ui_PrintCurrentPage" xml:space="preserve"><value>表示中のページ（{0}）</value></data>
+  <data name="Ui_PrintSome" xml:space="preserve"><value>ページ指定</value></data>
+  <data name="Ui_PrintTwoSided" xml:space="preserve"><value>両面</value></data>
+  <data name="Ui_PrintGray" xml:space="preserve"><value>白黒</value></data>
+  <data name="Ui_PrintFit" xml:space="preserve"><value>用紙に合わせる</value></data>
+  <data name="Ui_PrintActual" xml:space="preserve"><value>実際のサイズ</value></data>
+  <data name="Ui_PrintRun" xml:space="preserve"><value>印刷</value></data>
+  <data name="Ui_PrintNoPrinters" xml:space="preserve"><value>このコンピューターにはプリンターが設定されていません。システム設定で追加してから、もう一度お試しください。</value></data>
+  <data name="Ui_Printed" xml:space="preserve"><value>{1} の {0} ページを {2} に送りました。</value></data>
+  <data name="Err_PrintMissing" xml:space="preserve"><value>{0} がありません。</value></data>
+  <data name="Err_PrintPassword" xml:space="preserve"><value>{0} は開くのにパスワードが必要で、印刷システムでは開けません。「保護」で開くパスワードのないコピーを保存してから印刷してください。</value></data>
+  <data name="Err_PrintNotAllowed" xml:space="preserve"><value>{0} は印刷が許可されていません。</value></data>
+  <data name="Err_PrintCopies" xml:space="preserve"><value>部数は 1〜999 にしてください。</value></data>
+  <data name="Err_PrintFailed" xml:space="preserve"><value>印刷システムがジョブを受け付けませんでした：{0}</value></data>
+  <data name="Err_PrintNoSystem" xml:space="preserve"><value>印刷システムが見つかりません（CUPS: lp, lpstat）。</value></data>
+  <data name="Err_PrintNoPrinter" xml:space="preserve"><value>{0} というプリンターはありません。</value></data>
+  <data name="Pdf_PrintersNone" xml:space="preserve"><value>プリンターはありません。</value></data>
+  <data name="Pdf_PrinterDefault" xml:space="preserve"><value>{0}（既定）</value></data>
 </root>

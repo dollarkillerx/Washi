@@ -495,6 +495,62 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(["Annex"], vm.Bookmarks.Rows.Select(r => r.Title));
     }
 
+    private sealed class FakePrinting(params Washi.Core.Printing.PrinterInfo[] printers) : Washi.Core.Printing.IPrinting
+    {
+        public List<(string Pdf, Washi.Core.Printing.PrintOptions Options)> Jobs { get; } = [];
+        public IReadOnlyList<Washi.Core.Printing.PrinterInfo> Printers() => printers;
+        public Washi.Core.Printing.PrintResult Print(string pdf, Washi.Core.Printing.PrintOptions options)
+        {
+            Washi.Core.Printing.PdfPrinting.Check(pdf, options);
+            Jobs.Add((pdf, options));
+            return new(options.Printer ?? "", "1", 1);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Print_shows_its_card_and_sends_the_chosen_pages_to_the_chosen_printer()
+    {
+        var pdf = Form("p.pdf", pages: 3);
+        var (w, vm) = await Open(pdf, new FakeDialogs());
+        var fake = new FakePrinting(new("Home", false), new("Office", true));
+        vm.Print.Service = fake;
+        Assert.True(w.FindControl<Button>("PrintButton")!.IsEffectivelyVisible);
+        vm.PageIndex = 1;
+        await vm.Print.OpenCommand.ExecuteAsync(null);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Border>("PrintOverlay")!.IsEffectivelyVisible);
+        Assert.Equal("Office", vm.Print.Printer!.Name);              // the default printer is chosen
+        Assert.True(vm.Print.CanPrint);
+
+        vm.Print.CurrentPage = true;
+        vm.Print.Copies = 2;
+        vm.Print.TwoSided = true;
+        vm.Print.ActualSize = true;
+        Assert.False(vm.Print.FitToPage);
+        await vm.Print.PrintCommand.ExecuteAsync(null);
+        var (file, options) = Assert.Single(fake.Jobs);
+        Assert.Equal(pdf, file);
+        Assert.Equal(new Washi.Core.Printing.PrintOptions("Office", 2, "2", true, false, false), options);
+        Assert.False(vm.Print.IsOpen);
+        Assert.Equal(L.F("Ui_Printed", 1, "p.pdf", "Office"), vm.Status);
+
+        // a bad range keeps the card open and says why
+        await vm.Print.OpenCommand.ExecuteAsync(null);
+        vm.Print.SomePages = true;
+        vm.Print.Range = "8";
+        await vm.Print.PrintCommand.ExecuteAsync(null);
+        Assert.True(vm.Print.IsOpen);
+        Assert.NotEqual("", vm.Print.Error);
+        Assert.Single(fake.Jobs);
+
+        // no printer set up: nothing can be sent
+        vm.Print.CancelCommand.Execute(null);
+        vm.Print.Service = new FakePrinting();
+        await vm.Print.OpenCommand.ExecuteAsync(null);
+        Assert.Equal(L.Get("Ui_PrintNoPrinters"), vm.Print.Error);
+        Assert.False(vm.Print.CanPrint);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

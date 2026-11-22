@@ -4,11 +4,12 @@ using Washi.Core.Forms;
 using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
+using Washi.Core.Printing;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -106,6 +107,21 @@ internal static class PageCommands
                     foreach (var line in PdfBookmarks.ToLines(outline)) Console.WriteLine(line);
                     return 0;
                 }
+                case ["printers"]:
+                {
+                    var printers = PdfPrinting.Default.Printers();
+                    if (printers.Count == 0) Console.WriteLine(L.Get("Pdf_PrintersNone"));
+                    foreach (var p in printers) Console.WriteLine(p.IsDefault ? L.F("Pdf_PrinterDefault", p.Name) : p.Name);
+                    return 0;
+                }
+                case ["print", var input]:
+                {
+                    int copies = opt.TryGetValue("--copies", out var c) && int.TryParse(c, out var n) ? n : 1;
+                    var result = PdfPrinting.Default.Print(input, new PrintOptions(opt.GetValueOrDefault("--printer"), copies,
+                        opt.GetValueOrDefault("--pages"), opt.ContainsKey("--two-sided"), opt.ContainsKey("--gray"), !opt.ContainsKey("--actual-size")));
+                    Console.WriteLine(L.F("Ui_Printed", result.Pages, Path.GetFileName(input), result.Printer));
+                    return 0;
+                }
                 case ["find", var input, var text]:
                 {
                     var hits = PdfSearch.Find(input, text, opt.ContainsKey("--case"), opt.ContainsKey("--whole-words"));
@@ -143,6 +159,11 @@ internal static class PageCommands
                     Console.Error.WriteLine(L.Get("UsagePdf"));
                     return 2;
             }
+        }
+        catch (PrintException e)
+        {
+            Console.Error.WriteLine(L.F("Pdf_Failed", Errors.Text(e)));
+            return 1;
         }
         catch (RedactException e)
         {
