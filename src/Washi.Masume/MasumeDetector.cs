@@ -69,7 +69,9 @@ public static class MasumeDetector
         labels = rest;
 
         var cells = new List<Cell>();
-        foreach (var (r, innerInk, inkCol) in FindCells(g, page.GraphicsOnly))
+        // horizontal rules: they close rows that are open at the sides, and are the lines people write on
+        var rules = HorizontalRules(g);
+        foreach (var (r, innerInk, inkCol) in FindCells(CloseOpenRows(g, rules, labels), page.GraphicsOnly))
         {
             var cell = new Cell(r);
             cell.LabelChars.AddRange(labels.Where(c => Inside(c.Rect, r)));
@@ -172,18 +174,22 @@ public static class MasumeDetector
                         });
                     continue;
                 }
-                if (lab.Y1 <= r.Y0 + 0.45 * h && r.Y1 - lab.Y1 >= 8)
-                    sub = new PdfRect(r.X0, lab.Y1 + 0.5, r.X1, r.Y1);          // B: note along the top
-                else if (lab.Y0 >= r.Y0 + 0.55 * h && lab.Y0 - r.Y0 >= 8)
-                    sub = new PdfRect(r.X0, r.Y0, r.X1, lab.Y0 - 0.5);          // C: note along the bottom
-                else if (ValueColumn(c.LabelChars))
+                if (ValueColumn(c.LabelChars))
                 {
                     // printed values stacked flush right ($375 / $385 / $395 in a wage-bracket table): a table of
-                    // data, not a blank with marks, so D and E below must not turn the cell into a field
+                    // data, not a caption or a blank with marks, so no rule below may turn the cell into a field
                     c.Kind = "label";
                     c.Text = JoinText(c.LabelChars);
                     continue;
                 }
+                if (!Spills(c.LabelChars, labels, r) && ((lab.Y1 <= r.Y0 + 0.45 * h && r.Y1 - lab.Y1 >= 8)
+                    // a one-line Latin caption in the top left: Latin glyph boxes carry the ascender and descender
+                    // room, so the caption looks twice as tall as its ink, yet a full line is left below it
+                    || (lab.Y1 <= r.Y0 + 0.6 * h && r.Y1 - lab.Y1 >= 12 && lab.X0 - r.X0 <= 0.1 * w
+                        && Lines(c.LabelChars).Count == 1 && c.LabelChars.All(ch => ch.Text.All(t => t < '\u0250')))))
+                    sub = new PdfRect(r.X0, lab.Y1 + 0.5, r.X1, r.Y1);          // B: note along the top
+                else if (lab.Y0 >= r.Y0 + 0.55 * h && lab.Y0 - r.Y0 >= 8)
+                    sub = new PdfRect(r.X0, r.Y0, r.X1, lab.Y0 - 0.5);          // C: note along the bottom
                 else if (c.Boxes.Count == 0 && lab.X0 - r.X0 >= 0.25 * w && r.X1 - lab.X1 <= 0.2 * w && h >= 7)
                     sub = r;                                                    // D: ＿年＿月＿日 / ＿税務署長
                 else if (c.Boxes.Count == 0 && c.LabelChars.Count <= 6 && h >= 7)
@@ -226,6 +232,8 @@ public static class MasumeDetector
             c.Kind = "text";
             fields.Add(new DetectedField { Page = pno, Kind = FieldKind.Text, Rect = r, Prefilled = pre });
         }
+
+        fields.AddRange(UnderlineBlanks(g, rules, labels, data, cells.Select(c => c.Rect).ToList(), fields, pno));
 
         foreach (var b in boxes)
             fields.Add(new DetectedField { Page = pno, Kind = FieldKind.Checkbox, Rect = b, Notes = ["□ glyph"] });
@@ -288,6 +296,8 @@ public static class MasumeDetector
                         if (best is null || d < best.Value.D) best = (d, c.Text);
                     }
                     name = best?.Text ?? "";
+                    // a blank on a line is named by the words printed beside it, not by a heading cell above
+                    if (f.Notes.Contains("underline") && f.Label.Length > 0) name = f.Label;
                 }
                 name = Truncate(string.Concat(name.Where(ch => !char.IsWhiteSpace(ch))), 24);
             }
@@ -492,6 +502,283 @@ public static class MasumeDetector
         Array.Sort(s);
         int n = s.Length;
         return n % 2 == 1 ? s[n / 2] : (s[n / 2 - 1] + s[n / 2]) / 2.0;
+    }
+
+    // ------------------------------------------------------------------ rules and underlines
+    private const int MaxRulePx = 10;      // 2.5 pt: thicker is a bar or a filled block, not a rule
+    private const double MinBlank = 18;   // pt: a narrower gap on a line is spacing, not a place to write
+    private const double BlankHeight = 12; // pt above an underline that a value may use
+
+    /// <summary>A horizontal rule in raster pixels (X1, Y1 exclusive).</summary>
+    private readonly record struct HRule(int X0, int X1, int Y0, int Y1)
+    {
+        public int Length => X1 - X0;
+    }
+
+    /// <summary>Thin horizontal runs of ink at least 15 pt long, merged across the rows of their thickness.</summary>
+    private static List<HRule> HorizontalRules(Gray g)
+    {
+        int minLen = Px(15);
+        var done = new List<HRule>();
+        var open = new List<HRule>();
+        for (int y = 0; y <= g.H; y++)
+        {
+            var next = new List<HRule>();
+            if (y < g.H)
+            {
+                int row = y * g.W;
+                for (int x = 0; x < g.W;)
+                {
+                    if (g.Px[row + x] >= InkLum) { x++; continue; }
+                    int s = x;
+                    while (x < g.W && g.Px[row + x] < InkLum) x++;
+                    if (x - s < minLen) continue;
+                    int k = open.FindIndex(o => Math.Abs(o.X0 - s) <= 2 && Math.Abs(o.X1 - x) <= 2);
+                    if (k >= 0)
+                    {
+                        var o = open[k];
+                        open.RemoveAt(k);
+                        next.Add(new HRule(Math.Min(o.X0, s), Math.Max(o.X1, x), o.Y0, y + 1));
+                    }
+                    else next.Add(new HRule(s, x, y, y + 1));
+                }
+            }
+            done.AddRange(open);
+            open = next;
+        }
+        return done.Where(r => r.Y1 - r.Y0 <= MaxRulePx).ToList();
+    }
+
+    /// <summary>
+    /// Rows drawn as long rules with no frame at the sides (IRS style: each row a line across the page, the label in
+    /// its top left) have no closed cells. Where the next long rule below ends at the same x, draw the missing side.
+    /// </summary>
+    private static Gray CloseOpenRows(Gray g, List<HRule> rules, List<PdfChar> labels)
+    {
+        var longRules = rules.Where(r => r.Length >= 0.3 * g.W).OrderBy(r => r.Y0).ToList();
+        var below = rules.OrderBy(r => r.Y0).ToList();     // the next rule down may be a short one
+        byte[]? px = null;
+        int maxGap = Px(60), tol = 6;
+        for (int i = 0; i < longRules.Count; i++)
+            foreach (bool right in new[] { false, true })
+            {
+                var a = longRules[i];
+                int xa = right ? a.X1 - 1 : a.X0;
+                foreach (var b in below)
+                {
+                    if (b.Y0 - a.Y1 > maxGap) break;
+                    if (b.Y0 <= a.Y1 + 1 || b.X0 > xa + tol || b.X1 - 1 < xa - tol) continue;   // same rule, or beside it
+                    int xb = right ? b.X1 - 1 : b.X0;
+                    // a row has its label at the top (IRS style "1 Name of individual"); an empty band between two
+                    // rules is spacing, and words low in the band are a table's column headings
+                    double ry0 = a.Y1 / Scale, ry1 = b.Y0 / Scale, rx0 = Math.Max(a.X0, b.X0) / Scale, rx1 = Math.Min(a.X1, b.X1) / Scale;
+                    var inBand = labels.Where(c => !string.IsNullOrWhiteSpace(c.Text) && c.Rect.Center.Y > ry0 && c.Rect.Center.Y < ry1
+                                                   && c.Rect.Center.X > rx0 && c.Rect.Center.X < rx1).ToList();
+                    bool labelled = inBand.Count > 0 && inBand.Min(c => c.Rect.Y0) - ry0 <= 0.4 * (ry1 - ry0);
+                    if (Math.Abs(xa - xb) <= tol && labelled && !Closed(xa))
+                    {
+                        px ??= (byte[])g.Px.Clone();
+                        int x = right ? Math.Max(xa, xb) : Math.Min(xa, xb);
+                        for (int y = a.Y0; y < b.Y1; y++)
+                            for (int d = 0; d < 2; d++)
+                                px[y * g.W + Math.Clamp(right ? x - d : x + d, 0, g.W - 1)] = 0;
+                    }
+                    break;   // only ever up to the next rule below: never across one with other ends
+
+                    // a side already drawn near the end: nothing to add (and a line beside it would cut the cell)
+                    bool Closed(int x0)
+                    {
+                        for (int x = Math.Max(x0 - Px(4), 0); x <= Math.Min(x0 + Px(4), g.W - 1); x++)
+                        {
+                            int ink = 0;
+                            for (int y = a.Y1; y < b.Y0; y++) if (g.Px[y * g.W + x] < InkLum) ink++;
+                            if (ink >= 0.5 * (b.Y0 - a.Y1)) return true;    // a box's side, even one that stops short
+                        }
+                        return false;
+                    }
+                }
+            }
+        return px is null ? g : new Gray(px, g.W, g.H);
+    }
+
+    /// <summary>
+    /// Blanks on underlines outside any cell: "resident of ______ within", "金 ____ 円也", a signature line. A blank
+    /// needs words beside it on its line, or (for a short line) a caption under it; the free end of a rule under a
+    /// heading is not a blank.
+    /// </summary>
+    private static IEnumerable<DetectedField> UnderlineBlanks(Gray g, List<HRule> rules, List<PdfChar> labels, List<PdfChar> data,
+        List<PdfRect> cells, List<DetectedField> fields, int pno)
+    {
+        double pageW = g.W / Scale;
+        var found = new List<DetectedField>();
+        foreach (var u in rules)
+        {
+            double x0 = u.X0 / Scale, x1 = u.X1 / Scale, y = u.Y0 / Scale;
+            if (x1 - x0 < MinBlank || u.Y1 - u.Y0 > Px(2) || Descends(g, u) || Rises(g, u) || Turns(g, u)) continue;
+            if (u.Y0 < 0.06 * g.H || u.Y0 > 0.94 * g.H) continue;          // a running header or footer rule
+
+            // label chars standing on this line (in the band above it), also just past its ends
+            var onLine = labels.Where(c => !string.IsNullOrWhiteSpace(c.Text) && Overlap(c.Rect.Y0, c.Rect.Y1, y - BlankHeight, y) >= 0.4 * c.Rect.Height
+                                           && c.Rect.Y1 <= y + 3 && c.Rect.X1 > x0 - 40 && c.Rect.X0 < x1 + 40).ToList();
+            // the whole printed line, for the words that name a blank
+            var line = labels.Where(c => !string.IsNullOrWhiteSpace(c.Text) && Overlap(c.Rect.Y0, c.Rect.Y1, y - BlankHeight, y) >= 0.4 * c.Rect.Height
+                                         && c.Rect.Y1 <= y + 3).ToList();
+            var blocked = new bool[u.Length];
+            foreach (var c in onLine)
+                for (int x = Math.Max(Px(c.Rect.X0 - 1) - u.X0, 0); x < Math.Min(Px(c.Rect.X1 + 1) - u.X0, u.Length); x++) blocked[x] = true;
+            for (int x = 0; x < u.Length; x++)
+                for (int yy = Math.Max(u.Y0 - Px(9), 0); yy < u.Y0 - 3 && !blocked[x]; yy++)
+                    if (g.Px[yy * g.W + u.X0 + x] < InkLum) blocked[x] = true;   // a divider or a box over the line
+
+            for (int a = 0; a < u.Length;)
+            {
+                if (blocked[a]) { a++; continue; }
+                int b = a;
+                while (b < u.Length && !blocked[b]) b++;
+                if (b - a >= Px(MinBlank) && Blank(a, b) is { } f) found.Add(f);
+                a = b;
+            }
+
+            DetectedField? Blank(int a, int b)
+            {
+                double bx0 = (u.X0 + a) / Scale + 0.5, bx1 = (u.X0 + b) / Scale - 0.5;
+                var left = onLine.Where(c => c.Rect.X1 <= bx0 + 1 && c.Rect.X1 >= bx0 - 15).ToList();
+                var right = onLine.Where(c => c.Rect.X0 >= bx1 - 1 && c.Rect.X0 <= bx1 + 15).ToList();
+                string label = "";
+                if (left.Count > 0 && right.Count == 0 && b == u.Length && left.Min(c => c.Rect.X0) >= x0 - 1
+                    && onLine.All(c => c.Rect.X0 >= x0 - 1))
+                    return null;                                            // a heading standing on its rule
+                if (right.Count > 0 && left.Count == 0 && a == 0 && right.Max(c => c.Rect.X1) <= x1 + 1
+                    && onLine.All(c => c.Rect.X1 <= x1 + 1))
+                    return null;                                            // ... or at the right end of it
+                if (left.Count > 0) label = Words(line, bx0, toLeft: true);
+                else if (right.Count > 0) label = Words(line, bx1, toLeft: false);
+                else
+                {
+                    // a signature line: the caption printed under it, indented, on a line that is not a page divider
+                    var under = labels.Where(c => !string.IsNullOrWhiteSpace(c.Text) && c.Rect.Y0 >= y && c.Rect.Y0 <= y + 14
+                                                  && c.Rect.Center.X > bx0 && c.Rect.Center.X < bx1).ToList();
+                    if (under.Count == 0 || x1 - x0 > 0.6 * pageW) return null;
+                    double top0 = under.Min(c => c.Rect.Y0);
+                    var caption = under.Where(c => c.Rect.Y0 < top0 + 4).ToList();
+                    if (caption.Max(c => c.Rect.Height) > 12) return null;   // a heading under a box edge, not a caption
+                    double cx0 = caption.Min(c => c.Rect.X0), cx1 = caption.Max(c => c.Rect.X1);
+                    // centred under the line and narrower than it, like "Signature of applicant" or "Date"
+                    if (cx0 < bx0 + 10 || Math.Abs((cx0 + cx1) / 2 - (bx0 + bx1) / 2) > 0.15 * (bx1 - bx0)) return null;
+                    label = JoinText(caption.OrderBy(c => c.Rect.X0));
+                }
+
+                // under the line above, if it reaches down into the blank
+                double top = y - BlankHeight;
+                foreach (var c in labels)
+                    if (c.Rect.X1 > bx0 && c.Rect.X0 < bx1 && c.Rect.Y1 > top && c.Rect.Y1 <= y - 6) top = c.Rect.Y1 + 0.5;
+                var r = new PdfRect(bx0, top, bx1, y - 0.3);
+                if (r.Height < 6) return null;
+                var value = data.Where(c => !string.IsNullOrWhiteSpace(c.Text) && Inside(c.Rect, r)).ToList();
+                // underlined words (a link) fill their line from end to end, give or take a bracket around them
+                if (value.Count > 0 && value.Max(c => c.Rect.X1) - value.Min(c => c.Rect.X0) >= 0.85 * (bx1 - bx0)
+                    && value.Min(c => c.Rect.X0) <= bx0 + 6 && value.Max(c => c.Rect.X1) >= bx1 - 6)
+                    return null;                                            // underlined words (a link), not a blank
+                var (cx, cy) = r.Center;
+                if (cells.Any(c => Contains(c, (cx, cy)))) return null;      // inside a cell: the cell rules decide
+                if (fields.Concat(found).Any(f => f.Rect.Intersect(r) is { Width: > 0, Height: > 0 } i && i.Area > 0.3 * Math.Min(r.Area, f.Rect.Area))) return null;
+                return new DetectedField
+                {
+                    Page = pno, Kind = FieldKind.Text, Rect = r,
+                    Prefilled = JoinText(value),
+                    Label = Truncate(label, 24), Notes = ["underline"],
+                };
+            }
+        }
+        return found;
+    }
+
+    /// <summary>Ink running down from the rule (a frame's top edge, a table's grid): not a line to write on.</summary>
+    private static bool Descends(Gray g, HRule u)
+    {
+        int y0 = u.Y1 + 1, y1 = Math.Min(u.Y1 + 1 + Px(4), g.H);
+        if (y1 - y0 < Px(4)) return false;
+        for (int x = Math.Max(u.X0 - 2, 0); x < Math.Min(u.X1 + 2, g.W); x++)
+        {
+            bool all = true;
+            for (int y = y0; y < y1 && all; y++) all = g.Px[y * g.W + x] < InkLum;
+            if (all) return true;
+        }
+        return false;
+    }
+
+    /// <summary>A line rising from the rule (a frame's bottom edge, a header's column divider): part of a table.</summary>
+    private static bool Rises(Gray g, HRule u)
+    {
+        int y1 = u.Y0 - 1, y0 = u.Y0 - 1 - Px(8);
+        if (y0 < 0) return false;
+        for (int x = Math.Max(u.X0 - 2, 0); x < Math.Min(u.X1 + 2, g.W); x++)
+        {
+            bool all = true;
+            for (int y = y0; y < y1 && all; y++) all = g.Px[y * g.W + x] < InkLum;
+            if (all) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// The rule is the top or bottom edge of a box, also a rounded one: at one of its ends, ink carries on in every row
+    /// for 6 pt on one side of it only (down from a top edge, up from a bottom edge). A line passing the end on both
+    /// sides (a frame beside a worksheet's amount lines) or nothing at all does not count.
+    /// </summary>
+    private static bool Turns(Gray g, HRule u)
+    {
+        int inward = Px(2), outward = Px(14), len = Px(6);
+        foreach (int end in new[] { u.X0, u.X1 - 1 })
+        {
+            int xa = end == u.X0 ? end - outward : end - inward, xb = end == u.X0 ? end + inward : end + outward;
+            bool down = Run(u.Y1, 1), up = Run(u.Y0 - 1, -1);
+            if (down != up) return true;
+
+            bool Run(int from, int dir)
+            {
+                for (int k = 1; k <= len; k++)
+                {
+                    int y = from + dir * k;
+                    if (y < 0 || y >= g.H) return false;
+                    bool any = false;
+                    for (int x = Math.Max(xa, 0); x <= Math.Min(xb, g.W - 1) && !any; x++) any = g.Px[y * g.W + x] < InkLum;
+                    if (!any) return false;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>The caption's line carries on past the cell's right edge: a heading over several cells, not a caption.</summary>
+    private static bool Spills(List<PdfChar> caption, List<PdfChar> page, PdfRect cell)
+    {
+        // the words run on without a break: a char just past the cell edge follows a caption char on its own baseline
+        // (rows of small print can sit closer than one glyph box, so this goes by char, not by Lines)
+        return caption.Any(c0 => page.Any(c => !string.IsNullOrWhiteSpace(c.Text) && c.Rect.Center.X > cell.X1
+                                               && Math.Abs(c.Rect.Center.Y - c0.Rect.Center.Y) < 1.5
+                                               && c.Rect.X0 >= c0.Rect.X1 - 1 && c.Rect.X0 - c0.Rect.X1 < 4));
+    }
+
+    private static double Overlap(double a0, double a1, double b0, double b1) => Math.Min(a1, b1) - Math.Max(a0, b0);
+
+    /// <summary>The words next to a blank on its line: going away from <paramref name="edge"/> while the gaps stay small.</summary>
+    private static string Words(List<PdfChar> line, double edge, bool toLeft)
+    {
+        var side = toLeft ? line.Where(c => c.Rect.X1 <= edge + 1).OrderByDescending(c => c.Rect.X1).ToList()
+                          : line.Where(c => c.Rect.X0 >= edge - 1).OrderBy(c => c.Rect.X0).ToList();
+        var taken = new List<PdfChar>();
+        double at = edge;
+        foreach (var c in side)
+        {
+            double gap = toLeft ? at - c.Rect.X1 : c.Rect.X0 - at;
+            if (gap > 12 && taken.Count > 0) break;
+            taken.Add(c);
+            at = toLeft ? c.Rect.X0 : c.Rect.X1;
+            if (taken.Count >= 24) break;
+        }
+        return JoinText(taken.OrderBy(c => c.Rect.X0)).Trim();
     }
 
     private static List<(PdfRect Rect, double InnerInk, (double, double, double)? InkColor)> FindCells(Gray g, RgbImage rgb)

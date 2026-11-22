@@ -205,6 +205,60 @@ public class MasumeDetectorTests
         Assert.StartsWith("東京都", f.Prefilled);
     }
 
+    /// <summary>Text as 8 pt black chars from (x, y), one char per 6 pt.</summary>
+    private static IEnumerable<PdfChar> Words(string s, double x, double y) =>
+        s.Select((ch, i) => Ch(ch.ToString(), x + 6 * i, y)).Where(c => c.Text != " ");
+
+    [Fact]
+    public void Rows_drawn_as_rules_without_sides_become_fields()
+    {
+        // IRS style: each row a rule across the page, its label in the top left, nothing at the sides; before, no
+        // closed cell existed and the rows were not found at all
+        var c = new Canvas(600, 400).HLine(20, 500, 50).HLine(20, 500, 80).HLine(20, 500, 110);
+        var fields = MasumeDetector.Detect(c.Snapshot([.. Words("1 Name", 24, 52), .. Words("2 Address", 24, 82)]));
+        Assert.Equal(2, fields.Count);
+        Assert.All(fields, f => Assert.Equal(FieldKind.Text, f.Kind));
+        Assert.All(fields, f => Assert.True(f.Rect.Y0 >= 60 && f.Rect.Y0 < 90 || f.Rect.Y0 >= 90));
+        // a band with no words in it is spacing between rules, not a row
+        Assert.Empty(MasumeDetector.Detect(new Canvas(600, 400).HLine(20, 500, 50).HLine(20, 500, 80).Snapshot()));
+    }
+
+    [Fact]
+    public void A_blank_on_an_underline_between_words_becomes_a_field()
+    {
+        // "resident of ______ within": before, a lone line was never a field
+        var c = new Canvas(600, 400).HLine(100, 220, 60);
+        var f = Assert.Single(MasumeDetector.Detect(c.Snapshot([.. Words("resident of", 30, 52), .. Words("within", 224, 52)])));
+        Assert.Equal(FieldKind.Text, f.Kind);
+        Assert.InRange(f.Rect.X0, 99, 102);
+        Assert.InRange(f.Rect.X1, 218, 221);
+        Assert.True(f.Rect.Y1 <= 60 && f.Rect.Height >= 8);
+        Assert.Equal("residentof", f.Name);
+    }
+
+    [Fact]
+    public void Lines_that_are_not_blanks_stay_lines()
+    {
+        // a heading standing on its rule, with the rest of the rule empty
+        Assert.Empty(MasumeDetector.Detect(new Canvas(600, 400).HLine(20, 400, 60).Snapshot([.. Words("Reminders", 20, 52)])));
+        // a page divider with nothing beside it
+        Assert.Empty(MasumeDetector.Detect(new Canvas(600, 400).HLine(20, 400, 60).Snapshot()));
+        // the top edge of a box drawn with its sides only partly (a rounded corner turning down)
+        var box = new Canvas(600, 400).HLine(100, 220, 60).VLine(100, 60, 75).VLine(220, 60, 75);
+        Assert.Empty(MasumeDetector.Detect(box.Snapshot([.. Words("of", 86, 52)])));
+    }
+
+    [Theory]
+    [InlineData("Last Name", true)]   // Latin glyph boxes are tall: the caption reaches past 45% of the cell, a line is left
+    [InlineData("氏名", false)]        // a CJK heading of that height gets no field under it, as before
+    public void A_tall_one_line_caption_in_the_top_left_leaves_a_field_below(string caption, bool below)
+    {
+        var c = new Canvas(600, 400).Rect(10, 10, 200, 45);
+        var chars = caption.Select((ch, i) => Ch(ch.ToString(), 12 + 9 * i, 12, 16)).Where(x => x.Text != " ").ToArray();
+        var fields = MasumeDetector.Detect(c.Snapshot(chars));
+        Assert.Equal(below, fields.Any(f => f.Rect.Y0 >= 28 && f.Rect.X0 <= 12));
+    }
+
     [Fact]
     public void Marks_on_two_lines_that_do_not_end_together_still_leave_a_field()
     {
