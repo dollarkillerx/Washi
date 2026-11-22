@@ -127,7 +127,10 @@
                                           숨은 정보 삭제 (--list 는 보여주기만)
   washi pdf redact &lt;in.pdf&gt; [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)
-  washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시</value></data>
+  washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시
+  washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
+                                          책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),
+                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>파일 {0}개를 {1}(으)로 합쳤습니다: {2}페이지, 입력란 {3}개</value></data>
@@ -568,4 +571,24 @@
   <data name="Ui_FindCount" xml:space="preserve"><value>{0} / {1}</value></data>
   <data name="Pdf_FindCount" xml:space="preserve"><value>{1}쪽에서 {0}개.</value></data>
   <data name="Pdf_FindHit" xml:space="preserve"><value>  {0}쪽: {1}</value></data>
+  <data name="Ui_BookmarksPanel" xml:space="preserve"><value>책갈피</value></data>
+  <data name="Ui_BookmarkAdd" xml:space="preserve"><value>이 페이지에 책갈피 추가</value></data>
+  <data name="Ui_BookmarkRemove" xml:space="preserve"><value>삭제 (하위 책갈피 포함)</value></data>
+  <data name="Ui_BookmarkUp" xml:space="preserve"><value>위로</value></data>
+  <data name="Ui_BookmarkDown" xml:space="preserve"><value>아래로</value></data>
+  <data name="Ui_BookmarkOutdent" xml:space="preserve"><value>상위 수준으로</value></data>
+  <data name="Ui_BookmarkIndent" xml:space="preserve"><value>위 책갈피의 하위로</value></data>
+  <data name="Ui_BookmarkTitle" xml:space="preserve"><value>제목</value></data>
+  <data name="Ui_BookmarkUseThisPage" xml:space="preserve"><value>이 페이지를 가리키게 하기</value></data>
+  <data name="Ui_BookmarksNone" xml:space="preserve"><value>이 문서에는 책갈피가 없습니다. +로 보고 있는 페이지에 책갈피를 추가하세요.</value></data>
+  <data name="Ui_BookmarkPage" xml:space="preserve"><value>{0}쪽</value></data>
+  <data name="Ui_BookmarksSave" xml:space="preserve"><value>책갈피를 넣은 사본 저장…</value></data>
+  <data name="Ui_BookmarksSaveNote" xml:space="preserve"><value>바꾸지 않은 책갈피는 링크와 서식이 그대로 유지됩니다. 원본은 바뀌지 않습니다.</value></data>
+  <data name="Ui_BookmarksNotOriginal" xml:space="preserve"><value>사본은 다른 이름으로 저장하세요 (원본은 그대로 둡니다).</value></data>
+  <data name="Ui_BookmarksSaved" xml:space="preserve"><value>{0} 저장 (책갈피 {1}개).</value></data>
+  <data name="Err_BookmarkPage" xml:space="preserve"><value>책갈피 “{0}”가 {1}쪽을 가리키지만 이 PDF 는 {2}쪽입니다.</value></data>
+  <data name="Err_BookmarkTitle" xml:space="preserve"><value>모든 책갈피에는 제목이 필요합니다.</value></data>
+  <data name="Err_BookmarkCheck" xml:space="preserve"><value>사본의 책갈피가 지정한 대로 되지 않아 저장하지 않았습니다.</value></data>
+  <data name="Pdf_BookmarksNone" xml:space="preserve"><value>책갈피가 없습니다.</value></data>
+  <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} 저장 (책갈피 {1}개).</value></data>
 </root>

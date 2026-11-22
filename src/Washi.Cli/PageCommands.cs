@@ -5,10 +5,10 @@ using Washi.Core.Localization;
 using Washi.Core.Ocr;
 using Washi.Core.Pages;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -88,6 +88,22 @@ internal static class PageCommands
                     var removed = PdfCleaner.Clean(input, output, remove);
                     Console.WriteLine(L.F("Ui_Cleaned", output, removed.Sum(r => r.Count)));
                     foreach (var item in removed) Console.WriteLine(HiddenLine(item));
+                    return 0;
+                }
+                case ["bookmarks", var input] when opt.ContainsKey("--set") || opt.ContainsKey("--clear"):
+                {
+                    var outline = opt.TryGetValue("--set", out var file) ? PdfBookmarks.FromLines(File.ReadAllLines(file)) : [];
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_bookmarks.pdf"));
+                    PdfBookmarks.Write(input, output, outline);
+                    Console.WriteLine(L.F("Pdf_BookmarksSaved", output, outline.Sum(b => b.Flatten().Count())));
+                    return 0;
+                }
+                case ["bookmarks", var input]:
+                {
+                    var outline = PdfBookmarks.Read(input);
+                    if (outline.Count == 0) Console.WriteLine(L.Get("Pdf_BookmarksNone"));
+                    foreach (var line in PdfBookmarks.ToLines(outline)) Console.WriteLine(line);
                     return 0;
                 }
                 case ["find", var input, var text]:

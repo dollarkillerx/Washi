@@ -127,7 +127,10 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
                                           remove hidden information (--list only shows it)
   washi pdf redact &lt;in.pdf&gt; [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           remove words, personal data or areas for real and cover them in black (--list only shows the matches)
-  washi pdf find &lt;in.pdf&gt; &lt;text&gt; [--case] [--whole-words]   where the text is, page by page</value></data>
+  washi pdf find &lt;in.pdf&gt; &lt;text&gt; [--case] [--whole-words]   where the text is, page by page
+  washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
+                                          list the bookmarks (one per line: two spaces per level, a tab, the page),
+                                          or write a copy with the ones in a file of that form</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} file(s) merged into {1}: {2} page(s), {3} form field(s)</value></data>
@@ -568,4 +571,24 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_FindCount" xml:space="preserve"><value>{0} of {1}</value></data>
   <data name="Pdf_FindCount" xml:space="preserve"><value>{0} hit(s) on {1} page(s).</value></data>
   <data name="Pdf_FindHit" xml:space="preserve"><value>  page {0}: {1}</value></data>
+  <data name="Ui_BookmarksPanel" xml:space="preserve"><value>Bookmarks</value></data>
+  <data name="Ui_BookmarkAdd" xml:space="preserve"><value>Add a bookmark for this page</value></data>
+  <data name="Ui_BookmarkRemove" xml:space="preserve"><value>Remove (with the bookmarks under it)</value></data>
+  <data name="Ui_BookmarkUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Ui_BookmarkDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Ui_BookmarkOutdent" xml:space="preserve"><value>Out of its parent</value></data>
+  <data name="Ui_BookmarkIndent" xml:space="preserve"><value>Under the bookmark above</value></data>
+  <data name="Ui_BookmarkTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="Ui_BookmarkUseThisPage" xml:space="preserve"><value>Point it to this page</value></data>
+  <data name="Ui_BookmarksNone" xml:space="preserve"><value>This document has no bookmarks. Add one for the page you are reading with +.</value></data>
+  <data name="Ui_BookmarkPage" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_BookmarksSave" xml:space="preserve"><value>Save copy with bookmarks…</value></data>
+  <data name="Ui_BookmarksSaveNote" xml:space="preserve"><value>Bookmarks you did not change keep their links and style. The original is not changed.</value></data>
+  <data name="Ui_BookmarksNotOriginal" xml:space="preserve"><value>Save the copy under another name: the original stays as it is.</value></data>
+  <data name="Ui_BookmarksSaved" xml:space="preserve"><value>Saved {0} with {1} bookmark(s).</value></data>
+  <data name="Err_BookmarkPage" xml:space="preserve"><value>Bookmark “{0}” points to page {1}, but the PDF has {2}.</value></data>
+  <data name="Err_BookmarkTitle" xml:space="preserve"><value>Every bookmark needs a title.</value></data>
+  <data name="Err_BookmarkCheck" xml:space="preserve"><value>The copy's bookmarks did not come out as asked, so it was not kept.</value></data>
+  <data name="Pdf_BookmarksNone" xml:space="preserve"><value>No bookmarks.</value></data>
+  <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>Saved {0} with {1} bookmark(s).</value></data>
 </root>

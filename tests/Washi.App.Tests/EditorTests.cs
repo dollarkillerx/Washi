@@ -327,6 +327,13 @@ public sealed class EditorTests : IDisposable
         Shot(w, "find");
         vm.Find.CloseCommand.Execute(null);
 
+        vm.ShowBookmarksPanel = true;
+        await vm.Bookmarks.LoadAsync();
+        if (vm.Bookmarks.Rows.Count > 4) vm.Bookmarks.Go(vm.Bookmarks.Rows[4]);
+        for (int i = 0; i < 20; i++) { await Task.Delay(50); Dispatcher.UIThread.RunJobs(); }   // the page is drawn, then scrolled
+        Shot(w, "bookmarks");
+        vm.ShowPagesPanel = true;
+
         vm.Erase.Reset();
         vm.ActiveTool = Tool.Form;
         if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_MOVE") is { Length: > 0 })

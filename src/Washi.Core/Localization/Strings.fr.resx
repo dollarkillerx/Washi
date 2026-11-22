@@ -127,7 +127,10 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
                                           supprime les informations masquées (--list les affiche seulement)
   washi pdf redact &lt;in.pdf&gt; [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)
-  washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page</value></data>
+  washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page
+  washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
+                                          liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),
+                                          ou écrit une copie avec ceux d’un fichier de cette forme</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
   <data name="Pdf_Merged" xml:space="preserve"><value>{0} fichier(s) assemblé(s) dans {1} : {2} page(s), {3} champ(s) de formulaire</value></data>
@@ -568,4 +571,24 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_FindCount" xml:space="preserve"><value>{0} sur {1}</value></data>
   <data name="Pdf_FindCount" xml:space="preserve"><value>{0} résultat(s) sur {1} page(s).</value></data>
   <data name="Pdf_FindHit" xml:space="preserve"><value>  page {0} : {1}</value></data>
+  <data name="Ui_BookmarksPanel" xml:space="preserve"><value>Signets</value></data>
+  <data name="Ui_BookmarkAdd" xml:space="preserve"><value>Ajouter un signet pour cette page</value></data>
+  <data name="Ui_BookmarkRemove" xml:space="preserve"><value>Supprimer (avec les signets en dessous)</value></data>
+  <data name="Ui_BookmarkUp" xml:space="preserve"><value>Monter</value></data>
+  <data name="Ui_BookmarkDown" xml:space="preserve"><value>Descendre</value></data>
+  <data name="Ui_BookmarkOutdent" xml:space="preserve"><value>Remonter d’un niveau</value></data>
+  <data name="Ui_BookmarkIndent" xml:space="preserve"><value>Sous le signet du dessus</value></data>
+  <data name="Ui_BookmarkTitle" xml:space="preserve"><value>Titre</value></data>
+  <data name="Ui_BookmarkUseThisPage" xml:space="preserve"><value>Le faire pointer sur cette page</value></data>
+  <data name="Ui_BookmarksNone" xml:space="preserve"><value>Ce document n’a pas de signets. Ajoutez-en un pour la page affichée avec +.</value></data>
+  <data name="Ui_BookmarkPage" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_BookmarksSave" xml:space="preserve"><value>Enregistrer une copie avec les signets…</value></data>
+  <data name="Ui_BookmarksSaveNote" xml:space="preserve"><value>Les signets non modifiés gardent leurs liens et leur style. L’original n’est pas modifié.</value></data>
+  <data name="Ui_BookmarksNotOriginal" xml:space="preserve"><value>Enregistrez la copie sous un autre nom : l’original reste tel quel.</value></data>
+  <data name="Ui_BookmarksSaved" xml:space="preserve"><value>{0} enregistré avec {1} signet(s).</value></data>
+  <data name="Err_BookmarkPage" xml:space="preserve"><value>Le signet « {0} » renvoie à la page {1}, mais le PDF en a {2}.</value></data>
+  <data name="Err_BookmarkTitle" xml:space="preserve"><value>Chaque signet a besoin d’un titre.</value></data>
+  <data name="Err_BookmarkCheck" xml:space="preserve"><value>Les signets de la copie ne correspondaient pas ; elle n’a pas été conservée.</value></data>
+  <data name="Pdf_BookmarksNone" xml:space="preserve"><value>Aucun signet.</value></data>
+  <data name="Pdf_BookmarksSaved" xml:space="preserve"><value>{0} enregistré avec {1} signet(s).</value></data>
 </root>

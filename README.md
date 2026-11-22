@@ -136,7 +136,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
 - the **page** in the middle, with floating edit tools and page and zoom controls
-- **Fields** and **Pages** (thumbnails) panels on the right
+- **Fields**, **Pages** (thumbnails) and **Bookmarks** panels on the right
 
 ![Washi editor on a 国税庁 form: tool rail and form panel on the left, detected fields over the page, the selected comb field in the Fields panel](docs/editor.png)
 
@@ -199,6 +199,14 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 hit on the page and steps through them with Enter and Shift+Enter (or ⌘/Ctrl+G, F3). Case, full-width and half-width
 forms and spaces do not matter, so 山田太郎 finds 山田 太郎; *Aa* and *ab|* match case and whole words. Scanned pages need
 OCR first. The same search is `washi pdf find <in.pdf> <text>` and the `search_text` MCP tool.
+
+**Bookmarks:** the bookmark button in the right rail shows the document's outline; a click opens the bookmark's page
+at its place. Add one for the page you are reading (it takes the page's first line as its title), rename it, remove
+it, move it up or down, nest it under the one above or take it out of its parent, point it at another page, then save
+a copy. Bookmarks you did not change keep their links, colour and style, and every copy is read back to check its
+outline. On the command line, `washi pdf bookmarks in.pdf` lists them one per line (two spaces per level, a tab, the
+page) and `--set outline.txt` writes a copy with the ones in such a file; agents use `list_bookmarks` and
+`set_bookmarks`, for example to add a table of contents built from `extract_text`.
 
 **Zoom:** pinch on a touch screen or trackpad, or ⌘/Ctrl + scroll. The point under your
 fingers stays put. The page fits the width when opened, and keeps fitting as panels
@@ -459,6 +467,8 @@ There are two ways to run it:
 | `pdf_info` | pages, sizes, rotation, encryption, existing fields, text language | no |
 | `extract_text` | text page by page (flags garbled text layers) | no |
 | `search_text` | where a word or phrase is: page, text around it, boxes (case, width and spaces ignored) | no |
+| `list_bookmarks` | the bookmarks (outline) as a tree: title, page, position, children | no |
+| `set_bookmarks` | new PDF whose bookmarks are the tree given; unchanged ones keep their links and style | writes a **new** file |
 | `render_page` | one page as PNG, filled fields included | no |
 | `list_fields` | existing fields: name, type, value, page, rect, options | no |
 | `detect_fields` | Masume field suggestions as fields.json, optional review image | no |
@@ -566,7 +576,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 17 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 19 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -616,8 +626,9 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 7. ~~OCR (Apple Vision, Tesseract, AI), merge and split.~~ Done.
 8. ~~Erase printed content: remove text, images and vector paths under a region for real (not just cover them), then verify by extracting text.~~ Done (`washi pdf erase`, the Erase tool, `erase_content`).
 9. ~~Passwords and permissions; remove hidden information.~~ Done (`washi pdf protect|unlock|clean`, the Protect tool, `remove_hidden_info`).
-10. ~~Redaction by keyword, pattern and area.~~ Done (`washi pdf redact`, the Redact tool, `redact`). Next: bookmarks and print.
+10. ~~Redaction by keyword, pattern and area.~~ Done (`washi pdf redact`, the Redact tool, `redact`).
 11. ~~Find in the document.~~ Done (the find bar, `washi pdf find`, `search_text`).
+12. ~~Bookmarks: read, navigate, edit.~~ Done (the Bookmarks panel, `washi pdf bookmarks`, `list_bookmarks`, `set_bookmarks`). Next: print.
 
 ## License
 
