@@ -138,6 +138,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
                                           Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)
   washi pdf stamp &lt;in.pdf&gt; [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]
                  [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   Kopf- und Fußzeilen, Seiten- und Bates-Nummern ({page} {pages} {date} {file} {bates}), Wasserzeichen
+                 --replace-existing: zuerst entfernen, was Washi früher hinzugefügt hat; washi pdf stamp &lt;in.pdf&gt; --remove headers|watermarks|all [-o out.pdf]: nur entfernen
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)
                                           oder eine Kopie mit denen aus einer solchen Datei schreiben
@@ -943,4 +944,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace nimmt id=Bilddatei.</value></data>
   <data name="Err_ImageEditChanged" xml:space="preserve"><value>Seite {0} hat sich außerhalb der Bilder verändert; die Kopie wurde nicht behalten.</value></data>
   <data name="Err_ImageEditCheck" xml:space="preserve"><value>{0} wurde auf Seite {1} nicht richtig angezeigt; die Kopie wurde nicht behalten.</value></data>
+  <data name="Ui_StampExisting" xml:space="preserve"><value>Washi hat dieser Datei früher Kopf- oder Fußzeilen auf {0} Seite(n) und ein Wasserzeichen auf {1} Seite(n) hinzugefügt.</value></data>
+  <data name="Ui_StampReplace" xml:space="preserve"><value>Durch die neuen ersetzen</value></data>
+  <data name="Ui_StampRemove" xml:space="preserve"><value>Entfernen und Kopie speichern…</value></data>
+  <data name="Ui_StampRemoved" xml:space="preserve"><value>{0} gespeichert: {1} von Washi hinzugefügte(r) Kopf-, Fußzeilen- oder Wasserzeichen-Block/Blöcke entfernt. Geprüft: keiner ist übrig, sonst hat sich nichts geändert.</value></data>
+  <data name="Err_StampNone" xml:space="preserve"><value>Es gibt keine von Washi hinzugefügten Kopf-, Fußzeilen oder Wasserzeichen.</value></data>
+  <data name="Err_StampRemoveCheck" xml:space="preserve"><value>Einige Markierungen waren nach dem Entfernen noch da; die Kopie wurde nicht behalten.</value></data>
+  <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove nimmt headers, watermarks oder all.</value></data>
 </root>

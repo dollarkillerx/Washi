@@ -10,7 +10,7 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -329,6 +329,14 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_FromImages", opt["-o"], r.Pages, r.KeptAsIs));
                     return 0;
                 }
+                case ["stamp", var input] when opt.TryGetValue("--remove", out var what) && !opt.ContainsKey("--header") && !opt.ContainsKey("--footer") && !opt.ContainsKey("--watermark"):
+                {
+                    bool headers = what is "headers" or "all", watermarks = what is "watermarks" or "all";
+                    if (!headers && !watermarks) throw new PageAssemblyException("--remove takes headers, watermarks or all", "Err_StampRemoveArg");
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + "_unstamped.pdf"));
+                    Console.WriteLine(L.F("Ui_StampRemoved", output, PdfStamper.Remove(input, output, headers, watermarks)));
+                    return 0;
+                }
                 case ["stamp", var input] when opt.ContainsKey("--header") || opt.ContainsKey("--footer") || opt.ContainsKey("--watermark"):
                 {
                     static (string L, string C, string R) Split3(string? v)
@@ -347,6 +355,7 @@ internal static class PageCommands
                         FontSize = Num("--size", 9), Pages = opt.GetValueOrDefault("--pages"),
                         Bates = opt.ContainsKey("--bates") || opt.ContainsKey("--bates-start")
                             ? new BatesNumbers(opt.GetValueOrDefault("--bates", ""), (int)Num("--bates-start", 1), (int)Num("--bates-digits", 6)) : null,
+                        ReplaceExisting = opt.ContainsKey("--replace-existing"),
                         Watermark = opt.TryGetValue("--watermark", out var wm)
                             ? new Watermark(wm, Num("--watermark-size", 0), Num("--angle", 45), Num("--opacity", 0.3), 0x808080, opt.ContainsKey("--behind")) : null,
                     };

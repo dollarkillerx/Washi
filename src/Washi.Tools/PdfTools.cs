@@ -952,6 +952,8 @@ public sealed class StampPagesTool(PathPolicy p) : PdfTool(p)
                      "color":{"type":"string","description":"#RRGGBB (default #808080)"},
                      "behind":{"type":"boolean","description":"Under the page's content"}},
                    "required":["text"],"additionalProperties":false},
+          "replace_existing":{"type":"boolean","description":"First take out the headers and footers (when new ones are given) and the watermark (when a new one is) that Washi added before"},
+          "remove":{"type":"string","enum":["headers","watermarks","all"],"description":"Only take out what Washi added before (with nothing new to add)"},
           "output":{"type":"string","description":"New PDF path (default: <name>_stamped.pdf next to the input)"}},
          "required":["path"],"additionalProperties":false}
         """;
@@ -975,8 +977,15 @@ public sealed class StampPagesTool(PathPolicy p) : PdfTool(p)
             watermark = new Watermark(S(w, "text"), D(w, "size", 0), D(w, "angle", 45), D(w, "opacity", 0.3), rgb,
                                       w.TryGetProperty("behind", out var bh) && bh.ValueKind == JsonValueKind.True);
         }
+        if (OptStr(a, "remove") is { } what)
+        {
+            var target = Policy.Output(OptStr(a, "output"), path, "_unstamped");
+            int n = PdfStamper.Remove(path, target, what is "headers" or "all", what is "watermarks" or "all");
+            return new ToolResult(ToJson(new { output = target, removed = n, verified = "no mark Washi added is left; their texts are gone from the pages" }));
+        }
         var options = new StampOptions
         {
+            ReplaceExisting = a.TryGetProperty("replace_existing", out var rx) && rx.ValueKind == JsonValueKind.True,
             HeaderLeft = S(header, "left"), HeaderCenter = S(header, "center"), HeaderRight = S(header, "right"),
             FooterLeft = S(footer, "left"), FooterCenter = S(footer, "center"), FooterRight = S(footer, "right"),
             FontSize = D(a, "font_size", 9), Serif = a.TryGetProperty("serif", out var se) && se.ValueKind == JsonValueKind.True,

@@ -216,4 +216,37 @@ public sealed class StampTests : IDisposable
         Assert.True(bad.IsError);
         Assert.False(File.Exists(P("bad.pdf")));
     }
+
+    [Fact]
+    public void Marks_Washi_added_are_found_removed_and_replaced()
+    {
+        var input = Three();
+        Stamp(input, P("once.pdf"), new StampOptions { HeaderLeft = "Draft 1", FooterCenter = "{page} / {pages}", Watermark = new Watermark("DRAFT") });
+        Assert.Equal((3, 3), PdfStamper.Existing(P("once.pdf")));
+        Assert.Equal((0, 0), PdfStamper.Existing(input));
+
+        // the watermark only
+        int n = Locked(() => PdfStamper.Remove(P("once.pdf"), P("nowm.pdf"), headers: false, watermarks: true));
+        Assert.Equal(3, n);
+        Assert.Equal((3, 0), PdfStamper.Existing(P("nowm.pdf")));
+        Assert.DoesNotContain("DRAFT", Text(P("nowm.pdf"), 0));
+        Assert.Contains("Draft 1", Text(P("nowm.pdf"), 0));
+
+        // everything: the pages read as they did before any mark
+        Locked(() => PdfStamper.Remove(P("once.pdf"), P("clean.pdf"), headers: true, watermarks: true));
+        Assert.Equal((0, 0), PdfStamper.Existing(P("clean.pdf")));
+        for (int i = 0; i < 3; i++) Assert.Equal(Text(input, i), Text(P("clean.pdf"), i));
+
+        // stamped again with replace: the old header goes, the watermark stays (no new one was given)
+        Stamp(P("once.pdf"), P("twice.pdf"), new StampOptions { HeaderLeft = "Final", ReplaceExisting = true });
+        var t = Text(P("twice.pdf"), 1);
+        Assert.Contains("Final", t);
+        Assert.DoesNotContain("Draft 1", t);
+        Assert.DoesNotContain("2 / 3", t);                                   // the old footer was in the same block
+        Assert.Contains("DRAFT", t);
+        Stamp(P("once.pdf"), P("named.pdf"), new StampOptions { FooterRight = "{file}", ReplaceExisting = true });
+        Assert.Contains("once.pdf", Text(P("named.pdf"), 0));             // the file's own name, not the temporary copy's
+
+        Assert.Equal("Err_StampNone", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfStamper.Remove(input, P("x.pdf"), true, true))).Key);
+    }
 }

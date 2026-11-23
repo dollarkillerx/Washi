@@ -550,6 +550,8 @@ washi pdf stamp report.pdf --footer "{page} / {pages}"                        # 
 washi pdf stamp report.pdf --header "株式会社和紙||{date}" --footer "|{page}|"  # left and right header, centred footer
 washi pdf stamp evidence.pdf --footer "||{bates}" --bates ACME- --bates-start 1001   # ACME-001001, ACME-001002, …
 washi pdf stamp draft.pdf --watermark "社外秘" --opacity 0.2 --pages 2-5
+washi pdf stamp report_stamped.pdf --header "Final" --replace-existing     # the old header and footer go first
+washi pdf stamp report_stamped.pdf --remove all                           # report_stamped_unstamped.pdf
 ```
 
 A header or footer is `left|centre|right` (one part is centred, two are left and right). The texts may hold
@@ -567,6 +569,10 @@ A header or footer is `left|centre|right` (one part is centred, two are left and
 - **Checked before it is kept.** Both versions are rendered (nothing may change outside the marks) and the pages'
   text read back (every header, footer and watermark must be there). A long document is checked on a sample of
   its pages: the first, the last and some between.
+- **Changing them later.** Washi finds the headers, footers and watermarks it added before (they are tagged and use
+  its own fonts): the Headers tool shows them, replaces them with new ones (headers and footers when new ones are
+  given, the watermark when a new one is), or takes them out. Nothing else in the pages changes; the copy is
+  checked (none is left, their texts are gone). Marks added by other programs are not touched.
 - Files whose permissions forbid changes are refused.
 
 ## Formats, ranges and calculations
@@ -890,7 +896,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 22. ~~Pages as images; cropping.~~ Done (`washi pdf export-images|crop`, Organize, `export_page_images`, `crop_pages`).
 23. ~~Links.~~ Done (`washi pdf links`, the Links tool, `list_links`, `edit_links`).
 24. ~~Images on the page.~~ Done (`washi pdf images`, the Images tool, `list_page_images`, `edit_page_images`).
-25. Next: updating and removing headers and footers; then editing a paragraph that reflows over several lines.
+25. ~~Updating and removing headers, footers and watermarks.~~ Done (`--replace-existing`, `--remove`, the Headers tool, `stamp_pages`).
+26. Next: editing a paragraph that reflows over several lines.
 
 ## License
 

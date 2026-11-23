@@ -295,6 +295,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.EditText) _ = EditText.PrepareAsync();
         if (value == Tool.Links) _ = Links.PrepareAsync();
         if (value == Tool.Images) _ = Images.PrepareAsync();
+        if (value == Tool.Stamp) _ = Stamp.PrepareAsync();
     }
 
     private string? _detectedFor;
@@ -535,6 +536,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         else if (ActiveTool == Tool.EditText) await EditText.PrepareAsync();
         else if (ActiveTool == Tool.Links) await Links.PrepareAsync();
         else if (ActiveTool == Tool.Images) await Images.PrepareAsync();
+        else if (ActiveTool == Tool.Stamp) await Stamp.PrepareAsync();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>

@@ -651,6 +651,28 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Contains("DRAFT", text);
         Assert.Contains("Signed by both parties", text);
         Assert.True(File.Exists(pdf));
+
+        // the stamped copy is open: the tool sees what Washi added, and can take it out or replace it
+        await vm.Stamp.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal((1, 1), vm.Stamp.Existing);
+        Assert.True(w.FindControl<Border>("StampExistingBox")!.IsEffectivelyVisible);
+        dialogs.SavePdf = Path.Combine(_dir, "s_restamped.pdf");
+        vm.Stamp.HeaderLeft = "Washi KK";
+        await vm.Stamp.SaveCommand.ExecuteAsync(null);
+        var again = await MainViewModel.Pdfium(() =>
+        {
+            using var d = PdfiumDocument.Open(dialogs.SavePdf!);
+            return d.GetPageText(0);
+        });
+        Assert.Contains("Washi KK", again);
+        Assert.DoesNotContain("株式会社和紙", again);
+        Assert.Equal(1, again.Split("DRAFT").Length - 1);                 // replaced, not doubled
+        dialogs.SavePdf = Path.Combine(_dir, "s_clean.pdf");
+        await vm.Stamp.RemoveExistingCommand.ExecuteAsync(null);
+        Assert.Equal(L.F("Ui_StampRemoved", "s_clean.pdf", 2), vm.Status);
+        await vm.Stamp.PrepareAsync();
+        Assert.False(vm.Stamp.HasExisting);
     }
 
     [AvaloniaFact]

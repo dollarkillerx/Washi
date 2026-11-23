@@ -1243,6 +1243,15 @@
                         <StackPanel Margin="20,18,20,18">
                             <TextBlock Classes="title" Text="{l:Tr Ui_StampTitle}" />
                             <TextBlock Classes="lead" Text="{l:Tr Ui_StampLead}" />
+                            <Border IsVisible="{Binding Stamp.HasExisting}" BorderBrush="{StaticResource RuleBrush}" BorderThickness="1" CornerRadius="6"
+                                    Padding="10,8" Margin="0,12,0,0" x:Name="StampExistingBox">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding Stamp.ExistingText}" FontSize="12" TextWrapping="Wrap" />
+                                    <CheckBox IsChecked="{Binding Stamp.ReplaceExisting}" Content="{l:Tr Ui_StampReplace}" FontSize="12" />
+                                    <Button Content="{l:Tr Ui_StampRemove}" Command="{Binding Stamp.RemoveExistingCommand}" Padding="10,3" FontSize="12"
+                                            x:Name="StampRemoveButton" />
+                                </StackPanel>
+                            </Border>
 
                             <TextBlock Classes="section" Text="{l:Tr Ui_StampHeader}" />
                             <Grid ColumnDefinitions="*,4,*,4,*">

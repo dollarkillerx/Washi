@@ -40,6 +40,50 @@ public sealed partial class StampToolViewModel : ObservableObject
     /// <summary>0 grey, 1 red, 2 blue.</summary>
     [ObservableProperty] private int _watermarkColorIndex;
 
+    /// <summary>Pages with headers or footers, and with a watermark, that Washi added before.</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasExisting), nameof(ExistingText))] private (int Headers, int Watermarks) _existing;
+    /// <summary>Take out what Washi added before when adding new ones.</summary>
+    [ObservableProperty] private bool _replaceExisting = true;
+    public bool HasExisting => Existing.Headers > 0 || Existing.Watermarks > 0;
+    public string ExistingText => L.F("Ui_StampExisting", Existing.Headers, Existing.Watermarks);
+
+    private int _checked;
+
+    /// <summary>When the tool opens or a document loads: what Washi added to it before.</summary>
+    public async Task PrepareAsync()
+    {
+        int version = ++_checked;
+        if (_main.PdfPath is not { } path) { Existing = default; return; }
+        (int, int) found;
+        try { found = await Task.Run(() => PdfStamper.Existing(path)); }
+        catch (Exception e) when (e is IOException or PdfSharp.Pdf.IO.PdfReaderException or InvalidOperationException) { found = default; }
+        if (version == _checked && _main.PdfPath == path) Existing = found;
+    }
+
+    /// <summary>Saves a copy without the headers, footers and watermarks Washi added, and opens it.</summary>
+    [RelayCommand]
+    private async Task RemoveExistingAsync()
+    {
+        if (_main.PdfPath is not { } pdf || !HasExisting) return;
+        if (await _main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_unstamped.pdf") is not { } output) return;
+        if (Path.GetFullPath(output) == Path.GetFullPath(pdf)) { _main.Status = L.Get("Ui_BookmarksNotOriginal"); return; }
+        int removed = -1;
+        await _main.Run(async () =>
+        {
+            var tmp = output + ".tmp";
+            if (File.Exists(tmp)) File.Delete(tmp);
+            try
+            {
+                removed = await MainViewModel.Pdfium(() => PdfStamper.Remove(pdf, tmp, headers: true, watermarks: true));
+                File.Move(tmp, output, overwrite: true);
+            }
+            finally { if (File.Exists(tmp)) File.Delete(tmp); }
+        });
+        if (removed < 0) return;
+        await _main.LoadAsync(output);
+        _main.Status = L.F("Ui_StampRemoved", Path.GetFileName(output), removed);
+    }
+
     /// <summary>Raised when anything shown on the page changes (the canvas redraws its preview).</summary>
     public event Action? Changed;
 
@@ -53,7 +97,7 @@ public sealed partial class StampToolViewModel : ObservableObject
 
     private void OnChanged(object? s, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(CanSave) or nameof(UsesBates) or nameof(OpacityText)) return;
+        if (e.PropertyName is nameof(CanSave) or nameof(UsesBates) or nameof(OpacityText) or nameof(Existing) or nameof(HasExisting) or nameof(ExistingText)) return;
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(UsesBates));
         OnPropertyChanged(nameof(OpacityText));
@@ -109,7 +153,7 @@ public sealed partial class StampToolViewModel : ObservableObject
         if (_main.PdfPath is not { } pdf || !CanSave) return;
         if (await _main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_stamped.pdf") is not { } output) return;
         if (Path.GetFullPath(output) == Path.GetFullPath(pdf)) { _main.Status = L.Get("Ui_BookmarksNotOriginal"); return; }
-        var options = Options() with { Date = DateTime.Now };
+        var options = Options() with { Date = DateTime.Now, ReplaceExisting = HasExisting && ReplaceExisting };
         StampResult? result = null;
         await _main.Run(async () =>
         {

@@ -44,6 +44,10 @@ public sealed record StampOptions
     public BatesNumbers? Bates { get; init; }
     public Watermark? Watermark { get; init; }
     public DateTime? Date { get; init; }
+    /// <summary>Take out the headers and footers (when new ones are given) and the watermark (when a new one is) that Washi added before.</summary>
+    public bool ReplaceExisting { get; init; }
+    /// <summary>What {file} says, when the input is not the user's file (a temporary copy).</summary>
+    internal string? FileName { get; init; }
 
     public bool HasText => new[] { HeaderLeft, HeaderCenter, HeaderRight, FooterLeft, FooterCenter, FooterRight }.Any(t => t.Trim().Length > 0);
     public bool IsEmpty => !HasText && string.IsNullOrWhiteSpace(Watermark?.Text);
@@ -86,9 +90,25 @@ public static partial class PdfStamper
             throw new PageAssemblyException("the watermark's opacity must be above 0 and at most 1, its size 0 to 400 points", "Err_StampWatermark");
         if (File.Exists(output)) throw new PageAssemblyException($"{Path.GetFileName(output)} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(output));
 
+        if (o.ReplaceExisting)
+        {
+            var (headerPages, watermarkPages) = Existing(input);
+            bool headers = headerPages > 0 && o.HasText, watermarks = watermarkPages > 0 && !string.IsNullOrWhiteSpace(o.Watermark?.Text);
+            if (headers || watermarks)
+            {
+                var tmp = Path.Combine(Path.GetTempPath(), $"washi-stamp-{Guid.NewGuid():N}.pdf");
+                try
+                {
+                    Remove(input, tmp, headers, watermarks);
+                    return Apply(tmp, output, o with { ReplaceExisting = false, FileName = o.FileName ?? Path.GetFileName(input) });
+                }
+                finally { if (File.Exists(tmp)) File.Delete(tmp); }
+            }
+        }
+
         var placed = new List<Placed>();
         var date = o.Date ?? DateTime.Now;
-        var file = Path.GetFileName(input);
+        var file = o.FileName ?? Path.GetFileName(input);
         int stamped = 0;
         string? firstBates = null, lastBates = null;
         using (var doc = PdfSecurity.OpenForChanges(input, PdfPasswords.For(input)))
@@ -205,6 +225,126 @@ public static partial class PdfStamper
         }
         return new StampResult(stamped, firstBates, lastBates);
     }
+
+    // ------------------------------------------------------------------ marks Washi added before
+
+    /// <summary>A header-and-footer block or a watermark Washi drew (tagged as a pagination artifact, in Washi's fonts).</summary>
+    [GeneratedRegex(@"/Artifact <</Type /Pagination(?<wm> /Subtype /Watermark)?>> BDC (?:(?!EMC).)*?/WashiF\d+(?:(?!EMC).)*?EMC\n?", RegexOptions.Singleline)]
+    private static partial Regex MarkRx();
+
+    [GeneratedRegex(@"(/WashiF\d+) [\d.]+ Tf(?:(?!Tj).)*?<([0-9A-Fa-f]*)> Tj", RegexOptions.Singleline)]
+    private static partial Regex ShownRx();
+
+    /// <summary>How many pages carry headers or footers, and how many a watermark, that Washi added.</summary>
+    public static (int HeaderPages, int WatermarkPages) Existing(string path)
+    {
+        using var doc = PdfSharp.Pdf.IO.PdfReader.Open(path, PdfPasswords.For(path) ?? "", PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+        int headers = 0, watermarks = 0;
+        foreach (var page in doc.Pages)
+        {
+            var marks = Streams(page).SelectMany(sd => MarkRx().Matches(Encoding.Latin1.GetString(sd.Stream!.UnfilteredValue))).ToList();
+            if (marks.Any(m => !m.Groups["wm"].Success)) headers++;
+            if (marks.Any(m => m.Groups["wm"].Success)) watermarks++;
+        }
+        return (headers, watermarks);
+    }
+
+    /// <summary>
+    /// Takes out the headers and footers (<paramref name="headers"/>) and/or the watermarks Washi added; nothing else in
+    /// the pages' content changes. Returns how many marks went.
+    /// </summary>
+    public static int Remove(string input, string output, bool headers, bool watermarks)
+    {
+        if (!headers && !watermarks) throw new PageAssemblyException("nothing to remove", "Err_StampNothing");
+        if (File.Exists(output)) throw new PageAssemblyException($"{Path.GetFileName(output)} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(output));
+        int removed = 0;
+        var texts = new List<(int Page, string Text)>();
+        using (var doc = PdfSecurity.OpenForChanges(input, PdfPasswords.For(input)))
+        {
+            for (int p = 0; p < doc.PageCount; p++)
+            {
+                var page = doc.Pages[p];
+                var fonts = Deref(PdfEraser.Resources(page)?.Elements["/Font"]) as PdfDictionary;
+                foreach (var sd in Streams(page))
+                {
+                    var before = Encoding.Latin1.GetString(sd.Stream!.UnfilteredValue);
+                    var after = MarkRx().Replace(before, m =>
+                    {
+                        bool wm = m.Groups["wm"].Success;
+                        if (wm ? !watermarks : !headers) return m.Value;
+                        removed++;
+                        foreach (Match t in ShownRx().Matches(m.Value))
+                            if (Decode(Deref(fonts?.Elements[t.Groups[1].Value]) as PdfDictionary, t.Groups[2].Value) is { Length: > 0 } text) texts.Add((p, text));
+                        return "";
+                    });
+                    if (after == before) continue;
+                    sd.Stream.Value = Encoding.Latin1.GetBytes(after);
+                    sd.Elements.Remove("/Filter");
+                    sd.Elements.Remove("/DecodeParms");
+                }
+            }
+            if (removed == 0) throw new PageAssemblyException("there are no headers, footers or watermarks that Washi added", "Err_StampNone");
+            doc.Save(output);
+        }
+
+        // proof: none of those marks is left, and their texts are no longer on the pages (as often as before, less one)
+        try
+        {
+            var left = Existing(output);
+            if (headers && left.HeaderPages > 0 || watermarks && left.WatermarkPages > 0)
+                throw new PageAssemblyException("some marks were still there; the copy was not kept", "Err_StampRemoveCheck");
+            using var a = PdfiumDocument.Open(input);
+            using var b = PdfiumDocument.Open(output);
+            foreach (var g in texts.GroupBy(t => t.Page).Take(20))
+            {
+                string ta = Norm(a.GetPageText(g.Key)), tb = Norm(b.GetPageText(g.Key));
+                foreach (var (_, text) in g.DistinctBy(t => t.Text))
+                {
+                    var n = Norm(text);
+                    if (n.Length > 0 && Count(tb, n) > Math.Max(0, Count(ta, n) - g.Count(t => t.Text == text)))
+                        throw new PageAssemblyException($"“{text}” was still on page {g.Key + 1}; the copy was not kept", "Err_StampRemoveCheck");
+                }
+            }
+        }
+        catch
+        {
+            File.Delete(output);
+            throw;
+        }
+        return removed;
+    }
+
+    private static int Count(string hay, string needle)
+    {
+        int n = 0;
+        for (int i = hay.IndexOf(needle, StringComparison.Ordinal); i >= 0; i = hay.IndexOf(needle, i + needle.Length, StringComparison.Ordinal)) n++;
+        return n;
+    }
+
+    /// <summary>A shown string in one of Washi's fonts: UTF-16 for a CJK font, Windows-1252 for Helvetica or Times.</summary>
+    private static string? Decode(PdfDictionary? font, string hex)
+    {
+        if (hex.Length % 2 != 0) return null;
+        var bytes = Convert.FromHexString(hex);
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        return font?.Elements.GetName("/Subtype") == "/Type0" ? Encoding.BigEndianUnicode.GetString(bytes) : Encoding.GetEncoding(1252).GetString(bytes);
+    }
+
+    /// <summary>The page's content streams.</summary>
+    private static IEnumerable<PdfDictionary> Streams(PdfPage page)
+    {
+        var items = page.Elements["/Contents"] switch
+        {
+            PdfReference { Value: PdfArray arr } => arr.Elements.ToList(),
+            PdfArray arr => arr.Elements.ToList(),
+            PdfItem one => [one],
+            _ => [],
+        };
+        foreach (var i in items)
+            if (Deref(i) is PdfDictionary { Stream: not null } sd) yield return sd;
+    }
+
+    private static PdfItem? Deref(PdfItem? i) => i is PdfReference r ? r.Value : i;
 
     /// <summary>The page's own content stays as it is: a stream before it (what goes behind, then q) and one after (Q, then the marks).</summary>
     internal static void AddStreams(PdfDocument doc, PdfPage page, string behind, string front)
