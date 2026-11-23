@@ -407,6 +407,48 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Compare_lists_the_differences_and_saves_a_marked_copy()
+    {
+        var older = TextPdf("v1.pdf", "Contract 2025", "Rent: 80,000 yen", "Notice: one month");
+        var newer = TextPdf("v2.pdf", "Contract 2025", "Rent: 85,000 yen", "Notice: one month", "Pets allowed");
+        var dialogs = new FakeDialogs { Pdf = older, SavePdf = Path.Combine(_dir, "v2_compared.pdf") };
+        var (w, vm) = await Open(newer, dialogs);
+        vm.ActiveTool = Tool.Compare;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("CompareChooseButton")!.IsEffectivelyVisible);
+        Assert.False(vm.Compare.CanCompare);
+
+        await vm.Compare.ChooseCommand.ExecuteAsync(null);
+        Assert.Equal(L.F("Ui_CompareOther", "v1.pdf"), vm.Compare.OtherText);
+        await vm.Compare.CompareCommand.ExecuteAsync(null);
+        Assert.Equal(2, vm.Compare.Rows.Count);
+        Assert.Equal(L.F("Ui_CmpRowChanged", "80,000", "85,000"), vm.Compare.Rows[0].Text);
+        Assert.Equal(L.F("Ui_CmpRowAdded", "Pets allowed"), vm.Compare.Rows[1].Text);
+        Assert.Equal(2, vm.Compare.On(0).Count());
+        Assert.Equal(L.F("Ui_CompareSummary", 2, 1, 1, 0, 0, 0, 0), vm.Compare.Summary);
+
+        // from the other side: the open file is the newer one no more
+        vm.Compare.OtherIsNewer = true;
+        Assert.False(vm.Compare.HasRows);
+        await vm.Compare.CompareCommand.ExecuteAsync(null);
+        Assert.Equal(L.F("Ui_CmpRowDeleted", "Pets allowed"), vm.Compare.Rows[1].Text);
+        vm.Compare.OtherIsNewer = false;
+        await vm.Compare.CompareCommand.ExecuteAsync(null);
+
+        Assert.True(vm.Compare.CanSave);
+        await vm.Compare.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(L.F("Ui_CompareMarked", "v2_compared.pdf", 2), vm.Status);
+        var comments = await MainViewModel.Pdfium(() => Washi.Core.Pages.PdfComments.List(dialogs.SavePdf!));
+        Assert.Equal(2, comments.Count);
+
+        // the same file twice is refused
+        dialogs.Pdf = vm.PdfPath;
+        await vm.Compare.ChooseCommand.ExecuteAsync(null);
+        Assert.Equal(L.Get("Ui_CompareSameFile"), vm.Status);
+    }
+
+    [AvaloniaFact]
     public async Task Dropped_photos_go_to_Combine_and_become_a_PDF()
     {
         string Photo(string name, SkiaSharp.SKColor color)

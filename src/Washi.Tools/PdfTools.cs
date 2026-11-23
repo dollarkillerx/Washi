@@ -38,6 +38,7 @@ public static class WashiTools
         .Add(new EditTextTool(policy))
         .Add(new StampPagesTool(policy))
         .Add(new ImagesToPdfTool(policy))
+        .Add(new ComparePdfsTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -1019,6 +1020,49 @@ public sealed class ImagesToPdfTool(PathPolicy p) : PdfTool(p)
         {
             output, pages = r.Pages, jpegs_kept_as_is = r.KeptAsIs,
             verified = "each page rendered and compared with its image",
+        }));
+    }
+}
+
+public sealed class ComparePdfsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "compare_pdfs";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    public override string Description =>
+        "Compare two versions of a document. Pages are paired by their text (an added or removed page does not shift the rest), " +
+        "the text of each pair is compared word by word (each CJK character is a word; full-width and half-width forms count as " +
+        "the same), and the pages are rendered to find changes outside the text (images, drawings, stamps). Returns the page " +
+        "pairs and each change: kind (changed, inserted, deleted, visual, page_added, page_removed), old and new page (1-based), " +
+        "old and new text, and boxes [x0,y0,x1,y1] in points from the top-left of the upright page.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "old":{"type":"string","description":"The earlier version"},
+          "new":{"type":"string","description":"The later version"},
+          "max_changes":{"type":"integer","description":"At most this many changes are listed (default 300)"}},
+         "required":["old","new"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var oldPath = Policy.Input(Str(a, "old"));
+        var newPath = Policy.Input(Str(a, "new"));
+        int max = a.TryGetProperty("max_changes", out var mx) && mx.TryGetInt32(out var m) ? Math.Clamp(m, 1, 5000) : 300;
+        var r = PdfComparer.Compare(oldPath, newPath);
+        static string Kind(ChangeKind k) => k switch
+        {
+            ChangeKind.PageAdded => "page_added", ChangeKind.PageRemoved => "page_removed", _ => k.ToString().ToLowerInvariant(),
+        };
+        static IEnumerable<double[]> Boxes(IReadOnlyList<PdfRect> b) => b.Select(x => new[] { x.X0, x.Y0, x.X1, x.Y1 }.Select(v => Math.Round(v, 1)).ToArray());
+        return new ToolResult(ToJson(new
+        {
+            same = r.Same, old_pages = r.OldPages, new_pages = r.NewPages,
+            pairs = r.Pairs.Select(p => new { old = p.Old + 1, @new = p.New + 1 }),
+            total = r.Changes.Count, truncated = r.Changes.Count > max,
+            changes = r.Changes.Take(max).Select(c => new
+            {
+                kind = Kind(c.Kind), old_page = c.OldPage + 1, new_page = c.Kind == ChangeKind.PageRemoved ? null : c.NewPage + 1,
+                old_text = c.OldText, new_text = c.NewText, old_boxes = Boxes(c.OldBoxes), new_boxes = Boxes(c.NewBoxes),
+            }),
         }));
     }
 }

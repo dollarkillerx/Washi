@@ -410,6 +410,19 @@ public sealed class EditorTests : IDisposable
         Shot(w, "bookmarks");
         vm.ShowPagesPanel = true;
 
+        // compare: the form against the version with a field filled in and a word changed (made here)
+        if (Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_OTHER") is { Length: > 0 } other)
+        {
+            vm.ActiveTool = Tool.Compare;
+            vm.Compare.Reset();
+            ((FakeDialogs)vm.Dialogs).Pdf = other;
+            await vm.Compare.ChooseCommand.ExecuteAsync(null);
+            await vm.Compare.CompareCommand.ExecuteAsync(null);
+            Dispatcher.UIThread.RunJobs();
+            Shot(w, "compare");
+            vm.Compare.Reset();
+        }
+
         // headers: page numbers, a company name, a watermark (a preview on the page)
         vm.ActiveTool = Tool.Stamp;
         vm.Stamp.HeaderLeft = "株式会社サンプル";

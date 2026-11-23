@@ -211,6 +211,28 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_Redacted", output, report.Glyphs, report.Images, report.Paths, report.Annotations, report.Strings));
                     return 0;
                 }
+                case ["compare", var older, var newer]:
+                {
+                    var report = PdfComparer.Compare(older, newer);
+                    if (report.Same) { Console.WriteLine(L.Get("Ui_CompareNone")); return 0; }
+                    Console.WriteLine(L.F("Ui_CompareSummary", report.Changes.Count, report.Count(ChangeKind.Changed), report.Count(ChangeKind.Inserted),
+                        report.Count(ChangeKind.Deleted), report.Count(ChangeKind.Visual), report.Count(ChangeKind.PageAdded), report.Count(ChangeKind.PageRemoved)));
+                    foreach (var c in report.Changes)
+                        Console.WriteLine(L.F("Pdf_CompareLine", c.OldPage is { } o ? (o + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "-",
+                            c.NewPage is { } n && c.Kind != ChangeKind.PageRemoved ? (n + 1).ToString(System.Globalization.CultureInfo.InvariantCulture) : "-",
+                            c.Kind switch
+                            {
+                                ChangeKind.Changed => L.F("Ui_CmpRowChanged", c.OldText, c.NewText),
+                                ChangeKind.Inserted => L.F("Ui_CmpRowAdded", c.NewText),
+                                ChangeKind.Deleted => L.F("Ui_CmpRowDeleted", c.OldText),
+                                ChangeKind.Visual => c.OldText.Length > 0 ? L.F("Cmp_NoteSize", c.OldText, c.NewText) : L.Get("Ui_CmpRowVisual"),
+                                ChangeKind.PageAdded => L.Get("Ui_CmpRowPageAdded"),
+                                _ => L.F("Ui_CmpRowPageRemoved", c.OldPage!.Value + 1),
+                            }));
+                    if (opt.TryGetValue("-o", out var marked))
+                        Console.WriteLine(L.F("Ui_CompareMarked", marked, PdfComparer.MarkUp(newer, marked, report)));
+                    return 0;
+                }
                 case ["from-images", .. var images] when images.Length > 0 && opt.ContainsKey("-o"):
                 {
                     var o = new ImagePageOptions(opt.GetValueOrDefault("--page", "a4").ToLowerInvariant(),

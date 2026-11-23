@@ -129,6 +129,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf redact &lt;in.pdf&gt; [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)
   washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page
+  washi pdf compare &lt;ancien.pdf&gt; &lt;nouveau.pdf&gt; [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)
   washi pdf replace-text &lt;in.pdf&gt; (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)
   washi pdf stamp &lt;in.pdf&gt; [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]
@@ -831,4 +832,35 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} n’a pas pu être lu comme une image.</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>La page {0} ne ressemblait pas à {1} ; le PDF n’a pas été conservé.</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} n’existe pas.</value></data>
+  <data name="Ui_ToolCompare" xml:space="preserve"><value>Comparer</value></data>
+  <data name="Ui_CompareTitle" xml:space="preserve"><value>Comparer des versions</value></data>
+  <data name="Ui_CompareLead" xml:space="preserve"><value>Comparez le fichier ouvert avec une autre version : mots modifiés, ajoutés et supprimés, pages ajoutées et supprimées, changements d’images et de dessins.</value></data>
+  <data name="Ui_CompareChoose" xml:space="preserve"><value>Choisir l’autre version…</value></data>
+  <data name="Ui_CompareOther" xml:space="preserve"><value>Comparé avec : {0}</value></data>
+  <data name="Ui_CompareOtherNewer" xml:space="preserve"><value>Ce fichier est la version la plus récente</value></data>
+  <data name="Ui_CompareRun" xml:space="preserve"><value>Comparer</value></data>
+  <data name="Ui_CompareNone" xml:space="preserve"><value>Aucune différence : les deux versions ont le même texte et le même aspect.</value></data>
+  <data name="Ui_CompareSummary" xml:space="preserve"><value>{0} différence(s) : {1} modifiée(s), {2} ajoutée(s), {3} supprimée(s), {4} hors du texte, {5} page(s) ajoutée(s), {6} supprimée(s).</value></data>
+  <data name="Ui_CompareLegend" xml:space="preserve"><value>Vert : ajouté · jaune : modifié · rouge : supprimé · violet : images et dessins</value></data>
+  <data name="Ui_CompareSave" xml:space="preserve"><value>Enregistrer une copie annotée…</value></data>
+  <data name="Ui_CompareSaveNote" xml:space="preserve"><value>Une copie de la version récente où chaque différence est annotée (avec l’ancien libellé), à envoyer ou relire. Les fichiers comparés ne sont pas modifiés.</value></data>
+  <data name="Ui_CompareMarked" xml:space="preserve"><value>{0} enregistré : {1} commentaire(s) signalent les différences.</value></data>
+  <data name="Ui_CompareSameFile" xml:space="preserve"><value>Choisissez un autre fichier : c’est celui qui est déjà ouvert.</value></data>
+  <data name="Ui_CmpWhere" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_CmpRowChanged" xml:space="preserve"><value>« {0} » → « {1} »</value></data>
+  <data name="Ui_CmpRowAdded" xml:space="preserve"><value>Ajouté « {0} »</value></data>
+  <data name="Ui_CmpRowDeleted" xml:space="preserve"><value>Supprimé « {0} »</value></data>
+  <data name="Ui_CmpRowVisual" xml:space="preserve"><value>Modifié hors du texte (image ou dessin)</value></data>
+  <data name="Ui_CmpRowPageAdded" xml:space="preserve"><value>Nouvelle page</value></data>
+  <data name="Ui_CmpRowPageRemoved" xml:space="preserve"><value>La page {0} de l’ancienne version a été supprimée</value></data>
+  <data name="Cmp_Size" xml:space="preserve"><value>{0} × {1} pt</value></data>
+  <data name="Cmp_NoteAdded" xml:space="preserve"><value>Ajouté : {0}</value></data>
+  <data name="Cmp_NoteChanged" xml:space="preserve"><value>Avant : {0}</value></data>
+  <data name="Cmp_NoteDeleted" xml:space="preserve"><value>Supprimé : {0}</value></data>
+  <data name="Cmp_NoteVisual" xml:space="preserve"><value>Modifié ici (image ou dessin)</value></data>
+  <data name="Cmp_NoteSize" xml:space="preserve"><value>Taille de page passée de {0} à {1}</value></data>
+  <data name="Cmp_NotePageAdded" xml:space="preserve"><value>Cette page est nouvelle.</value></data>
+  <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>La page {0} de l’ancienne version a été supprimée : {1}</value></data>
+  <data name="Pdf_CompareLine" xml:space="preserve"><value>  anc. p. {0} / nouv. p. {1} : {2}</value></data>
+  <data name="Err_CompareSame" xml:space="preserve"><value>Les deux versions sont identiques : rien à signaler.</value></data>
 </root>

@@ -296,6 +296,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsStampTool}" x:Name="StampToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Stamp}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolStamp}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCompareTool}" x:Name="CompareToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Compare}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCompare}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
                 </RadioButton>
@@ -1177,6 +1180,56 @@
                                 </ComboBox>
                             </Grid>
                             <CheckBox IsChecked="{Binding Stamp.WatermarkBehind}" Content="{l:Tr Ui_StampBehind}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <DockPanel IsVisible="{Binding IsCompareTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <Button Classes="accent primary" Command="{Binding Compare.SaveCommand}" IsEnabled="{Binding Compare.CanSave}" x:Name="CompareSaveButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Compare}" Size="18" />
+                                    <TextBlock Text="{l:Tr Ui_CompareSave}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CompareSaveNote}" />
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_CompareTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_CompareLead}" />
+                            <Button Command="{Binding Compare.ChooseCommand}" Padding="12,5" Margin="0,12,0,0" x:Name="CompareChooseButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Open}" Size="16" />
+                                    <TextBlock Text="{l:Tr Ui_CompareChoose}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Text="{Binding Compare.OtherText}" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0" IsVisible="{Binding Compare.HasOther}" />
+                            <CheckBox IsChecked="{Binding Compare.OtherIsNewer}" Content="{l:Tr Ui_CompareOtherNewer}" IsVisible="{Binding Compare.HasOther}" />
+                            <Button Content="{l:Tr Ui_CompareRun}" Command="{Binding Compare.CompareCommand}" IsEnabled="{Binding Compare.CanCompare}"
+                                    Padding="14,5" Margin="0,8,0,0" x:Name="CompareRunButton" />
+
+                            <TextBlock Classes="note" Text="{Binding Compare.Summary}" Foreground="{StaticResource InkBrush}" Margin="0,12,0,6" TextWrapping="Wrap"
+                                       IsVisible="{Binding Compare.Summary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="CompareSummary" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CompareLegend}" IsVisible="{Binding Compare.HasRows}" Margin="0,0,0,6" />
+                            <ItemsControl ItemsSource="{Binding Compare.Rows}" x:Name="CompareRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CompareRow">
+                                        <Button Background="Transparent" Padding="2,1" HorizontalContentAlignment="Left" HorizontalAlignment="Stretch" Margin="0,0,0,2"
+                                                Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Compare.ShowCommand}" CommandParameter="{Binding}">
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Left" Text="{Binding Mark}" FontWeight="Bold" Width="16" VerticalAlignment="Top" />
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Where}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                                    <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
