@@ -131,6 +131,7 @@
   washi pdf redact &lt;in.pdf&gt; [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）
   washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐页列出文字所在位置
+  washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=目标 ...] [--remove 1-2,3-1] [-o out.pdf]   列出链接，或添加（网址、邮箱、页码）和删除链接
   washi pdf compare &lt;旧.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   列出变化（文字、页面、图片）（-o：在新版上用批注标出每处变化）
   washi pdf replace-text &lt;in.pdf&gt; (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           修改页面上的文字（一次一行；保存前会检查）
@@ -891,4 +892,29 @@
   <data name="Err_CropTooSmall" xml:space="preserve"><value>第 {0} 页会小于半英寸。</value></data>
   <data name="Err_CropBlank" xml:space="preserve"><value>页面是空白的：没有可按内容裁剪的东西。</value></data>
   <data name="Err_CropCheck" xml:space="preserve"><value>第 {0} 页与原页对应部分不一致，因此没有保留副本。</value></data>
+  <data name="Ui_ToolLinks" xml:space="preserve"><value>链接</value></data>
+  <data name="Ui_LinksTitle" xml:space="preserve"><value>链接</value></data>
+  <data name="Ui_LinksLead" xml:space="preserve"><value>在页面上拖出一个框，输入链接目标：网址、邮箱或页码。也可以把正文中写的地址一次变成链接。页面外观不变。</value></data>
+  <data name="Ui_LinkNew" xml:space="preserve"><value>这个链接指向哪里？</value></data>
+  <data name="Ui_LinkTargetHint" xml:space="preserve"><value>https://…、name@example.com 或页码</value></data>
+  <data name="Ui_LinksFind" xml:space="preserve"><value>把正文中的地址变成链接</value></data>
+  <data name="Ui_LinksFound" xml:space="preserve"><value>找到 {0} 个地址：将变成链接。</value></data>
+  <data name="Ui_LinksNoneFound" xml:space="preserve"><value>正文中没有找到未加链接的网址或邮箱。</value></data>
+  <data name="Ui_LinksNew" xml:space="preserve"><value>新链接</value></data>
+  <data name="Ui_LinksExisting" xml:space="preserve"><value>文件中的链接</value></data>
+  <data name="Ui_LinksNone" xml:space="preserve"><value>文件中没有链接。</value></data>
+  <data name="Ui_LinkRemove" xml:space="preserve"><value>删除</value></data>
+  <data name="Ui_LinkWhere" xml:space="preserve"><value>第 {0} 页</value></data>
+  <data name="Ui_LinkToPage" xml:space="preserve"><value>跳到第 {0} 页</value></data>
+  <data name="Ui_LinkOther" xml:space="preserve"><value>其他类型的链接（保持原样）</value></data>
+  <data name="Ui_LinksSave" xml:space="preserve"><value>将 {0} 处修改另存为副本…</value></data>
+  <data name="Ui_LinksSaveNote" xml:space="preserve"><value>链接没有边框，页面外观不变。保存前会检查副本；原文件不会改变。</value></data>
+  <data name="Ui_LinksSaved" xml:space="preserve"><value>已保存 {0}：新增 {1} 个链接，删除 {2} 个。已检查：页面外观相同。</value></data>
+  <data name="Pdf_LinkLine" xml:space="preserve"><value>  {0}  第 {1} 页：{2}  [{3}]</value></data>
+  <data name="Err_LinkTarget" xml:space="preserve"><value>“{0}”不是网址、邮箱或页码。</value></data>
+  <data name="Err_LinkNothing" xml:space="preserve"><value>没有要添加、修改或删除的链接。</value></data>
+  <data name="Err_LinkId" xml:space="preserve"><value>没有链接 {0}。</value></data>
+  <data name="Err_LinkAdd" xml:space="preserve"><value>--add 的格式是 page:x0,y0,x1,y1=目标。</value></data>
+  <data name="Err_LinkCheck" xml:space="preserve"><value>第 {1} 页指向 {0} 的链接无法读回，因此没有保留副本。</value></data>
+  <data name="Err_LinkChanged" xml:space="preserve"><value>第 {0} 页加链接后外观改变，因此没有保留副本。</value></data>
 </root>

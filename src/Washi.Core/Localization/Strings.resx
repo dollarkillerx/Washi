@@ -131,6 +131,7 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf redact &lt;in.pdf&gt; [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           remove words, personal data or areas for real and cover them in black (--list only shows the matches)
   washi pdf find &lt;in.pdf&gt; &lt;text&gt; [--case] [--whole-words]   where the text is, page by page
+  washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=target ...] [--remove 1-2,3-1] [-o out.pdf]   list links, or add (web/mail address, page number) and remove them
   washi pdf compare &lt;old.pdf&gt; &lt;new.pdf&gt; [-o marked.pdf]   what changed: words, pages, pictures (-o: the new version with each change marked)
   washi pdf replace-text &lt;in.pdf&gt; (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           change text on the page (one line at a time; checked before it is kept)
@@ -891,4 +892,29 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_CropTooSmall" xml:space="preserve"><value>Page {0} would be smaller than half an inch.</value></data>
   <data name="Err_CropBlank" xml:space="preserve"><value>The pages are blank: there is nothing to trim to.</value></data>
   <data name="Err_CropCheck" xml:space="preserve"><value>Page {0} did not look like the part of the original it was cropped to, so the copy was not kept.</value></data>
+  <data name="Ui_ToolLinks" xml:space="preserve"><value>Links</value></data>
+  <data name="Ui_LinksTitle" xml:space="preserve"><value>Links</value></data>
+  <data name="Ui_LinksLead" xml:space="preserve"><value>Drag a box on the page and type where it goes: a web or mail address, or a page number. Or turn the addresses written in the text into links. The pages look the same.</value></data>
+  <data name="Ui_LinkNew" xml:space="preserve"><value>Where does this link go?</value></data>
+  <data name="Ui_LinkTargetHint" xml:space="preserve"><value>https://…, name@example.com or a page number</value></data>
+  <data name="Ui_LinksFind" xml:space="preserve"><value>Link the addresses in the text</value></data>
+  <data name="Ui_LinksFound" xml:space="preserve"><value>{0} address(es) found: they will become links.</value></data>
+  <data name="Ui_LinksNoneFound" xml:space="preserve"><value>No web or mail address without a link was found in the text.</value></data>
+  <data name="Ui_LinksNew" xml:space="preserve"><value>New links</value></data>
+  <data name="Ui_LinksExisting" xml:space="preserve"><value>Links in the file</value></data>
+  <data name="Ui_LinksNone" xml:space="preserve"><value>The file has no links.</value></data>
+  <data name="Ui_LinkRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Ui_LinkWhere" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_LinkToPage" xml:space="preserve"><value>To page {0}</value></data>
+  <data name="Ui_LinkOther" xml:space="preserve"><value>Another kind of link (kept as it is)</value></data>
+  <data name="Ui_LinksSave" xml:space="preserve"><value>Save {0} change(s) as copy…</value></data>
+  <data name="Ui_LinksSaveNote" xml:space="preserve"><value>Links have no border: the pages look the same. The copy is checked before it is kept; the original is not changed.</value></data>
+  <data name="Ui_LinksSaved" xml:space="preserve"><value>Saved {0}: {1} link(s) added, {2} removed. Checked: the pages look the same.</value></data>
+  <data name="Pdf_LinkLine" xml:space="preserve"><value>  {0}  page {1}: {2}  [{3}]</value></data>
+  <data name="Err_LinkTarget" xml:space="preserve"><value>“{0}” is not a web address, a mail address or a page number.</value></data>
+  <data name="Err_LinkNothing" xml:space="preserve"><value>No link to add, change or remove.</value></data>
+  <data name="Err_LinkId" xml:space="preserve"><value>There is no link {0}.</value></data>
+  <data name="Err_LinkAdd" xml:space="preserve"><value>--add takes page:x0,y0,x1,y1=target.</value></data>
+  <data name="Err_LinkCheck" xml:space="preserve"><value>The link to {0} on page {1} did not read back, so the copy was not kept.</value></data>
+  <data name="Err_LinkChanged" xml:space="preserve"><value>Page {0} looked different with its links, so the copy was not kept.</value></data>
 </root>

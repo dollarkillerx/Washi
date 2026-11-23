@@ -301,7 +301,7 @@ public static partial class PdfComments
 
     // ------------------------------------------------------------------ geometry
     /// <summary>Upright page (top-down points) ↔ PDF space, for the page's /Rotate (as PDFium maps them).</summary>
-    private sealed class Upright
+    internal sealed class Upright
     {
         private readonly double _a, _b, _c, _d;
         public int Rotate { get; }

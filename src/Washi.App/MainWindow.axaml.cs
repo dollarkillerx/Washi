@@ -34,7 +34,7 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
 
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
-        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EditTextToolButton, StampToolButton, CompareToolButton, EraseToolButton, AskToolButton })
+        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EditTextToolButton, StampToolButton, LinksToolButton, CompareToolButton, EraseToolButton, AskToolButton })
             rail.AddHandler(PointerPressedEvent, (_, _) =>
             {
                 // a second click on the active tool folds its panel away; any tool click opens it
@@ -61,6 +61,12 @@ public partial class MainWindow : Window
                 SettingsPage.DataContext = ViewModel.Settings;
         };
         ViewModel.EditRequested += BeginEdit;
+        // links: a box just drawn puts the cursor in the box for its target
+        ViewModel.Links.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(LinksToolViewModel.Draft) && ViewModel.Links.HasDraft)
+                Dispatcher.UIThread.Post(() => LinkTargetBox.Focus(), DispatcherPriority.Input);
+        };
         // edit text: a click on a line puts the cursor in its box, the whole text selected
         ViewModel.EditText.PropertyChanged += (_, e) =>
         {

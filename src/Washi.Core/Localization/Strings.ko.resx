@@ -131,6 +131,7 @@
   washi pdf redact &lt;in.pdf&gt; [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)
   washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시
+  washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=대상 ...] [--remove 1-2,3-1] [-o out.pdf]   링크 목록, 또는 추가(웹·메일 주소, 쪽 번호)와 삭제
   washi pdf compare &lt;이전.pdf&gt; &lt;새.pdf&gt; [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)
   washi pdf replace-text &lt;in.pdf&gt; (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)
@@ -891,4 +892,29 @@
   <data name="Err_CropTooSmall" xml:space="preserve"><value>{0}페이지가 반 인치보다 작아집니다.</value></data>
   <data name="Err_CropBlank" xml:space="preserve"><value>페이지가 비어 있어 내용에 맞춰 자를 것이 없습니다.</value></data>
   <data name="Err_CropCheck" xml:space="preserve"><value>{0}페이지가 원래의 해당 부분과 달라 사본을 저장하지 않았습니다.</value></data>
+  <data name="Ui_ToolLinks" xml:space="preserve"><value>링크</value></data>
+  <data name="Ui_LinksTitle" xml:space="preserve"><value>링크</value></data>
+  <data name="Ui_LinksLead" xml:space="preserve"><value>페이지에 상자를 끌어 그리고 이동할 곳(웹·메일 주소 또는 쪽 번호)을 입력하세요. 본문에 적힌 주소를 한꺼번에 링크로 만들 수도 있습니다. 페이지 모양은 그대로입니다.</value></data>
+  <data name="Ui_LinkNew" xml:space="preserve"><value>이 링크는 어디로 갑니까?</value></data>
+  <data name="Ui_LinkTargetHint" xml:space="preserve"><value>https://…, name@example.com 또는 쪽 번호</value></data>
+  <data name="Ui_LinksFind" xml:space="preserve"><value>본문의 주소를 링크로 만들기</value></data>
+  <data name="Ui_LinksFound" xml:space="preserve"><value>주소 {0}개를 찾았습니다. 링크로 만듭니다.</value></data>
+  <data name="Ui_LinksNoneFound" xml:space="preserve"><value>본문에서 링크가 없는 웹·메일 주소를 찾지 못했습니다.</value></data>
+  <data name="Ui_LinksNew" xml:space="preserve"><value>새 링크</value></data>
+  <data name="Ui_LinksExisting" xml:space="preserve"><value>파일의 링크</value></data>
+  <data name="Ui_LinksNone" xml:space="preserve"><value>파일에 링크가 없습니다.</value></data>
+  <data name="Ui_LinkRemove" xml:space="preserve"><value>삭제</value></data>
+  <data name="Ui_LinkWhere" xml:space="preserve"><value>{0}페이지</value></data>
+  <data name="Ui_LinkToPage" xml:space="preserve"><value>{0}페이지로</value></data>
+  <data name="Ui_LinkOther" xml:space="preserve"><value>다른 종류의 링크 (그대로 둠)</value></data>
+  <data name="Ui_LinksSave" xml:space="preserve"><value>변경 {0}개를 사본으로 저장…</value></data>
+  <data name="Ui_LinksSaveNote" xml:space="preserve"><value>링크에는 테두리가 없어 페이지 모양이 그대로입니다. 저장하기 전에 사본을 확인하며 원본은 바뀌지 않습니다.</value></data>
+  <data name="Ui_LinksSaved" xml:space="preserve"><value>{0} 저장: 링크 {1}개 추가, {2}개 삭제. 확인: 페이지 모양이 같습니다.</value></data>
+  <data name="Pdf_LinkLine" xml:space="preserve"><value>  {0}  {1}페이지: {2}  [{3}]</value></data>
+  <data name="Err_LinkTarget" xml:space="preserve"><value>“{0}”은(는) 웹 주소, 메일 주소, 쪽 번호가 아닙니다.</value></data>
+  <data name="Err_LinkNothing" xml:space="preserve"><value>추가·변경·삭제할 링크가 없습니다.</value></data>
+  <data name="Err_LinkId" xml:space="preserve"><value>링크 {0}이(가) 없습니다.</value></data>
+  <data name="Err_LinkAdd" xml:space="preserve"><value>--add 형식은 page:x0,y0,x1,y1=대상 입니다.</value></data>
+  <data name="Err_LinkCheck" xml:space="preserve"><value>{1}페이지의 {0} 링크를 다시 읽을 수 없어 사본을 저장하지 않았습니다.</value></data>
+  <data name="Err_LinkChanged" xml:space="preserve"><value>{0}페이지가 링크 때문에 달라 보여 사본을 저장하지 않았습니다.</value></data>
 </root>

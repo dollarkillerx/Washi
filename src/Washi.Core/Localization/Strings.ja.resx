@@ -131,6 +131,7 @@
   washi pdf redact &lt;in.pdf&gt; [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）
   washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示
+  washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=リンク先 ...] [--remove 1-2,3-1] [-o out.pdf]   リンクを一覧表示、または追加（URL・メール・ページ番号）と削除
   washi pdf compare &lt;旧.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）
   washi pdf replace-text &lt;in.pdf&gt; (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           ページの文字を書き換える（1 行ずつ。保存前に確認）
@@ -891,4 +892,29 @@
   <data name="Err_CropTooSmall" xml:space="preserve"><value>{0} ページが半インチより小さくなってしまいます。</value></data>
   <data name="Err_CropBlank" xml:space="preserve"><value>ページが白紙のため、切り詰める対象がありません。</value></data>
   <data name="Err_CropCheck" xml:space="preserve"><value>{0} ページが元の該当部分と同じに見えなかったため、保存しませんでした。</value></data>
+  <data name="Ui_ToolLinks" xml:space="preserve"><value>リンク</value></data>
+  <data name="Ui_LinksTitle" xml:space="preserve"><value>リンク</value></data>
+  <data name="Ui_LinksLead" xml:space="preserve"><value>ページ上で枠を描き、リンク先（URL・メールアドレス・ページ番号）を入力します。本文に書かれたアドレスをまとめてリンクにすることもできます。ページの見た目は変わりません。</value></data>
+  <data name="Ui_LinkNew" xml:space="preserve"><value>このリンクの行き先</value></data>
+  <data name="Ui_LinkTargetHint" xml:space="preserve"><value>https://…、name@example.com、またはページ番号</value></data>
+  <data name="Ui_LinksFind" xml:space="preserve"><value>本文中のアドレスをリンクにする</value></data>
+  <data name="Ui_LinksFound" xml:space="preserve"><value>{0} 件のアドレスが見つかりました。リンクにします。</value></data>
+  <data name="Ui_LinksNoneFound" xml:space="preserve"><value>リンクのない URL やメールアドレスは本文に見つかりませんでした。</value></data>
+  <data name="Ui_LinksNew" xml:space="preserve"><value>追加するリンク</value></data>
+  <data name="Ui_LinksExisting" xml:space="preserve"><value>ファイル内のリンク</value></data>
+  <data name="Ui_LinksNone" xml:space="preserve"><value>このファイルにはリンクがありません。</value></data>
+  <data name="Ui_LinkRemove" xml:space="preserve"><value>削除</value></data>
+  <data name="Ui_LinkWhere" xml:space="preserve"><value>{0} ページ</value></data>
+  <data name="Ui_LinkToPage" xml:space="preserve"><value>{0} ページへ</value></data>
+  <data name="Ui_LinkOther" xml:space="preserve"><value>その他のリンク（そのまま残します）</value></data>
+  <data name="Ui_LinksSave" xml:space="preserve"><value>{0} 件の変更をコピーに保存…</value></data>
+  <data name="Ui_LinksSaveNote" xml:space="preserve"><value>リンクには枠線を付けないので、ページの見た目は変わりません。保存前にコピーを確認します。元のファイルは変わりません。</value></data>
+  <data name="Ui_LinksSaved" xml:space="preserve"><value>{0} を保存しました：リンクを {1} 件追加、{2} 件削除。確認済み：ページの見た目は同じです。</value></data>
+  <data name="Pdf_LinkLine" xml:space="preserve"><value>  {0}  {1} ページ：{2}  [{3}]</value></data>
+  <data name="Err_LinkTarget" xml:space="preserve"><value>「{0}」は URL・メールアドレス・ページ番号のどれでもありません。</value></data>
+  <data name="Err_LinkNothing" xml:space="preserve"><value>追加・変更・削除するリンクがありません。</value></data>
+  <data name="Err_LinkId" xml:space="preserve"><value>リンク {0} はありません。</value></data>
+  <data name="Err_LinkAdd" xml:space="preserve"><value>--add には page:x0,y0,x1,y1=リンク先 を指定します。</value></data>
+  <data name="Err_LinkCheck" xml:space="preserve"><value>{1} ページの {0} へのリンクが読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Err_LinkChanged" xml:space="preserve"><value>{0} ページの見た目がリンクで変わったため、保存しませんでした。</value></data>
 </root>

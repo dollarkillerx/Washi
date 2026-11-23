@@ -10,7 +10,7 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -234,6 +234,36 @@ internal static class PageCommands
                     var padding = opt.TryGetValue("--padding", out var pd) ? double.Parse(pd, System.Globalization.CultureInfo.InvariantCulture) : 6;
                     int n = PdfPageImages.Crop(input, output, new CropOptions(t, r, b, l, opt.ContainsKey("--trim"), padding, opt.GetValueOrDefault("--pages")));
                     Console.WriteLine(L.F("Pdf_Cropped", output, n));
+                    return 0;
+                }
+                case ["links", var input]:
+                {
+                    var add = new List<NewLink>();
+                    if (opt.ContainsKey("--find-addresses")) add.AddRange(PdfLinks.FindAddresses(input));
+                    if (opt.TryGetValue("--add", out var adds))
+                        foreach (var spec in adds.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            int eq = spec.IndexOf('=');
+                            if (eq < 0) throw new PageAssemblyException("--add takes page:x0,y0,x1,y1=target", "Err_LinkAdd");
+                            var region = ParseBoxes(spec[..eq]).Single();
+                            add.Add(new NewLink(region.Page, region.Rect, spec[(eq + 1)..]));
+                        }
+                    var remove = opt.TryGetValue("--remove", out var rm) ? rm.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : [];
+                    if (add.Count == 0 && remove.Length == 0 && opt.ContainsKey("--find-addresses"))
+                    {
+                        Console.WriteLine(L.Get("Ui_LinksNoneFound"));   // nothing is written
+                        return 0;
+                    }
+                    if (add.Count == 0 && remove.Length == 0)
+                    {
+                        foreach (var l in PdfLinks.List(input))
+                            Console.WriteLine(L.F("Pdf_LinkLine", l.Id, l.Page + 1, l.Kind == "page" ? L.F("Ui_LinkToPage", l.Target) : l.Target,
+                                $"{l.Rect.X0:0},{l.Rect.Y0:0},{l.Rect.X1:0},{l.Rect.Y1:0}"));
+                        return 0;
+                    }
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + "_links.pdf"));
+                    var r = PdfLinks.Apply(input, output, add, remove);
+                    Console.WriteLine(L.F("Ui_LinksSaved", output, r.Added, r.Removed));
                     return 0;
                 }
                 case ["compare", var older, var newer]:
@@ -460,7 +490,7 @@ internal static class PageCommands
         for (int i = 0; i < args.Length; i++)
         {
             if (Flags.Contains(args[i])) opt[args[i]] = "";
-            else if (args[i] == "--box" && i + 1 < args.Length) opt["--box"] = opt.TryGetValue("--box", out var b) ? b + ";" + args[++i] : args[++i];
+            else if (args[i] is "--box" or "--add" && i + 1 < args.Length) opt[args[i]] = opt.TryGetValue(args[i], out var b) ? b + ";" + args[++i] : args[++i];
             else if (args[i] is "--find" or "--regex" && i + 1 < args.Length) opt[args[i]] = opt.TryGetValue(args[i], out var f) ? f + Many + args[++i] : args[++i];
             else if (args[i].StartsWith('-') && i + 1 < args.Length) opt[args[i]] = args[++i];
             else pos.Add(args[i]);

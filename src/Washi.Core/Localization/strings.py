@@ -521,6 +521,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)\n'
             '  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=target ...] [--remove 1-2,3-1] [-o out.pdf]   list links, or add (web/mail address, page number) and remove them\n'
             '  washi pdf compare <old.pdf> <new.pdf> [-o marked.pdf]   what changed: words, pages, pictures (-o: the new version with each change marked)\n'
             '  washi pdf replace-text <in.pdf> (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          change text on the page (one line at a time; checked before it is kept)\n'
@@ -559,6 +560,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）\n'
             '  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=リンク先 ...] [--remove 1-2,3-1] [-o out.pdf]   リンクを一覧表示、または追加（URL・メール・ページ番号）と削除\n'
             '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）\n'
             '  washi pdf replace-text <in.pdf> (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
@@ -597,6 +599,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=目标 ...] [--remove 1-2,3-1] [-o out.pdf]   列出链接，或添加（网址、邮箱、页码）和删除链接\n'
             '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   列出变化（文字、页面、图片）（-o：在新版上用批注标出每处变化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改页面上的文字（一次一行；保存前会检查）\n'
@@ -635,6 +638,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=目標 ...] [--remove 1-2,3-1] [-o out.pdf]   列出連結，或新增（網址、郵件、頁碼）和刪除連結\n'
             '  washi pdf compare <舊.pdf> <新.pdf> [-o marked.pdf]   列出變化（文字、頁面、圖片）（-o：在新版上用註解標出每處變化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
@@ -673,6 +677,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)\n'
             '  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=대상 ...] [--remove 1-2,3-1] [-o out.pdf]   링크 목록, 또는 추가(웹·메일 주소, 쪽 번호)와 삭제\n'
             '  washi pdf compare <이전.pdf> <새.pdf> [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)\n'
             '  washi pdf replace-text <in.pdf> (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
@@ -711,6 +716,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)\n'
             '  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=cible ...] [--remove 1-2,3-1] [-o out.pdf]   lister les liens, ou en ajouter (adresse web/mail, page) et en retirer\n'
             '  washi pdf compare <ancien.pdf> <nouveau.pdf> [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)\n'
             '  washi pdf replace-text <in.pdf> (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
@@ -749,6 +755,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)\n'
             '  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n'
+            '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=Ziel ...] [--remove 1-2,3-1] [-o out.pdf]   Links auflisten, oder hinzufügen (Web-/Mailadresse, Seite) und entfernen\n'
             '  washi pdf compare <alt.pdf> <neu.pdf> [-o marked.pdf]   was sich geändert hat: Wörter, Seiten, Bilder (-o: die neue Version mit markierten Änderungen)\n'
             '  washi pdf replace-text <in.pdf> (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
@@ -1814,6 +1821,31 @@ _UI = {
     "Err_CropTooSmall": ["Page {0} would be smaller than half an inch.", "{0} ページが半インチより小さくなってしまいます。", "第 {0} 页会小于半英寸。", "第 {0} 頁會小於半英寸。", "{0}페이지가 반 인치보다 작아집니다.", "La page {0} ferait moins d’un demi-pouce.", "Seite {0} würde kleiner als ein halber Zoll."],
     "Err_CropBlank": ["The pages are blank: there is nothing to trim to.", "ページが白紙のため、切り詰める対象がありません。", "页面是空白的：没有可按内容裁剪的东西。", "頁面是空白的：沒有可依內容裁切的東西。", "페이지가 비어 있어 내용에 맞춰 자를 것이 없습니다.", "Les pages sont blanches : rien à quoi rogner.", "Die Seiten sind leer: Es gibt nichts, worauf zugeschnitten werden kann."],
     "Err_CropCheck": ["Page {0} did not look like the part of the original it was cropped to, so the copy was not kept.", "{0} ページが元の該当部分と同じに見えなかったため、保存しませんでした。", "第 {0} 页与原页对应部分不一致，因此没有保留副本。", "第 {0} 頁與原頁對應部分不一致，因此沒有保留副本。", "{0}페이지가 원래의 해당 부분과 달라 사본을 저장하지 않았습니다.", "La page {0} ne ressemblait pas à la partie gardée ; la copie n’a pas été conservée.", "Seite {0} sah nicht aus wie der behaltene Teil; die Kopie wurde nicht behalten."],
+    "Ui_ToolLinks": ["Links", "リンク", "链接", "連結", "링크", "Liens", "Links"],
+    "Ui_LinksTitle": ["Links", "リンク", "链接", "連結", "링크", "Liens", "Links"],
+    "Ui_LinksLead": ["Drag a box on the page and type where it goes: a web or mail address, or a page number. Or turn the addresses written in the text into links. The pages look the same.", "ページ上で枠を描き、リンク先（URL・メールアドレス・ページ番号）を入力します。本文に書かれたアドレスをまとめてリンクにすることもできます。ページの見た目は変わりません。", "在页面上拖出一个框，输入链接目标：网址、邮箱或页码。也可以把正文中写的地址一次变成链接。页面外观不变。", "在頁面上拖出一個框，輸入連結目標：網址、郵件地址或頁碼。也可以把內文中寫的地址一次變成連結。頁面外觀不變。", "페이지에 상자를 끌어 그리고 이동할 곳(웹·메일 주소 또는 쪽 번호)을 입력하세요. 본문에 적힌 주소를 한꺼번에 링크로 만들 수도 있습니다. 페이지 모양은 그대로입니다.", "Tracez un cadre sur la page et tapez sa cible : une adresse web ou mail, ou un numéro de page. Ou transformez les adresses écrites dans le texte en liens. Les pages gardent le même aspect.", "Ziehen Sie einen Rahmen auf der Seite und geben Sie das Ziel ein: eine Web- oder Mailadresse oder eine Seitenzahl. Oder machen Sie die im Text stehenden Adressen zu Links. Die Seiten sehen gleich aus."],
+    "Ui_LinkNew": ["Where does this link go?", "このリンクの行き先", "这个链接指向哪里？", "這個連結指向哪裡？", "이 링크는 어디로 갑니까?", "Où mène ce lien ?", "Wohin führt dieser Link?"],
+    "Ui_LinkTargetHint": ["https://…, name@example.com or a page number", "https://…、name@example.com、またはページ番号", "https://…、name@example.com 或页码", "https://…、name@example.com 或頁碼", "https://…, name@example.com 또는 쪽 번호", "https://…, nom@example.com ou un numéro de page", "https://…, name@example.com oder eine Seitenzahl"],
+    "Ui_LinksFind": ["Link the addresses in the text", "本文中のアドレスをリンクにする", "把正文中的地址变成链接", "把內文中的地址變成連結", "본문의 주소를 링크로 만들기", "Lier les adresses du texte", "Adressen im Text verlinken"],
+    "Ui_LinksFound": ["{0} address(es) found: they will become links.", "{0} 件のアドレスが見つかりました。リンクにします。", "找到 {0} 个地址：将变成链接。", "找到 {0} 個地址：將變成連結。", "주소 {0}개를 찾았습니다. 링크로 만듭니다.", "{0} adresse(s) trouvée(s) : elles deviendront des liens.", "{0} Adresse(n) gefunden: sie werden zu Links."],
+    "Ui_LinksNoneFound": ["No web or mail address without a link was found in the text.", "リンクのない URL やメールアドレスは本文に見つかりませんでした。", "正文中没有找到未加链接的网址或邮箱。", "內文中沒有找到未加連結的網址或郵件地址。", "본문에서 링크가 없는 웹·메일 주소를 찾지 못했습니다.", "Aucune adresse web ou mail sans lien n’a été trouvée dans le texte.", "Im Text wurde keine Web- oder Mailadresse ohne Link gefunden."],
+    "Ui_LinksNew": ["New links", "追加するリンク", "新链接", "新連結", "새 링크", "Nouveaux liens", "Neue Links"],
+    "Ui_LinksExisting": ["Links in the file", "ファイル内のリンク", "文件中的链接", "檔案中的連結", "파일의 링크", "Liens du fichier", "Links in der Datei"],
+    "Ui_LinksNone": ["The file has no links.", "このファイルにはリンクがありません。", "文件中没有链接。", "檔案中沒有連結。", "파일에 링크가 없습니다.", "Le fichier n’a aucun lien.", "Die Datei hat keine Links."],
+    "Ui_LinkRemove": ["Remove", "削除", "删除", "刪除", "삭제", "Retirer", "Entfernen"],
+    "Ui_LinkWhere": ["Page {0}", "{0} ページ", "第 {0} 页", "第 {0} 頁", "{0}페이지", "Page {0}", "Seite {0}"],
+    "Ui_LinkToPage": ["To page {0}", "{0} ページへ", "跳到第 {0} 页", "跳到第 {0} 頁", "{0}페이지로", "Vers la page {0}", "Zu Seite {0}"],
+    "Ui_LinkOther": ["Another kind of link (kept as it is)", "その他のリンク（そのまま残します）", "其他类型的链接（保持原样）", "其他類型的連結（保持原樣）", "다른 종류의 링크 (그대로 둠)", "Autre type de lien (gardé tel quel)", "Andere Art Link (bleibt, wie er ist)"],
+    "Ui_LinksSave": ["Save {0} change(s) as copy…", "{0} 件の変更をコピーに保存…", "将 {0} 处修改另存为副本…", "將 {0} 處修改另存為副本…", "변경 {0}개를 사본으로 저장…", "Enregistrer {0} modification(s) dans une copie…", "{0} Änderung(en) als Kopie speichern…"],
+    "Ui_LinksSaveNote": ["Links have no border: the pages look the same. The copy is checked before it is kept; the original is not changed.", "リンクには枠線を付けないので、ページの見た目は変わりません。保存前にコピーを確認します。元のファイルは変わりません。", "链接没有边框，页面外观不变。保存前会检查副本；原文件不会改变。", "連結沒有邊框，頁面外觀不變。儲存前會檢查副本；原檔案不會改變。", "링크에는 테두리가 없어 페이지 모양이 그대로입니다. 저장하기 전에 사본을 확인하며 원본은 바뀌지 않습니다.", "Les liens n’ont pas de bordure : les pages gardent le même aspect. La copie est vérifiée avant d’être gardée ; l’original n’est pas modifié.", "Links haben keinen Rahmen: die Seiten sehen gleich aus. Die Kopie wird vor dem Behalten geprüft; das Original bleibt unverändert."],
+    "Ui_LinksSaved": ["Saved {0}: {1} link(s) added, {2} removed. Checked: the pages look the same.", "{0} を保存しました：リンクを {1} 件追加、{2} 件削除。確認済み：ページの見た目は同じです。", "已保存 {0}：新增 {1} 个链接，删除 {2} 个。已检查：页面外观相同。", "已儲存 {0}：新增 {1} 個連結，刪除 {2} 個。已檢查：頁面外觀相同。", "{0} 저장: 링크 {1}개 추가, {2}개 삭제. 확인: 페이지 모양이 같습니다.", "{0} enregistré : {1} lien(s) ajouté(s), {2} retiré(s). Vérifié : les pages ont le même aspect.", "{0} gespeichert: {1} Link(s) hinzugefügt, {2} entfernt. Geprüft: die Seiten sehen gleich aus."],
+    "Pdf_LinkLine": ["  {0}  page {1}: {2}  [{3}]", "  {0}  {1} ページ：{2}  [{3}]", "  {0}  第 {1} 页：{2}  [{3}]", "  {0}  第 {1} 頁：{2}  [{3}]", "  {0}  {1}페이지: {2}  [{3}]", "  {0}  page {1} : {2}  [{3}]", "  {0}  Seite {1}: {2}  [{3}]"],
+    "Err_LinkTarget": ["“{0}” is not a web address, a mail address or a page number.", "「{0}」は URL・メールアドレス・ページ番号のどれでもありません。", "“{0}”不是网址、邮箱或页码。", "「{0}」不是網址、郵件地址或頁碼。", "“{0}”은(는) 웹 주소, 메일 주소, 쪽 번호가 아닙니다.", "« {0} » n’est ni une adresse web, ni une adresse mail, ni un numéro de page.", "„{0}“ ist weder eine Web- noch eine Mailadresse noch eine Seitenzahl."],
+    "Err_LinkNothing": ["No link to add, change or remove.", "追加・変更・削除するリンクがありません。", "没有要添加、修改或删除的链接。", "沒有要新增、修改或刪除的連結。", "추가·변경·삭제할 링크가 없습니다.", "Aucun lien à ajouter, modifier ou retirer.", "Kein Link zum Hinzufügen, Ändern oder Entfernen."],
+    "Err_LinkId": ["There is no link {0}.", "リンク {0} はありません。", "没有链接 {0}。", "沒有連結 {0}。", "링크 {0}이(가) 없습니다.", "Il n’y a pas de lien {0}.", "Es gibt keinen Link {0}."],
+    "Err_LinkAdd": ["--add takes page:x0,y0,x1,y1=target.", "--add には page:x0,y0,x1,y1=リンク先 を指定します。", "--add 的格式是 page:x0,y0,x1,y1=目标。", "--add 的格式是 page:x0,y0,x1,y1=目標。", "--add 형식은 page:x0,y0,x1,y1=대상 입니다.", "--add prend page:x0,y0,x1,y1=cible.", "--add nimmt page:x0,y0,x1,y1=Ziel."],
+    "Err_LinkCheck": ["The link to {0} on page {1} did not read back, so the copy was not kept.", "{1} ページの {0} へのリンクが読み戻せなかったため、保存しませんでした。", "第 {1} 页指向 {0} 的链接无法读回，因此没有保留副本。", "第 {1} 頁指向 {0} 的連結無法讀回，因此沒有保留副本。", "{1}페이지의 {0} 링크를 다시 읽을 수 없어 사본을 저장하지 않았습니다.", "Le lien vers {0} page {1} ne se relisait pas ; la copie n’a pas été conservée.", "Der Link zu {0} auf Seite {1} ließ sich nicht lesen; die Kopie wurde nicht behalten."],
+    "Err_LinkChanged": ["Page {0} looked different with its links, so the copy was not kept.", "{0} ページの見た目がリンクで変わったため、保存しませんでした。", "第 {0} 页加链接后外观改变，因此没有保留副本。", "第 {0} 頁加連結後外觀改變，因此沒有保留副本。", "{0}페이지가 링크 때문에 달라 보여 사본을 저장하지 않았습니다.", "La page {0} changeait d’aspect avec ses liens ; la copie n’a pas été conservée.", "Seite {0} sah mit den Links anders aus; die Kopie wurde nicht behalten."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k
