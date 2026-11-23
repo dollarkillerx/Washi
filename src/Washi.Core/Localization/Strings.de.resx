@@ -834,7 +834,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_ImagesNone" xml:space="preserve"><value>Keine Bilder für ein PDF.</value></data>
   <data name="Err_ImagesPageSize" xml:space="preserve"><value>Unbekannte Seitengröße „{0}“: verwenden Sie a4, letter oder image.</value></data>
   <data name="Err_ImagesMargin" xml:space="preserve"><value>Der Rand muss 0 bis 144 Punkt und die Auflösung 36 bis 1200 dpi betragen.</value></data>
-  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} ist kein Bild, das Washi lesen kann (JPEG, PNG, WebP, BMP, GIF). HEIC-Fotos zuerst als JPEG speichern.</value></data>
+  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} ist kein Bild, das Washi lesen kann (JPEG, PNG, WebP, BMP, GIF, HEIC).</value></data>
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} ließ sich nicht als Bild lesen.</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>Seite {0} sah nicht aus wie {1}; das PDF wurde nicht behalten.</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} existiert nicht.</value></data>
@@ -930,7 +930,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_ImageRemove" xml:space="preserve"><value>Entfernen</value></data>
   <data name="Ui_ImageUndo" xml:space="preserve"><value>Unverändert lassen</value></data>
   <data name="Ui_ImagesOnPages" xml:space="preserve"><value>Bilder in der Datei</value></data>
-  <data name="Ui_ImagesNone" xml:space="preserve"><value>Die Seiten zeichnen keine Bilder (Bilder in Formularen und Inline-Bilder werden nicht aufgeführt).</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>Die Seiten zeichnen keine Bilder.</value></data>
   <data name="Ui_ImageWhere" xml:space="preserve"><value>Seite {0} · {1} × {2} px</value></data>
   <data name="Ui_ImageWillGo" xml:space="preserve"><value>Wird entfernt</value></data>
   <data name="Ui_ImageWillBe" xml:space="preserve"><value>Wird durch {0} ersetzt</value></data>
@@ -945,11 +945,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace nimmt id=Bilddatei.</value></data>
   <data name="Err_ImageEditChanged" xml:space="preserve"><value>Seite {0} hat sich außerhalb der Bilder verändert; die Kopie wurde nicht behalten.</value></data>
   <data name="Err_ImageEditCheck" xml:space="preserve"><value>{0} wurde auf Seite {1} nicht richtig angezeigt; die Kopie wurde nicht behalten.</value></data>
-  <data name="Ui_StampExisting" xml:space="preserve"><value>Washi hat dieser Datei früher Kopf- oder Fußzeilen auf {0} Seite(n) und ein Wasserzeichen auf {1} Seite(n) hinzugefügt.</value></data>
+  <data name="Ui_StampExisting" xml:space="preserve"><value>Diese Datei hat Kopf- oder Fußzeilen auf {0} Seite(n) und ein Wasserzeichen auf {1} Seite(n), hinzugefügt von Washi oder einem anderen Programm.</value></data>
   <data name="Ui_StampReplace" xml:space="preserve"><value>Durch die neuen ersetzen</value></data>
   <data name="Ui_StampRemove" xml:space="preserve"><value>Entfernen und Kopie speichern…</value></data>
-  <data name="Ui_StampRemoved" xml:space="preserve"><value>{0} gespeichert: {1} von Washi hinzugefügte(r) Kopf-, Fußzeilen- oder Wasserzeichen-Block/Blöcke entfernt. Geprüft: keiner ist übrig, sonst hat sich nichts geändert.</value></data>
-  <data name="Err_StampNone" xml:space="preserve"><value>Es gibt keine von Washi hinzugefügten Kopf-, Fußzeilen oder Wasserzeichen.</value></data>
+  <data name="Ui_StampRemoved" xml:space="preserve"><value>{0} gespeichert: {1} Kopf-, Fußzeilen- oder Wasserzeichen-Block/Blöcke entfernt. Geprüft: keiner ist übrig, sonst hat sich nichts geändert.</value></data>
+  <data name="Err_StampNone" xml:space="preserve"><value>Diese Datei hat keine als solche markierten Kopf-, Fußzeilen oder Wasserzeichen (als normaler Text gezeichnete lassen sich nicht unterscheiden).</value></data>
   <data name="Err_StampRemoveCheck" xml:space="preserve"><value>Einige Markierungen waren nach dem Entfernen noch da; die Kopie wurde nicht behalten.</value></data>
   <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove nimmt headers, watermarks oder all.</value></data>
   <data name="Ui_EditTextModeLines" xml:space="preserve"><value>Zeilen</value></data>
@@ -958,4 +958,5 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_ParagraphTooLong" xml:space="preserve"><value>Der neue Text braucht {0} Zeilen, der Absatz hat Platz für {1} (er wächst nur in freien Raum darunter): kürzen Sie ihn.</value></data>
   <data name="Err_ParagraphMixed" xml:space="preserve"><value>Der Absatz mischt Textgrößen: bearbeiten Sie seine Zeilen einzeln.</value></data>
   <data name="Err_ParagraphNone" xml:space="preserve"><value>„{0}“ steht nicht in einem Absatz, der neu gesetzt werden kann.</value></data>
+  <data name="Err_ImageHeic" xml:space="preserve"><value>{0} ist ein HEIC-Foto, und dieser Computer kann es nicht umwandeln (macOS kann es; unter Linux heif-convert aus libheif installieren): zuerst als JPEG speichern.</value></data>
 </root>

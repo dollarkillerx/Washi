@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.Advanced;
 using PdfSharp.Pdf.IO;
@@ -22,35 +23,53 @@ public sealed record ImageEditResult(int Added, int Replaced, int Removed);
 /// Images on the page: list the images the page's own content draws, add an image file in a box, replace an image (the
 /// new one keeps its shape inside the old one's place) or remove it. Only the operators that draw those images change;
 /// the copy is rendered next to the original (nothing may change outside the images' places, and a new image must look
-/// like its file) before it is kept. Images inside forms (XObjects) and inline images are not listed.
+/// like its file) before it is kept. Images inside forms are found too (a form drawn on several pages is copied for the
+/// page that changes), and inline images.
 /// Callers hold <see cref="PdfiumDocument.Gate"/>.
 /// </summary>
 public static class PdfPageImageEdit
 {
-    private sealed record Use(int Op, PdfRect Pdf, Mx Ctm, PdfDictionary Image);
+    /// <summary>
+    /// An image the content draws: in which stream (<see cref="Path"/>: the operators that drew the forms it is inside,
+    /// from the page down), which operator, where it lands, and its size in pixels. <see cref="Image"/> is null for an
+    /// inline image (BI … EI).
+    /// </summary>
+    private sealed record Use(IReadOnlyList<int> Path, int Op, PdfRect Pdf, Mx Ctm, int Width, int Height, PdfDictionary? Image);
+
+    private const int MaxDepth = 8;
 
     public static IReadOnlyList<PageImage> List(string path)
     {
         using var doc = PdfReader.Open(path, PdfPasswords.For(path) ?? "", PdfDocumentOpenMode.Import);
+        return List(doc);
+    }
+
+    private static List<PageImage> List(PdfDocument doc)
+    {
         var list = new List<PageImage>();
         for (int i = 0; i < doc.PageCount; i++)
         {
             var map = new PdfComments.Upright(doc.Pages[i]);
             int n = 0;
             foreach (var u in Uses(doc.Pages[i]))
-                list.Add(new PageImage($"{i + 1}-{++n}", i, map.ToUpright(u.Pdf),
-                                       u.Image.Elements.GetInteger("/Width"), u.Image.Elements.GetInteger("/Height")));
+                list.Add(new PageImage($"{i + 1}-{++n}", i, map.ToUpright(u.Pdf), u.Width, u.Height));
         }
         return list;
     }
 
-    /// <summary>The image XObjects the page's own content draws, in order, with where they land in PDF space.</summary>
+    /// <summary>The images the page draws, in drawing order: XObjects and inline images, in its content and in the forms it draws.</summary>
     private static List<Use> Uses(PdfPage page)
     {
         var uses = new List<Use>();
-        var content = new ContentStream(PdfEraser.ReadContents(page));
-        var xobjects = Deref(PdfEraser.Resources(page)?.Elements["/XObject"]) as PdfDictionary;
-        var ctm = Mx.Identity;
+        Walk(PdfEraser.ReadContents(page), PdfEraser.Resources(page), Mx.Identity, [], 0, uses);
+        return uses;
+    }
+
+    private static void Walk(byte[] bytes, PdfDictionary? resources, Mx start, List<int> path, int depth, List<Use> uses)
+    {
+        var content = new ContentStream(bytes);
+        var xobjects = Deref(resources?.Elements["/XObject"]) as PdfDictionary;
+        var ctm = start;
         var stack = new Stack<Mx>();
         for (int k = 0; k < content.Ops.Count; k++)
         {
@@ -63,16 +82,36 @@ public static class PdfPageImageEdit
                     var v = op.Numbers.Select(x => double.Parse(x, CultureInfo.InvariantCulture)).ToArray();
                     ctm = new Mx(v[^6], v[^5], v[^4], v[^3], v[^2], v[^1]).Then(ctm);
                     break;
+                case "BI":
+                {
+                    // an inline image: its size from its dictionary
+                    var head = Encoding.Latin1.GetString(bytes, op.Start, Math.Min(op.End - op.Start, 400));
+                    int Dim(string a, string b) => Regex.Match(head, $@"/(?:{a}|{b})\s+(\d+)") is { Success: true } m ? int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture) : 0;
+                    var bb = ctm.Bounds(new Box(0, 0, 1, 1));
+                    uses.Add(new Use(path, k, new PdfRect(bb.X0, bb.Y0, bb.X1, bb.Y1), ctm, Dim("W", "Width"), Dim("H", "Height"), null));
+                    break;
+                }
                 case "Do" when op.Names.Count > 0:
-                    if (Deref(xobjects?.Elements["/" + op.Names[^1]]) is PdfDictionary x && x.Elements.GetName("/Subtype") == "/Image")
+                {
+                    if (Deref(xobjects?.Elements["/" + op.Names[^1]]) is not PdfDictionary x) break;
+                    var subtype = x.Elements.GetName("/Subtype");
+                    if (subtype == "/Image")
                     {
                         var b = ctm.Bounds(new Box(0, 0, 1, 1));
-                        uses.Add(new Use(k, new PdfRect(b.X0, b.Y0, b.X1, b.Y1), ctm, x));
+                        uses.Add(new Use(path, k, new PdfRect(b.X0, b.Y0, b.X1, b.Y1), ctm, x.Elements.GetInteger("/Width"), x.Elements.GetInteger("/Height"), x));
+                    }
+                    else if (subtype == "/Form" && depth < MaxDepth && x.Stream is not null)
+                    {
+                        // a form: its own content, under its matrix, with its resources (or its parent's)
+                        var m = x.Elements.GetArray("/Matrix") is { Elements.Count: 6 } arr
+                            ? new Mx(arr.Elements.GetReal(0), arr.Elements.GetReal(1), arr.Elements.GetReal(2), arr.Elements.GetReal(3), arr.Elements.GetReal(4), arr.Elements.GetReal(5))
+                            : Mx.Identity;
+                        Walk(x.Stream.UnfilteredValue, Deref(x.Elements["/Resources"]) as PdfDictionary ?? resources, m.Then(ctm), [.. path, k], depth + 1, uses);
                     }
                     break;
+                }
             }
         }
-        return uses;
     }
 
     public static ImageEditResult Apply(string input, string output, IReadOnlyList<AddImage> add,
@@ -109,30 +148,20 @@ public static class PdfPageImageEdit
                 // our own copy of the resources, for the new images
                 var resources = PdfEraser.Resources(page) is { } pr ? (PdfDictionary)pr.Clone() : new PdfDictionary(doc);
                 page.Elements["/Resources"] = resources;
-                var xobjects = Deref(resources.Elements["/XObject"]) is PdfDictionary xd ? (PdfDictionary)xd.Clone() : new PdfDictionary(doc);
-                resources.Elements["/XObject"] = xobjects;
-                string Key(PdfDictionary image)
-                {
-                    int n = 1;
-                    string key;
-                    do key = "/WashiImg" + (n++).ToString(CultureInfo.InvariantCulture); while (xobjects.Elements.ContainsKey(key));
-                    xobjects.Elements[key] = image.Reference!;
-                    return key;
-                }
+                var images = new List<PdfDictionary>();
+                string Key(PdfDictionary image) => AddXObject(doc, resources, "/WashiImg", image);
 
                 if (touches)
                 {
-                    var bytes = PdfEraser.ReadContents(page);
-                    var content = new ContentStream(bytes);
                     var uses = Uses(page);
-                    var edits = new List<(int Start, int End, string With)>();
+                    var edits = new Dictionary<(string Path, int Op), string>();   // the operator and what takes its place
                     for (int k = 0; k < uses.Count && k < mine.Count; k++)
                     {
                         var id = mine[k].Id;
-                        var op = content.Ops[uses[k].Op];
+                        var key = (string.Join("/", uses[k].Path), uses[k].Op);
                         if (remove.Contains(id))
                         {
-                            edits.Add((op.Start, op.End, ""));
+                            edits[key] = "";
                             changed.Add((p, mine[k].Rect));
                         }
                         else if (replace.TryGetValue(id, out var file))
@@ -146,14 +175,15 @@ public static class PdfPageImageEdit
                             double nw = w / h > ratio ? h * ratio : w, nh = w / h > ratio ? h : w / ratio;
                             double sx = nw / w, sy = nh / h;
                             var (a, b, c, d, e, f) = PdfFromImages.Placement(image.Origin, (1 - sx) / 2, (1 - sy) / 2, sx, sy);
-                            edits.Add((op.Start, op.End, string.Create(CultureInfo.InvariantCulture,
-                                $"q {N(a)} {N(b)} {N(c)} {N(d)} {N(e)} {N(f)} cm {Key(image.Dict)} Do Q")));
+                            // the image's name is given in the stream's own resources when the stream is rewritten
+                            edits[key] = string.Create(CultureInfo.InvariantCulture, $"q {N(a)} {N(b)} {N(c)} {N(d)} {N(e)} {N(f)} cm @IMG{images.Count} Do Q");
+                            images.Add(image.Dict);
                             changed.Add((p, mine[k].Rect));
                             var inner = new Mx(sx, 0, 0, sy, (1 - sx) / 2, (1 - sy) / 2).Then(ctm).Bounds(new Box(0, 0, 1, 1));
                             placed.Add((p, map.ToUpright(new PdfRect(inner.X0, inner.Y0, inner.X1, inner.Y1)), file, image.Origin, true));
                         }
                     }
-                    PdfEraser.WriteContents(doc, page, ContentRedactor.Apply(bytes, edits));
+                    PdfEraser.WriteContents(doc, page, Rewrite(doc, PdfEraser.ReadContents(page), resources, [], edits, images));
                 }
 
                 var front = new StringBuilder();
@@ -189,17 +219,55 @@ public static class PdfPageImageEdit
         return new ImageEditResult(add.Count, replace.Count, remove.Count);
     }
 
-    private static List<PageImage> List(PdfDocument doc)
+    /// <summary>A name for <paramref name="x"/> in the resources' XObjects (a private copy of that dictionary is made first).</summary>
+    private static string AddXObject(PdfDocument doc, PdfDictionary resources, string prefix, PdfDictionary x)
     {
-        var list = new List<PageImage>();
-        for (int i = 0; i < doc.PageCount; i++)
+        var xobjects = resources.Elements["/XObject"] is PdfDictionary own && !own.IsIndirect ? own
+            : Deref(resources.Elements["/XObject"]) is PdfDictionary shared ? (PdfDictionary)shared.Clone() : new PdfDictionary(doc);
+        resources.Elements["/XObject"] = xobjects;
+        int n = 1;
+        string key;
+        do key = prefix + (n++).ToString(CultureInfo.InvariantCulture); while (xobjects.Elements.ContainsKey(key));
+        xobjects.Elements[key] = x.Reference!;
+        return key;
+    }
+
+    /// <summary>
+    /// A stream with its edits (keyed by the path of the forms above it and the operator): the forms on the way to an edit
+    /// are copied for this page (a form may be drawn on other pages too), rewritten, and drawn under a new name.
+    /// </summary>
+    private static byte[] Rewrite(PdfDocument doc, byte[] bytes, PdfDictionary resources, List<int> path, Dictionary<(string Path, int Op), string> edits,
+                                  List<PdfDictionary> images)
+    {
+        var content = new ContentStream(bytes);
+        var here = string.Join("/", path);
+        var changes = new List<(int Start, int End, string With)>();
+        var xobjects = Deref(resources.Elements["/XObject"]) as PdfDictionary;
+        for (int k = 0; k < content.Ops.Count; k++)
         {
-            var map = new PdfComments.Upright(doc.Pages[i]);
-            int n = 0;
-            foreach (var u in Uses(doc.Pages[i]))
-                list.Add(new PageImage($"{i + 1}-{++n}", i, map.ToUpright(u.Pdf), u.Image.Elements.GetInteger("/Width"), u.Image.Elements.GetInteger("/Height")));
+            var op = content.Ops[k];
+            if (edits.TryGetValue((here, k), out var with))
+            {
+                // a new image's name, in this stream's resources
+                with = System.Text.RegularExpressions.Regex.Replace(with, @"@IMG(\d+)", m => AddXObject(doc, resources, "/WashiImg", images[int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture)]));
+                changes.Add((op.Start, op.End, with));
+                continue;
+            }
+            var below = here.Length == 0 ? k.ToString(CultureInfo.InvariantCulture) : here + "/" + k.ToString(CultureInfo.InvariantCulture);
+            if (op.Name != "Do" || op.Names.Count == 0 || !edits.Keys.Any(e => e.Path == below || e.Path.StartsWith(below + "/", StringComparison.Ordinal))) continue;
+            if (Deref(xobjects?.Elements["/" + op.Names[^1]]) is not PdfDictionary form || form.Stream is null) continue;
+            // this page's own copy of the form, with its own resources
+            var formResources = Deref(form.Elements["/Resources"]) is PdfDictionary fr ? (PdfDictionary)fr.Clone() : resources;
+            var copy = new PdfDictionary(doc);
+            foreach (var key in form.Elements.Keys.Where(key => key is not ("/Length" or "/Filter" or "/DecodeParms" or "/Resources")))
+                copy.Elements[key] = form.Elements[key];
+            var inner = Rewrite(doc, form.Stream.UnfilteredValue, formResources, [.. path, k], edits, images);
+            if (!ReferenceEquals(formResources, resources)) copy.Elements["/Resources"] = formResources;
+            copy.CreateStream(inner);
+            doc.Internals.AddObject(copy);
+            changes.Add((op.Start, op.End, AddXObject(doc, resources, "/WashiForm", copy) + " Do"));
         }
-        return list;
+        return ContentRedactor.Apply(bytes, changes);
     }
 
     /// <summary>Nothing changed outside the images' places, and each new image looks like its file.</summary>
@@ -227,7 +295,7 @@ public static class PdfPageImageEdit
             // each new image, cell by cell (a see-through image is not checked)
             foreach (var (_, rect, file, origin, under) in placed.Where(x => x.Page == page))
             {
-                using var src = SKBitmap.Decode(file);
+                using var src = SKBitmap.Decode(PdfFromImages.Readable(file));
                 if (src is null || src.AlphaType != SKAlphaType.Opaque && src.Pixels.Any(c => c.Alpha < 250)) continue;
                 using var upright = PdfFromImages.Upright(src, origin);
                 const int grid = 8;

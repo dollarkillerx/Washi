@@ -834,7 +834,7 @@
   <data name="Err_ImagesNone" xml:space="preserve"><value>PDF にする画像がありません。</value></data>
   <data name="Err_ImagesPageSize" xml:space="preserve"><value>ページの大きさ「{0}」は使えません。a4・letter・image のどれかにしてください。</value></data>
   <data name="Err_ImagesMargin" xml:space="preserve"><value>余白は 0〜144 ポイント、解像度は 36〜1200 dpi にしてください。</value></data>
-  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} は Washi が読める画像（JPEG・PNG・WebP・BMP・GIF）ではありません。HEIC の写真は先に JPEG で保存してください。</value></data>
+  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} は Washi が読める画像（JPEG・PNG・WebP・BMP・GIF・HEIC）ではありません。</value></data>
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} を画像として読み取れませんでした。</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>{0} ページが {1} と同じに見えなかったため、PDF を保存しませんでした。</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} がありません。</value></data>
@@ -930,7 +930,7 @@
   <data name="Ui_ImageRemove" xml:space="preserve"><value>削除</value></data>
   <data name="Ui_ImageUndo" xml:space="preserve"><value>元のままにする</value></data>
   <data name="Ui_ImagesOnPages" xml:space="preserve"><value>ファイル内の画像</value></data>
-  <data name="Ui_ImagesNone" xml:space="preserve"><value>ページに画像はありません（フォーム内の画像やインライン画像は一覧に出ません）。</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>ページに画像はありません。</value></data>
   <data name="Ui_ImageWhere" xml:space="preserve"><value>{0} ページ · {1} × {2} px</value></data>
   <data name="Ui_ImageWillGo" xml:space="preserve"><value>削除します</value></data>
   <data name="Ui_ImageWillBe" xml:space="preserve"><value>{0} に差し替えます</value></data>
@@ -945,11 +945,11 @@
   <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace には id=画像ファイル を指定します。</value></data>
   <data name="Err_ImageEditChanged" xml:space="preserve"><value>{0} ページが画像以外の場所で変わったため、保存しませんでした。</value></data>
   <data name="Err_ImageEditCheck" xml:space="preserve"><value>{1} ページで {0} が正しく表示されなかったため、保存しませんでした。</value></data>
-  <data name="Ui_StampExisting" xml:space="preserve"><value>このファイルには、Washi が以前に入れたヘッダー・フッター（{0} ページ）と透かし（{1} ページ）があります。</value></data>
+  <data name="Ui_StampExisting" xml:space="preserve"><value>このファイルには、ヘッダー・フッター（{0} ページ）と透かし（{1} ページ）があります（Washi または他のソフトが入れたもの）。</value></data>
   <data name="Ui_StampReplace" xml:space="preserve"><value>新しいものに置き換える</value></data>
   <data name="Ui_StampRemove" xml:space="preserve"><value>外してコピーを保存…</value></data>
-  <data name="Ui_StampRemoved" xml:space="preserve"><value>{0} を保存しました：Washi が入れたヘッダー・フッター・透かしを {1} か所外しました。確認済み：残りはなく、ほかは変わっていません。</value></data>
-  <data name="Err_StampNone" xml:space="preserve"><value>Washi が入れたヘッダー・フッター・透かしはありません。</value></data>
+  <data name="Ui_StampRemoved" xml:space="preserve"><value>{0} を保存しました：ヘッダー・フッター・透かしを {1} か所外しました。確認済み：残りはなく、ほかは変わっていません。</value></data>
+  <data name="Err_StampNone" xml:space="preserve"><value>このファイルには、ヘッダー・フッター・透かしとして印の付いたものがありません（普通の文字として描かれたものは区別できません）。</value></data>
   <data name="Err_StampRemoveCheck" xml:space="preserve"><value>外したはずのものが残っていたため、保存しませんでした。</value></data>
   <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove には headers・watermarks・all のどれかを指定します。</value></data>
   <data name="Ui_EditTextModeLines" xml:space="preserve"><value>行</value></data>
@@ -958,4 +958,5 @@
   <data name="Err_ParagraphTooLong" xml:space="preserve"><value>新しい文章は {0} 行必要ですが、入るのは {1} 行です（下の空いている所までしか広げられません）。短くしてください。</value></data>
   <data name="Err_ParagraphMixed" xml:space="preserve"><value>段落内で文字の大きさが混ざっています。1 行ずつ編集してください。</value></data>
   <data name="Err_ParagraphNone" xml:space="preserve"><value>「{0}」は組み直せる段落の中にありません。</value></data>
+  <data name="Err_ImageHeic" xml:space="preserve"><value>{0} は HEIC 写真ですが、このコンピューターには変換する手段がありません（macOS にはあります。Linux では libheif の heif-convert を入れてください）。先に JPEG で保存してください。</value></data>
 </root>

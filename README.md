@@ -449,15 +449,20 @@ the page (the old text covered, the new one over it) until *Save as copy*. Agent
   run, so copying the page's text or searching it reads in order.
 - **The document's font when it can.** The new text uses the font the old text used when that font has every
   character (found through its ToUnicode map, or its encoding when the font is complete). Otherwise a similar
-  standard font draws it: Times or Helvetica for Latin text, a Mincho or Gothic CJK font (serif or not, like the
-  original) for Japanese, Chinese and Korean. The report says which.
+  font draws it: Times or Helvetica for Latin text; for Japanese, Chinese and Korean a Mincho or Gothic font of
+  this computer (Hiragino on macOS, Yu Gothic / MS Mincho / Meiryo on Windows, Noto CJK on Linux), embedded as a
+  subset with only the characters drawn, so it looks the same in every viewer and the file grows by a few dozen
+  kilobytes. When the computer has none that may be embedded, a standard CJK font the viewer supplies is named. The
+  report says which. Kanji alone (社外秘) is set as Japanese unless a character is Chinese-only or the app speaks Chinese.
+- **Spacing kept.** Text set with extra space between its characters gets the same spacing.
 - **Paragraphs.** Switch the tool to *Paragraphs* (or use `--paragraph "words in it"`, `paragraph_containing` for
   agents): a paragraph is lines in one size, one under another at an even spacing, ending where a line stops short.
   Its new text is set again in the paragraph's width, font, size and spacing, the first line's indent kept: Latin
   text breaks between words, Japanese, Chinese and Korean between characters (、。」） never start a line, 「（ never end
   one); a line break in the new text starts a new line. Digits or marks in another font of the same size stay part of
   the paragraph (all of it is then set in the font most of it uses). It may grow into empty space below, never over
-  anything. Underlines and boxes drawn around the old text stay where they were.
+  anything. Underlines and markers under some of the words (a thin rule just below a line, a fill as tall as the
+  line) move with their words to where they now are; if the words are gone, so is the line under them.
 - **One line at a time, left to right.** A change covers part of one line; text that runs down the page (vertical
   writing, or a turned page whose text runs sideways) is refused. A longer text that would run into the next
   characters on the line is refused too: change the whole line instead. A shorter one leaves a gap.
@@ -491,7 +496,8 @@ choose the page size, *Combine*. Each image becomes a page.
   Letter pages turn to suit each image. The image is as large as fits, centred.
 - **Checked before it is kept**: every page is rendered and compared with its image on a 12 × 12 grid, which catches
   a page turned the wrong way or with inverted colours.
-- HEIC photos are not read: save them as JPEG first. Run OCR afterwards to make scanned text searchable.
+- HEIC photos (an iPhone's) are converted first with the system's own tool (sips on macOS; heif-convert from libheif
+  on Linux, when installed); Windows needs them saved as JPEG. Run OCR afterwards to make scanned text searchable.
 
 ## Images on the page
 
@@ -510,7 +516,8 @@ picture…* asks for a file, then drag the box it goes in. Agents use `list_page
   photo's EXIF orientation is applied.
 - **Checked before it is kept**: both versions are rendered (nothing may change outside the images' places) and each
   new image must look like its file.
-- Images inside forms (XObjects) and inline images are not listed. Scanned pages are one image each: replacing or
+- Images inside forms (XObjects) and inline images are listed and edited too; a form drawn on several pages is
+  copied for the page that changes, so the others stay as they were. Scanned pages are one image each: replacing or
   removing it replaces or removes the page's picture.
 
 ## Links
@@ -577,10 +584,11 @@ A header or footer is `left|centre|right` (one part is centred, two are left and
 - **Checked before it is kept.** Both versions are rendered (nothing may change outside the marks) and the pages'
   text read back (every header, footer and watermark must be there). A long document is checked on a sample of
   its pages: the first, the last and some between.
-- **Changing them later.** Washi finds the headers, footers and watermarks it added before (they are tagged and use
-  its own fonts): the Headers tool shows them, replaces them with new ones (headers and footers when new ones are
-  given, the watermark when a new one is), or takes them out. Nothing else in the pages changes; the copy is
-  checked (none is left, their texts are gone). Marks added by other programs are not touched.
+- **Changing them later.** Washi finds the headers, footers, page numbers and watermarks in a file when they are
+  tagged as page artifacts, as Washi, Acrobat and Word tag them: the Headers tool shows them, replaces them with new
+  ones (headers and footers when new ones are given, the watermark when a new one is), or takes them out. Only those
+  tagged blocks change; the copy is checked (none is left, the pages' text only lost characters, Washi's own texts
+  are gone). Running heads drawn as ordinary text cannot be told apart and stay.
 - Files whose permissions forbid changes are refused.
 
 ## Formats, ranges and calculations

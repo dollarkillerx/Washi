@@ -142,9 +142,12 @@ public sealed class ImagesToPdfTests : IDisposable
     [Fact]
     public void Files_that_are_not_images_are_refused_and_nothing_is_written()
     {
-        File.WriteAllText(P("photo.heic"), "x");
+        File.WriteAllText(P("photo.tiff"), "x");
+        File.WriteAllText(P("broken.heic"), "x");
         File.WriteAllText(P("broken.jpg"), "not a jpeg");
-        Assert.Equal("Err_ImageUnsupported", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfFromImages.Create([P("photo.heic")], P("a.pdf")))).Key);
+        Assert.Equal("Err_ImageUnsupported", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfFromImages.Create([P("photo.tiff")], P("a.pdf")))).Key);
+        if (OperatingSystem.IsMacOS())
+            Assert.Equal("Err_ImageUnreadable", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfFromImages.Create([P("broken.heic")], P("e.pdf")))).Key);
         Assert.Equal("Err_ImageUnreadable", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfFromImages.Create([P("broken.jpg")], P("b.pdf")))).Key);
         Assert.Equal("Err_ImagesNone", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfFromImages.Create([], P("c.pdf")))).Key);
         Assert.Equal("Err_ImagesPageSize", Assert.Throws<PageAssemblyException>(() =>
@@ -175,5 +178,20 @@ public sealed class ImagesToPdfTests : IDisposable
         Assert.Equal(2, json.GetProperty("pages").GetInt32());
         Assert.Equal(1, json.GetProperty("jpegs_kept_as_is").GetInt32());
         Assert.True(File.Exists(P("scan1.pdf")));
+    }
+
+    [Fact]
+    public void An_iPhone_HEIC_photo_is_converted_and_stands_upright()
+    {
+        Assert.SkipUnless(OperatingSystem.IsMacOS() && File.Exists("/usr/bin/sips"), "HEIC is converted with sips on macOS here");
+        var jpeg = Rotated("heic_src.jpg", 6);   // turned, as a phone writes it
+        var heic = P("IMG_0001.HEIC");
+        var psi = new System.Diagnostics.ProcessStartInfo("/usr/bin/sips") { RedirectStandardOutput = true, RedirectStandardError = true };
+        foreach (var a in new[] { "-s", "format", "heic", jpeg, "--out", heic }) psi.ArgumentList.Add(a);
+        using (var proc = System.Diagnostics.Process.Start(psi)!) { proc.StandardOutput.ReadToEnd(); proc.StandardError.ReadToEnd(); proc.WaitForExit(); }
+        Assert.SkipUnless(File.Exists(heic), "this Mac cannot write HEIC");
+        var r = Locked(() => PdfFromImages.Create([heic], P("out.pdf"), new ImagePageOptions("image", 0, 72)));
+        Assert.Equal(1, r.Pages);
+        Assert.True(Red(At(P("out.pdf"), 0, 0.75, 0.25)));                    // turned 90° clockwise, as the camera meant
     }
 }

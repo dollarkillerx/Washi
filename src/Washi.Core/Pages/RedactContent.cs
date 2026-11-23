@@ -64,6 +64,8 @@ internal sealed class RedactContext(PdfDocument doc, IReadOnlyList<Box> boxes, F
     public bool TextOnly { get; init; }
     /// <summary>Editing text: content drawn in page space right after the text object whose glyphs inside its box went.</summary>
     public IReadOnlyList<TextInsert> Inserts { get; init; } = [];
+    /// <summary>Editing text: shapes drawn entirely inside one of these go even when only text is removed (an underline that moves with its words).</summary>
+    public IReadOnlyList<Box> PathBoxes { get; init; } = [];
     public Dictionary<PdfDictionary, FontMetrics> Fonts { get; } = new(ReferenceEqualityComparer.Instance);
 
     public bool AnyOverlap(Box b) => Boxes.Any(x => x.Overlaps(b));
@@ -239,7 +241,7 @@ internal sealed class ContentRedactor(RedactContext ctx)
                     if (path.Count > 0)
                     {
                         var b = new Box(path.Min(p => p.X), path.Min(p => p.Y), path.Max(p => p.X), path.Max(p => p.Y));
-                        if (!ctx.TextOnly && ctx.InsideOne(b))
+                        if (!ctx.TextOnly && ctx.InsideOne(b) || ctx.PathBoxes.Any(x => x.Contains(b)))
                         {
                             // the shape goes with its painting (a drawn signature must not stay as coordinates);
                             // a path that also clips keeps its outline, unpainted

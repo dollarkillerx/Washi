@@ -24,7 +24,48 @@ public sealed record ImagesResult(int Pages, int KeptAsIs);
 /// </summary>
 public static class PdfFromImages
 {
-    public static readonly string[] Extensions = [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"];
+    public static readonly string[] Extensions = [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".heic", ".heif"];
+
+    /// <summary>
+    /// A file Skia can read: a HEIC/HEIF photo (an iPhone's) is converted to JPEG first, with the tool the system has
+    /// (sips on macOS, heif-convert from libheif elsewhere); the copy lives in a temporary folder until Washi exits.
+    /// </summary>
+    internal static string Readable(string path)
+    {
+        if (Path.GetExtension(path).ToLowerInvariant() is not (".heic" or ".heif") || !File.Exists(path)) return path;
+        var key = path + "|" + File.GetLastWriteTimeUtc(path).Ticks.ToString(CultureInfo.InvariantCulture);
+        return Converted.GetOrAdd(key, _ =>
+        {
+            var dir = HeicFolder.Value;
+            var jpeg = Path.Combine(dir, $"{Converted.Count}_{Path.GetFileNameWithoutExtension(path)}.jpg");
+            (string Tool, string[] Args)? how = OperatingSystem.IsMacOS() && File.Exists("/usr/bin/sips") ? ("/usr/bin/sips", ["-s", "format", "jpeg", "-s", "formatOptions", "best", path, "--out", jpeg])
+                : Which("heif-convert") is { } hc ? (hc, ["-q", "95", path, jpeg]) : null;
+            if (how is not { } h)
+                throw new PageAssemblyException($"{Path.GetFileName(path)} is a HEIC photo and this computer has no converter for it: save it as JPEG first",
+                                                "Err_ImageHeic", Path.GetFileName(path));
+            var psi = new System.Diagnostics.ProcessStartInfo(h.Tool) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+            foreach (var a in h.Args) psi.ArgumentList.Add(a);
+            using var proc = System.Diagnostics.Process.Start(psi)!;
+            proc.StandardOutput.ReadToEnd();
+            proc.StandardError.ReadToEnd();
+            if (!proc.WaitForExit(60_000) || proc.ExitCode != 0 || !File.Exists(jpeg))
+                throw new PageAssemblyException($"{Path.GetFileName(path)} could not be read as an image", "Err_ImageUnreadable", Path.GetFileName(path));
+            return jpeg;
+        });
+    }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> Converted = new();
+
+    private static readonly Lazy<string> HeicFolder = new(() =>
+    {
+        var dir = Directory.CreateTempSubdirectory("washi-heic-").FullName;
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => { try { Directory.Delete(dir, recursive: true); } catch (IOException) { } };
+        return dir;
+    });
+
+    private static string? Which(string tool) =>
+        (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Select(d => Path.Combine(d, tool)).FirstOrDefault(File.Exists);
 
     public static bool IsImage(string path) => Extensions.Contains(Path.GetExtension(path).ToLowerInvariant());
 
@@ -125,6 +166,7 @@ public static class PdfFromImages
 
     internal static Loaded Load(PdfDocument doc, string path)
     {
+        if (File.Exists(path)) path = Readable(path);
         if (!File.Exists(path)) throw new PageAssemblyException($"{Path.GetFileName(path)} does not exist", "Err_NotFound", Path.GetFileName(path));
         if (!IsImage(path)) throw new PageAssemblyException($"{Path.GetFileName(path)} is not an image Washi can read (JPEG, PNG, WebP, BMP, GIF)", "Err_ImageUnsupported", Path.GetFileName(path));
         var bytes = File.ReadAllBytes(path);
@@ -287,7 +329,7 @@ public static class PdfFromImages
             var (path, origin, area) = placed[p];
             double scale = Math.Min(4, 480 / Math.Max(1, area.Width));
             var page = pdf.RenderPage(p, scale);
-            using var decoded = SKBitmap.Decode(path);
+            using var decoded = SKBitmap.Decode(Readable(path));
             if (decoded is null) continue;
             // the source on white (transparent parts show the paper), as it stands, shrunk to the grid
             using var flat = new SKBitmap(new SKImageInfo(decoded.Width, decoded.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
