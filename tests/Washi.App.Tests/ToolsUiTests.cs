@@ -407,6 +407,50 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Headers_tool_adds_page_and_Bates_numbers_and_a_watermark_to_a_copy()
+    {
+        var pdf = TextPdf("s.pdf", "Contract", "Signed by both parties");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "s_stamped.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Stamp;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<TextBox>("StampHeaderLeft")!.IsEffectivelyVisible);
+        Assert.False(vm.Stamp.CanSave);
+
+        vm.Stamp.PageNumbersCommand.Execute(null);
+        Assert.Equal("{page} / {pages}", vm.Stamp.FooterCenter);
+        Assert.True(vm.Stamp.CanSave);
+        Assert.False(vm.Stamp.UsesBates);
+        vm.Stamp.BatesCommand.Execute(null);
+        Assert.True(vm.Stamp.UsesBates);
+        vm.Stamp.BatesPrefix = "W-";
+        vm.Stamp.BatesStart = 7;
+        vm.Stamp.BatesDigits = 4;
+        Assert.Equal("W-0007", vm.Stamp.BatesFor(0));
+        vm.Stamp.HeaderLeft = "株式会社和紙";
+        vm.Stamp.WatermarkText = "DRAFT";
+        Assert.True(vm.Stamp.Marks(0));
+        vm.Stamp.Pages = "2";                                     // there is no page 2: nothing is marked
+        Assert.False(vm.Stamp.Marks(0));
+        vm.Stamp.Pages = "";
+
+        await vm.Stamp.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(L.F("Ui_StampedBates", "s_stamped.pdf", 1, "W-0007", "W-0007"), vm.Status);
+        var text = await MainViewModel.Pdfium(() =>
+        {
+            using var d = PdfiumDocument.Open(dialogs.SavePdf!);
+            return d.GetPageText(0);
+        });
+        Assert.Contains("1 / 1", text);
+        Assert.Contains("W-0007", text);
+        Assert.Contains("株式会社和紙", text);
+        Assert.Contains("DRAFT", text);
+        Assert.Contains("Signed by both parties", text);
+        Assert.True(File.Exists(pdf));
+    }
+
+    [AvaloniaFact]
     public async Task Edit_text_changes_a_clicked_line_and_replaced_words_in_a_copy()
     {
         var pdf = TextPdf("e.pdf", "Invoice 2025", "Total: 1,200 yen", "Thank you");

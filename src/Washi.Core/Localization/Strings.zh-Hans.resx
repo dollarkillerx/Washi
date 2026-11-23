@@ -130,6 +130,8 @@
   washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐页列出文字所在位置
   washi pdf replace-text &lt;in.pdf&gt; (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           修改页面上的文字（一次一行；保存前会检查）
+  washi pdf stamp &lt;in.pdf&gt; [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前缀 [--bates-start 1] [--bates-digits 6]]
+                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   页眉、页脚、页码、贝茨编号（{page} {pages} {date} {file} {bates}）、水印
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           列出书签（每行一个：每级缩进两个空格，制表符，页码），
                                           或用同样格式的文件写出带书签的副本
@@ -775,4 +777,41 @@
   <data name="Err_EditChanged" xml:space="preserve"><value>编辑后的副本在修改处以外变化了 {0} 个像素，因此没有保留。</value></data>
   <data name="Err_EditCheck" xml:space="preserve"><value>新文字没有按输入读出（读到“{0}”），因此没有保留副本。</value></data>
   <data name="Err_EditNotFound" xml:space="preserve"><value>文档中没有“{0}”。</value></data>
+  <data name="Ui_ToolStamp" xml:space="preserve"><value>页眉水印</value></data>
+  <data name="Ui_StampTitle" xml:space="preserve"><value>页眉、页脚和水印</value></data>
+  <data name="Ui_StampLead" xml:space="preserve"><value>在页面上下加入文字（页码、文件名、日期、贝茨编号），并在页面上加入半透明水印。页面本身不会改变。</value></data>
+  <data name="Ui_StampHeader" xml:space="preserve"><value>页眉</value></data>
+  <data name="Ui_StampFooter" xml:space="preserve"><value>页脚</value></data>
+  <data name="Ui_StampLeft" xml:space="preserve"><value>左</value></data>
+  <data name="Ui_StampCenter" xml:space="preserve"><value>中</value></data>
+  <data name="Ui_StampRight" xml:space="preserve"><value>右</value></data>
+  <data name="Ui_StampTokens" xml:space="preserve"><value>{page} 页码，{pages} 总页数，{date} 今天日期，{file} 文件名，{bates} 贝茨编号</value></data>
+  <data name="Ui_StampPageNumbers" xml:space="preserve"><value>页码</value></data>
+  <data name="Ui_StampBates" xml:space="preserve"><value>贝茨编号</value></data>
+  <data name="Ui_StampSize" xml:space="preserve"><value>字号</value></data>
+  <data name="Ui_StampPages" xml:space="preserve"><value>页面</value></data>
+  <data name="Ui_StampAllPages" xml:space="preserve"><value>全部（例如 2-5）</value></data>
+  <data name="Ui_StampBatesTitle" xml:space="preserve"><value>贝茨编号</value></data>
+  <data name="Ui_StampBatesPrefix" xml:space="preserve"><value>前缀（例如 ACME-）</value></data>
+  <data name="Ui_StampBatesStart" xml:space="preserve"><value>起始</value></data>
+  <data name="Ui_StampBatesDigits" xml:space="preserve"><value>位数</value></data>
+  <data name="Ui_StampWatermark" xml:space="preserve"><value>水印</value></data>
+  <data name="Ui_StampWatermarkHint" xml:space="preserve"><value>例如：机密、CONFIDENTIAL</value></data>
+  <data name="Ui_StampOpacity" xml:space="preserve"><value>不透明度</value></data>
+  <data name="Ui_StampAngle" xml:space="preserve"><value>角度</value></data>
+  <data name="Ui_StampGrey" xml:space="preserve"><value>灰色</value></data>
+  <data name="Ui_StampRed" xml:space="preserve"><value>红色</value></data>
+  <data name="Ui_StampBlue" xml:space="preserve"><value>蓝色</value></data>
+  <data name="Ui_StampBehind" xml:space="preserve"><value>放在页面内容后面</value></data>
+  <data name="Ui_StampSave" xml:space="preserve"><value>添加并另存副本…</value></data>
+  <data name="Ui_StampSaveNote" xml:space="preserve"><value>保存前会检查副本：页面其他部分不变，所有文字都能读出。原文件不会改变。</value></data>
+  <data name="Ui_Stamped" xml:space="preserve"><value>已保存 {0}：已添加到 {1} 页。已检查：其他部分没有变化。</value></data>
+  <data name="Ui_StampedBates" xml:space="preserve"><value>已保存 {0}：已添加到 {1} 页，贝茨编号 {2} 至 {3}。已检查：其他部分没有变化。</value></data>
+  <data name="Pdf_Stamped" xml:space="preserve"><value>已保存 {0}：已添加到 {1} 页。已检查：其他部分不变，所有文字都能读出。</value></data>
+  <data name="Pdf_StampedBates" xml:space="preserve"><value>已保存 {0}：已添加到 {1} 页，贝茨编号 {2} 至 {3}。已检查：其他部分不变，所有文字都能读出。</value></data>
+  <data name="Err_StampNothing" xml:space="preserve"><value>没有要添加的内容：请输入页眉、页脚或水印。</value></data>
+  <data name="Err_StampSize" xml:space="preserve"><value>字号必须在 4 到 72 点之间。</value></data>
+  <data name="Err_StampWatermark" xml:space="preserve"><value>水印的不透明度必须大于 0 且不超过 100%，字号在 0 到 400 点之间。</value></data>
+  <data name="Err_StampChanged" xml:space="preserve"><value>第 {0} 页在页眉、页脚和水印以外发生了变化，因此没有保留副本。</value></data>
+  <data name="Err_StampCheck" xml:space="preserve"><value>第 {1} 页读不出“{0}”，因此没有保留副本。</value></data>
 </root>

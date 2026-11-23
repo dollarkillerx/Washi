@@ -10,7 +10,7 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -209,6 +209,35 @@ internal static class PageCommands
                         Path.GetFileNameWithoutExtension(input) + "_redacted.pdf"));
                     var report = PdfRedactor.Redact(input, output, areas, search);
                     Console.WriteLine(L.F("Pdf_Redacted", output, report.Glyphs, report.Images, report.Paths, report.Annotations, report.Strings));
+                    return 0;
+                }
+                case ["stamp", var input] when opt.ContainsKey("--header") || opt.ContainsKey("--footer") || opt.ContainsKey("--watermark"):
+                {
+                    static (string L, string C, string R) Split3(string? v)
+                    {
+                        if (v is null) return ("", "", "");
+                        var p = v.Split('|');
+                        return p.Length switch { 1 => ("", p[0], ""), 2 => (p[0], "", p[1]), _ => (p[0], p[1], string.Join("|", p[2..])) };
+                    }
+                    double Num(string key, double fallback) =>
+                        opt.TryGetValue(key, out var v) ? double.Parse(v, System.Globalization.CultureInfo.InvariantCulture) : fallback;
+                    var (hl, hc, hr) = Split3(opt.GetValueOrDefault("--header"));
+                    var (fl, fc, fr) = Split3(opt.GetValueOrDefault("--footer"));
+                    var options = new StampOptions
+                    {
+                        HeaderLeft = hl, HeaderCenter = hc, HeaderRight = hr, FooterLeft = fl, FooterCenter = fc, FooterRight = fr,
+                        FontSize = Num("--size", 9), Pages = opt.GetValueOrDefault("--pages"),
+                        Bates = opt.ContainsKey("--bates") || opt.ContainsKey("--bates-start")
+                            ? new BatesNumbers(opt.GetValueOrDefault("--bates", ""), (int)Num("--bates-start", 1), (int)Num("--bates-digits", 6)) : null,
+                        Watermark = opt.TryGetValue("--watermark", out var wm)
+                            ? new Watermark(wm, Num("--watermark-size", 0), Num("--angle", 45), Num("--opacity", 0.3), 0x808080, opt.ContainsKey("--behind")) : null,
+                    };
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_stamped.pdf"));
+                    var result = PdfStamper.Apply(input, output, options);
+                    Console.WriteLine(result.FirstBates is { } first
+                        ? L.F("Pdf_StampedBates", output, result.Pages, first, result.LastBates!)
+                        : L.F("Pdf_Stamped", output, result.Pages));
                     return 0;
                 }
                 case ["replace-text", var input] when opt.ContainsKey("--with") && (opt.ContainsKey("--find") || opt.ContainsKey("--box")):
