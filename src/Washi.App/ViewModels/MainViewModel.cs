@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, EditText, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields, Bookmarks }
@@ -63,6 +63,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Comment = new CommentToolViewModel(this);
         Protect = new ProtectToolViewModel(this);
         Redact = new RedactToolViewModel(this);
+        EditText = new EditTextViewModel(this);
         Find = new FindViewModel(this);
         Bookmarks = new BookmarksViewModel(this);
         Print = new PrintViewModel(this);
@@ -84,6 +85,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public CommentToolViewModel Comment { get; }
     public ProtectToolViewModel Protect { get; }
     public RedactToolViewModel Redact { get; }
+    public EditTextViewModel EditText { get; }
     public FindViewModel Find { get; }
     public BookmarksViewModel Bookmarks { get; }
     public PrintViewModel Print { get; }
@@ -201,7 +203,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsCompressTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsCompressTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -221,6 +223,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsCommentTool { get => ActiveTool == Tool.Comment; set { if (value) ActiveTool = Tool.Comment; } }
     public bool IsProtectTool { get => ActiveTool == Tool.Protect; set { if (value) ActiveTool = Tool.Protect; } }
     public bool IsRedactTool { get => ActiveTool == Tool.Redact; set { if (value) ActiveTool = Tool.Redact; } }
+    public bool IsEditTextTool { get => ActiveTool == Tool.EditText; set { if (value) ActiveTool = Tool.EditText; } }
     public bool IsCompressTool { get => ActiveTool == Tool.Compress; set { if (value) ActiveTool = Tool.Compress; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
@@ -277,6 +280,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Comment) _ = Comment.PrepareAsync();
         if (value == Tool.Protect) _ = Protect.PrepareAsync();
         if (value == Tool.Compress) Compress.Prepare();
+        if (value == Tool.EditText) _ = EditText.PrepareAsync();
     }
 
     private string? _detectedFor;
@@ -425,6 +429,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         foreach (var t in Thumbnails) t.IsCurrent = t.Index == value;
         _ = RenderPageAsync();
         UpdateSnapshot();
+        if (IsEditTextTool) _ = EditText.PrepareAsync();
     }
 
     // ------------------------------------------------------------------ IEditorHost (app tools for the assistant and MCP)
@@ -498,6 +503,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Comment.Reset();
         Protect.Reset();
         Redact.Reset();
+        EditText.Reset();
         Find.Reset();
         Bookmarks.Clear();
         if (ShowBookmarksPanel) await Bookmarks.LoadAsync();
@@ -509,6 +515,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         else if (ActiveTool == Tool.Comment) await Comment.PrepareAsync();
         else if (ActiveTool == Tool.Protect) await Protect.PrepareAsync();
         else if (ActiveTool == Tool.Compress) Compress.Prepare();
+        else if (ActiveTool == Tool.EditText) await EditText.PrepareAsync();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
@@ -530,6 +537,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Comment.Reset();
         Protect.Reset();
         Redact.Reset();
+        EditText.Reset();
         Find.CloseCommand.Execute(null);
         Find.Reset();
         Bookmarks.Clear();

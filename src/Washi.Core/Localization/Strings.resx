@@ -128,6 +128,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf redact &lt;in.pdf&gt; [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           remove words, personal data or areas for real and cover them in black (--list only shows the matches)
   washi pdf find &lt;in.pdf&gt; &lt;text&gt; [--case] [--whole-words]   where the text is, page by page
+  washi pdf replace-text &lt;in.pdf&gt; (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
+                                          change text on the page (one line at a time; checked before it is kept)
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           list the bookmarks (one per line: two spaces per level, a tab, the page),
                                           or write a copy with the ones in a file of that form
@@ -740,4 +742,37 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Pdf_SigNone" xml:space="preserve"><value>No signatures.</value></data>
   <data name="Pdf_SigLine" xml:space="preserve"><value>{0}: {1} — {2}</value></data>
   <data name="Pdf_AskIdPassword" xml:space="preserve"><value>Password of the digital ID: </value></data>
+  <data name="Ui_ToolEditText" xml:space="preserve"><value>Edit text</value></data>
+  <data name="Ui_EditTextTitle" xml:space="preserve"><value>Edit text</value></data>
+  <data name="Ui_EditTextLead" xml:space="preserve"><value>Change the words printed on the page: click a line and type, or find and replace. The new text takes the old one's place, size and colour, in the document's own font when it has the characters.</value></data>
+  <data name="Ui_EditTextLine" xml:space="preserve"><value>Line</value></data>
+  <data name="Ui_EditTextClick" xml:space="preserve"><value>Click a line of text on the page.</value></data>
+  <data name="Ui_EditTextKeep" xml:space="preserve"><value>Keep</value></data>
+  <data name="Ui_EditTextKeys" xml:space="preserve"><value>Enter keeps the change, Esc leaves the line as it was.</value></data>
+  <data name="Ui_EditTextFindTitle" xml:space="preserve"><value>Find and replace</value></data>
+  <data name="Ui_EditTextFindHint" xml:space="preserve"><value>Text to find</value></data>
+  <data name="Ui_EditTextReplaceHint" xml:space="preserve"><value>Replace with</value></data>
+  <data name="Ui_EditTextReplaceAll" xml:space="preserve"><value>Replace all</value></data>
+  <data name="Ui_EditTextReplaced" xml:space="preserve"><value>{0} change(s) added: check them on the page, then save.</value></data>
+  <data name="Ui_EditTextNotFound" xml:space="preserve"><value>“{0}” is not in the document.</value></data>
+  <data name="Ui_EditTextChanges" xml:space="preserve"><value>Changes</value></data>
+  <data name="Ui_EditTextNoChanges" xml:space="preserve"><value>No changes yet.</value></data>
+  <data name="Ui_EditTextOnPage" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_EditTextChange" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="Ui_EditTextNothing" xml:space="preserve"><value>(removed)</value></data>
+  <data name="Ui_EditTextSave" xml:space="preserve"><value>Save {0} change(s) as copy…</value></data>
+  <data name="Ui_EditTextSaveNote" xml:space="preserve"><value>The copy is checked before it is kept: nothing else on the page changes and the new text reads back. The original is not changed.</value></data>
+  <data name="Ui_TextEdited" xml:space="preserve"><value>Saved {0}: {1} change(s), in the document's own fonts. Checked: nothing else moved.</value></data>
+  <data name="Ui_TextEditedSimilar" xml:space="preserve"><value>Saved {0}: {1} change(s); {2} drawn in a similar font because the document's font lacks some characters. Checked: nothing else moved.</value></data>
+  <data name="Pdf_TextEditKept" xml:space="preserve"><value>page {0}: “{1}” → “{2}” ({3})</value></data>
+  <data name="Pdf_TextEditSimilar" xml:space="preserve"><value>page {0}: “{1}” → “{2}” (in a similar font, {3})</value></data>
+  <data name="Pdf_TextEdited" xml:space="preserve"><value>Saved {0}: {1} change(s). Checked: nothing else changed, the new text reads back.</value></data>
+  <data name="Err_EditNothing" xml:space="preserve"><value>No text to change.</value></data>
+  <data name="Err_EditNoText" xml:space="preserve"><value>There is no text in that place on page {0}.</value></data>
+  <data name="Err_EditNotHorizontal" xml:space="preserve"><value>Only text that runs left to right can be edited.</value></data>
+  <data name="Err_EditOneLine" xml:space="preserve"><value>That place holds more than one line: edit one line at a time.</value></data>
+  <data name="Err_EditTooLong" xml:space="preserve"><value>“{0}” is longer than “{1}” and would run into the text after it on the line: change the whole line instead.</value></data>
+  <data name="Err_EditChanged" xml:space="preserve"><value>The edited copy changed {0} pixels outside the edited text, so it was not kept.</value></data>
+  <data name="Err_EditCheck" xml:space="preserve"><value>The new text did not read back as typed (read “{0}”), so the copy was not kept.</value></data>
+  <data name="Err_EditNotFound" xml:space="preserve"><value>“{0}” is not in the document.</value></data>
 </root>

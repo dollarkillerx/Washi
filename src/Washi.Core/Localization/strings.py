@@ -518,6 +518,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)\n'
             '  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n'
+            '  washi pdf replace-text <in.pdf> (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          change text on the page (one line at a time; checked before it is kept)\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          list the bookmarks (one per line: two spaces per level, a tab, the page),\n'
             '                                          or write a copy with the ones in a file of that form\n'
@@ -548,6 +550,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）\n'
             '  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n'
+            '  washi pdf replace-text <in.pdf> (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、\n'
             '                                          または同じ形式のファイルのしおりでコピーを作成\n'
@@ -578,6 +582,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n'
+            '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          修改页面上的文字（一次一行；保存前会检查）\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          列出书签（每行一个：每级缩进两个空格，制表符，页码），\n'
             '                                          或用同样格式的文件写出带书签的副本\n'
@@ -608,6 +614,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n'
+            '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），\n'
             '                                          或用同樣格式的檔案寫出帶書籤的副本\n'
@@ -638,6 +646,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)\n'
             '  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n'
+            '  washi pdf replace-text <in.pdf> (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),\n'
             '                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성\n'
@@ -668,6 +678,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)\n'
             '  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n'
+            '  washi pdf replace-text <in.pdf> (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),\n'
             '                                          ou écrit une copie avec ceux d’un fichier de cette forme\n'
@@ -698,6 +710,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)\n'
             '  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n'
+            '  washi pdf replace-text <in.pdf> (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
+            '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)\n'
             '                                          oder eine Kopie mit denen aus einer solchen Datei schreiben\n'
@@ -1621,6 +1635,39 @@ _UI = {
     "Pdf_SigNone": ["No signatures.", "署名はありません。", "没有签名。", "沒有簽章。", "서명이 없습니다.", "Aucune signature.", "Keine Signaturen."],
     "Pdf_SigLine": ["{0}: {1} — {2}", "{0}: {1} — {2}", "{0}：{1} — {2}", "{0}：{1} — {2}", "{0}: {1} — {2}", "{0} : {1} — {2}", "{0}: {1} — {2}"],
     "Pdf_AskIdPassword": ["Password of the digital ID: ", "デジタル ID のパスワード: ", "数字标识的密码：", "數位識別碼的密碼：", "디지털 ID 암호: ", "Mot de passe de l’identité : ", "Passwort der digitalen ID: "],
+    "Ui_ToolEditText": ["Edit text", "文字の編集", "编辑文字", "編輯文字", "글자 편집", "Modifier le texte", "Text bearbeiten"],
+    "Ui_EditTextTitle": ["Edit text", "文字の編集", "编辑文字", "編輯文字", "글자 편집", "Modifier le texte", "Text bearbeiten"],
+    "Ui_EditTextLead": ["Change the words printed on the page: click a line and type, or find and replace. The new text takes the old one's place, size and colour, in the document's own font when it has the characters.", "ページに印刷された文字を書き換えます。行をクリックして入力するか、検索して置換します。新しい文字は元の位置・大きさ・色で、文書のフォントに文字があればそのフォントで描かれます。", "修改页面上印刷的文字：点击一行并输入，或查找并替换。新文字会放在原来的位置，大小和颜色不变；文档字体有这些字时就用文档字体。", "修改頁面上印刷的文字：點一行並輸入，或搜尋並取代。新文字會放在原來的位置，大小和顏色不變；文件字型有這些字時就用文件字型。", "페이지에 인쇄된 글자를 고칩니다. 줄을 클릭해 입력하거나 찾아서 바꿉니다. 새 글자는 원래 자리에 같은 크기와 색으로, 문서 글꼴에 글자가 있으면 그 글꼴로 그립니다.", "Modifiez les mots imprimés sur la page : cliquez sur une ligne et tapez, ou cherchez et remplacez. Le nouveau texte prend la place, la taille et la couleur de l’ancien, dans la police du document quand elle a les caractères.", "Ändern Sie die auf der Seite gedruckten Wörter: eine Zeile anklicken und tippen, oder suchen und ersetzen. Der neue Text steht an der Stelle des alten, in gleicher Größe und Farbe, in der Schrift des Dokuments, wenn sie die Zeichen hat."],
+    "Ui_EditTextLine": ["Line", "行", "行", "行", "줄", "Ligne", "Zeile"],
+    "Ui_EditTextClick": ["Click a line of text on the page.", "ページの文字の行をクリックしてください。", "请点击页面上的一行文字。", "請點頁面上的一行文字。", "페이지의 글자 줄을 클릭하세요.", "Cliquez sur une ligne de texte de la page.", "Klicken Sie auf eine Textzeile der Seite."],
+    "Ui_EditTextKeep": ["Keep", "確定", "确定", "確定", "확정", "Garder", "Übernehmen"],
+    "Ui_EditTextKeys": ["Enter keeps the change, Esc leaves the line as it was.", "Enter で確定、Esc で元のまま。", "Enter 确定，Esc 保持原样。", "Enter 確定，Esc 保持原樣。", "Enter로 확정, Esc로 그대로 둡니다.", "Entrée garde la modification, Échap laisse la ligne telle quelle.", "Eingabe übernimmt die Änderung, Esc lässt die Zeile, wie sie war."],
+    "Ui_EditTextFindTitle": ["Find and replace", "検索と置換", "查找和替换", "搜尋和取代", "찾아 바꾸기", "Rechercher et remplacer", "Suchen und ersetzen"],
+    "Ui_EditTextFindHint": ["Text to find", "検索する語句", "要查找的文字", "要搜尋的文字", "찾을 텍스트", "Texte à chercher", "Zu suchender Text"],
+    "Ui_EditTextReplaceHint": ["Replace with", "置換後の語句", "替换为", "取代為", "바꿀 텍스트", "Remplacer par", "Ersetzen durch"],
+    "Ui_EditTextReplaceAll": ["Replace all", "すべて置換", "全部替换", "全部取代", "모두 바꾸기", "Tout remplacer", "Alle ersetzen"],
+    "Ui_EditTextReplaced": ["{0} change(s) added: check them on the page, then save.", "{0} 件の変更を追加しました。ページで確認してから保存してください。", "已添加 {0} 处修改：请在页面上确认后保存。", "已新增 {0} 處修改：請在頁面上確認後儲存。", "변경 {0}개를 추가했습니다. 페이지에서 확인한 뒤 저장하세요.", "{0} modification(s) ajoutée(s) : vérifiez-les sur la page, puis enregistrez.", "{0} Änderung(en) hinzugefügt: auf der Seite prüfen, dann speichern."],
+    "Ui_EditTextNotFound": ["“{0}” is not in the document.", "「{0}」は文書にありません。", "文档中没有“{0}”。", "文件中沒有「{0}」。", "문서에 “{0}”이(가) 없습니다.", "« {0} » n’est pas dans le document.", "„{0}“ steht nicht im Dokument."],
+    "Ui_EditTextChanges": ["Changes", "変更", "修改", "修改", "변경", "Modifications", "Änderungen"],
+    "Ui_EditTextNoChanges": ["No changes yet.", "まだ変更はありません。", "还没有修改。", "還沒有修改。", "아직 변경이 없습니다.", "Aucune modification pour l’instant.", "Noch keine Änderungen."],
+    "Ui_EditTextOnPage": ["Page {0}", "{0} ページ", "第 {0} 页", "第 {0} 頁", "{0}페이지", "Page {0}", "Seite {0}"],
+    "Ui_EditTextChange": ["{0} → {1}", "{0} → {1}", "{0} → {1}", "{0} → {1}", "{0} → {1}", "{0} → {1}", "{0} → {1}"],
+    "Ui_EditTextNothing": ["(removed)", "（削除）", "（删除）", "（刪除）", "(삭제)", "(supprimé)", "(entfernt)"],
+    "Ui_EditTextSave": ["Save {0} change(s) as copy…", "{0} 件の変更をコピーに保存…", "将 {0} 处修改另存为副本…", "將 {0} 處修改另存為副本…", "변경 {0}개를 사본으로 저장…", "Enregistrer {0} modification(s) dans une copie…", "{0} Änderung(en) als Kopie speichern…"],
+    "Ui_EditTextSaveNote": ["The copy is checked before it is kept: nothing else on the page changes and the new text reads back. The original is not changed.", "保存前にコピーを確認します（ページのほかの部分が変わらず、新しい文字が読み取れること）。元のファイルは変わりません。", "保存前会检查副本：页面其他部分不变，新文字可以读出。原文件不会改变。", "儲存前會檢查副本：頁面其他部分不變，新文字可以讀出。原檔案不會改變。", "저장하기 전에 사본을 확인합니다 (페이지의 다른 부분은 그대로이고 새 글자가 읽힘). 원본은 바뀌지 않습니다.", "La copie est vérifiée avant d’être gardée : rien d’autre ne change sur la page et le nouveau texte se relit. L’original n’est pas modifié.", "Die Kopie wird vor dem Behalten geprüft: sonst ändert sich nichts auf der Seite, und der neue Text lässt sich lesen. Das Original bleibt unverändert."],
+    "Ui_TextEdited": ["Saved {0}: {1} change(s), in the document's own fonts. Checked: nothing else moved.", "{0} を保存しました：{1} 件の変更（文書のフォントで描画）。確認済み：ほかの部分は変わっていません。", "已保存 {0}：{1} 处修改，使用文档自己的字体。已检查：其他部分没有变化。", "已儲存 {0}：{1} 處修改，使用文件自己的字型。已檢查：其他部分沒有變化。", "{0} 저장: 변경 {1}개, 문서 글꼴로 그림. 확인: 다른 부분은 바뀌지 않았습니다.", "{0} enregistré : {1} modification(s), dans les polices du document. Vérifié : rien d’autre n’a bougé.", "{0} gespeichert: {1} Änderung(en), in den Schriften des Dokuments. Geprüft: sonst hat sich nichts verschoben."],
+    "Ui_TextEditedSimilar": ["Saved {0}: {1} change(s); {2} drawn in a similar font because the document's font lacks some characters. Checked: nothing else moved.", "{0} を保存しました：{1} 件の変更。文書のフォントに文字がない {2} 件は似たフォントで描きました。確認済み：ほかの部分は変わっていません。", "已保存 {0}：{1} 处修改；其中 {2} 处因文档字体缺字而使用相近字体。已检查：其他部分没有变化。", "已儲存 {0}：{1} 處修改；其中 {2} 處因文件字型缺字而使用相近字型。已檢查：其他部分沒有變化。", "{0} 저장: 변경 {1}개. 문서 글꼴에 없는 글자가 있어 {2}개는 비슷한 글꼴로 그렸습니다. 확인: 다른 부분은 바뀌지 않았습니다.", "{0} enregistré : {1} modification(s) ; {2} dessinée(s) dans une police proche, car celle du document n’a pas tous les caractères. Vérifié : rien d’autre n’a bougé.", "{0} gespeichert: {1} Änderung(en); {2} in einer ähnlichen Schrift, weil der Schrift des Dokuments Zeichen fehlen. Geprüft: sonst hat sich nichts verschoben."],
+    "Pdf_TextEditKept": ["page {0}: “{1}” → “{2}” ({3})", "{0} ページ：「{1}」→「{2}」（{3}）", "第 {0} 页：“{1}” → “{2}”（{3}）", "第 {0} 頁：「{1}」→「{2}」（{3}）", "{0}페이지: “{1}” → “{2}” ({3})", "page {0} : « {1} » → « {2} » ({3})", "Seite {0}: „{1}“ → „{2}“ ({3})"],
+    "Pdf_TextEditSimilar": ["page {0}: “{1}” → “{2}” (in a similar font, {3})", "{0} ページ：「{1}」→「{2}」（似たフォント {3}）", "第 {0} 页：“{1}” → “{2}”（相近字体 {3}）", "第 {0} 頁：「{1}」→「{2}」（相近字型 {3}）", "{0}페이지: “{1}” → “{2}” (비슷한 글꼴 {3})", "page {0} : « {1} » → « {2} » (police proche, {3})", "Seite {0}: „{1}“ → „{2}“ (ähnliche Schrift, {3})"],
+    "Pdf_TextEdited": ["Saved {0}: {1} change(s). Checked: nothing else changed, the new text reads back.", "{0} を保存しました：{1} 件の変更。確認済み：ほかは変わらず、新しい文字が読み取れます。", "已保存 {0}：{1} 处修改。已检查：其他部分不变，新文字可以读出。", "已儲存 {0}：{1} 處修改。已檢查：其他部分不變，新文字可以讀出。", "{0} 저장: 변경 {1}개. 확인: 다른 부분은 그대로이고 새 글자가 읽힙니다.", "{0} enregistré : {1} modification(s). Vérifié : rien d’autre n’a changé, le nouveau texte se relit.", "{0} gespeichert: {1} Änderung(en). Geprüft: sonst nichts verändert, der neue Text lässt sich lesen."],
+    "Err_EditNothing": ["No text to change.", "変更する文字がありません。", "没有要修改的文字。", "沒有要修改的文字。", "바꿀 글자가 없습니다.", "Aucun texte à modifier.", "Kein Text zu ändern."],
+    "Err_EditNoText": ["There is no text in that place on page {0}.", "{0} ページのその場所には文字がありません。", "第 {0} 页的那个位置没有文字。", "第 {0} 頁的那個位置沒有文字。", "{0}페이지의 그 자리에는 글자가 없습니다.", "Il n’y a pas de texte à cet endroit de la page {0}.", "An dieser Stelle von Seite {0} steht kein Text."],
+    "Err_EditNotHorizontal": ["Only text that runs left to right can be edited.", "編集できるのは左から右へ横書きの文字だけです。", "只能编辑从左到右横排的文字。", "只能編輯從左到右橫排的文字。", "왼쪽에서 오른쪽으로 쓴 가로 글자만 고칠 수 있습니다.", "Seul le texte écrit de gauche à droite peut être modifié.", "Nur Text, der von links nach rechts läuft, kann bearbeitet werden."],
+    "Err_EditOneLine": ["That place holds more than one line: edit one line at a time.", "その場所には複数の行があります。1 行ずつ編集してください。", "那个位置有不止一行：请一次编辑一行。", "那個位置有不只一行：請一次編輯一行。", "그 자리에 여러 줄이 있습니다. 한 줄씩 고치세요.", "Cet endroit contient plus d’une ligne : modifiez une ligne à la fois.", "An dieser Stelle steht mehr als eine Zeile: bearbeiten Sie eine Zeile auf einmal."],
+    "Err_EditTooLong": ["“{0}” is longer than “{1}” and would run into the text after it on the line: change the whole line instead.", "「{0}」は「{1}」より長く、同じ行の後ろの文字に重なります。行全体を書き換えてください。", "“{0}”比“{1}”长，会压到同一行后面的文字：请改为修改整行。", "「{0}」比「{1}」長，會壓到同一行後面的文字：請改為修改整行。", "“{0}”이(가) “{1}”보다 길어 같은 줄 뒤의 글자와 겹칩니다. 줄 전체를 고치세요.", "« {0} » est plus long que « {1} » et empiéterait sur le texte qui suit sur la ligne : modifiez plutôt toute la ligne.", "„{0}“ ist länger als „{1}“ und würde in den folgenden Text der Zeile laufen: ändern Sie stattdessen die ganze Zeile."],
+    "Err_EditChanged": ["The edited copy changed {0} pixels outside the edited text, so it was not kept.", "編集したコピーが編集箇所の外で {0} 画素変わったため、保存しませんでした。", "编辑后的副本在修改处以外变化了 {0} 个像素，因此没有保留。", "編輯後的副本在修改處以外變化了 {0} 個像素，因此沒有保留。", "편집한 사본이 고친 곳 밖에서 {0} 픽셀 바뀌어 저장하지 않았습니다.", "La copie modifiée changeait {0} pixels hors du texte modifié ; elle n’a pas été conservée.", "Die bearbeitete Kopie änderte {0} Pixel außerhalb des bearbeiteten Texts; sie wurde nicht behalten."],
+    "Err_EditCheck": ["The new text did not read back as typed (read “{0}”), so the copy was not kept.", "新しい文字が入力どおりに読み取れなかった（「{0}」）ため、保存しませんでした。", "新文字没有按输入读出（读到“{0}”），因此没有保留副本。", "新文字沒有按輸入讀出（讀到「{0}」），因此沒有保留副本。", "새 글자가 입력한 대로 읽히지 않아 (“{0}”) 사본을 저장하지 않았습니다.", "Le nouveau texte ne se relisait pas tel que saisi (lu « {0} ») ; la copie n’a pas été conservée.", "Der neue Text ließ sich nicht wie eingegeben lesen (gelesen: „{0}“); die Kopie wurde nicht behalten."],
+    "Err_EditNotFound": ["“{0}” is not in the document.", "「{0}」は文書にありません。", "文档中没有“{0}”。", "文件中沒有「{0}」。", "문서에 “{0}”이(가) 없습니다.", "« {0} » n’est pas dans le document.", "„{0}“ steht nicht im Dokument."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

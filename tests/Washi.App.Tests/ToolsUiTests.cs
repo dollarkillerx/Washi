@@ -407,6 +407,80 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Edit_text_changes_a_clicked_line_and_replaced_words_in_a_copy()
+    {
+        var pdf = TextPdf("e.pdf", "Invoice 2025", "Total: 1,200 yen", "Thank you");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "e_edited.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.EditText;
+        await vm.EditText.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(["Invoice 2025", "Total: 1,200 yen", "Thank you"], vm.EditText.Segments.Select(x => x.Text));
+        Assert.False(vm.EditText.CanSave);
+        Assert.False(w.FindControl<TextBox>("EditTextBox")!.IsEffectivelyVisible);
+
+        // a click on the first line opens it for typing
+        var first = vm.EditText.Segments[0];
+        vm.EditText.Select(vm.EditText.SegmentAt(first.Box.Center.X, first.Box.Center.Y));
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<TextBox>("EditTextBox")!.IsEffectivelyVisible);
+        Assert.Equal("Invoice 2025", vm.EditText.Text);
+        vm.EditText.Text = "Invoice 2026";
+        vm.EditText.CommitCommand.Execute(null);
+        Assert.Single(vm.EditText.Pending);
+        Assert.Null(vm.EditText.Selected);
+
+        // Esc leaves a line as it was; typing the old text back drops the change
+        vm.EditText.Select(vm.EditText.Segments[2]);
+        vm.EditText.Text = "Bye";
+        vm.EditText.CancelCommand.Execute(null);
+        Assert.Single(vm.EditText.Pending);
+        vm.EditText.Select(first);
+        Assert.Equal("Invoice 2026", vm.EditText.Text);           // the change so far
+        vm.EditText.Text = "Invoice 2025";
+        vm.EditText.CommitCommand.Execute(null);
+        Assert.Empty(vm.EditText.Pending);
+        vm.EditText.Select(first);
+        vm.EditText.Text = "Invoice 2026";
+        vm.EditText.CommitCommand.Execute(null);
+
+        // find and replace
+        vm.EditText.Find = "1,200";
+        vm.EditText.Replace = "1,350";
+        await vm.EditText.ReplaceAllCommand.ExecuteAsync(null);
+        Assert.Equal(2, vm.EditText.Pending.Count);
+        Assert.Equal(L.F("Ui_EditTextReplaced", 1), vm.EditText.Message);
+        vm.EditText.Find = "Osaka";
+        await vm.EditText.ReplaceAllCommand.ExecuteAsync(null);
+        Assert.Equal(L.F("Ui_EditTextNotFound", "Osaka"), vm.EditText.Message);
+        Assert.Equal(L.F("Ui_EditTextSave", 2), vm.EditText.SaveText);
+
+        await vm.EditText.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.False(vm.EditText.HasPending);                    // the copy starts afresh
+        Assert.Equal(L.F("Ui_TextEdited", "e_edited.pdf", 2), vm.Status);
+        var text = await MainViewModel.Pdfium(() =>
+        {
+            using var d = PdfiumDocument.Open(dialogs.SavePdf!);
+            return d.GetPageText(0);
+        });
+        Assert.Contains("Invoice 2026", text);
+        Assert.Contains("Total: 1,350 yen", text);
+        Assert.Contains("Thank you", text);
+        Assert.DoesNotContain("2025", text);
+        Assert.True(File.Exists(pdf));                           // the original is untouched
+
+        // a longer text that would run into the rest of its line: refused, nothing written
+        dialogs.SavePdf = Path.Combine(_dir, "e_long.pdf");
+        vm.EditText.Find = "1,350";
+        vm.EditText.Replace = "one thousand three hundred and fifty";
+        await vm.EditText.ReplaceAllCommand.ExecuteAsync(null);
+        await vm.EditText.SaveCommand.ExecuteAsync(null);
+        Assert.False(File.Exists(dialogs.SavePdf));
+        Assert.Contains(L.F("Err_EditTooLong", "one thousand three hundred and fifty", "1,350"), vm.Status);
+    }
+
+    [AvaloniaFact]
     public async Task The_find_bar_searches_highlights_and_steps_through_hits_in_any_tool()
     {
         var pdf = TextPdf("f.pdf", "Yamada wrote this", "and Yamada signed", "Nothing here");

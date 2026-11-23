@@ -10,7 +10,7 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -211,6 +211,21 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_Redacted", output, report.Glyphs, report.Images, report.Paths, report.Annotations, report.Strings));
                     return 0;
                 }
+                case ["replace-text", var input] when opt.ContainsKey("--with") && (opt.ContainsKey("--find") || opt.ContainsKey("--box")):
+                {
+                    var with = opt["--with"];
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_edited.pdf"));
+                    int? page = opt.TryGetValue("--page", out var pg) && int.TryParse(pg, out var pn) ? pn - 1 : null;
+                    var results = opt.TryGetValue("--find", out var find)
+                        ? PdfTextEditor.Replace(input, output, find.Split(Many)[0], with, page, matchCase: !opt.ContainsKey("--ignore-case"),
+                                                wholeWords: opt.ContainsKey("--whole-words"))
+                        : PdfTextEditor.Apply(input, output, [.. ParseBoxes(opt["--box"]).Select(b => new TextEdit(b.Page, b.Rect, with))]);
+                    foreach (var r in results)
+                        Console.WriteLine(L.F(r.KeptFont ? "Pdf_TextEditKept" : "Pdf_TextEditSimilar", r.Page + 1, r.Old, r.New, r.Font));
+                    Console.WriteLine(L.F("Pdf_TextEdited", output, results.Count));
+                    return 0;
+                }
                 default:
                     Console.Error.WriteLine(L.Get("UsagePdf"));
                     return 2;
@@ -233,7 +248,7 @@ internal static class PageCommands
         }
         catch (PageAssemblyException e)
         {
-            Console.Error.WriteLine(L.F("Pdf_Failed", e.Message));
+            Console.Error.WriteLine(L.F("Pdf_Failed", Washi.Core.Localization.Errors.Text(e)));
             return 1;
         }
     }

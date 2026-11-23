@@ -35,6 +35,7 @@ public static class WashiTools
         .Add(new EditCommentsTool(policy))
         .Add(new RemoveHiddenInfoTool(policy))
         .Add(new RedactTool(policy))
+        .Add(new EditTextTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -845,6 +846,71 @@ public sealed class RedactTool(PathPolicy p) : PdfTool(p)
                 annotations_and_fields = report.Annotations, other_texts = report.Strings,
             },
             verified = "searched again: nothing found; no character left under a box; nothing changed outside the boxes",
+        }));
+    }
+}
+
+public sealed class EditTextTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "edit_text";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Change the text printed on PDF pages: find and replace, or replace the text inside a rectangle. The old characters are " +
+        "taken out of the page (the rest of the line stays where it was) and the new text is drawn at the same baseline, size and " +
+        "colour, in the document's own font when it has every character needed, otherwise in a similar standard font (serif or " +
+        "not; Latin or CJK). One line at a time, horizontal text only; a longer text that would run into the text after it on the " +
+        "line is refused. The copy is checked before it is kept (nothing changed outside the edits, the new text reads back). " +
+        "This changes page text, not form fields (use fill_fields) or comments. Never overwrites: output defaults to <name>_edited.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "edits":{"type":"array","minItems":1,"items":{"type":"object","properties":{
+                     "find":{"type":"string","description":"Text to replace wherever it appears (or on page, when given)"},
+                     "page":{"type":"integer","description":"1-based; with find, only this page; with rect, required"},
+                     "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4,
+                             "description":"[x0,y0,x1,y1] in points from the top-left of the upright page: the text inside it is replaced"},
+                     "text":{"type":"string","description":"The new text (empty removes it)"},
+                     "match_case":{"type":"boolean","description":"With find (default true)"},
+                     "whole_words":{"type":"boolean","description":"With find: not part of a longer word"}},
+                   "required":["text"],"additionalProperties":false}},
+          "output":{"type":"string","description":"New PDF path (default: <name>_edited.pdf next to the input)"}},
+         "required":["path","edits"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        if (!a.TryGetProperty("edits", out var list) || list.ValueKind != JsonValueKind.Array || list.GetArrayLength() == 0)
+            throw new ToolException("edits must list at least one change");
+        var edits = new List<TextEdit>();
+        foreach (var e in list.EnumerateArray())
+        {
+            var text = e.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString()! : throw new ToolException("each edit needs text");
+            int? page = e.TryGetProperty("page", out var pg) && pg.TryGetInt32(out var pn) ? pn - 1 : null;
+            if (e.TryGetProperty("rect", out var r) && r.ValueKind == JsonValueKind.Array && r.GetArrayLength() == 4)
+            {
+                if (page is null) throw new ToolException("an edit with rect needs page (1-based)");
+                var v = r.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+                edits.Add(new TextEdit(page.Value, new PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3])), text));
+            }
+            else if (e.TryGetProperty("find", out var f) && f.ValueKind == JsonValueKind.String && f.GetString() is { Length: > 0 } find)
+            {
+                bool matchCase = !(e.TryGetProperty("match_case", out var mc) && mc.ValueKind == JsonValueKind.False);
+                bool whole = e.TryGetProperty("whole_words", out var ww) && ww.ValueKind == JsonValueKind.True;
+                var hits = PdfSearch.Find(path, find, matchCase, whole).Where(h => page is null || h.Page == page).ToList();
+                if (hits.Count == 0) throw new ToolException($"'{find}' is not in the document{(page is null ? "" : $" on page {page + 1}")}");
+                edits.AddRange(hits.Select(h => new TextEdit(h.Page, h.Boxes.Aggregate((x, y) => new PdfRect(Math.Min(x.X0, y.X0), Math.Min(x.Y0, y.Y0),
+                                                                                                    Math.Max(x.X1, y.X1), Math.Max(x.Y1, y.Y1))), text)));
+            }
+            else throw new ToolException("each edit needs find or rect (with page)");
+        }
+        var output = Policy.Output(OptStr(a, "output"), path, "_edited");
+        var results = PdfTextEditor.Apply(path, output, edits);
+        return new ToolResult(ToJson(new
+        {
+            output,
+            changes = results.Select(r => new { page = r.Page + 1, old = r.Old, @new = r.New, font = r.Font, kept_font = r.KeptFont, wider = r.Wider }),
+            verified = "nothing changed outside the edited text; the new text reads back at the same size",
         }));
     }
 }
