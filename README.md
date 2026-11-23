@@ -198,6 +198,8 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 - **Redact**: find words, phrases, e-mail addresses, phone numbers and long ID numbers (or drag over any area: a
   photo, a signature, a stamp), untick what should stay, then save a copy where what lies under each black box is
   removed from the file for real (see below).
+- **Finalize**: flatten the form fields and comments into the page (a final version to submit), check the file
+  against PDF/A-2b, and save a PDF/A copy for archiving, optionally flattened first (see below).
 - **Edit text**: click a line on the page and type its new text, or find and replace; the changes show on the page
   and are saved to a copy, checked before it is kept (see below).
 - **Headers**: header and footer texts (left, centre, right) with page numbers, the file name, the date and Bates
@@ -662,6 +664,56 @@ In the editor: **Compress** in the tool rail, pick a level, *Compress and save c
 - Run over the public forms and documents Washi is tested with: IRS Pub 15-T 2.4 MB → 1.7 MB, Form 1040 −27%, a
   法務省 form −18%; a scan-style test document (photos at 436 dpi) loses over 60% at the standard level.
 
+## Flattening and PDF/A
+
+```bash
+washi pdf flatten filled.pdf                       # fields and comments become part of the page → filled_flattened.pdf
+washi pdf flatten review.pdf --comments-only       # only the comments; the form stays fillable
+washi pdf pdfa report.pdf --check                  # what stands between the file and PDF/A-2b (exit code 4 when something does)
+washi pdf pdfa filled.pdf --flatten                # a PDF/A-2b copy, flattened first → filled_pdfa.pdf
+```
+
+In the editor: **Finalize** in the tool rail. Agents use `flatten_pdf` and `convert_to_pdfa` (`check_only` lists).
+
+**Flattening** draws each field's and comment's own appearance (what a viewer shows for it now) into the page where it
+was, then takes the field or comment away: the page looks the same in every viewer and can no longer be changed in a
+form or comment tool. Links stay. A value the file left the viewer to draw (`NeedAppearances`, or no appearance of its
+own) is drawn by Washi first; a box with no look for its state draws nothing, as Acrobat shows it. Every page of the
+copy is rendered next to the original and must match (inside a field, where PDFium's form layer smooths text its own
+way, the ink must be in the same place), and the values Washi drew must read back. Signed files are refused:
+flattening would break the signatures.
+
+**PDF/A-2b** (ISO 19005-2, level B) keeps everything a page needs inside the file, so it looks the same in years to
+come. The copy gets:
+
+- **Every font embedded.** A font the file only names (Helvetica, Times, MS-Mincho, KozMin…) is replaced by a subset
+  of a font of this computer with the same characters: Arial, Times New Roman or Courier New for the standard fonts
+  (Liberation on Linux), Zapf Dingbats and Symbol for theirs, Hiragino (or Yu, MS and Noto CJK fonts) for Japanese,
+  Chinese and Korean. Every string drawn in it is written again in the new font's codes, and where a new glyph is wider
+  or narrower than the old width the string moves the pen back by the difference, so **every character stays exactly
+  where it was**; only the glyph shapes are the computer's. The characters come from the font's ToUnicode map, its
+  encoding's glyph names, or its CMap's encoding (Unicode, Shift-JIS, EUC, GBK, Big5, UHC).
+- **Colour tied to a profile:** an sRGB output intent, or this computer's CMYK printer profile for a file that paints
+  in CMYK (its RGB then goes through sRGB).
+- **Nothing that runs or points outside:** JavaScript, actions (on opening, on events, in fields: Washi's field
+  formats and calculations too), attached files, XFA, external content, LZW compression, transfer functions.
+- **Comments and fields that carry their own appearance**, set to print; hidden ones (which show nothing) are taken
+  out. Fields stay fillable unless the copy is flattened first.
+- **XMP metadata** that says PDF/A-2b and repeats the document properties exactly (written as an incremental update,
+  since PDFsharp writes its own XMP on every save), and small objects packed into object streams again.
+
+The copy is checked against the rules again, every page (a sample of a long document) is rendered next to the
+original, and its text is read back character by character in the same places, before it is kept. Washi's check
+covers the rules above; it is not a full validator. The copies Washi makes of the public documents below, of the tests'
+files and of real filled-in forms all pass [veraPDF](https://verapdf.org) 1.30 as PDF/A-2b. Along the way a copy also
+drops Adobe Reader's usage rights (a signature that no longer holds once the file changes) and the glyph lists
+(CIDSet, CharSet) other programs wrote for their embedded fonts, which PDF/A-2 does not need and which must otherwise be
+exact. Signed files are refused. A font that cannot be
+replaced (no character known for its codes, vertical writing, no font on this computer with its characters) stops the
+conversion with its name. Run over the public documents Washi is tested with, all 21 that are not protected convert
+(Form 1040, W-4, W-9 and W-8BEN with Zapf Dingbats check marks, the I-9 with Times and Helvetica only named, Pub 15-T
+in CMYK, the 法務省, 出入国在留管理庁, 厚生労働省 and 裁判所 forms).
+
 ## Erasing printed text
 
 Forms sometimes arrive with data already printed on them, and some of it is wrong. Making the form
@@ -751,6 +803,8 @@ There are two ways to run it:
 | `images_to_pdf` | new PDF from photos and scans, one page per image: JPEG as it is, others lossless, EXIF orientation applied, each page compared with its image | writes a **new** file |
 | `stamp_pages` | new PDF with headers, footers, page and Bates numbers and/or a watermark, the page's own content untouched, checked afterwards | writes a **new** file |
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
+| `flatten_pdf` | new PDF with form fields and/or comments drawn into the page (no longer editable), pages compared before it is kept | writes a **new** file |
+| `convert_to_pdfa` | what stands between a PDF and PDF/A-2b (`check_only`), or a new PDF/A-2b copy: fonts embedded with every character in place, sRGB/CMYK output intent, no scripts or attachments, XMP; checked again before it is kept | writes a **new** file |
 | `verify_signatures` | the digital signatures in a PDF: signer, time, intact, trusted, changed afterwards, status | no |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
@@ -847,7 +901,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfPageImages`; `PdfLinks`; `PdfPageImageEdit`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 32 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 34 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -914,6 +968,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 24. ~~Images on the page.~~ Done (`washi pdf images`, the Images tool, `list_page_images`, `edit_page_images`).
 25. ~~Updating and removing headers, footers and watermarks.~~ Done (`--replace-existing`, `--remove`, the Headers tool, `stamp_pages`).
 26. ~~Editing a paragraph that reflows over several lines.~~ Done (Paragraphs in the Edit text tool, `--paragraph`, `paragraph_containing`).
+27. ~~Flattening form fields and comments.~~ Done (`washi pdf flatten`, the Finalize tool, `flatten_pdf`).
+28. ~~PDF/A-2b: checking and converting, with fonts that are only named replaced in place.~~ Done (`washi pdf pdfa`, the Finalize tool, `convert_to_pdfa`).
 
 ## License
 

@@ -90,6 +90,19 @@ public sealed class ToolsTests : IDisposable
         var png = await Call("render_page", new { path = "form_fillable_filled.pdf", page = 1, dpi = 72 });
         Assert.False(png.IsError, png.Text);
         Assert.Equal(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, png.Images![0].Data[..4]);
+
+        // a final version: what stands between it and PDF/A, then flattened, then a PDF/A copy
+        var check = Json(await Call("convert_to_pdfa", new { path = "form_fillable_filled.pdf", check_only = true }));
+        Assert.False(check.GetProperty("conforms").GetBoolean());
+        Assert.Contains(check.GetProperty("in_the_way").EnumerateArray(), i => i.GetProperty("kind").GetString() == "Metadata");
+        var flat = await Call("flatten_pdf", new { path = "form_fillable_filled.pdf" });
+        Assert.False(flat.IsError, flat.Text);
+        Assert.Equal(3, Json(flat).GetProperty("fields").GetInt32());
+        Assert.Contains("no form fields", (await Call("list_fields", new { path = "form_fillable_filled_flattened.pdf" })).Text);
+        var pdfa = await Call("convert_to_pdfa", new { path = "form_fillable_filled_flattened.pdf" });
+        Assert.False(pdfa.IsError, pdfa.Text);
+        Assert.Equal("PDF/A-2b", Json(pdfa).GetProperty("standard").GetString());
+        Assert.True(Json(await Call("convert_to_pdfa", new { path = "form_fillable_filled_flattened_pdfa.pdf", check_only = true })).GetProperty("conforms").GetBoolean());
     }
 
     [Fact]
@@ -147,7 +160,7 @@ public sealed class McpServerTests : IDisposable
         }));
 
         var tools = await client.ListToolsAsync();
-        Assert.Equal(["add_comments", "compare_pdfs", "compress_pdf", "crop_pages", "detect_fields", "edit_comments", "edit_links", "edit_page_images", "edit_text", "erase_content", "export_page_images", "extract_text", "fill_fields", "images_to_pdf", "list_bookmarks", "list_comments", "list_fields", "list_links", "list_page_images", "make_fillable", "merge_pdfs", "ocr_pdf", "organize_pages", "pdf_info", "redact", "remove_hidden_info", "render_page", "search_text", "set_bookmarks", "split_pdf", "stamp_pages", "verify_signatures"],
+        Assert.Equal(["add_comments", "compare_pdfs", "compress_pdf", "convert_to_pdfa", "crop_pages", "detect_fields", "edit_comments", "edit_links", "edit_page_images", "edit_text", "erase_content", "export_page_images", "extract_text", "fill_fields", "flatten_pdf", "images_to_pdf", "list_bookmarks", "list_comments", "list_fields", "list_links", "list_page_images", "make_fillable", "merge_pdfs", "ocr_pdf", "organize_pages", "pdf_info", "redact", "remove_hidden_info", "render_page", "search_text", "set_bookmarks", "split_pdf", "stamp_pages", "verify_signatures"],
                      tools.Select(t => t.Name).Order());
         Assert.True(tools.Single(t => t.Name == "pdf_info").ProtocolTool.Annotations!.ReadOnlyHint);
         Assert.False(tools.Single(t => t.Name == "fill_fields").ProtocolTool.Annotations!.ReadOnlyHint);

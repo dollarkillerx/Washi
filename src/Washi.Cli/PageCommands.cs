@@ -7,10 +7,10 @@ using Washi.Core.Ocr;
 using Washi.Core.Pages;
 using Washi.Core.Printing;
 
-/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
+/// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|flatten|pdfa|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing", "--fields-only", "--comments-only", "--check", "--flatten"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -161,6 +161,37 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Ui_Compressed", output, Washi.Core.Pages.CompressFormat.Size(r.Before), Washi.Core.Pages.CompressFormat.Size(r.After), (int)Math.Round(r.Saved * 100)));
                     Console.WriteLine(L.F("Ui_CompressDetails", r.Images, r.Downsampled, r.Duplicates, r.Streams));
                     foreach (var n in r.Notes) Console.WriteLine("  " + n);
+                    return 0;
+                }
+                case ["flatten", var input]:
+                {
+                    if (opt.ContainsKey("--fields-only") && opt.ContainsKey("--comments-only"))
+                        throw new PageAssemblyException("choose --fields-only or --comments-only, not both", "Err_FlattenNothing");
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_flattened.pdf"));
+                    var r = PdfFlattener.Flatten(input, output, fields: !opt.ContainsKey("--comments-only"), comments: !opt.ContainsKey("--fields-only"));
+                    Console.WriteLine(L.F("Ui_Flattened", output, r.Fields, r.Comments));
+                    return 0;
+                }
+                case ["pdfa", var input] when opt.ContainsKey("--check"):
+                {
+                    var items = PdfArchive.Check(input);
+                    if (items.Count == 0) { Console.WriteLine(L.Get("Ui_PdfaOk")); return 0; }
+                    Console.WriteLine(L.Get("Ui_PdfaIssues"));
+                    foreach (var line in ArchiveLines(items)) Console.WriteLine("  " + line);
+                    return 4;
+                }
+                case ["pdfa", var input]:
+                {
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_pdfa.pdf"));
+                    var r = PdfArchive.Convert(input, output, flatten: opt.ContainsKey("--flatten"));
+                    Console.WriteLine(L.F("Ui_PdfaSaved", output));
+                    if (r.Changes.Count > 0)
+                    {
+                        Console.WriteLine(L.Get("Ui_PdfaChanges"));
+                        foreach (var line in ArchiveLines(r.Changes)) Console.WriteLine("  " + line);
+                    }
                     return 0;
                 }
                 case ["printers"]:
@@ -536,6 +567,18 @@ internal static class PageCommands
             throw new EraseException($"bad box '{b}': use page:x0,y0,x1,y1 (points, top-left origin)");
         return new EraseRegion(page - 1, new Washi.Core.PdfRect(Math.Min(v[0], v[2]), Math.Min(v[1], v[3]), Math.Max(v[0], v[2]), Math.Max(v[1], v[3])));
     })];
+
+    /// <summary>One line per kind: what it is, how many, and the details (font names, pages…).</summary>
+    internal static IEnumerable<string> ArchiveLines(IEnumerable<ArchiveItem> items) =>
+        items.Select(i =>
+        {
+            var name = i.Kind == "Flattened" ? L.Get("Ui_FlattenTitle") : L.Get("Pdfa_" + i.Kind);
+            var details = i.Kind == "Fonts" ? i.Details.Select(d => d.Contains(" → ", StringComparison.Ordinal)
+                                                  ? L.F("Ui_PdfaFontReplaced", d[..d.IndexOf(" → ", StringComparison.Ordinal)], d[(d.IndexOf(" → ", StringComparison.Ordinal) + 3)..]) : d)
+                                            : i.Details;
+            var list = string.Join(", ", details.Take(8)) + (i.Details.Count > 8 ? ", …" : "");
+            return list.Length > 0 ? $"{name} ({i.Count}): {list}" : $"{name} ({i.Count})";
+        });
 
     private static (string[] Positional, Dictionary<string, string> Options) Parse(string[] args)
     {

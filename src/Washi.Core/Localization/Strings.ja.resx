@@ -146,6 +146,8 @@
   washi pdf print &lt;in.pdf&gt; [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      プリンターの一覧
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）
+  washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   記入欄とコメントをページに描き込んで確定（保存前に確認）
+  washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   長期保存用の PDF/A-2b のコピー（--check は直す点の一覧だけ）
   washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
                                           デジタル ID で署名（パスワードは WASHI_ID_PASSWORD か入力）
   washi pdf verify &lt;in.pdf&gt;               ファイルの署名を確認
@@ -959,4 +961,59 @@
   <data name="Err_ParagraphMixed" xml:space="preserve"><value>段落内で文字の大きさが混ざっています。1 行ずつ編集してください。</value></data>
   <data name="Err_ParagraphNone" xml:space="preserve"><value>「{0}」は組み直せる段落の中にありません。</value></data>
   <data name="Err_ImageHeic" xml:space="preserve"><value>{0} は HEIC 写真ですが、このコンピューターには変換する手段がありません（macOS にはあります。Linux では libheif の heif-convert を入れてください）。先に JPEG で保存してください。</value></data>
+  <data name="Err_FlattenNothing" xml:space="preserve"><value>確定する対象がありません。記入欄・コメントのどちらか（または両方）を選んでください。</value></data>
+  <data name="Err_FlattenNone" xml:space="preserve"><value>確定する記入欄やコメントがありません。</value></data>
+  <data name="Err_FlattenSigned" xml:space="preserve"><value>このファイルには署名があります。確定すると署名が無効になります。</value></data>
+  <data name="Err_FlattenCannotDraw" xml:space="preserve"><value>次の記入欄はそのフォントで描けません: {0}</value></data>
+  <data name="Err_FlattenChanged" xml:space="preserve"><value>確定すると {0} ページ目の見た目が変わるため（{1} ピクセル）、コピーは保存しませんでした。</value></data>
+  <data name="Err_FlattenCheck" xml:space="preserve"><value>確定したコピーの確認に失敗しました（{0}、{1} ページ）。保存しませんでした。</value></data>
+  <data name="Err_PdfaSigned" xml:space="preserve"><value>このファイルには署名があります。PDF/A にすると署名が無効になります。</value></data>
+  <data name="Err_PdfaFont" xml:space="preserve"><value>埋め込まれておらず、置き換えもできないフォントがあります: {0}</value></data>
+  <data name="Err_PdfaCmyk" xml:space="preserve"><value>このファイルは CMYK で色を塗っていますが（{0}）、それを表す CMYK のカラープロファイルがこのコンピューターに見つかりません。</value></data>
+  <data name="Err_PdfaCannot" xml:space="preserve"><value>このファイルは PDF/A にできません: {0}</value></data>
+  <data name="Err_PdfaCheck" xml:space="preserve"><value>PDF/A のコピーにまだ問題が残っています: {0}。保存しませんでした。</value></data>
+  <data name="Err_PdfaChanged" xml:space="preserve"><value>PDF/A のコピーでは {0} ページ目の見た目か文字が変わるため、保存しませんでした。</value></data>
+  <data name="Ui_ToolArchive" xml:space="preserve"><value>確定・保存</value></data>
+  <data name="Ui_ArchiveTitle" xml:space="preserve"><value>確定と長期保存</value></data>
+  <data name="Ui_ArchiveLead" xml:space="preserve"><value>提出用・保管用の最終版を作ります。記入欄やコメントをページの一部にしたり、何年たっても同じように表示される PDF/A のコピーを作ったりします。</value></data>
+  <data name="Ui_FlattenTitle" xml:space="preserve"><value>確定（フラット化）</value></data>
+  <data name="Ui_FlattenLead" xml:space="preserve"><value>記入欄とコメントを今の見た目のままページに描き込みます。以後は変更できなくなります。リンクは残ります。</value></data>
+  <data name="Ui_FlattenFields" xml:space="preserve"><value>記入欄</value></data>
+  <data name="Ui_FlattenComments" xml:space="preserve"><value>コメント</value></data>
+  <data name="Ui_FlattenRun" xml:space="preserve"><value>確定してコピーを保存…</value></data>
+  <data name="Ui_Flattening" xml:space="preserve"><value>確定しています…</value></data>
+  <data name="Ui_Flattened" xml:space="preserve"><value>{0} を保存しました：記入欄 {1} 件とコメント {2} 件をページの一部にしました。確認済み：どのページも見た目は変わっていません。</value></data>
+  <data name="Ui_PdfaTitle" xml:space="preserve"><value>PDF/A（長期保存）</value></data>
+  <data name="Ui_PdfaLead" xml:space="preserve"><value>PDF/A-2b は、ページの表示に必要なものをすべてファイルの中に持ちます。フォントは埋め込み（名前だけのフォントはこのコンピューターのフォントに置き換え、文字の位置はそのまま）、色はプロファイルに結び付け、何も実行されないようにします。スクリプト・添付ファイル・記入欄の計算は取り除きます。</value></data>
+  <data name="Ui_PdfaCheckRun" xml:space="preserve"><value>確認</value></data>
+  <data name="Ui_PdfaChecking" xml:space="preserve"><value>確認しています…</value></data>
+  <data name="Ui_PdfaOk" xml:space="preserve"><value>このファイルは、Washi が確認する PDF/A-2b の規則をすでに満たしています。</value></data>
+  <data name="Ui_PdfaIssues" xml:space="preserve"><value>PDF/A-2b にするために直す点（PDF/A のコピーで直します）:</value></data>
+  <data name="Ui_PdfaFlattenFirst" xml:space="preserve"><value>先に記入欄とコメントを確定する</value></data>
+  <data name="Ui_PdfaRun" xml:space="preserve"><value>PDF/A で保存…</value></data>
+  <data name="Ui_PdfaConverting" xml:space="preserve"><value>PDF/A のコピーを作っています…</value></data>
+  <data name="Ui_PdfaSaved" xml:space="preserve"><value>{0} を PDF/A-2b で保存しました。確認済み：Washi が確認する規則を満たし、どのページも見た目と文字が変わっていません。</value></data>
+  <data name="Ui_PdfaChanges" xml:space="preserve"><value>変更した点:</value></data>
+  <data name="Ui_PdfaFontReplaced" xml:space="preserve"><value>{0} → {1}（埋め込み）</value></data>
+  <data name="Pdfa_Version" xml:space="preserve"><value>PDF 1.7 より新しいファイル形式</value></data>
+  <data name="Pdfa_Encrypted" xml:space="preserve"><value>パスワード保護（暗号化）</value></data>
+  <data name="Pdfa_Metadata" xml:space="preserve"><value>PDF/A であることを示し、文書のプロパティと一致する XMP メタデータ</value></data>
+  <data name="Pdfa_OutputIntent" xml:space="preserve"><value>ファイルのカラープロファイル（出力インテント）</value></data>
+  <data name="Pdfa_Cmyk" xml:space="preserve"><value>CMYK の色</value></data>
+  <data name="Pdfa_Rgb" xml:space="preserve"><value>RGB の色を sRGB に結び付け</value></data>
+  <data name="Pdfa_Fonts" xml:space="preserve"><value>埋め込まれていないフォント</value></data>
+  <data name="Pdfa_Scripts" xml:space="preserve"><value>JavaScript</value></data>
+  <data name="Pdfa_Actions" xml:space="preserve"><value>実行される動作（開いたとき・操作時・記入欄）</value></data>
+  <data name="Pdfa_Attachments" xml:space="preserve"><value>添付ファイル</value></data>
+  <data name="Pdfa_Xfa" xml:space="preserve"><value>XFA フォームのデータ</value></data>
+  <data name="Pdfa_Fields" xml:space="preserve"><value>自分の表示を持たない記入欄</value></data>
+  <data name="Pdfa_Annotations" xml:space="preserve"><value>非表示のコメント・音声・動画・3D</value></data>
+  <data name="Pdfa_AnnotationFlags" xml:space="preserve"><value>印刷しない設定のコメント・記入欄</value></data>
+  <data name="Pdfa_Appearances" xml:space="preserve"><value>余分な・欠けている表示</value></data>
+  <data name="Pdfa_Images" xml:space="preserve"><value>画像の補間指定と代替画像</value></data>
+  <data name="Pdfa_External" xml:space="preserve"><value>ファイル外の内容</value></data>
+  <data name="Pdfa_Graphics" xml:space="preserve"><value>転送関数と網点の指定</value></data>
+  <data name="Pdfa_Lzw" xml:space="preserve"><value>LZW 圧縮</value></data>
+  <data name="Pdfa_Layers" xml:space="preserve"><value>レイヤーの設定</value></data>
+  <data name="Pdfa_Other" xml:space="preserve"><value>PDF/A で使えないその他の項目</value></data>
 </root>

@@ -521,7 +521,7 @@ public static class AcroFormFields
     // ------------------------------------------------------------------ structure
     private static PdfItem? Deref(PdfItem? i) => i is PdfReference r ? r.Value : i;
 
-    private static PdfItem? Inherited(PdfDictionary d, string key)
+    internal static PdfItem? Inherited(PdfDictionary d, string key)
     {
         for (var cur = d; cur is not null; cur = Deref(cur.Elements["/Parent"]) as PdfDictionary)
             if (cur.Elements[key] is { } v) return Deref(v);
@@ -529,7 +529,7 @@ public static class AcroFormFields
     }
 
     /// <summary>Terminal fields (the ones that hold a value) with their full names and widgets.</summary>
-    private static IEnumerable<(PdfDictionary Field, string Name, List<PdfDictionary> Widgets)> Terminals(PdfDocument doc)
+    internal static IEnumerable<(PdfDictionary Field, string Name, List<PdfDictionary> Widgets)> Terminals(PdfDocument doc)
     {
         var form = doc.Internals.Catalog.Elements.GetDictionary("/AcroForm");
         if (form?.Elements.GetArray("/Fields") is not { } roots) yield break;

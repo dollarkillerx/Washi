@@ -1013,6 +1013,42 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Finalize_flattens_a_filled_form_then_checks_and_saves_a_PDF_A_copy()
+    {
+        var flat = Form("f.pdf");
+        var form = Path.Combine(_dir, "f_form.pdf");
+        Washi.Core.Forms.AcroFormWriter.Write(flat, form,
+            [new Washi.Core.Forms.FormField(0, Washi.Core.Forms.FormFieldKind.Text, new Washi.Core.PdfRect(40, 40, 440, 70), "name")],
+            Washi.Core.Forms.FormScript.Latin);
+        var filled = Path.Combine(_dir, "f_filled.pdf");
+        Washi.Core.Forms.AcroFormFields.Fill(form, filled, new Dictionary<string, string> { ["name"] = "Ada Lovelace" });
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "f_flattened.pdf") };
+        var (w, vm) = await Open(filled, dialogs);
+        vm.ActiveTool = Tool.Archive;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("FlattenButton")!.IsEffectivelyVisible);
+        vm.Archive.FlattenFields = false;
+        vm.Archive.FlattenComments = false;
+        Assert.False(vm.Archive.CanFlatten);
+        vm.Archive.FlattenFields = true;
+
+        await vm.Archive.FlattenCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.Contains("f_flattened.pdf", vm.Archive.Result);
+        Assert.Empty(Washi.Core.Forms.AcroFormFields.List(vm.PdfPath!));
+
+        await vm.Archive.CheckCommand.ExecuteAsync(null);
+        Assert.Contains(L.Get("Pdfa_Metadata"), vm.Archive.CheckText);   // not PDF/A yet
+
+        dialogs.SavePdf = Path.Combine(_dir, "f_pdfa.pdf");
+        await vm.Archive.ConvertCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.StartsWith(L.F("Ui_PdfaSaved", "f_pdfa.pdf"), vm.Archive.Result);
+        await vm.Archive.CheckCommand.ExecuteAsync(null);
+        Assert.Equal(L.Get("Ui_PdfaOk"), vm.Archive.CheckText);
+    }
+
+    [AvaloniaFact]
     public async Task A_digital_id_is_made_or_opened_and_signs_a_copy_whose_signature_is_listed()
     {
         var pdf = Form("d.pdf");

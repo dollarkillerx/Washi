@@ -41,9 +41,10 @@ public sealed class OpenTypeFont
 
     /// <summary>
     /// OS/2 fsType: 0 installable, 8 editable → may be embedded in a form people edit.
-    /// 2 restricted, 4 preview-and-print only, 0x200 bitmap only → may not.
+    /// 2 restricted, 4 preview-and-print only, 0x200 bitmap only → may not. Older fonts may set several of these bits;
+    /// the least restrictive one counts (OpenType's rule), so 14 (2 | 4 | 8) is editable.
     /// </summary>
-    public bool EmbeddingAllowedForEditing => (FsType & 0x000F) is 0 or 8 && (FsType & 0x0200) == 0;
+    public bool EmbeddingAllowedForEditing => ((FsType & 0x000F) == 0 || (FsType & 0x0008) != 0) && (FsType & 0x0200) == 0;
 
     public static OpenTypeFont Load(string path, int faceIndex = 0) => Parse(File.ReadAllBytes(path), faceIndex);
 
@@ -71,7 +72,7 @@ public sealed class OpenTypeFont
         if (tables.TryGetValue("OS/2", out var os2First))
         {
             ushort fs = (ushort)U16(sfnt, os2First.Offset + 8);
-            if (!((fs & 0x000F) is 0 or 8 && (fs & 0x0200) == 0)) throw new FontNotUsableException("license", fs);
+            if (!(((fs & 0x000F) == 0 || (fs & 0x0008) != 0) && (fs & 0x0200) == 0)) throw new FontNotUsableException("license", fs);
         }
         if (tables.ContainsKey("fvar") || tables.ContainsKey("CFF2"))
             throw new FontNotUsableException("variable");

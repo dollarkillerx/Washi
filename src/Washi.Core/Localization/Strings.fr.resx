@@ -146,6 +146,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf print &lt;in.pdf&gt; [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      liste les imprimantes
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)
+  washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   dessiner champs et commentaires dans la page (vérifié avant d’être conservé)
+  washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   une copie PDF/A-2b pour l’archivage (--check liste seulement ce qui fait obstacle)
   washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
                                           signe avec une identité numérique (mot de passe : WASHI_ID_PASSWORD ou demandé)
   washi pdf verify &lt;in.pdf&gt;               vérifie les signatures d’un fichier
@@ -959,4 +961,59 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_ParagraphMixed" xml:space="preserve"><value>Le paragraphe mélange des tailles de texte : modifiez ses lignes une à une.</value></data>
   <data name="Err_ParagraphNone" xml:space="preserve"><value>« {0} » n’est pas dans un paragraphe recomposable.</value></data>
   <data name="Err_ImageHeic" xml:space="preserve"><value>{0} est une photo HEIC et cet ordinateur n’a rien pour la convertir (macOS le peut ; sous Linux installez heif-convert de libheif) : enregistrez-la d’abord en JPEG.</value></data>
+  <data name="Err_FlattenNothing" xml:space="preserve"><value>Rien à aplatir : choisissez les champs, les commentaires ou les deux.</value></data>
+  <data name="Err_FlattenNone" xml:space="preserve"><value>Il n’y a ni champ ni commentaire à aplatir.</value></data>
+  <data name="Err_FlattenSigned" xml:space="preserve"><value>Le fichier est signé : l’aplatir casserait ses signatures.</value></data>
+  <data name="Err_FlattenCannotDraw" xml:space="preserve"><value>Washi ne peut pas dessiner ces champs dans leur police : {0}.</value></data>
+  <data name="Err_FlattenChanged" xml:space="preserve"><value>La page {0} change d’aspect une fois aplatie ({1} pixels) ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_FlattenCheck" xml:space="preserve"><value>La vérification de la copie aplatie a échoué ({0}, page {1}) ; elle n’a pas été conservée.</value></data>
+  <data name="Err_PdfaSigned" xml:space="preserve"><value>Le fichier est signé : le convertir en PDF/A casserait ses signatures.</value></data>
+  <data name="Err_PdfaFont" xml:space="preserve"><value>Ces polices ne sont pas incorporées et ne peuvent pas être remplacées : {0}.</value></data>
+  <data name="Err_PdfaCmyk" xml:space="preserve"><value>Le fichier peint en CMJN ({0}) et aucun profil couleur CMJN n’a été trouvé sur cet ordinateur pour le décrire.</value></data>
+  <data name="Err_PdfaCannot" xml:space="preserve"><value>Washi ne peut pas convertir ce fichier en PDF/A : {0}.</value></data>
+  <data name="Err_PdfaCheck" xml:space="preserve"><value>La copie PDF/A a encore : {0} ; elle n’a pas été conservée.</value></data>
+  <data name="Err_PdfaChanged" xml:space="preserve"><value>La page {0} a un autre aspect ou un autre texte dans la copie PDF/A ; elle n’a pas été conservée.</value></data>
+  <data name="Ui_ToolArchive" xml:space="preserve"><value>Finaliser</value></data>
+  <data name="Ui_ArchiveTitle" xml:space="preserve"><value>Aplatir et archiver</value></data>
+  <data name="Ui_ArchiveLead" xml:space="preserve"><value>Créez une version finale à envoyer ou à conserver : les champs et commentaires font partie de la page, ou une copie PDF/A qui gardera son aspect pendant des années.</value></data>
+  <data name="Ui_FlattenTitle" xml:space="preserve"><value>Aplatir</value></data>
+  <data name="Ui_FlattenLead" xml:space="preserve"><value>Chaque champ et commentaire est dessiné dans la page tel qu’il apparaît et ne peut plus être modifié. Les liens restent.</value></data>
+  <data name="Ui_FlattenFields" xml:space="preserve"><value>Champs de formulaire</value></data>
+  <data name="Ui_FlattenComments" xml:space="preserve"><value>Commentaires</value></data>
+  <data name="Ui_FlattenRun" xml:space="preserve"><value>Aplatir et enregistrer une copie…</value></data>
+  <data name="Ui_Flattening" xml:space="preserve"><value>Aplatissement…</value></data>
+  <data name="Ui_Flattened" xml:space="preserve"><value>{0} enregistré : {1} champ(s) et {2} commentaire(s) font désormais partie de la page. Vérifié : chaque page a le même aspect.</value></data>
+  <data name="Ui_PdfaTitle" xml:space="preserve"><value>PDF/A (archivage)</value></data>
+  <data name="Ui_PdfaLead" xml:space="preserve"><value>Le PDF/A-2b garde dans le fichier tout ce dont une page a besoin : polices incorporées (une police seulement nommée est remplacée par une police de cet ordinateur, chaque caractère restant à sa place), couleurs liées à un profil, rien qui s’exécute. Scripts, pièces jointes et calculs de champs sont retirés.</value></data>
+  <data name="Ui_PdfaCheckRun" xml:space="preserve"><value>Vérifier</value></data>
+  <data name="Ui_PdfaChecking" xml:space="preserve"><value>Vérification…</value></data>
+  <data name="Ui_PdfaOk" xml:space="preserve"><value>Ce fichier respecte déjà les règles PDF/A-2b que Washi vérifie.</value></data>
+  <data name="Ui_PdfaIssues" xml:space="preserve"><value>Ce qui sépare ce fichier du PDF/A-2b (une copie PDF/A le corrige) :</value></data>
+  <data name="Ui_PdfaFlattenFirst" xml:space="preserve"><value>Aplatir d’abord les champs et commentaires</value></data>
+  <data name="Ui_PdfaRun" xml:space="preserve"><value>Enregistrer en PDF/A…</value></data>
+  <data name="Ui_PdfaConverting" xml:space="preserve"><value>Création de la copie PDF/A…</value></data>
+  <data name="Ui_PdfaSaved" xml:space="preserve"><value>{0} enregistré en PDF/A-2b. Vérifié : il respecte les règles que Washi vérifie, chaque page a le même aspect et le même texte.</value></data>
+  <data name="Ui_PdfaChanges" xml:space="preserve"><value>Modifié :</value></data>
+  <data name="Ui_PdfaFontReplaced" xml:space="preserve"><value>{0} → {1} (incorporée)</value></data>
+  <data name="Pdfa_Version" xml:space="preserve"><value>Version de fichier postérieure à PDF 1.7</value></data>
+  <data name="Pdfa_Encrypted" xml:space="preserve"><value>Protection par mot de passe (chiffrement)</value></data>
+  <data name="Pdfa_Metadata" xml:space="preserve"><value>Métadonnées XMP déclarant le PDF/A et conformes aux propriétés</value></data>
+  <data name="Pdfa_OutputIntent" xml:space="preserve"><value>Profil couleur du fichier (intention de sortie)</value></data>
+  <data name="Pdfa_Cmyk" xml:space="preserve"><value>Couleurs en CMJN</value></data>
+  <data name="Pdfa_Rgb" xml:space="preserve"><value>Couleurs RVB liées au sRGB</value></data>
+  <data name="Pdfa_Fonts" xml:space="preserve"><value>Polices non incorporées</value></data>
+  <data name="Pdfa_Scripts" xml:space="preserve"><value>JavaScript</value></data>
+  <data name="Pdfa_Actions" xml:space="preserve"><value>Actions qui s’exécutent (à l’ouverture, sur événement, dans les champs)</value></data>
+  <data name="Pdfa_Attachments" xml:space="preserve"><value>Pièces jointes</value></data>
+  <data name="Pdfa_Xfa" xml:space="preserve"><value>Données de formulaire XFA</value></data>
+  <data name="Pdfa_Fields" xml:space="preserve"><value>Champs sans apparence propre</value></data>
+  <data name="Pdfa_Annotations" xml:space="preserve"><value>Commentaires masqués, sons, vidéos et 3D</value></data>
+  <data name="Pdfa_AnnotationFlags" xml:space="preserve"><value>Commentaires et champs non imprimables</value></data>
+  <data name="Pdfa_Appearances" xml:space="preserve"><value>Apparences en trop ou manquantes</value></data>
+  <data name="Pdfa_Images" xml:space="preserve"><value>Lissage et images de remplacement</value></data>
+  <data name="Pdfa_External" xml:space="preserve"><value>Contenu hors du fichier</value></data>
+  <data name="Pdfa_Graphics" xml:space="preserve"><value>Fonctions de transfert et trames</value></data>
+  <data name="Pdfa_Lzw" xml:space="preserve"><value>Compression LZW</value></data>
+  <data name="Pdfa_Layers" xml:space="preserve"><value>Réglages des calques</value></data>
+  <data name="Pdfa_Other" xml:space="preserve"><value>Autres entrées interdites en PDF/A</value></data>
 </root>
