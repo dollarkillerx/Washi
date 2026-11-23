@@ -132,6 +132,7 @@
                                           真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）
   washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐頁列出文字所在位置
   washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=目標 ...] [--remove 1-2,3-1] [-o out.pdf]   列出連結，或新增（網址、郵件、頁碼）和刪除連結
+  washi pdf images &lt;in.pdf&gt; [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   列出、新增、取代或刪除頁面上的圖片
   washi pdf compare &lt;舊.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   列出變化（文字、頁面、圖片）（-o：在新版上用註解標出每處變化）
   washi pdf replace-text &lt;in.pdf&gt; (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           修改頁面上的文字（一次一行；儲存前會檢查）
@@ -917,4 +918,29 @@
   <data name="Err_LinkAdd" xml:space="preserve"><value>--add 的格式是 page:x0,y0,x1,y1=目標。</value></data>
   <data name="Err_LinkCheck" xml:space="preserve"><value>第 {1} 頁指向 {0} 的連結無法讀回，因此沒有保留副本。</value></data>
   <data name="Err_LinkChanged" xml:space="preserve"><value>第 {0} 頁加連結後外觀改變，因此沒有保留副本。</value></data>
+  <data name="Ui_ToolImages" xml:space="preserve"><value>圖片</value></data>
+  <data name="Ui_ImagesTitle" xml:space="preserve"><value>頁面上的圖片</value></data>
+  <data name="Ui_ImagesLead" xml:space="preserve"><value>點一下圖片可以用圖片檔取代（保持新圖比例放在原位置）或刪除。要新增圖片，先選擇檔案再在頁面上拖出一個框。</value></data>
+  <data name="Ui_ImagesAdd" xml:space="preserve"><value>新增圖片…</value></data>
+  <data name="Ui_ImagePlace" xml:space="preserve"><value>請在頁面上拖出放置 {0} 的框。</value></data>
+  <data name="Ui_ImageSelected" xml:space="preserve"><value>選取的圖片</value></data>
+  <data name="Ui_ImageReplace" xml:space="preserve"><value>取代…</value></data>
+  <data name="Ui_ImageRemove" xml:space="preserve"><value>刪除</value></data>
+  <data name="Ui_ImageUndo" xml:space="preserve"><value>保持原樣</value></data>
+  <data name="Ui_ImagesOnPages" xml:space="preserve"><value>檔案中的圖片</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>頁面上沒有圖片（表單內的圖片和內嵌圖片不會列出）。</value></data>
+  <data name="Ui_ImageWhere" xml:space="preserve"><value>第 {0} 頁 · {1} × {2} px</value></data>
+  <data name="Ui_ImageWillGo" xml:space="preserve"><value>將刪除</value></data>
+  <data name="Ui_ImageWillBe" xml:space="preserve"><value>將取代為 {0}</value></data>
+  <data name="Ui_ImageAdd" xml:space="preserve"><value>在第 {1} 頁新增 {0}</value></data>
+  <data name="Ui_ImagesSave" xml:space="preserve"><value>將 {0} 處修改另存為副本…</value></data>
+  <data name="Ui_ImagesSaveNote" xml:space="preserve"><value>只有圖片會改變：儲存前會把副本與原檔案對照檢查。JPEG 照片原樣放入。原檔案不會改變。</value></data>
+  <data name="Ui_ImagesSaved" xml:space="preserve"><value>已儲存 {0}：新增 {1} 張圖片，取代 {2} 張，刪除 {3} 張。已檢查：其他部分沒有變化。</value></data>
+  <data name="Pdf_ImageLine" xml:space="preserve"><value>  {0}  第 {1} 頁：{2} × {3} px  [{4}]</value></data>
+  <data name="Err_ImageEditNothing" xml:space="preserve"><value>沒有要新增、取代或刪除的圖片。</value></data>
+  <data name="Err_ImageId" xml:space="preserve"><value>沒有圖片 {0}。</value></data>
+  <data name="Err_ImageAdd" xml:space="preserve"><value>--add 的格式是 page:x0,y0,x1,y1=圖片檔。</value></data>
+  <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace 的格式是 id=圖片檔。</value></data>
+  <data name="Err_ImageEditChanged" xml:space="preserve"><value>第 {0} 頁在圖片以外發生了變化，因此沒有保留副本。</value></data>
+  <data name="Err_ImageEditCheck" xml:space="preserve"><value>{0} 在第 {1} 頁顯示不正確，因此沒有保留副本。</value></data>
 </root>

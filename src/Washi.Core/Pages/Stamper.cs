@@ -207,7 +207,7 @@ public static partial class PdfStamper
     }
 
     /// <summary>The page's own content stays as it is: a stream before it (what goes behind, then q) and one after (Q, then the marks).</summary>
-    private static void AddStreams(PdfDocument doc, PdfPage page, string behind, string front)
+    internal static void AddStreams(PdfDocument doc, PdfPage page, string behind, string front)
     {
         PdfReference Stream(string content)
         {

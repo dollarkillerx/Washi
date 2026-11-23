@@ -132,6 +132,7 @@
                                           단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)
   washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시
   washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=대상 ...] [--remove 1-2,3-1] [-o out.pdf]   링크 목록, 또는 추가(웹·메일 주소, 쪽 번호)와 삭제
+  washi pdf images &lt;in.pdf&gt; [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   페이지의 이미지 목록, 추가, 교체, 삭제
   washi pdf compare &lt;이전.pdf&gt; &lt;새.pdf&gt; [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)
   washi pdf replace-text &lt;in.pdf&gt; (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)
@@ -917,4 +918,29 @@
   <data name="Err_LinkAdd" xml:space="preserve"><value>--add 형식은 page:x0,y0,x1,y1=대상 입니다.</value></data>
   <data name="Err_LinkCheck" xml:space="preserve"><value>{1}페이지의 {0} 링크를 다시 읽을 수 없어 사본을 저장하지 않았습니다.</value></data>
   <data name="Err_LinkChanged" xml:space="preserve"><value>{0}페이지가 링크 때문에 달라 보여 사본을 저장하지 않았습니다.</value></data>
+  <data name="Ui_ToolImages" xml:space="preserve"><value>이미지</value></data>
+  <data name="Ui_ImagesTitle" xml:space="preserve"><value>페이지의 이미지</value></data>
+  <data name="Ui_ImagesLead" xml:space="preserve"><value>이미지를 클릭하면 이미지 파일로 교체(원래 자리에 비율을 유지해 넣음)하거나 삭제할 수 있습니다. 추가하려면 이미지를 고르고 페이지에 상자를 그리세요.</value></data>
+  <data name="Ui_ImagesAdd" xml:space="preserve"><value>이미지 추가…</value></data>
+  <data name="Ui_ImagePlace" xml:space="preserve"><value>{0}을(를) 놓을 자리에 페이지에서 상자를 그리세요.</value></data>
+  <data name="Ui_ImageSelected" xml:space="preserve"><value>선택한 이미지</value></data>
+  <data name="Ui_ImageReplace" xml:space="preserve"><value>교체…</value></data>
+  <data name="Ui_ImageRemove" xml:space="preserve"><value>삭제</value></data>
+  <data name="Ui_ImageUndo" xml:space="preserve"><value>그대로 두기</value></data>
+  <data name="Ui_ImagesOnPages" xml:space="preserve"><value>파일의 이미지</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>페이지에 이미지가 없습니다 (양식 안의 이미지와 인라인 이미지는 나오지 않음).</value></data>
+  <data name="Ui_ImageWhere" xml:space="preserve"><value>{0}페이지 · {1} × {2} px</value></data>
+  <data name="Ui_ImageWillGo" xml:space="preserve"><value>삭제됨</value></data>
+  <data name="Ui_ImageWillBe" xml:space="preserve"><value>{0}(으)로 교체됨</value></data>
+  <data name="Ui_ImageAdd" xml:space="preserve"><value>{1}페이지에 {0} 추가</value></data>
+  <data name="Ui_ImagesSave" xml:space="preserve"><value>변경 {0}개를 사본으로 저장…</value></data>
+  <data name="Ui_ImagesSaveNote" xml:space="preserve"><value>이미지만 바뀝니다. 저장하기 전에 사본을 원본과 비교합니다. JPEG 사진은 그대로 넣습니다. 원본은 바뀌지 않습니다.</value></data>
+  <data name="Ui_ImagesSaved" xml:space="preserve"><value>{0} 저장: 이미지 {1}개 추가, {2}개 교체, {3}개 삭제. 확인: 다른 부분은 바뀌지 않았습니다.</value></data>
+  <data name="Pdf_ImageLine" xml:space="preserve"><value>  {0}  {1}페이지: {2} × {3} px  [{4}]</value></data>
+  <data name="Err_ImageEditNothing" xml:space="preserve"><value>추가·교체·삭제할 이미지가 없습니다.</value></data>
+  <data name="Err_ImageId" xml:space="preserve"><value>이미지 {0}이(가) 없습니다.</value></data>
+  <data name="Err_ImageAdd" xml:space="preserve"><value>--add 형식은 page:x0,y0,x1,y1=이미지 파일 입니다.</value></data>
+  <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace 형식은 id=이미지 파일 입니다.</value></data>
+  <data name="Err_ImageEditChanged" xml:space="preserve"><value>{0}페이지가 이미지 밖에서 바뀌어 사본을 저장하지 않았습니다.</value></data>
+  <data name="Err_ImageEditCheck" xml:space="preserve"><value>{1}페이지에서 {0}이(가) 제대로 보이지 않아 사본을 저장하지 않았습니다.</value></data>
 </root>

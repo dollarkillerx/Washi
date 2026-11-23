@@ -121,9 +121,9 @@ public static class PdfFromImages
         finally { Directory.Delete(dir, recursive: true); }
     }
 
-    private sealed record Loaded(PdfDictionary Dict, int Width, int Height, SKEncodedOrigin Origin, bool AsIs);
+    internal sealed record Loaded(PdfDictionary Dict, int Width, int Height, SKEncodedOrigin Origin, bool AsIs);
 
-    private static Loaded Load(PdfDocument doc, string path)
+    internal static Loaded Load(PdfDocument doc, string path)
     {
         if (!File.Exists(path)) throw new PageAssemblyException($"{Path.GetFileName(path)} does not exist", "Err_NotFound", Path.GetFileName(path));
         if (!IsImage(path)) throw new PageAssemblyException($"{Path.GetFileName(path)} is not an image Washi can read (JPEG, PNG, WebP, BMP, GIF)", "Err_ImageUnsupported", Path.GetFileName(path));
@@ -239,7 +239,7 @@ public static class PdfFromImages
     }
 
     /// <summary>The cm that draws the image (stored top row first) upright in the box, for each EXIF orientation.</summary>
-    private static (double A, double B, double C, double D, double E, double F) Placement(SKEncodedOrigin origin, double x, double y, double w, double h) => origin switch
+    internal static (double A, double B, double C, double D, double E, double F) Placement(SKEncodedOrigin origin, double x, double y, double w, double h) => origin switch
     {
         SKEncodedOrigin.TopRight => (-w, 0, 0, h, x + w, y),
         SKEncodedOrigin.BottomRight => (-w, 0, 0, -h, x + w, y + h),
@@ -252,7 +252,7 @@ public static class PdfFromImages
     };
 
     /// <summary>The image as it stands (its EXIF orientation applied), for comparing.</summary>
-    private static SKBitmap Upright(SKBitmap src, SKEncodedOrigin origin)
+    internal static SKBitmap Upright(SKBitmap src, SKEncodedOrigin origin)
     {
         bool turned = origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.LeftBottom;
         float W = src.Width, H = src.Height;
@@ -320,7 +320,7 @@ public static class PdfFromImages
     }
 
     /// <summary>The mean colour of each cell of a grid laid over the bitmap (every pixel counted).</summary>
-    private static (double R, double G, double B)[] Averages(SKBitmap bmp, int grid)
+    internal static (double R, double G, double B)[] Averages(SKBitmap bmp, int grid)
     {
         var sums = new (double R, double G, double B, int N)[grid * grid];
         var px = bmp.GetPixelSpan();
