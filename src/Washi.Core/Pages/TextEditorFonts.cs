@@ -41,6 +41,36 @@ public static partial class PdfTextEditor
         return (dict.Reference!, hex, em, false, StandardName(dict));
     }
 
+    /// <summary>
+    /// One font for a whole paragraph (the document's own when it has every character of <paramref name="text"/>,
+    /// otherwise a similar standard one) and a pen that encodes any part of the text in it and measures it (in em).
+    /// </summary>
+    private static (PdfItem Font, Func<string, (string Hex, double Em)> Pen, bool Kept, string Name) PenFor(PdfDocument doc, PdfDictionary resources, Char first, string text)
+    {
+        if (FindFont(resources, first.Font) is { } font && Codes(font) is { } map && text.EnumerateRunes().All(r => map.ContainsKey(r.ToString())))
+        {
+            var metrics = FontMetrics.From(Deref(font) as PdfDictionary);
+            return (font, t =>
+            {
+                var sb = new StringBuilder("<");
+                double em = 0;
+                foreach (var rune in t.EnumerateRunes())
+                {
+                    var code = map[rune.ToString()];
+                    sb.Append(Convert.ToHexString(code));
+                    int c = 0;
+                    foreach (var b in code) c = c << 8 | b;
+                    em += metrics.Width(c, code.Length).W;
+                }
+                return (sb.Append('>').ToString(), em);
+            }, true, Clean(first.Font));
+        }
+        var script = ScriptFor(text);
+        bool serif = Serif(first);
+        var dict = AcroFormWriter.TextFont(doc, script, serif);
+        return (dict.Reference!, t => EncodeStandard(t, script, serif), false, StandardName(dict));
+    }
+
     /// <summary>The standard font that can draw <paramref name="text"/>: Latin (WinAnsi) when it can, otherwise the CJK script it is in.</summary>
     internal static FormScript ScriptFor(string text) =>
         CanWinAnsi(text) ? FormScript.Latin : FormScripts.Detect(text) is { } s && s != FormScript.Latin ? s : FormScript.Japanese;

@@ -867,7 +867,9 @@ public sealed class EditTextTool(PathPolicy p) : PdfTool(p)
         "Change the text printed on PDF pages: find and replace, or replace the text inside a rectangle. The old characters are " +
         "taken out of the page (the rest of the line stays where it was) and the new text is drawn at the same baseline, size and " +
         "colour, in the document's own font when it has every character needed, otherwise in a similar standard font (serif or " +
-        "not; Latin or CJK). One line at a time, horizontal text only; a longer text that would run into the text after it on the " +
+        "not; Latin or CJK). A paragraph_containing edit sets a whole paragraph again in its width, font, size and line spacing " +
+        "(it may grow into empty space below, never over anything). Otherwise one line at a time, horizontal text only; a longer " +
+        "text that would run into the text after it on the " +
         "line is refused. The copy is checked before it is kept (nothing changed outside the edits, the new text reads back). " +
         "This changes page text, not form fields (use fill_fields) or comments. Never overwrites: output defaults to <name>_edited.pdf.";
     protected override string Schema => """
@@ -879,6 +881,7 @@ public sealed class EditTextTool(PathPolicy p) : PdfTool(p)
                      "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4,
                              "description":"[x0,y0,x1,y1] in points from the top-left of the upright page: the text inside it is replaced"},
                      "text":{"type":"string","description":"The new text (empty removes it)"},
+                     "paragraph_containing":{"type":"string","description":"Set the whole paragraph that holds this text again with text (wrapped to the paragraph's width; \\n starts a new line)"},
                      "match_case":{"type":"boolean","description":"With find (default true)"},
                      "whole_words":{"type":"boolean","description":"With find: not part of a longer word"}},
                    "required":["text"],"additionalProperties":false}},
@@ -892,11 +895,17 @@ public sealed class EditTextTool(PathPolicy p) : PdfTool(p)
         if (!a.TryGetProperty("edits", out var list) || list.ValueKind != JsonValueKind.Array || list.GetArrayLength() == 0)
             throw new ToolException("edits must list at least one change");
         var edits = new List<TextEdit>();
+        var paragraphs = new List<TextEdit>();
         foreach (var e in list.EnumerateArray())
         {
             var text = e.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString()! : throw new ToolException("each edit needs text");
             int? page = e.TryGetProperty("page", out var pg) && pg.TryGetInt32(out var pn) ? pn - 1 : null;
-            if (e.TryGetProperty("rect", out var r) && r.ValueKind == JsonValueKind.Array && r.GetArrayLength() == 4)
+            if (e.TryGetProperty("paragraph_containing", out var pc) && pc.ValueKind == JsonValueKind.String && pc.GetString() is { Length: > 0 } holds)
+            {
+                var para = PdfTextEditor.ParagraphContaining(path, holds, page);
+                paragraphs.Add(new TextEdit(para.Page, para.Box, text));
+            }
+            else if (e.TryGetProperty("rect", out var r) && r.ValueKind == JsonValueKind.Array && r.GetArrayLength() == 4)
             {
                 if (page is null) throw new ToolException("an edit with rect needs page (1-based)");
                 var v = r.EnumerateArray().Select(x => x.GetDouble()).ToArray();
@@ -911,10 +920,22 @@ public sealed class EditTextTool(PathPolicy p) : PdfTool(p)
                 edits.AddRange(hits.Select(h => new TextEdit(h.Page, h.Boxes.Aggregate((x, y) => new PdfRect(Math.Min(x.X0, y.X0), Math.Min(x.Y0, y.Y0),
                                                                                                     Math.Max(x.X1, y.X1), Math.Max(x.Y1, y.Y1))), text)));
             }
-            else throw new ToolException("each edit needs find or rect (with page)");
+            else throw new ToolException("each edit needs find, rect (with page) or paragraph_containing");
         }
         var output = Policy.Output(OptStr(a, "output"), path, "_edited");
-        var results = PdfTextEditor.Apply(path, output, edits);
+        var results = new List<TextEditResult>();
+        if (paragraphs.Count == 0) results.AddRange(PdfTextEditor.Apply(path, output, edits));
+        else if (edits.Count == 0) results.AddRange(PdfTextEditor.Reflow(path, output, paragraphs));
+        else
+        {
+            var mid = Path.Combine(Path.GetTempPath(), $"washi-edit-{Guid.NewGuid():N}.pdf");
+            try
+            {
+                results.AddRange(PdfTextEditor.Apply(path, mid, edits));
+                results.AddRange(PdfTextEditor.Reflow(mid, output, paragraphs));
+            }
+            finally { if (File.Exists(mid)) File.Delete(mid); }
+        }
         return new ToolResult(ToJson(new
         {
             output,

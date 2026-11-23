@@ -1098,12 +1098,17 @@
                             <TextBlock Classes="title" Text="{l:Tr Ui_EditTextTitle}" />
                             <TextBlock Classes="lead" Text="{l:Tr Ui_EditTextLead}" />
 
+                            <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,12,0,0">
+                                <RadioButton GroupName="editmode" Content="{l:Tr Ui_EditTextModeLines}" IsChecked="{Binding !EditText.ParagraphMode}" />
+                                <RadioButton GroupName="editmode" Content="{l:Tr Ui_EditTextModeParagraphs}" IsChecked="{Binding EditText.ParagraphMode}"
+                                             x:Name="EditTextParagraphMode" />
+                            </StackPanel>
                             <TextBlock Classes="section" Text="{l:Tr Ui_EditTextLine}" />
                             <TextBlock Classes="note" Text="{l:Tr Ui_EditTextClick}" IsVisible="{Binding !EditText.HasSelection}" />
                             <StackPanel IsVisible="{Binding EditText.HasSelection}" Spacing="6">
-                                <TextBox Text="{Binding EditText.Text}" TextWrapping="Wrap" x:Name="EditTextBox">
+                                <TextBox Text="{Binding EditText.Text}" TextWrapping="Wrap" AcceptsReturn="{Binding EditText.ParagraphMode}"
+                                         MaxHeight="220" x:Name="EditTextBox">
                                     <TextBox.KeyBindings>
-                                        <KeyBinding Gesture="Enter" Command="{Binding EditText.CommitCommand}" />
                                         <KeyBinding Gesture="Escape" Command="{Binding EditText.CancelCommand}" />
                                     </TextBox.KeyBindings>
                                 </TextBox>
@@ -1111,7 +1116,8 @@
                                     <Button Content="{l:Tr Ui_EditTextKeep}" Command="{Binding EditText.CommitCommand}" Padding="12,4" x:Name="EditTextKeepButton" />
                                     <Button Content="{l:Tr Ui_Cancel}" Command="{Binding EditText.CancelCommand}" Padding="12,4" />
                                 </StackPanel>
-                                <TextBlock Classes="note" Text="{l:Tr Ui_EditTextKeys}" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_EditTextKeys}" IsVisible="{Binding !EditText.ParagraphMode}" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_EditTextKeysParagraph}" IsVisible="{Binding EditText.ParagraphMode}" TextWrapping="Wrap" />
                             </StackPanel>
 
                             <TextBlock Classes="section" Text="{l:Tr Ui_EditTextFindTitle}" />

@@ -526,6 +526,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <old.pdf> <new.pdf> [-o marked.pdf]   what changed: words, pages, pictures (-o: the new version with each change marked)\n'
             '  washi pdf replace-text <in.pdf> (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          change text on the page (one line at a time; checked before it is kept)\n'
+            '                 --paragraph "text in it" --with "new paragraph": set the whole paragraph again in its width\n'
             '  washi pdf stamp <in.pdf> [--header "left|center|right"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PREFIX [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   headers, footers, page and Bates numbers ({page} {pages} {date} {file} {bates}), a watermark\n'
             '                 --replace-existing: take out what Washi added before; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]: only take it out\n'
@@ -567,6 +568,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）\n'
             '  washi pdf replace-text <in.pdf> (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
+            '                 --paragraph "段落内の語句" --with "新しい段落"：段落全体を元の幅で組み直す\n'
             '  washi pdf stamp <in.pdf> [--header "左|中央|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 接頭辞 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   ヘッダー・フッター・ページ番号・ベイツ番号（{page} {pages} {date} {file} {bates}）、透かし\n'
             '                 --replace-existing：Washi が以前に入れたものを外してから追加；washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]：外すだけ\n'
@@ -608,6 +610,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   列出变化（文字、页面、图片）（-o：在新版上用批注标出每处变化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改页面上的文字（一次一行；保存前会检查）\n'
+            '                 --paragraph "段落中的文字" --with "新段落"：按原宽度重新排版整个段落\n'
             '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前缀 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   页眉、页脚、页码、贝茨编号（{page} {pages} {date} {file} {bates}）、水印\n'
             '                 --replace-existing：先去掉 Washi 以前加入的内容；washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]：只去掉\n'
@@ -649,6 +652,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <舊.pdf> <新.pdf> [-o marked.pdf]   列出變化（文字、頁面、圖片）（-o：在新版上用註解標出每處變化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
+            '                 --paragraph "段落中的文字" --with "新段落"：依原寬度重新排版整個段落\n'
             '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前綴 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   頁首、頁尾、頁碼、貝茨編號（{page} {pages} {date} {file} {bates}）、浮水印\n'
             '                 --replace-existing：先去掉 Washi 先前加入的內容；washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]：只去掉\n'
@@ -690,6 +694,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <이전.pdf> <새.pdf> [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)\n'
             '  washi pdf replace-text <in.pdf> (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
+            '                 --paragraph "문단 안의 글자" --with "새 문단": 문단 전체를 원래 너비로 다시 조판\n'
             '  washi pdf stamp <in.pdf> [--header "왼쪽|가운데|오른쪽"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 접두사 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 텍스트 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   머리글·바닥글·쪽 번호·베이츠 번호({page} {pages} {date} {file} {bates}), 워터마크\n'
             '                 --replace-existing: Washi가 전에 넣은 것을 빼고 추가; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]: 빼기만\n'
@@ -731,6 +736,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <ancien.pdf> <nouveau.pdf> [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)\n'
             '  washi pdf replace-text <in.pdf> (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
+            '                 --paragraph "texte du paragraphe" --with "nouveau paragraphe" : recomposer tout le paragraphe dans sa largeur\n'
             '  washi pdf stamp <in.pdf> [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark TEXTE [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   en-têtes, pieds de page, numéros de page et Bates ({page} {pages} {date} {file} {bates}), filigrane\n'
             '                 --replace-existing : retire d’abord ce que Washi avait ajouté ; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf] : seulement le retirer\n'
@@ -772,6 +778,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compare <alt.pdf> <neu.pdf> [-o marked.pdf]   was sich geändert hat: Wörter, Seiten, Bilder (-o: die neue Version mit markierten Änderungen)\n'
             '  washi pdf replace-text <in.pdf> (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
+            '                 --paragraph "Text darin" --with "neuer Absatz": den ganzen Absatz in seiner Breite neu setzen\n'
             '  washi pdf stamp <in.pdf> [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   Kopf- und Fußzeilen, Seiten- und Bates-Nummern ({page} {pages} {date} {file} {bates}), Wasserzeichen\n'
             '                 --replace-existing: zuerst entfernen, was Washi früher hinzugefügt hat; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]: nur entfernen\n'
@@ -1892,6 +1899,12 @@ _UI = {
     "Err_StampNone": ["There are no headers, footers or watermarks that Washi added.", "Washi が入れたヘッダー・フッター・透かしはありません。", "没有 Washi 加入的页眉、页脚或水印。", "沒有 Washi 加入的頁首、頁尾或浮水印。", "Washi가 넣은 머리글·바닥글·워터마크가 없습니다.", "Il n’y a ni en-tête, ni pied de page, ni filigrane ajouté par Washi.", "Es gibt keine von Washi hinzugefügten Kopf-, Fußzeilen oder Wasserzeichen."],
     "Err_StampRemoveCheck": ["Some of the marks were still there after removing them, so the copy was not kept.", "外したはずのものが残っていたため、保存しませんでした。", "去掉后仍有残留，因此没有保留副本。", "去掉後仍有殘留，因此沒有保留副本。", "뺀 뒤에도 남은 것이 있어 사본을 저장하지 않았습니다.", "Certaines marques étaient encore là après leur retrait ; la copie n’a pas été conservée.", "Einige Markierungen waren nach dem Entfernen noch da; die Kopie wurde nicht behalten."],
     "Err_StampRemoveArg": ["--remove takes headers, watermarks or all.", "--remove には headers・watermarks・all のどれかを指定します。", "--remove 的值为 headers、watermarks 或 all。", "--remove 的值為 headers、watermarks 或 all。", "--remove에는 headers, watermarks, all 중 하나를 씁니다.", "--remove prend headers, watermarks ou all.", "--remove nimmt headers, watermarks oder all."],
+    "Ui_EditTextModeLines": ["Lines", "行", "行", "行", "줄", "Lignes", "Zeilen"],
+    "Ui_EditTextModeParagraphs": ["Paragraphs", "段落", "段落", "段落", "문단", "Paragraphes", "Absätze"],
+    "Ui_EditTextKeysParagraph": ["The text is set again in the paragraph's width, font and spacing. Enter starts a new line; ⌘/Ctrl+Enter keeps the paragraph, Esc leaves it as it was.", "段落の幅・フォント・行間のまま組み直します。Enter で改行、⌘/Ctrl+Enter で確定、Esc で元のまま。", "按段落原来的宽度、字体和行距重新排版。Enter 换行，⌘/Ctrl+Enter 确定，Esc 保持原样。", "依段落原來的寬度、字型和行距重新排版。Enter 換行，⌘/Ctrl+Enter 確定，Esc 保持原樣。", "문단의 너비, 글꼴, 줄 간격 그대로 다시 조판합니다. Enter는 줄바꿈, ⌘/Ctrl+Enter는 확정, Esc는 그대로 둡니다.", "Le texte est recomposé dans la largeur, la police et l’interligne du paragraphe. Entrée passe à la ligne ; ⌘/Ctrl+Entrée garde le paragraphe, Échap le laisse tel quel.", "Der Text wird in Breite, Schrift und Zeilenabstand des Absatzes neu gesetzt. Eingabe beginnt eine neue Zeile; ⌘/Strg+Eingabe übernimmt den Absatz, Esc lässt ihn, wie er war."],
+    "Err_ParagraphTooLong": ["The new text needs {0} lines and the paragraph has room for {1} (it may grow only into empty space below it): shorten it.", "新しい文章は {0} 行必要ですが、入るのは {1} 行です（下の空いている所までしか広げられません）。短くしてください。", "新文字需要 {0} 行，段落只能容纳 {1} 行（只能向下扩展到空白处）：请缩短。", "新文字需要 {0} 行，段落只能容納 {1} 行（只能向下擴展到空白處）：請縮短。", "새 글은 {0}줄이 필요하지만 문단에는 {1}줄만 들어갑니다 (아래 빈 곳까지만 늘릴 수 있음). 줄이세요.", "Le nouveau texte demande {0} lignes et le paragraphe n’en contient que {1} (il ne peut s’étendre que dans l’espace libre en dessous) : raccourcissez-le.", "Der neue Text braucht {0} Zeilen, der Absatz hat Platz für {1} (er wächst nur in freien Raum darunter): kürzen Sie ihn."],
+    "Err_ParagraphMixed": ["The paragraph mixes text sizes: edit its lines one at a time.", "段落内で文字の大きさが混ざっています。1 行ずつ編集してください。", "段落中混有不同字号：请逐行编辑。", "段落中混有不同字級：請逐行編輯。", "문단에 글자 크기가 섞여 있습니다. 한 줄씩 고치세요.", "Le paragraphe mélange des tailles de texte : modifiez ses lignes une à une.", "Der Absatz mischt Textgrößen: bearbeiten Sie seine Zeilen einzeln."],
+    "Err_ParagraphNone": ["“{0}” is not in a paragraph that can be set again.", "「{0}」は組み直せる段落の中にありません。", "“{0}”不在可以重新排版的段落中。", "「{0}」不在可以重新排版的段落中。", "“{0}”은(는) 다시 조판할 수 있는 문단 안에 없습니다.", "« {0} » n’est pas dans un paragraphe recomposable.", "„{0}“ steht nicht in einem Absatz, der neu gesetzt werden kann."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

@@ -676,6 +676,39 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Edit_text_sets_a_paragraph_again_in_its_width()
+    {
+        // three lines at an even spacing (the TextPdf helper puts lines 30 pt apart in 14 pt Helvetica)
+        var pdf = TextPdf("p.pdf", "Our office will move to a new", "address next month. Please update", "your records before then.");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "p_edited.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.EditText;
+        vm.EditText.ParagraphMode = true;
+        await vm.EditText.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        var para = Assert.Single(vm.EditText.Segments);
+        Assert.Equal("Our office will move to a new address next month. Please update your records before then.", para.Text);
+
+        vm.EditText.Select(vm.EditText.SegmentAt(para.Box.Center.X, para.Box.Center.Y));
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<TextBox>("EditTextBox")!.AcceptsReturn);   // Enter is a line break here
+        vm.EditText.Text = "We are moving.\nNew address from 1 April.";
+        vm.EditText.CommitCommand.Execute(null);
+        Assert.True(Assert.Single(vm.EditText.Pending).Paragraph);
+
+        await vm.EditText.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        var text = await MainViewModel.Pdfium(() =>
+        {
+            using var d = PdfiumDocument.Open(dialogs.SavePdf!);
+            return d.GetPageText(0);
+        });
+        Assert.Contains("We are moving.", text);
+        Assert.Contains("New address from 1 April.", text);
+        Assert.DoesNotContain("records", text);
+    }
+
+    [AvaloniaFact]
     public async Task Edit_text_changes_a_clicked_line_and_replaced_words_in_a_copy()
     {
         var pdf = TextPdf("e.pdf", "Invoice 2025", "Total: 1,200 yen", "Thank you");

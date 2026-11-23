@@ -10,7 +10,8 @@ using Washi.Core.Pages;
 namespace Washi.App.ViewModels;
 
 /// <summary>A change waiting to be saved: the text in <see cref="Edit"/>'s box becomes its text.</summary>
-public sealed record PendingTextEdit(TextEdit Edit, string Old, double Size)
+/// <param name="Paragraph">The text is set again in the paragraph's width (<see cref="PdfTextEditor.Reflow"/>), not drawn on one line.</param>
+public sealed record PendingTextEdit(TextEdit Edit, string Old, double Size, bool Paragraph = false)
 {
     public string Where => L.F("Ui_EditTextOnPage", Edit.Page + 1);
     public string Change => L.F("Ui_EditTextChange", Short(Old), Edit.Text.Length == 0 ? L.Get("Ui_EditTextNothing") : Short(Edit.Text));
@@ -45,6 +46,16 @@ public sealed partial class EditTextViewModel(MainViewModel main) : ObservableOb
     public bool CanSave => main.HasDocument && Pending.Count > 0;
     public string SaveText => L.F("Ui_EditTextSave", Pending.Count);
 
+    /// <summary>Whole paragraphs are clicked and edited (the text set again in their width) instead of single lines.</summary>
+    [ObservableProperty] private bool _paragraphMode;
+    partial void OnParagraphModeChanged(bool value)
+    {
+        Selected = null;
+        Text = "";
+        Message = "";
+        _ = PrepareAsync();
+    }
+
     private int _loaded;
 
     private void Refresh()
@@ -73,9 +84,16 @@ public sealed partial class EditTextViewModel(MainViewModel main) : ObservableOb
         if (main.PdfPath is not { } path) { Segments = []; Refresh(); return; }
         int page = main.PageIndex;
         IReadOnlyList<TextSegment> found;
-        try { found = await MainViewModel.Pdfium(() => PdfTextEditor.Segments(path, page)); }
+        bool paragraphs = ParagraphMode;
+        try
+        {
+            found = paragraphs
+                ? await MainViewModel.Pdfium(() => PdfTextEditor.Paragraphs(path, page)
+                      .Select(p => new TextSegment(p.Page, p.Text, p.Box, p.Box.X0, p.Box.Y0, p.Size, p.Font, false, 0, true)).ToList())
+                : await MainViewModel.Pdfium(() => PdfTextEditor.Segments(path, page));
+        }
         catch (Exception e) when (e is IOException or PageAssemblyException or InvalidOperationException) { found = []; }
-        if (version != _loaded || main.PdfPath != path || main.PageIndex != page) return;
+        if (version != _loaded || main.PdfPath != path || main.PageIndex != page || paragraphs != ParagraphMode) return;
         Segments = found;
         Refresh();
     }
@@ -95,7 +113,7 @@ public sealed partial class EditTextViewModel(MainViewModel main) : ObservableOb
     }
 
     private PendingTextEdit? PendingFor(TextSegment s) =>
-        Pending.FirstOrDefault(p => p.Edit.Page == s.Page && p.Edit.Box == s.Box);
+        Pending.FirstOrDefault(p => p.Edit.Page == s.Page && p.Edit.Box == s.Box && p.Paragraph == ParagraphMode);
 
     /// <summary>Enter: the line's new text is kept as a change (typing the old text back removes the change).</summary>
     [RelayCommand]
@@ -103,9 +121,10 @@ public sealed partial class EditTextViewModel(MainViewModel main) : ObservableOb
     {
         if (Selected is not { } s) return;
         if (!s.Horizontal) { Message = L.Get("Err_EditNotHorizontal"); return; }
-        var text = Text.Replace("\r", "").Replace("\n", " ");
-        if (PendingFor(s) is { } old) Pending.Remove(old);
-        if (text != s.Text) Pending.Add(new PendingTextEdit(new TextEdit(s.Page, s.Box, text), s.Text, s.Size));
+        var text = ParagraphMode ? Text.Replace("\r", "") : Text.Replace("\r", "").Replace("\n", " ");
+        // one change per place: a line edit inside this paragraph, or the paragraph around this line, gives way
+        foreach (var old in Pending.Where(p => p.Edit.Page == s.Page && p.Edit.Box.Intersect(s.Box).Area > 0).ToList()) Pending.Remove(old);
+        if (text != s.Text) Pending.Add(new PendingTextEdit(new TextEdit(s.Page, s.Box, text), s.Text, s.Size, ParagraphMode));
         Selected = null;
         Text = "";
         Message = "";
@@ -171,18 +190,29 @@ public sealed partial class EditTextViewModel(MainViewModel main) : ObservableOb
         if (main.PdfPath is not { } pdf || !CanSave) return;
         if (await main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_edited.pdf") is not { } output) return;
         if (Path.GetFullPath(output) == Path.GetFullPath(pdf)) { main.Status = L.Get("Ui_BookmarksNotOriginal"); return; }
-        var edits = Pending.Select(p => p.Edit).ToList();
+        var lines = Pending.Where(p => !p.Paragraph).Select(p => p.Edit).ToList();
+        var paragraphs = Pending.Where(p => p.Paragraph).Select(p => p.Edit).ToList();
         IReadOnlyList<TextEditResult>? results = null;
         await main.Run(async () =>
         {
             var tmp = output + ".tmp";
-            if (File.Exists(tmp)) File.Delete(tmp);
+            var mid = output + ".lines.tmp";
+            foreach (var f in new[] { tmp, mid }) if (File.Exists(f)) File.Delete(f);
             try
             {
-                results = await MainViewModel.Pdfium(() => PdfTextEditor.Apply(pdf, tmp, edits));
+                results = await MainViewModel.Pdfium(() =>
+                {
+                    // lines first, then the paragraphs set again on that copy
+                    var done = new List<TextEditResult>();
+                    var from = pdf;
+                    if (lines.Count > 0 && paragraphs.Count > 0) { done.AddRange(PdfTextEditor.Apply(pdf, mid, lines)); from = mid; }
+                    else if (lines.Count > 0) done.AddRange(PdfTextEditor.Apply(pdf, tmp, lines));
+                    if (paragraphs.Count > 0) done.AddRange(PdfTextEditor.Reflow(from, tmp, paragraphs));
+                    return (IReadOnlyList<TextEditResult>)done;
+                });
                 File.Move(tmp, output, overwrite: true);
             }
-            finally { if (File.Exists(tmp)) File.Delete(tmp); }
+            finally { foreach (var f in new[] { tmp, mid }) if (File.Exists(f)) File.Delete(f); }
         });
         if (results is null) return;
         var page = main.PageIndex;

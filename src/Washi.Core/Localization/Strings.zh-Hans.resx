@@ -136,6 +136,7 @@
   washi pdf compare &lt;旧.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   列出变化（文字、页面、图片）（-o：在新版上用批注标出每处变化）
   washi pdf replace-text &lt;in.pdf&gt; (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           修改页面上的文字（一次一行；保存前会检查）
+                 --paragraph "段落中的文字" --with "新段落"：按原宽度重新排版整个段落
   washi pdf stamp &lt;in.pdf&gt; [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前缀 [--bates-start 1] [--bates-digits 6]]
                  [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   页眉、页脚、页码、贝茨编号（{page} {pages} {date} {file} {bates}）、水印
                  --replace-existing：先去掉 Washi 以前加入的内容；washi pdf stamp &lt;in.pdf&gt; --remove headers|watermarks|all [-o out.pdf]：只去掉
@@ -951,4 +952,10 @@
   <data name="Err_StampNone" xml:space="preserve"><value>没有 Washi 加入的页眉、页脚或水印。</value></data>
   <data name="Err_StampRemoveCheck" xml:space="preserve"><value>去掉后仍有残留，因此没有保留副本。</value></data>
   <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove 的值为 headers、watermarks 或 all。</value></data>
+  <data name="Ui_EditTextModeLines" xml:space="preserve"><value>行</value></data>
+  <data name="Ui_EditTextModeParagraphs" xml:space="preserve"><value>段落</value></data>
+  <data name="Ui_EditTextKeysParagraph" xml:space="preserve"><value>按段落原来的宽度、字体和行距重新排版。Enter 换行，⌘/Ctrl+Enter 确定，Esc 保持原样。</value></data>
+  <data name="Err_ParagraphTooLong" xml:space="preserve"><value>新文字需要 {0} 行，段落只能容纳 {1} 行（只能向下扩展到空白处）：请缩短。</value></data>
+  <data name="Err_ParagraphMixed" xml:space="preserve"><value>段落中混有不同字号：请逐行编辑。</value></data>
+  <data name="Err_ParagraphNone" xml:space="preserve"><value>“{0}”不在可以重新排版的段落中。</value></data>
 </root>

@@ -61,6 +61,15 @@ public partial class MainWindow : Window
                 SettingsPage.DataContext = ViewModel.Settings;
         };
         ViewModel.EditRequested += BeginEdit;
+        // edit text: Enter keeps a line; in a paragraph Enter starts a new line and ⌘/Ctrl+Enter keeps it
+        EditTextBox.AddHandler(KeyDownEvent, (_, e) =>
+        {
+            if (e.Key != Key.Enter) return;
+            bool keep = !ViewModel.EditText.ParagraphMode || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+            if (!keep) return;
+            ViewModel.EditText.CommitCommand.Execute(null);
+            e.Handled = true;
+        }, RoutingStrategies.Tunnel);
         // links: a box just drawn puts the cursor in the box for its target
         ViewModel.Links.PropertyChanged += (_, e) =>
         {

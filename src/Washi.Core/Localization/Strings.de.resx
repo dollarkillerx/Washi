@@ -136,6 +136,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   washi pdf compare &lt;alt.pdf&gt; &lt;neu.pdf&gt; [-o marked.pdf]   was sich geändert hat: Wörter, Seiten, Bilder (-o: die neue Version mit markierten Änderungen)
   washi pdf replace-text &lt;in.pdf&gt; (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)
+                 --paragraph "Text darin" --with "neuer Absatz": den ganzen Absatz in seiner Breite neu setzen
   washi pdf stamp &lt;in.pdf&gt; [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]
                  [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   Kopf- und Fußzeilen, Seiten- und Bates-Nummern ({page} {pages} {date} {file} {bates}), Wasserzeichen
                  --replace-existing: zuerst entfernen, was Washi früher hinzugefügt hat; washi pdf stamp &lt;in.pdf&gt; --remove headers|watermarks|all [-o out.pdf]: nur entfernen
@@ -951,4 +952,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_StampNone" xml:space="preserve"><value>Es gibt keine von Washi hinzugefügten Kopf-, Fußzeilen oder Wasserzeichen.</value></data>
   <data name="Err_StampRemoveCheck" xml:space="preserve"><value>Einige Markierungen waren nach dem Entfernen noch da; die Kopie wurde nicht behalten.</value></data>
   <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove nimmt headers, watermarks oder all.</value></data>
+  <data name="Ui_EditTextModeLines" xml:space="preserve"><value>Zeilen</value></data>
+  <data name="Ui_EditTextModeParagraphs" xml:space="preserve"><value>Absätze</value></data>
+  <data name="Ui_EditTextKeysParagraph" xml:space="preserve"><value>Der Text wird in Breite, Schrift und Zeilenabstand des Absatzes neu gesetzt. Eingabe beginnt eine neue Zeile; ⌘/Strg+Eingabe übernimmt den Absatz, Esc lässt ihn, wie er war.</value></data>
+  <data name="Err_ParagraphTooLong" xml:space="preserve"><value>Der neue Text braucht {0} Zeilen, der Absatz hat Platz für {1} (er wächst nur in freien Raum darunter): kürzen Sie ihn.</value></data>
+  <data name="Err_ParagraphMixed" xml:space="preserve"><value>Der Absatz mischt Textgrößen: bearbeiten Sie seine Zeilen einzeln.</value></data>
+  <data name="Err_ParagraphNone" xml:space="preserve"><value>„{0}“ steht nicht in einem Absatz, der neu gesetzt werden kann.</value></data>
 </root>

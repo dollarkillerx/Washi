@@ -440,7 +440,13 @@ public sealed class FieldCanvas : Control
             {
                 var text = new FormattedText(p.Edit.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter"),
                                              Math.Max(4, p.Size * Zoom), Brushes.Black);
-                ctx.DrawText(text, new Point(r.X, r.Bottom - text.Height));
+                if (p.Paragraph)
+                {
+                    // set again in the paragraph's width (a preview: the copy uses the paragraph's own font and spacing)
+                    text.MaxTextWidth = Math.Max(10, r.Width);
+                    ctx.DrawText(text, new Point(r.X, r.Y));
+                }
+                else ctx.DrawText(text, new Point(r.X, r.Bottom - text.Height));
             }
             ctx.DrawRectangle(null, edge, r.Inflate(2));
         }
