@@ -136,6 +136,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf compare &lt;ancien.pdf&gt; &lt;nouveau.pdf&gt; [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)
   washi pdf replace-text &lt;in.pdf&gt; (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)
+                 --paragraph "texte du paragraphe" --with "nouveau paragraphe" : recomposer tout le paragraphe dans sa largeur
   washi pdf stamp &lt;in.pdf&gt; [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]
                  [--watermark TEXTE [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   en-têtes, pieds de page, numéros de page et Bates ({page} {pages} {date} {file} {bates}), filigrane
                  --replace-existing : retire d’abord ce que Washi avait ajouté ; washi pdf stamp &lt;in.pdf&gt; --remove headers|watermarks|all [-o out.pdf] : seulement le retirer
@@ -951,4 +952,10 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_StampNone" xml:space="preserve"><value>Il n’y a ni en-tête, ni pied de page, ni filigrane ajouté par Washi.</value></data>
   <data name="Err_StampRemoveCheck" xml:space="preserve"><value>Certaines marques étaient encore là après leur retrait ; la copie n’a pas été conservée.</value></data>
   <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove prend headers, watermarks ou all.</value></data>
+  <data name="Ui_EditTextModeLines" xml:space="preserve"><value>Lignes</value></data>
+  <data name="Ui_EditTextModeParagraphs" xml:space="preserve"><value>Paragraphes</value></data>
+  <data name="Ui_EditTextKeysParagraph" xml:space="preserve"><value>Le texte est recomposé dans la largeur, la police et l’interligne du paragraphe. Entrée passe à la ligne ; ⌘/Ctrl+Entrée garde le paragraphe, Échap le laisse tel quel.</value></data>
+  <data name="Err_ParagraphTooLong" xml:space="preserve"><value>Le nouveau texte demande {0} lignes et le paragraphe n’en contient que {1} (il ne peut s’étendre que dans l’espace libre en dessous) : raccourcissez-le.</value></data>
+  <data name="Err_ParagraphMixed" xml:space="preserve"><value>Le paragraphe mélange des tailles de texte : modifiez ses lignes une à une.</value></data>
+  <data name="Err_ParagraphNone" xml:space="preserve"><value>« {0} » n’est pas dans un paragraphe recomposable.</value></data>
 </root>

@@ -139,8 +139,10 @@ public static partial class PdfTextEditor
         return segments;
     }
 
-    private static bool Serif(Char c) => (c.Flags & 2) != 0
-        || Regex.IsMatch(c.Font, "Times|Serif|Mincho|Ming|Song|Myeongjo|Batang|Georgia|Garamond|Century|明朝|宋", RegexOptions.IgnoreCase);
+    /// <summary>Whether the font has serifs: by its name first (fonts often set the flag wrongly), then by its flags.</summary>
+    private static bool Serif(Char c) =>
+        !Regex.IsMatch(c.Font, "Sans|Gothic|Goth|Meiryo|Arial|Helvetica|Verdana|Hiragino.?Kaku|\\bUD|Yu.?Go|ゴシック|黑|黒|Hei|Dotum|Gulim|Malgun", RegexOptions.IgnoreCase)
+        && (Regex.IsMatch(c.Font, "Times|Serif|Mincho|Ming|Song|Myeongjo|Batang|Georgia|Garamond|Century|明朝|宋", RegexOptions.IgnoreCase) || (c.Flags & 2) != 0);
 
     // ------------------------------------------------------------------ editing
 
@@ -285,9 +287,16 @@ public static partial class PdfTextEditor
 
     private static void Verify(string before, string after, List<(TextEdit Edit, List<Char> Old, double Room)> plans, List<(int Page, PdfRect Rect)> allowed)
     {
+        OnlyChangedIn(before, after, plans.Select(p => p.Edit.Page).Distinct(), allowed);
+        ReadBack(after, plans, allowed);
+    }
+
+    /// <summary>The two renderings of each page differ only inside <paramref name="allowed"/> (sub-pixel shifts aside).</summary>
+    private static void OnlyChangedIn(string before, string after, IEnumerable<int> pages, List<(int Page, PdfRect Rect)> allowed)
+    {
         using var a = PdfiumDocument.Open(before);
         using var b = PdfiumDocument.Open(after);
-        foreach (var page in plans.Select(p => p.Edit.Page).Distinct())
+        foreach (var page in pages)
         {
             const double scale = 2;   // at 1:1, glyphs snap to whole pixels and text in a new text object can land one off
             var ia = a.RenderPage(page, scale);
@@ -313,7 +322,11 @@ public static partial class PdfTextEditor
                 throw new PageAssemblyException($"the edited copy changed {changed} pixels outside the edited text (in {cx0 / scale:0},{cy0 / scale:0}–{cx1 / scale:0},{cy1 / scale:0} pt on page {page + 1}); it was not kept",
                                                 "Err_EditChanged", changed);
         }
-        // the new text is where it should be
+    }
+
+    /// <summary>The new text of each line edit reads back where it was drawn, at the old size.</summary>
+    private static void ReadBack(string after, List<(TextEdit Edit, List<Char> Old, double Room)> plans, List<(int Page, PdfRect Rect)> allowed)
+    {
         var pdfium = PdfEraser.Load(after);
         try
         {

@@ -367,6 +367,19 @@ internal static class PageCommands
                         : L.F("Pdf_Stamped", output, result.Pages));
                     return 0;
                 }
+                case ["replace-text", var input] when opt.ContainsKey("--with") && opt.TryGetValue("--paragraph", out var containing):
+                {
+                    // the paragraph that holds the text, set again in its width
+                    int? inPage = opt.TryGetValue("--page", out var pp) && int.TryParse(pp, out var ppn) ? ppn - 1 : null;
+                    var para = PdfTextEditor.ParagraphContaining(input, containing, inPage);
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_edited.pdf"));
+                    var results = PdfTextEditor.Reflow(input, output, [new TextEdit(para.Page, para.Box, opt["--with"].Replace("\\n", "\n"))]);
+                    foreach (var r in results)
+                        Console.WriteLine(L.F(r.KeptFont ? "Pdf_TextEditKept" : "Pdf_TextEditSimilar", r.Page + 1, r.Old, r.New, r.Font));
+                    Console.WriteLine(L.F("Pdf_TextEdited", output, results.Count));
+                    return 0;
+                }
                 case ["replace-text", var input] when opt.ContainsKey("--with") && (opt.ContainsKey("--find") || opt.ContainsKey("--box")):
                 {
                     var with = opt["--with"];

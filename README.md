@@ -437,6 +437,7 @@ matches).
 washi pdf replace-text invoice.pdf --find 2025 --with 2026                  # invoice_edited.pdf, every match
 washi pdf replace-text invoice.pdf --find "1,200" --with "1,350" --page 1
 washi pdf replace-text form.pdf --box 1:40,52,180,66 --with "令和9年分"       # the text inside a box
+washi pdf replace-text letter.pdf --paragraph "office will move" --with "The office stays where it is."   # a whole paragraph
 ```
 
 In the editor: choose **Edit text**. Each line of the page is outlined; click one, type, Enter keeps the change and
@@ -450,6 +451,13 @@ the page (the old text covered, the new one over it) until *Save as copy*. Agent
   character (found through its ToUnicode map, or its encoding when the font is complete). Otherwise a similar
   standard font draws it: Times or Helvetica for Latin text, a Mincho or Gothic CJK font (serif or not, like the
   original) for Japanese, Chinese and Korean. The report says which.
+- **Paragraphs.** Switch the tool to *Paragraphs* (or use `--paragraph "words in it"`, `paragraph_containing` for
+  agents): a paragraph is lines in one size, one under another at an even spacing, ending where a line stops short.
+  Its new text is set again in the paragraph's width, font, size and spacing, the first line's indent kept: Latin
+  text breaks between words, Japanese, Chinese and Korean between characters (、。」） never start a line, 「（ never end
+  one); a line break in the new text starts a new line. Digits or marks in another font of the same size stay part of
+  the paragraph (all of it is then set in the font most of it uses). It may grow into empty space below, never over
+  anything. Underlines and boxes drawn around the old text stay where they were.
 - **One line at a time, left to right.** A change covers part of one line; text that runs down the page (vertical
   writing, or a turned page whose text runs sideways) is refused. A longer text that would run into the next
   characters on the line is refused too: change the whole line instead. A shorter one leaves a gap.
@@ -897,7 +905,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 23. ~~Links.~~ Done (`washi pdf links`, the Links tool, `list_links`, `edit_links`).
 24. ~~Images on the page.~~ Done (`washi pdf images`, the Images tool, `list_page_images`, `edit_page_images`).
 25. ~~Updating and removing headers, footers and watermarks.~~ Done (`--replace-existing`, `--remove`, the Headers tool, `stamp_pages`).
-26. Next: editing a paragraph that reflows over several lines.
+26. ~~Editing a paragraph that reflows over several lines.~~ Done (Paragraphs in the Edit text tool, `--paragraph`, `paragraph_containing`).
 
 ## License
 
