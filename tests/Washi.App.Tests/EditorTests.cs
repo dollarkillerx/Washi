@@ -38,6 +38,8 @@ internal sealed class FakeDialogs : IDialogs
     public string? Folder;
     public Task<IReadOnlyList<string>> OpenPdfsAsync() => Task.FromResult<IReadOnlyList<string>>(Pdfs);
     public Task<string?> PickFolderAsync() => Task.FromResult(Folder);
+    public string? Image;
+    public Task<string?> OpenImageAsync() => Task.FromResult(Image);
     public Task<string?> OpenFieldsAsync() => Task.FromResult(OpenJson);
     public Task<string?> SaveFieldsAsync(string suggestedName) => Task.FromResult(SaveJson);
     public Task<string?> SavePdfAsync(string suggestedName) => Task.FromResult(SavePdf);

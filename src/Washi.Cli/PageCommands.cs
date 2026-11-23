@@ -236,6 +236,38 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_Cropped", output, n));
                     return 0;
                 }
+                case ["images", var input]:
+                {
+                    var add = new List<AddImage>();
+                    if (opt.TryGetValue("--add", out var adds))
+                        foreach (var spec in adds.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            int eq = spec.IndexOf('=');
+                            if (eq < 0) throw new PageAssemblyException("--add takes page:x0,y0,x1,y1=image file", "Err_ImageAdd");
+                            var region = ParseBoxes(spec[..eq]).Single();
+                            add.Add(new AddImage(region.Page, region.Rect, spec[(eq + 1)..]));
+                        }
+                    var replace = new Dictionary<string, string>();
+                    if (opt.TryGetValue("--replace", out var reps))
+                        foreach (var spec in reps.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            int eq = spec.IndexOf('=');
+                            if (eq < 0) throw new PageAssemblyException("--replace takes id=image file", "Err_ImageReplaceArg");
+                            replace[spec[..eq].Trim()] = spec[(eq + 1)..];
+                        }
+                    var remove = opt.TryGetValue("--remove", out var rm) ? rm.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : [];
+                    if (add.Count == 0 && replace.Count == 0 && remove.Length == 0)
+                    {
+                        foreach (var i in PdfPageImageEdit.List(input))
+                            Console.WriteLine(L.F("Pdf_ImageLine", i.Id, i.Page + 1, i.PixelWidth, i.PixelHeight,
+                                $"{i.Rect.X0:0},{i.Rect.Y0:0},{i.Rect.X1:0},{i.Rect.Y1:0}"));
+                        return 0;
+                    }
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + "_images.pdf"));
+                    var r = PdfPageImageEdit.Apply(input, output, add, replace, remove);
+                    Console.WriteLine(L.F("Ui_ImagesSaved", output, r.Added, r.Replaced, r.Removed));
+                    return 0;
+                }
                 case ["links", var input]:
                 {
                     var add = new List<NewLink>();
@@ -490,7 +522,7 @@ internal static class PageCommands
         for (int i = 0; i < args.Length; i++)
         {
             if (Flags.Contains(args[i])) opt[args[i]] = "";
-            else if (args[i] is "--box" or "--add" && i + 1 < args.Length) opt[args[i]] = opt.TryGetValue(args[i], out var b) ? b + ";" + args[++i] : args[++i];
+            else if (args[i] is "--box" or "--add" or "--replace" && i + 1 < args.Length) opt[args[i]] = opt.TryGetValue(args[i], out var b) ? b + ";" + args[++i] : args[++i];
             else if (args[i] is "--find" or "--regex" && i + 1 < args.Length) opt[args[i]] = opt.TryGetValue(args[i], out var f) ? f + Many + args[++i] : args[++i];
             else if (args[i].StartsWith('-') && i + 1 < args.Length) opt[args[i]] = args[++i];
             else pos.Add(args[i]);

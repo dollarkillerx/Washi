@@ -407,6 +407,54 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Images_are_replaced_removed_and_added_in_a_copy()
+    {
+        string Photo(string name, SkiaSharp.SKColor color, int w, int h)
+        {
+            using var bmp = new SkiaSharp.SKBitmap(w, h);
+            bmp.Erase(color);
+            using var data = SkiaSharp.SKImage.FromBitmap(bmp).Encode(SkiaSharp.SKEncodedImageFormat.Png, 90);
+            var path = Path.Combine(_dir, name);
+            File.WriteAllBytes(path, data.ToArray());
+            return path;
+        }
+        // a PDF of two photos (one page each), then a page of text in between
+        var pdf = Path.Combine(_dir, "album.pdf");
+        await MainViewModel.Pdfium(() => Washi.Core.Pages.PdfFromImages.Create(
+            [Photo("a.png", SkiaSharp.SKColors.Teal, 300, 200), Photo("b.png", SkiaSharp.SKColors.Gold, 300, 200)], pdf));
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "album_images.pdf"), Image = Photo("new.png", SkiaSharp.SKColors.Crimson, 200, 200) };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Images;
+        await vm.Images.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(2, vm.Images.Images.Count);
+        Assert.False(vm.Images.CanSave);
+
+        // click the first photo, replace it; remove the second
+        var first = vm.Images.Images[0].Image.Rect;
+        vm.Images.SelectAt(first.Center.X, first.Center.Y);
+        Assert.Same(vm.Images.Images[0], vm.Images.Selected);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("ImageReplaceButton")!.IsEffectivelyVisible);
+        await vm.Images.ReplaceCommand.ExecuteAsync(null);
+        Assert.Equal(L.F("Ui_ImageWillBe", "new.png"), vm.Images.Images[0].State);
+        vm.Images.Images[1].Remove = true;
+
+        // and add a picture in a box on page 1
+        await vm.Images.ChooseToAddCommand.ExecuteAsync(null);
+        Assert.True(vm.Images.Placing);
+        vm.Images.Draw(new Washi.Core.PdfRect(40, 40, 140, 140));
+        Assert.False(vm.Images.Placing);
+        Assert.Equal(L.F("Ui_ImagesSave", 3), vm.Images.SaveText);
+
+        await vm.Images.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(L.F("Ui_ImagesSaved", "album_images.pdf", 1, 1, 1), vm.Status);
+        Assert.Equal(2, vm.Images.Images.Count);                    // the new one and the replaced one; the second photo is gone
+        Assert.All(vm.Images.Images, i => Assert.Equal(0, i.Image.Page));
+    }
+
+    [AvaloniaFact]
     public async Task Links_are_drawn_found_in_the_text_and_saved_in_a_copy()
     {
         var pdf = TextPdf("l.pdf", "Order at https://example.com/shop", "Questions: help@example.com", "Terms on page 1");

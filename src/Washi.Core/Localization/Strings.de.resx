@@ -132,6 +132,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
                                           Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)
   washi pdf find &lt;in.pdf&gt; &lt;Text&gt; [--case] [--whole-words]   wo der Text steht, Seite für Seite
   washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=Ziel ...] [--remove 1-2,3-1] [-o out.pdf]   Links auflisten, oder hinzufügen (Web-/Mailadresse, Seite) und entfernen
+  washi pdf images &lt;in.pdf&gt; [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   Bilder auf den Seiten auflisten, hinzufügen, ersetzen oder entfernen
   washi pdf compare &lt;alt.pdf&gt; &lt;neu.pdf&gt; [-o marked.pdf]   was sich geändert hat: Wörter, Seiten, Bilder (-o: die neue Version mit markierten Änderungen)
   washi pdf replace-text &lt;in.pdf&gt; (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)
@@ -917,4 +918,29 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_LinkAdd" xml:space="preserve"><value>--add nimmt page:x0,y0,x1,y1=Ziel.</value></data>
   <data name="Err_LinkCheck" xml:space="preserve"><value>Der Link zu {0} auf Seite {1} ließ sich nicht lesen; die Kopie wurde nicht behalten.</value></data>
   <data name="Err_LinkChanged" xml:space="preserve"><value>Seite {0} sah mit den Links anders aus; die Kopie wurde nicht behalten.</value></data>
+  <data name="Ui_ToolImages" xml:space="preserve"><value>Bilder</value></data>
+  <data name="Ui_ImagesTitle" xml:space="preserve"><value>Bilder auf der Seite</value></data>
+  <data name="Ui_ImagesLead" xml:space="preserve"><value>Klicken Sie auf ein Bild, um es durch eine Bilddatei zu ersetzen (sie behält ihr Seitenverhältnis am alten Platz) oder es zu entfernen. Zum Hinzufügen ein Bild wählen und einen Rahmen auf der Seite ziehen.</value></data>
+  <data name="Ui_ImagesAdd" xml:space="preserve"><value>Bild hinzufügen…</value></data>
+  <data name="Ui_ImagePlace" xml:space="preserve"><value>Ziehen Sie auf der Seite einen Rahmen, wo {0} hinkommt.</value></data>
+  <data name="Ui_ImageSelected" xml:space="preserve"><value>Ausgewähltes Bild</value></data>
+  <data name="Ui_ImageReplace" xml:space="preserve"><value>Ersetzen…</value></data>
+  <data name="Ui_ImageRemove" xml:space="preserve"><value>Entfernen</value></data>
+  <data name="Ui_ImageUndo" xml:space="preserve"><value>Unverändert lassen</value></data>
+  <data name="Ui_ImagesOnPages" xml:space="preserve"><value>Bilder in der Datei</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>Die Seiten zeichnen keine Bilder (Bilder in Formularen und Inline-Bilder werden nicht aufgeführt).</value></data>
+  <data name="Ui_ImageWhere" xml:space="preserve"><value>Seite {0} · {1} × {2} px</value></data>
+  <data name="Ui_ImageWillGo" xml:space="preserve"><value>Wird entfernt</value></data>
+  <data name="Ui_ImageWillBe" xml:space="preserve"><value>Wird durch {0} ersetzt</value></data>
+  <data name="Ui_ImageAdd" xml:space="preserve"><value>{0} auf Seite {1} hinzufügen</value></data>
+  <data name="Ui_ImagesSave" xml:space="preserve"><value>{0} Änderung(en) als Kopie speichern…</value></data>
+  <data name="Ui_ImagesSaveNote" xml:space="preserve"><value>Nur die Bilder ändern sich: die Kopie wird vor dem Behalten mit dem Original verglichen. JPEG-Fotos kommen unverändert hinein. Das Original bleibt unverändert.</value></data>
+  <data name="Ui_ImagesSaved" xml:space="preserve"><value>{0} gespeichert: {1} Bild(er) hinzugefügt, {2} ersetzt, {3} entfernt. Geprüft: sonst hat sich nichts geändert.</value></data>
+  <data name="Pdf_ImageLine" xml:space="preserve"><value>  {0}  Seite {1}: {2} × {3} px  [{4}]</value></data>
+  <data name="Err_ImageEditNothing" xml:space="preserve"><value>Kein Bild zum Hinzufügen, Ersetzen oder Entfernen.</value></data>
+  <data name="Err_ImageId" xml:space="preserve"><value>Es gibt kein Bild {0}.</value></data>
+  <data name="Err_ImageAdd" xml:space="preserve"><value>--add nimmt page:x0,y0,x1,y1=Bilddatei.</value></data>
+  <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace nimmt id=Bilddatei.</value></data>
+  <data name="Err_ImageEditChanged" xml:space="preserve"><value>Seite {0} hat sich außerhalb der Bilder verändert; die Kopie wurde nicht behalten.</value></data>
+  <data name="Err_ImageEditCheck" xml:space="preserve"><value>{0} wurde auf Seite {1} nicht richtig angezeigt; die Kopie wurde nicht behalten.</value></data>
 </root>

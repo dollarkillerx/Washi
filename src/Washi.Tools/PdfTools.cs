@@ -43,6 +43,8 @@ public static class WashiTools
         .Add(new CropPagesTool(policy))
         .Add(new ListLinksTool(policy))
         .Add(new EditLinksTool(policy))
+        .Add(new ListPageImagesTool(policy))
+        .Add(new EditPageImagesTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -1206,6 +1208,83 @@ public sealed class EditLinksTool(PathPolicy p) : PdfTool(p)
         {
             output, added = res.Added, changed = res.Changed, removed = res.Removed,
             verified = "the pages look the same; every new link reads back with its target",
+        }));
+    }
+}
+
+public sealed class ListPageImagesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_page_images";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "The images a PDF's pages draw (photos, logos, scans): id (for edit_page_images), page (1-based), rect [x0,y0,x1,y1] in " +
+        "points from the top-left of the upright page, and the image's size in pixels. Images inside forms and inline images are not listed.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        return new ToolResult(ToJson(new
+        {
+            images = PdfPageImageEdit.List(path).Select(i => new
+            {
+                id = i.Id, page = i.Page + 1, rect = new[] { i.Rect.X0, i.Rect.Y0, i.Rect.X1, i.Rect.Y1 }.Select(v => Math.Round(v, 1)),
+                width = i.PixelWidth, height = i.PixelHeight,
+            }),
+        }));
+    }
+}
+
+public sealed class EditPageImagesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "edit_page_images";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Add, replace and remove images on PDF pages. add puts an image file (JPEG, PNG, WebP, BMP, GIF) in a rect, keeping its " +
+        "shape, centred; replace swaps an image (id from list_page_images) for an image file, which keeps its own shape inside the " +
+        "old one's place; remove takes images out. Only the operators drawing those images change; the copy is rendered next to " +
+        "the original (nothing may change elsewhere, new images must look like their files) before it is kept. Never overwrites: " +
+        "output defaults to <name>_images.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "add":{"type":"array","items":{"type":"object","properties":{
+                   "page":{"type":"integer","description":"1-based"},
+                   "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4,
+                           "description":"[x0,y0,x1,y1] in points from the top-left of the upright page"},
+                   "image":{"type":"string","description":"Image file"}},
+                 "required":["page","rect","image"],"additionalProperties":false}},
+          "replace":{"type":"object","additionalProperties":{"type":"string"},"description":"Image id → image file"},
+          "remove":{"type":"array","items":{"type":"string"},"description":"Image ids"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_images.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var add = new List<AddImage>();
+        if (a.TryGetProperty("add", out var list) && list.ValueKind == JsonValueKind.Array)
+            foreach (var e in list.EnumerateArray())
+            {
+                var r = e.GetProperty("rect").EnumerateArray().Select(x => x.GetDouble()).ToArray();
+                add.Add(new AddImage(e.GetProperty("page").GetInt32() - 1,
+                                     new PdfRect(Math.Min(r[0], r[2]), Math.Min(r[1], r[3]), Math.Max(r[0], r[2]), Math.Max(r[1], r[3])),
+                                     Policy.Input(e.GetProperty("image").GetString() ?? "")));
+            }
+        var replace = a.TryGetProperty("replace", out var rp) && rp.ValueKind == JsonValueKind.Object
+            ? rp.EnumerateObject().ToDictionary(x => x.Name, x => Policy.Input(x.Value.GetString() ?? "")) : new Dictionary<string, string>();
+        var remove = a.TryGetProperty("remove", out var rm) && rm.ValueKind == JsonValueKind.Array
+            ? rm.EnumerateArray().Select(x => x.GetString() ?? "").ToList() : [];
+        var output = Policy.Output(OptStr(a, "output"), path, "_images");
+        var res = PdfPageImageEdit.Apply(path, output, add, replace, remove);
+        return new ToolResult(ToJson(new
+        {
+            output, added = res.Added, replaced = res.Replaced, removed = res.Removed,
+            verified = "nothing changed outside the images; new images look like their files",
         }));
     }
 }

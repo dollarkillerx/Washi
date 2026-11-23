@@ -293,6 +293,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEditTextTool}" x:Name="EditTextToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.EditText}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolEditText}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsImagesTool}" x:Name="ImagesToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Image}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolImages}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsStampTool}" x:Name="StampToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Stamp}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolStamp}" /></StackPanel>
                 </RadioButton>
@@ -1142,6 +1145,80 @@
                                                     <TextBlock Text="{Binding Change}" FontSize="12" TextWrapping="Wrap" />
                                                 </StackPanel>
                                             </Button>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <DockPanel IsVisible="{Binding IsImagesTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <Button Classes="accent primary" Command="{Binding Images.SaveCommand}" IsEnabled="{Binding Images.CanSave}" x:Name="ImagesSaveButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Image}" Size="18" />
+                                    <TextBlock Text="{Binding Images.SaveText}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_ImagesSaveNote}" />
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_ImagesTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_ImagesLead}" />
+                            <Button Command="{Binding Images.ChooseToAddCommand}" IsEnabled="{Binding HasDocument}" Padding="12,5" Margin="0,12,0,0" x:Name="ImagesAddButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Add}" Size="16" />
+                                    <TextBlock Text="{l:Tr Ui_ImagesAdd}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{Binding Images.PlacingText}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                       IsVisible="{Binding Images.Placing}" />
+
+                            <StackPanel IsVisible="{Binding Images.HasSelection}" Spacing="6" Margin="0,12,0,0">
+                                <TextBlock Classes="section" Text="{l:Tr Ui_ImageSelected}" Margin="0" />
+                                <TextBlock Text="{Binding Images.Selected.Where}" FontSize="12" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="{l:Tr Ui_ImageReplace}" Command="{Binding Images.ReplaceCommand}" Padding="12,4" x:Name="ImageReplaceButton" />
+                                    <Button Content="{l:Tr Ui_ImageRemove}" Command="{Binding Images.RemoveSelectedCommand}" Padding="12,4" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_ImagesOnPages}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_ImagesNone}" IsVisible="{Binding !Images.HasImages}" />
+                            <ItemsControl ItemsSource="{Binding Images.Images}" x:Name="ImagesList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ImageRow">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <Button DockPanel.Dock="Right" Padding="6,2" Background="Transparent" ToolTip.Tip="{l:Tr Ui_ImageUndo}" VerticalAlignment="Top"
+                                                    IsVisible="{Binding State, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Images.UndoCommand}" CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Close}" Size="12" />
+                                            </Button>
+                                            <Button Background="Transparent" Padding="2,1" HorizontalContentAlignment="Left" HorizontalAlignment="Stretch"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Images.ShowCommand}" CommandParameter="{Binding}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Where}" FontSize="12" />
+                                                    <TextBlock Text="{Binding State}" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                                                               IsVisible="{Binding State, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Images.Added}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PendingImage">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <Button DockPanel.Dock="Right" Padding="6,2" Background="Transparent" ToolTip.Tip="{l:Tr Ui_Remove}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Images.UndoCommand}" CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Close}" Size="12" />
+                                            </Button>
+                                            <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" />
                                         </DockPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

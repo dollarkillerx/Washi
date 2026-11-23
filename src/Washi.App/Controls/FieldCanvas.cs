@@ -72,6 +72,7 @@ public sealed class FieldCanvas : Control
         vm.Stamp.Changed += InvalidateVisual;
         vm.Compare.Changed += InvalidateVisual;
         vm.Links.Changed += InvalidateVisual;
+        vm.Images.Changed += InvalidateVisual;
         vm.Find.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
@@ -88,6 +89,7 @@ public sealed class FieldCanvas : Control
         vm.Stamp.Changed -= InvalidateVisual;
         vm.Compare.Changed -= InvalidateVisual;
         vm.Links.Changed -= InvalidateVisual;
+        vm.Images.Changed -= InvalidateVisual;
         vm.Find.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
@@ -154,6 +156,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsEditTextTool: true } et)
         {
             RenderEditText(ctx, et);
+            return;
+        }
+        if (Editor is { IsImagesTool: true } im)
+        {
+            RenderImages(ctx, im);
             return;
         }
         if (Editor is { IsLinksTool: true } lk)
@@ -441,6 +448,25 @@ public sealed class FieldCanvas : Control
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1.5), Screen(sel.Box).Inflate(2));
     }
 
+    /// <summary>Images tool: the page's images (purple), the one selected, what will go (red) or be replaced (orange), new ones (green).</summary>
+    private void RenderImages(DrawingContext ctx, MainViewModel vm)
+    {
+        int page = vm.PageIndex;
+        var purple = Color.FromRgb(137, 87, 229);
+        foreach (var row in vm.Images.Images.Where(r => r.Image.Page == page))
+        {
+            var r = Screen(row.Image.Rect).Inflate(1);
+            if (row.Remove) ctx.DrawRectangle(new SolidColorBrush(Colors.Red, 0.2), new Pen(Brushes.Red, 1.5, new DashStyle([4, 3], 0)), r);
+            else if (row.ReplaceWith is not null) ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(226, 112, 0), 0.2), new Pen(new SolidColorBrush(Color.FromRgb(226, 112, 0)), 1.5), r);
+            else ctx.DrawRectangle(null, new Pen(new SolidColorBrush(purple), 1.2), r);
+            if (ReferenceEquals(row, vm.Images.Selected)) ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Active), 2), r.Inflate(2));
+        }
+        foreach (var a in vm.Images.Added.Where(a => a.Add.Page == page))
+            ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(13, 150, 64), 0.15), new Pen(new SolidColorBrush(Color.FromRgb(13, 150, 64)), 1.5), Screen(a.Add.Rect));
+        if (_eraseBox is { } drawing)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1, new DashStyle([4, 3], 0)), Screen(drawing));
+    }
+
     /// <summary>Links tool: the file's links (blue; red dashed when they go), new ones (green), the box drawn (vermilion).</summary>
     private void RenderLinks(DrawingContext ctx, MainViewModel vm)
     {
@@ -690,7 +716,7 @@ public sealed class FieldCanvas : Control
             e.Handled = true;
             return;
         }
-        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsRedactTool || ev.IsSignTool || ev.IsCommentTool || ev.IsLinksTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsRedactTool || ev.IsSignTool || ev.IsCommentTool || ev.IsLinksTool || ev.IsImagesTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _start = ToPage(e.GetPosition(this));
             _eraseBox = Normal(_start, _start);
@@ -826,11 +852,14 @@ public sealed class FieldCanvas : Control
         {
             _eraseBox = null;
             e.Pointer.Capture(null);
-            if (box.Width >= MinSizePt && box.Height >= MinSizePt && Editor is { } ed)
+            if (Editor is { IsImagesTool: true } im && (box.Width < MinSizePt || box.Height < MinSizePt))
+                im.Images.SelectAt(box.X0, box.Y0);   // a click, not a box: the image under it
+            else if (box.Width >= MinSizePt && box.Height >= MinSizePt && Editor is { } ed)
             {
                 if (ed.IsSignTool) ed.Sign.Place(box);
                 else if (ed.IsRedactTool) ed.Redact.AddArea(box);
                 else if (ed.IsLinksTool) ed.Links.Draw(box);
+                else if (ed.IsImagesTool) ed.Images.Draw(box);
                 else _ = ed.Erase.AddBoxAsync(box);
             }
             InvalidateVisual();
@@ -865,7 +894,7 @@ public sealed class FieldCanvas : Control
                  : over.Kind == FieldKind.Signature ? StandardCursorType.Arrow : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
         else if (vm.IsEditTextTool) type = vm.EditText.SegmentAt(ToPage(screen).X, ToPage(screen).Y) is not null ? StandardCursorType.Ibeam : StandardCursorType.Arrow;
-        else if (vm.DrawMode || vm.IsEraseTool || vm.IsRedactTool || vm.IsSignTool || vm.IsCommentTool || vm.IsLinksTool) type = StandardCursorType.Cross;
+        else if (vm.DrawMode || vm.IsEraseTool || vm.IsRedactTool || vm.IsSignTool || vm.IsCommentTool || vm.IsLinksTool || vm.IsImagesTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
     }

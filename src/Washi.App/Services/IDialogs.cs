@@ -10,6 +10,8 @@ public interface IDialogs
 {
     Task<string?> OpenPdfAsync();
     Task<IReadOnlyList<string>> OpenPdfsAsync();
+    /// <summary>One image file (JPEG, PNG, WebP, BMP, GIF).</summary>
+    Task<string?> OpenImageAsync();
     Task<string?> PickFolderAsync();
     Task<string?> OpenFieldsAsync();
     Task<string?> SaveFieldsAsync(string suggestedName);
@@ -39,6 +41,7 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     private static FilePickerFileType Ids => new(L.Get("Ui_IdFiles")) { Patterns = ["*.p12", "*.pfx"], MimeTypes = ["application/x-pkcs12"] };
 
     public Task<string?> OpenPdfAsync() => Open(Pdf);
+    public Task<string?> OpenImageAsync() => Open(Images);
 
     public async Task<IReadOnlyList<string>> OpenPdfsAsync()
     {

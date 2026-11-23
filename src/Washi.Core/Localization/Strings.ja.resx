@@ -132,6 +132,7 @@
                                           語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）
   washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示
   washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=リンク先 ...] [--remove 1-2,3-1] [-o out.pdf]   リンクを一覧表示、または追加（URL・メール・ページ番号）と削除
+  washi pdf images &lt;in.pdf&gt; [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   ページの画像を一覧・追加・差し替え・削除
   washi pdf compare &lt;旧.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）
   washi pdf replace-text &lt;in.pdf&gt; (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           ページの文字を書き換える（1 行ずつ。保存前に確認）
@@ -917,4 +918,29 @@
   <data name="Err_LinkAdd" xml:space="preserve"><value>--add には page:x0,y0,x1,y1=リンク先 を指定します。</value></data>
   <data name="Err_LinkCheck" xml:space="preserve"><value>{1} ページの {0} へのリンクが読み戻せなかったため、保存しませんでした。</value></data>
   <data name="Err_LinkChanged" xml:space="preserve"><value>{0} ページの見た目がリンクで変わったため、保存しませんでした。</value></data>
+  <data name="Ui_ToolImages" xml:space="preserve"><value>画像</value></data>
+  <data name="Ui_ImagesTitle" xml:space="preserve"><value>ページの画像</value></data>
+  <data name="Ui_ImagesLead" xml:space="preserve"><value>画像をクリックすると、画像ファイルに差し替え（元の場所に縦横比を保って収めます）または削除できます。追加するには画像を選んでページ上に枠を描きます。</value></data>
+  <data name="Ui_ImagesAdd" xml:space="preserve"><value>画像を追加…</value></data>
+  <data name="Ui_ImagePlace" xml:space="preserve"><value>{0} を置く場所にページ上で枠を描いてください。</value></data>
+  <data name="Ui_ImageSelected" xml:space="preserve"><value>選んだ画像</value></data>
+  <data name="Ui_ImageReplace" xml:space="preserve"><value>差し替え…</value></data>
+  <data name="Ui_ImageRemove" xml:space="preserve"><value>削除</value></data>
+  <data name="Ui_ImageUndo" xml:space="preserve"><value>元のままにする</value></data>
+  <data name="Ui_ImagesOnPages" xml:space="preserve"><value>ファイル内の画像</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>ページに画像はありません（フォーム内の画像やインライン画像は一覧に出ません）。</value></data>
+  <data name="Ui_ImageWhere" xml:space="preserve"><value>{0} ページ · {1} × {2} px</value></data>
+  <data name="Ui_ImageWillGo" xml:space="preserve"><value>削除します</value></data>
+  <data name="Ui_ImageWillBe" xml:space="preserve"><value>{0} に差し替えます</value></data>
+  <data name="Ui_ImageAdd" xml:space="preserve"><value>{1} ページに {0} を追加</value></data>
+  <data name="Ui_ImagesSave" xml:space="preserve"><value>{0} 件の変更をコピーに保存…</value></data>
+  <data name="Ui_ImagesSaveNote" xml:space="preserve"><value>変わるのは画像だけです。保存前にコピーを元と並べて確認します。JPEG はそのまま入れます。元のファイルは変わりません。</value></data>
+  <data name="Ui_ImagesSaved" xml:space="preserve"><value>{0} を保存しました：画像を {1} 件追加、{2} 件差し替え、{3} 件削除。確認済み：ほかは変わっていません。</value></data>
+  <data name="Pdf_ImageLine" xml:space="preserve"><value>  {0}  {1} ページ：{2} × {3} px  [{4}]</value></data>
+  <data name="Err_ImageEditNothing" xml:space="preserve"><value>追加・差し替え・削除する画像がありません。</value></data>
+  <data name="Err_ImageId" xml:space="preserve"><value>画像 {0} はありません。</value></data>
+  <data name="Err_ImageAdd" xml:space="preserve"><value>--add には page:x0,y0,x1,y1=画像ファイル を指定します。</value></data>
+  <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace には id=画像ファイル を指定します。</value></data>
+  <data name="Err_ImageEditChanged" xml:space="preserve"><value>{0} ページが画像以外の場所で変わったため、保存しませんでした。</value></data>
+  <data name="Err_ImageEditCheck" xml:space="preserve"><value>{1} ページで {0} が正しく表示されなかったため、保存しませんでした。</value></data>
 </root>

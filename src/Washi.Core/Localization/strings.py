@@ -522,6 +522,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)\n'
             '  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=target ...] [--remove 1-2,3-1] [-o out.pdf]   list links, or add (web/mail address, page number) and remove them\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   list, add, replace or remove the images on the pages\n'
             '  washi pdf compare <old.pdf> <new.pdf> [-o marked.pdf]   what changed: words, pages, pictures (-o: the new version with each change marked)\n'
             '  washi pdf replace-text <in.pdf> (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          change text on the page (one line at a time; checked before it is kept)\n'
@@ -561,6 +562,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）\n'
             '  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=リンク先 ...] [--remove 1-2,3-1] [-o out.pdf]   リンクを一覧表示、または追加（URL・メール・ページ番号）と削除\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   ページの画像を一覧・追加・差し替え・削除\n'
             '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）\n'
             '  washi pdf replace-text <in.pdf> (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
@@ -600,6 +602,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=目标 ...] [--remove 1-2,3-1] [-o out.pdf]   列出链接，或添加（网址、邮箱、页码）和删除链接\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   列出、添加、替换或删除页面上的图片\n'
             '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   列出变化（文字、页面、图片）（-o：在新版上用批注标出每处变化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改页面上的文字（一次一行；保存前会检查）\n'
@@ -639,6 +642,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=目標 ...] [--remove 1-2,3-1] [-o out.pdf]   列出連結，或新增（網址、郵件、頁碼）和刪除連結\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   列出、新增、取代或刪除頁面上的圖片\n'
             '  washi pdf compare <舊.pdf> <新.pdf> [-o marked.pdf]   列出變化（文字、頁面、圖片）（-o：在新版上用註解標出每處變化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
@@ -678,6 +682,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)\n'
             '  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=대상 ...] [--remove 1-2,3-1] [-o out.pdf]   링크 목록, 또는 추가(웹·메일 주소, 쪽 번호)와 삭제\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   페이지의 이미지 목록, 추가, 교체, 삭제\n'
             '  washi pdf compare <이전.pdf> <새.pdf> [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)\n'
             '  washi pdf replace-text <in.pdf> (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
@@ -717,6 +722,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)\n'
             '  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=cible ...] [--remove 1-2,3-1] [-o out.pdf]   lister les liens, ou en ajouter (adresse web/mail, page) et en retirer\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   lister, ajouter, remplacer ou retirer les images des pages\n'
             '  washi pdf compare <ancien.pdf> <nouveau.pdf> [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)\n'
             '  washi pdf replace-text <in.pdf> (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
@@ -756,6 +762,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)\n'
             '  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n'
             '  washi pdf links <in.pdf> [--find-addresses] [--add page:x0,y0,x1,y1=Ziel ...] [--remove 1-2,3-1] [-o out.pdf]   Links auflisten, oder hinzufügen (Web-/Mailadresse, Seite) und entfernen\n'
+            '  washi pdf images <in.pdf> [--add page:x0,y0,x1,y1=photo.jpg ...] [--replace 1-2=logo.png ...] [--remove 3-1] [-o out.pdf]   Bilder auf den Seiten auflisten, hinzufügen, ersetzen oder entfernen\n'
             '  washi pdf compare <alt.pdf> <neu.pdf> [-o marked.pdf]   was sich geändert hat: Wörter, Seiten, Bilder (-o: die neue Version mit markierten Änderungen)\n'
             '  washi pdf replace-text <in.pdf> (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
@@ -1846,6 +1853,31 @@ _UI = {
     "Err_LinkAdd": ["--add takes page:x0,y0,x1,y1=target.", "--add には page:x0,y0,x1,y1=リンク先 を指定します。", "--add 的格式是 page:x0,y0,x1,y1=目标。", "--add 的格式是 page:x0,y0,x1,y1=目標。", "--add 형식은 page:x0,y0,x1,y1=대상 입니다.", "--add prend page:x0,y0,x1,y1=cible.", "--add nimmt page:x0,y0,x1,y1=Ziel."],
     "Err_LinkCheck": ["The link to {0} on page {1} did not read back, so the copy was not kept.", "{1} ページの {0} へのリンクが読み戻せなかったため、保存しませんでした。", "第 {1} 页指向 {0} 的链接无法读回，因此没有保留副本。", "第 {1} 頁指向 {0} 的連結無法讀回，因此沒有保留副本。", "{1}페이지의 {0} 링크를 다시 읽을 수 없어 사본을 저장하지 않았습니다.", "Le lien vers {0} page {1} ne se relisait pas ; la copie n’a pas été conservée.", "Der Link zu {0} auf Seite {1} ließ sich nicht lesen; die Kopie wurde nicht behalten."],
     "Err_LinkChanged": ["Page {0} looked different with its links, so the copy was not kept.", "{0} ページの見た目がリンクで変わったため、保存しませんでした。", "第 {0} 页加链接后外观改变，因此没有保留副本。", "第 {0} 頁加連結後外觀改變，因此沒有保留副本。", "{0}페이지가 링크 때문에 달라 보여 사본을 저장하지 않았습니다.", "La page {0} changeait d’aspect avec ses liens ; la copie n’a pas été conservée.", "Seite {0} sah mit den Links anders aus; die Kopie wurde nicht behalten."],
+    "Ui_ToolImages": ["Images", "画像", "图片", "圖片", "이미지", "Images", "Bilder"],
+    "Ui_ImagesTitle": ["Images on the page", "ページの画像", "页面上的图片", "頁面上的圖片", "페이지의 이미지", "Images de la page", "Bilder auf der Seite"],
+    "Ui_ImagesLead": ["Click an image to replace it with a picture file (it keeps its own shape in the old place) or remove it. To add a picture, choose it and drag a box on the page.", "画像をクリックすると、画像ファイルに差し替え（元の場所に縦横比を保って収めます）または削除できます。追加するには画像を選んでページ上に枠を描きます。", "点击图片可以用图片文件替换（保持新图比例放在原位置）或删除。要添加图片，先选择文件再在页面上拖出一个框。", "點一下圖片可以用圖片檔取代（保持新圖比例放在原位置）或刪除。要新增圖片，先選擇檔案再在頁面上拖出一個框。", "이미지를 클릭하면 이미지 파일로 교체(원래 자리에 비율을 유지해 넣음)하거나 삭제할 수 있습니다. 추가하려면 이미지를 고르고 페이지에 상자를 그리세요.", "Cliquez sur une image pour la remplacer par un fichier (qui garde ses proportions à l’ancienne place) ou la retirer. Pour ajouter une image, choisissez-la et tracez un cadre sur la page.", "Klicken Sie auf ein Bild, um es durch eine Bilddatei zu ersetzen (sie behält ihr Seitenverhältnis am alten Platz) oder es zu entfernen. Zum Hinzufügen ein Bild wählen und einen Rahmen auf der Seite ziehen."],
+    "Ui_ImagesAdd": ["Add a picture…", "画像を追加…", "添加图片…", "新增圖片…", "이미지 추가…", "Ajouter une image…", "Bild hinzufügen…"],
+    "Ui_ImagePlace": ["Drag a box on the page where {0} goes.", "{0} を置く場所にページ上で枠を描いてください。", "请在页面上拖出放置 {0} 的框。", "請在頁面上拖出放置 {0} 的框。", "{0}을(를) 놓을 자리에 페이지에서 상자를 그리세요.", "Tracez sur la page le cadre où ira {0}.", "Ziehen Sie auf der Seite einen Rahmen, wo {0} hinkommt."],
+    "Ui_ImageSelected": ["Selected image", "選んだ画像", "选中的图片", "選取的圖片", "선택한 이미지", "Image sélectionnée", "Ausgewähltes Bild"],
+    "Ui_ImageReplace": ["Replace…", "差し替え…", "替换…", "取代…", "교체…", "Remplacer…", "Ersetzen…"],
+    "Ui_ImageRemove": ["Remove", "削除", "删除", "刪除", "삭제", "Retirer", "Entfernen"],
+    "Ui_ImageUndo": ["Leave as it is", "元のままにする", "保持原样", "保持原樣", "그대로 두기", "Laisser tel quel", "Unverändert lassen"],
+    "Ui_ImagesOnPages": ["Images in the file", "ファイル内の画像", "文件中的图片", "檔案中的圖片", "파일의 이미지", "Images du fichier", "Bilder in der Datei"],
+    "Ui_ImagesNone": ["The pages draw no images (scans and pictures inside forms are not listed).", "ページに画像はありません（フォーム内の画像やインライン画像は一覧に出ません）。", "页面上没有图片（表单内的图片和内嵌图片不会列出）。", "頁面上沒有圖片（表單內的圖片和內嵌圖片不會列出）。", "페이지에 이미지가 없습니다 (양식 안의 이미지와 인라인 이미지는 나오지 않음).", "Les pages ne dessinent aucune image (celles des formulaires et les images en ligne ne sont pas listées).", "Die Seiten zeichnen keine Bilder (Bilder in Formularen und Inline-Bilder werden nicht aufgeführt)."],
+    "Ui_ImageWhere": ["Page {0} · {1} × {2} px", "{0} ページ · {1} × {2} px", "第 {0} 页 · {1} × {2} px", "第 {0} 頁 · {1} × {2} px", "{0}페이지 · {1} × {2} px", "Page {0} · {1} × {2} px", "Seite {0} · {1} × {2} px"],
+    "Ui_ImageWillGo": ["Will be removed", "削除します", "将删除", "將刪除", "삭제됨", "Sera retirée", "Wird entfernt"],
+    "Ui_ImageWillBe": ["Will be replaced by {0}", "{0} に差し替えます", "将替换为 {0}", "將取代為 {0}", "{0}(으)로 교체됨", "Sera remplacée par {0}", "Wird durch {0} ersetzt"],
+    "Ui_ImageAdd": ["Add {0} on page {1}", "{1} ページに {0} を追加", "在第 {1} 页添加 {0}", "在第 {1} 頁新增 {0}", "{1}페이지에 {0} 추가", "Ajouter {0} page {1}", "{0} auf Seite {1} hinzufügen"],
+    "Ui_ImagesSave": ["Save {0} change(s) as copy…", "{0} 件の変更をコピーに保存…", "将 {0} 处修改另存为副本…", "將 {0} 處修改另存為副本…", "변경 {0}개를 사본으로 저장…", "Enregistrer {0} modification(s) dans une copie…", "{0} Änderung(en) als Kopie speichern…"],
+    "Ui_ImagesSaveNote": ["Only the images change: the copy is rendered next to the original before it is kept. JPEG photos go in as they are. The original is not changed.", "変わるのは画像だけです。保存前にコピーを元と並べて確認します。JPEG はそのまま入れます。元のファイルは変わりません。", "只有图片会改变：保存前会把副本与原文件对照检查。JPEG 照片原样放入。原文件不会改变。", "只有圖片會改變：儲存前會把副本與原檔案對照檢查。JPEG 照片原樣放入。原檔案不會改變。", "이미지만 바뀝니다. 저장하기 전에 사본을 원본과 비교합니다. JPEG 사진은 그대로 넣습니다. 원본은 바뀌지 않습니다.", "Seules les images changent : la copie est comparée à l’original avant d’être gardée. Les JPEG sont insérés tels quels. L’original n’est pas modifié.", "Nur die Bilder ändern sich: die Kopie wird vor dem Behalten mit dem Original verglichen. JPEG-Fotos kommen unverändert hinein. Das Original bleibt unverändert."],
+    "Ui_ImagesSaved": ["Saved {0}: {1} image(s) added, {2} replaced, {3} removed. Checked: nothing else changed.", "{0} を保存しました：画像を {1} 件追加、{2} 件差し替え、{3} 件削除。確認済み：ほかは変わっていません。", "已保存 {0}：新增 {1} 张图片，替换 {2} 张，删除 {3} 张。已检查：其他部分没有变化。", "已儲存 {0}：新增 {1} 張圖片，取代 {2} 張，刪除 {3} 張。已檢查：其他部分沒有變化。", "{0} 저장: 이미지 {1}개 추가, {2}개 교체, {3}개 삭제. 확인: 다른 부분은 바뀌지 않았습니다.", "{0} enregistré : {1} image(s) ajoutée(s), {2} remplacée(s), {3} retirée(s). Vérifié : rien d’autre n’a changé.", "{0} gespeichert: {1} Bild(er) hinzugefügt, {2} ersetzt, {3} entfernt. Geprüft: sonst hat sich nichts geändert."],
+    "Pdf_ImageLine": ["  {0}  page {1}: {2} × {3} px  [{4}]", "  {0}  {1} ページ：{2} × {3} px  [{4}]", "  {0}  第 {1} 页：{2} × {3} px  [{4}]", "  {0}  第 {1} 頁：{2} × {3} px  [{4}]", "  {0}  {1}페이지: {2} × {3} px  [{4}]", "  {0}  page {1} : {2} × {3} px  [{4}]", "  {0}  Seite {1}: {2} × {3} px  [{4}]"],
+    "Err_ImageEditNothing": ["No image to add, replace or remove.", "追加・差し替え・削除する画像がありません。", "没有要添加、替换或删除的图片。", "沒有要新增、取代或刪除的圖片。", "추가·교체·삭제할 이미지가 없습니다.", "Aucune image à ajouter, remplacer ou retirer.", "Kein Bild zum Hinzufügen, Ersetzen oder Entfernen."],
+    "Err_ImageId": ["There is no image {0}.", "画像 {0} はありません。", "没有图片 {0}。", "沒有圖片 {0}。", "이미지 {0}이(가) 없습니다.", "Il n’y a pas d’image {0}.", "Es gibt kein Bild {0}."],
+    "Err_ImageAdd": ["--add takes page:x0,y0,x1,y1=image file.", "--add には page:x0,y0,x1,y1=画像ファイル を指定します。", "--add 的格式是 page:x0,y0,x1,y1=图片文件。", "--add 的格式是 page:x0,y0,x1,y1=圖片檔。", "--add 형식은 page:x0,y0,x1,y1=이미지 파일 입니다.", "--add prend page:x0,y0,x1,y1=fichier image.", "--add nimmt page:x0,y0,x1,y1=Bilddatei."],
+    "Err_ImageReplaceArg": ["--replace takes id=image file.", "--replace には id=画像ファイル を指定します。", "--replace 的格式是 id=图片文件。", "--replace 的格式是 id=圖片檔。", "--replace 형식은 id=이미지 파일 입니다.", "--replace prend id=fichier image.", "--replace nimmt id=Bilddatei."],
+    "Err_ImageEditChanged": ["Page {0} changed outside the images, so the copy was not kept.", "{0} ページが画像以外の場所で変わったため、保存しませんでした。", "第 {0} 页在图片以外发生了变化，因此没有保留副本。", "第 {0} 頁在圖片以外發生了變化，因此沒有保留副本。", "{0}페이지가 이미지 밖에서 바뀌어 사본을 저장하지 않았습니다.", "La page {0} a changé hors des images ; la copie n’a pas été conservée.", "Seite {0} hat sich außerhalb der Bilder verändert; die Kopie wurde nicht behalten."],
+    "Err_ImageEditCheck": ["{0} did not show on page {1} as it should, so the copy was not kept.", "{1} ページで {0} が正しく表示されなかったため、保存しませんでした。", "{0} 在第 {1} 页显示不正确，因此没有保留副本。", "{0} 在第 {1} 頁顯示不正確，因此沒有保留副本。", "{1}페이지에서 {0}이(가) 제대로 보이지 않아 사본을 저장하지 않았습니다.", "{0} ne s’affichait pas comme prévu page {1} ; la copie n’a pas été conservée.", "{0} wurde auf Seite {1} nicht richtig angezeigt; die Kopie wurde nicht behalten."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k
