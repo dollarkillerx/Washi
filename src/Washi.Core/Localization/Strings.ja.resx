@@ -112,6 +112,7 @@
   <data name="Kind_signature" xml:space="preserve"><value>署名</value></data>
   <data name="UsagePdf" xml:space="preserve"><value>ページと OCR:
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      ファイルを結合（記入欄はそのまま残ります）
+  washi pdf from-images &lt;a.jpg&gt; &lt;b.png&gt; ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   写真・スキャン画像を PDF のページに（JPEG はそのまま）
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           ページの並べ替え・削除（指定しないページ）・回転（記入欄はそのまま残ります）
@@ -220,11 +221,11 @@
   <data name="Ui_OcrRun" xml:space="preserve"><value>検索可能な PDF を作成…</value></data>
   <data name="Ui_OcrProgress" xml:space="preserve"><value>{1} ページ中 {0} ページ目を認識中…</value></data>
   <data name="Ui_CombineTitle" xml:space="preserve"><value>ファイルを結合</value></data>
-  <data name="Ui_CombineLead" xml:space="preserve"><value>下の順番で PDF をまとめます。記入欄はそのまま記入できます。</value></data>
+  <data name="Ui_CombineLead" xml:space="preserve"><value>下の順番で PDF・写真・スキャン画像をまとめます。記入欄はそのまま記入でき、画像は 1 枚ずつページになります。</value></data>
   <data name="Ui_AddFiles" xml:space="preserve"><value>ファイルを追加…</value></data>
   <data name="Ui_MoveUp" xml:space="preserve"><value>上へ</value></data>
   <data name="Ui_MoveDown" xml:space="preserve"><value>下へ</value></data>
-  <data name="Ui_CombineEmpty" xml:space="preserve"><value>PDF を 2 つ以上追加するか、ここにドロップしてください。</value></data>
+  <data name="Ui_CombineEmpty" xml:space="preserve"><value>PDF や画像（JPEG・PNG など）を追加するか、ここにドロップしてください。</value></data>
   <data name="Ui_ProtectedFile" xml:space="preserve"><value>保護あり: 結合できません</value></data>
   <data name="Ui_ProtectedNote" xml:space="preserve"><value>{0} は保護されています。ページの再利用が許可されていません。Washi は保護を解除しません。</value></data>
   <data name="Ui_CombineRun" xml:space="preserve"><value>結合…</value></data>
@@ -814,4 +815,20 @@
   <data name="Err_StampWatermark" xml:space="preserve"><value>透かしの不透明度は 0 より大きく 100% 以下、大きさは 0〜400 ポイントにしてください。</value></data>
   <data name="Err_StampChanged" xml:space="preserve"><value>{0} ページがヘッダー・フッター・透かし以外の場所で変わったため、保存しませんでした。</value></data>
   <data name="Err_StampCheck" xml:space="preserve"><value>{1} ページで「{0}」が読み取れなかったため、保存しませんでした。</value></data>
+  <data name="Ui_ImageFile" xml:space="preserve"><value>画像 · 1 ページになります</value></data>
+  <data name="Ui_ImageFiles" xml:space="preserve"><value>画像</value></data>
+  <data name="Ui_PdfOrImageFiles" xml:space="preserve"><value>PDF と画像</value></data>
+  <data name="Ui_ImagesPage" xml:space="preserve"><value>画像を置くページ</value></data>
+  <data name="Ui_ImagesA4" xml:space="preserve"><value>A4（画像に合わせて縦横）</value></data>
+  <data name="Ui_ImagesLetter" xml:space="preserve"><value>レター（画像に合わせて縦横）</value></data>
+  <data name="Ui_ImagesOwnSize" xml:space="preserve"><value>画像と同じ大きさ</value></data>
+  <data name="Ui_ImagesCombined" xml:space="preserve"><value>{0} 枚の画像から {1} を作りました。確認済み：各ページが元の画像と同じに見えます。</value></data>
+  <data name="Pdf_FromImages" xml:space="preserve"><value>{0} を保存しました：{1} ページ、JPEG {2} 枚はそのまま。確認済み：各ページが元の画像と同じに見えます。</value></data>
+  <data name="Err_ImagesNone" xml:space="preserve"><value>PDF にする画像がありません。</value></data>
+  <data name="Err_ImagesPageSize" xml:space="preserve"><value>ページの大きさ「{0}」は使えません。a4・letter・image のどれかにしてください。</value></data>
+  <data name="Err_ImagesMargin" xml:space="preserve"><value>余白は 0〜144 ポイント、解像度は 36〜1200 dpi にしてください。</value></data>
+  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} は Washi が読める画像（JPEG・PNG・WebP・BMP・GIF）ではありません。HEIC の写真は先に JPEG で保存してください。</value></data>
+  <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} を画像として読み取れませんでした。</value></data>
+  <data name="Err_ImagesCheck" xml:space="preserve"><value>{0} ページが {1} と同じに見えなかったため、PDF を保存しませんでした。</value></data>
+  <data name="Err_NotFound" xml:space="preserve"><value>{0} がありません。</value></data>
 </root>

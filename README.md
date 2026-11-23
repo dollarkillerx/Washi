@@ -341,6 +341,7 @@ washi ocr scan.pdf --engine ai --yes       # the configured AI model reads the p
 
 ```bash
 washi pdf merge a.pdf b.pdf c.pdf -o all.pdf
+washi pdf from-images receipt1.jpg receipt2.jpg scan.png -o receipts.pdf   # one page per image, A4
 washi pdf split all.pdf --pages 1-2,5 -o parts     # parts/all_p1-2.pdf, parts/all_p5.pdf
 washi pdf split all.pdf                            # one file per page
 washi pdf organize all.pdf --pages 3,1-2 --rotate 3:90 -o new.pdf   # page 3 first and turned; pages 4+ dropped
@@ -447,6 +448,20 @@ the page (the old text covered, the new one over it) until *Save as copy*. Agent
   page's text is read back (the new text must be there, at the old size). If a check fails the copy is deleted.
 - Files whose permissions forbid changes are refused (remove the protection with its password first). Scanned pages
   have no text to edit; Erase and a comment text box are the way there.
+
+### Photos and scans into a PDF
+
+`washi pdf from-images` (`--page a4|letter|image`, `--margin`, `--dpi`), the `images_to_pdf` tool, and in the editor
+**Combine**: add or drop JPEG, PNG, WebP, BMP or GIF files next to PDFs (photos dropped on the window open Combine),
+choose the page size, *Combine*. Each image becomes a page.
+
+- **JPEG photos go in as they are**: the file's bytes become the page image, so nothing is lost and nothing grows.
+  Other formats are stored losslessly, with their transparency; an all-grey image stays grey.
+- **Upright**: a phone photo's EXIF orientation is applied (turned or mirrored as the camera meant), and A4 or
+  Letter pages turn to suit each image. The image is as large as fits, centred.
+- **Checked before it is kept**: every page is rendered and compared with its image on a 12 × 12 grid, which catches
+  a page turned the wrong way or with inverted colours.
+- HEIC photos are not read: save them as JPEG first. Run OCR afterwards to make scanned text searchable.
 
 ## Headers, footers and watermarks
 
@@ -624,6 +639,7 @@ There are two ways to run it:
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `edit_text` | new PDF with page text changed: find and replace, or the text inside a rect, in the document's font when it has the characters; one line at a time, checked afterwards | writes a **new** file |
+| `images_to_pdf` | new PDF from photos and scans, one page per image: JPEG as it is, others lossless, EXIF orientation applied, each page compared with its image | writes a **new** file |
 | `stamp_pages` | new PDF with headers, footers, page and Bates numbers and/or a watermark, the page's own content untouched, checked afterwards | writes a **new** file |
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
 | `verify_signatures` | the digital signatures in a PDF: signer, time, intact, trusted, changed afterwards, status | no |
@@ -720,9 +736,9 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 24 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 25 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -782,7 +798,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 17. ~~Digital signatures (PAdES) and their checking.~~ Done (`washi pdf sign|verify|make-id`, the Sign tool, `verify_signatures`).
 18. ~~Editing page text: a line at a time, and find and replace.~~ Done (`washi pdf replace-text`, the Edit text tool, `edit_text`).
 19. ~~Headers, footers, page and Bates numbers, watermarks.~~ Done (`washi pdf stamp`, the Headers tool, `stamp_pages`).
-20. Next: images to PDF; then editing a paragraph that reflows over several lines.
+20. ~~Images to PDF.~~ Done (`washi pdf from-images`, Combine, `images_to_pdf`).
+21. Next: editing a paragraph that reflows over several lines.
 
 ## License
 

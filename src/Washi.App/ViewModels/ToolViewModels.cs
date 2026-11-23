@@ -131,21 +131,25 @@ public sealed partial class OcrToolViewModel(MainViewModel main) : ObservableObj
 }
 
 /// <summary>One file in the Combine list.</summary>
-public sealed record CombineItem(string Path, int Pages, bool Protected = false)
+public sealed record CombineItem(string Path, int Pages, bool Protected = false, bool IsImage = false)
 {
     public string Name => System.IO.Path.GetFileName(Path);
-    public string Detail => L.F("Ui_PageCount", Pages) + (Protected ? " · " + L.Get("Ui_ProtectedFile") : "");
+    public string Detail => IsImage ? L.Get("Ui_ImageFile") : L.F("Ui_PageCount", Pages) + (Protected ? " · " + L.Get("Ui_ProtectedFile") : "");
 }
 
-/// <summary>Combine files into one PDF (form fields stay fillable).</summary>
+/// <summary>Combine files into one PDF (form fields stay fillable); photos and scans become pages of their own.</summary>
 public sealed partial class CombineToolViewModel(MainViewModel main) : ObservableObject
 {
     public ObservableCollection<CombineItem> Files { get; } = [];
 
+    /// <summary>The page an image gets: 0 A4, 1 Letter, 2 the image's own size.</summary>
+    [ObservableProperty] private int _pageSizeIndex;
+    public bool HasImages => Files.Any(f => f.IsImage);
+
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(MoveUpCommand), nameof(MoveDownCommand), nameof(RemoveCommand))]
     private CombineItem? _selected;
 
-    public bool CanCombine => Files.Count >= 2 && Files.All(f => !f.Protected);
+    public bool CanCombine => (Files.Count >= 2 || Files.Count == 1 && Files[0].IsImage) && Files.All(f => !f.Protected);
 
     /// <summary>The open document is the natural first file.</summary>
     public void OfferCurrentDocument()
@@ -159,12 +163,14 @@ public sealed partial class CombineToolViewModel(MainViewModel main) : Observabl
         {
             foreach (var path in paths)
             {
+                if (PdfFromImages.IsImage(path)) { Files.Add(new CombineItem(path, 1, IsImage: true)); continue; }
                 var (pages, mayAssemble) = await Task.Run(() => PageAssembly.Inspect(path));
                 Files.Add(new CombineItem(path, pages, !mayAssemble));
                 if (!mayAssemble) main.Status = L.F("Ui_ProtectedNote", Path.GetFileName(path));
             }
         });
         OnPropertyChanged(nameof(CanCombine));
+        OnPropertyChanged(nameof(HasImages));
     }
 
     [RelayCommand]
@@ -186,6 +192,7 @@ public sealed partial class CombineToolViewModel(MainViewModel main) : Observabl
         Files.Remove(s);
         Selected = Files.Count == 0 ? null : Files[Math.Min(i, Files.Count - 1)];
         OnPropertyChanged(nameof(CanCombine));
+        OnPropertyChanged(nameof(HasImages));
     }
 
     private void Move(int delta)
@@ -204,17 +211,20 @@ public sealed partial class CombineToolViewModel(MainViewModel main) : Observabl
         var first = Files[0].Path;
         if (await main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(first) + "_combined.pdf") is not { } output) return;
         var inputs = Files.Select(f => f.Path).ToList();
+        var options = new ImagePageOptions(PageSizeIndex switch { 1 => "letter", 2 => "image", _ => "a4" });
         string? written = null;
         await main.Run(async () =>
         {
             var tmp = output + ".tmp";
+            if (File.Exists(tmp)) File.Delete(tmp);
             try
             {
-                int pages = await Task.Run(() => PageAssembly.Merge(inputs, tmp));
+                int pages = await MainViewModel.Pdfium(() => PdfFromImages.CombineFiles(inputs, tmp, options));
                 File.Move(tmp, output, overwrite: true);
                 written = output;
-                main.Status = L.F("Pdf_Merged", inputs.Count, Path.GetFileName(output), pages,
-                                  Washi.Core.Forms.AcroFormFields.List(output).Count);
+                main.Status = inputs.All(PdfFromImages.IsImage)
+                    ? L.F("Ui_ImagesCombined", inputs.Count, Path.GetFileName(output))
+                    : L.F("Pdf_Merged", inputs.Count, Path.GetFileName(output), pages, Washi.Core.Forms.AcroFormFields.List(output).Count);
             }
             finally { if (File.Exists(tmp)) File.Delete(tmp); }
         });
@@ -223,6 +233,7 @@ public sealed partial class CombineToolViewModel(MainViewModel main) : Observabl
             var status = main.Status;
             Files.Clear();
             OnPropertyChanged(nameof(CanCombine));
+            OnPropertyChanged(nameof(HasImages));
             await main.LoadAsync(written);
             main.Status = status;
         }

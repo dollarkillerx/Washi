@@ -25,6 +25,15 @@ public interface IDialogs
 public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
 {
     private static FilePickerFileType Pdf => new(L.Get("Ui_PdfFiles")) { Patterns = ["*.pdf"], MimeTypes = ["application/pdf"] };
+    private static FilePickerFileType Images => new(L.Get("Ui_ImageFiles"))
+    {
+        Patterns = [.. Washi.Core.Pages.PdfFromImages.Extensions.Select(e => "*" + e)],
+        MimeTypes = ["image/jpeg", "image/png", "image/webp", "image/bmp", "image/gif"],
+    };
+    private static FilePickerFileType PdfOrImages => new(L.Get("Ui_PdfOrImageFiles"))
+    {
+        Patterns = ["*.pdf", .. Washi.Core.Pages.PdfFromImages.Extensions.Select(e => "*" + e)],
+    };
     private static FilePickerFileType Json => new(L.Get("Ui_JsonFiles")) { Patterns = ["*.json"], MimeTypes = ["application/json"] };
     private static FilePickerFileType Fonts => new(L.Get("Ui_FontFiles")) { Patterns = ["*.ttf", "*.otf", "*.ttc", "*.otc"] };
     private static FilePickerFileType Ids => new(L.Get("Ui_IdFiles")) { Patterns = ["*.p12", "*.pfx"], MimeTypes = ["application/x-pkcs12"] };
@@ -33,7 +42,7 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
 
     public async Task<IReadOnlyList<string>> OpenPdfsAsync()
     {
-        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { FileTypeFilter = [Pdf], AllowMultiple = true });
+        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { FileTypeFilter = [PdfOrImages, Pdf, Images], AllowMultiple = true });
         return [.. files.Select(f => f.TryGetLocalPath()).OfType<string>()];
     }
 

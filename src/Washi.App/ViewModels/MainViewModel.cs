@@ -525,8 +525,16 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public async Task DropAsync(IReadOnlyList<string> paths)
     {
         var pdfs = paths.Where(p => p.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) && File.Exists(p)).ToList();
+        var files = paths.Where(p => File.Exists(p) && (p.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) || Washi.Core.Pages.PdfFromImages.IsImage(p))).ToList();
+        if (files.Count > pdfs.Count && ActiveTool != Tool.Combine)
+        {
+            // photos and scans: Combine makes them into a PDF (added first, so the open document is not offered before them)
+            await Combine.AddAsync(files);
+            ActiveTool = Tool.Combine;
+            return;
+        }
         if (pdfs.Count == 0) return;
-        if (ActiveTool == Tool.Combine) await Combine.AddAsync(pdfs);
+        if (ActiveTool == Tool.Combine) await Combine.AddAsync(files);
         else if (ActiveTool == Tool.Organize && HasDocument) await Organize.InsertAsync(pdfs);   // dropped files are inserted
         else await LoadAsync(pdfs[0]);
     }
