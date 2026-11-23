@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Headers, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Headers, Compare, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -202,6 +202,8 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   and are saved to a copy, checked before it is kept (see below).
 - **Headers**: header and footer texts (left, centre, right) with page numbers, the file name, the date and Bates
   numbers, and a see-through watermark; previewed on the page, saved to a copy (see below).
+- **Compare**: the open file against another version of it; the differences are listed, shown on the page, and can
+  be saved as a copy with each one marked as a comment (see below).
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Find:** ⌘/Ctrl+F opens the find bar over the page, in every tool. It searches as you type, highlights every
@@ -463,6 +465,26 @@ choose the page size, *Combine*. Each image becomes a page.
   a page turned the wrong way or with inverted colours.
 - HEIC photos are not read: save them as JPEG first. Run OCR afterwards to make scanned text searchable.
 
+## Comparing versions
+
+```bash
+washi pdf compare contract_v1.pdf contract_v2.pdf                    # what changed, page by page
+washi pdf compare contract_v1.pdf contract_v2.pdf -o v2_marked.pdf  # and v2 with each change marked as a comment
+```
+
+In the editor: **Compare**, *Choose the other version…*, *Compare*. Added text is shown green, changed yellow,
+removed red, pictures and drawings purple; *Save marked copy* writes the newer version with a comment on each
+difference (the old wording in it). Agents use `compare_pdfs`.
+
+- **Pages are paired by their text**, so a page added or removed in the middle does not make everything after it
+  differ. Versions of the same length pair page by page.
+- **Words are compared**, not lines: “1,200” → “1,350” is one change. Each Japanese, Chinese or Korean character is a
+  word. Full-width and half-width forms count as the same. Words removed at the end of a line and a line added after
+  it are two changes, not one.
+- **Pictures and drawings** are compared by rendering both pages: changes outside the text (a stamp, a logo, a line,
+  a colour) are boxed. A page whose size changed is one change.
+- Scanned pages have no text: only their pictures are compared (OCR both first to compare their words).
+
 ## Headers, footers and watermarks
 
 ```bash
@@ -639,6 +661,7 @@ There are two ways to run it:
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `edit_text` | new PDF with page text changed: find and replace, or the text inside a rect, in the document's font when it has the characters; one line at a time, checked afterwards | writes a **new** file |
+| `compare_pdfs` | the differences between two versions: page pairs, words changed, added and removed, pages added and removed, changes outside the text, with their boxes | no |
 | `images_to_pdf` | new PDF from photos and scans, one page per image: JPEG as it is, others lossless, EXIF orientation applied, each page compared with its image | writes a **new** file |
 | `stamp_pages` | new PDF with headers, footers, page and Bates numbers and/or a watermark, the page's own content untouched, checked afterwards | writes a **new** file |
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
@@ -736,9 +759,9 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 25 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 26 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -799,7 +822,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 18. ~~Editing page text: a line at a time, and find and replace.~~ Done (`washi pdf replace-text`, the Edit text tool, `edit_text`).
 19. ~~Headers, footers, page and Bates numbers, watermarks.~~ Done (`washi pdf stamp`, the Headers tool, `stamp_pages`).
 20. ~~Images to PDF.~~ Done (`washi pdf from-images`, Combine, `images_to_pdf`).
-21. Next: editing a paragraph that reflows over several lines.
+21. ~~Comparing versions.~~ Done (`washi pdf compare`, the Compare tool, `compare_pdfs`).
+22. Next: export pages as images, crop pages; then editing a paragraph that reflows over several lines.
 
 ## License
 

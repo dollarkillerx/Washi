@@ -129,6 +129,7 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf redact &lt;in.pdf&gt; [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           remove words, personal data or areas for real and cover them in black (--list only shows the matches)
   washi pdf find &lt;in.pdf&gt; &lt;text&gt; [--case] [--whole-words]   where the text is, page by page
+  washi pdf compare &lt;old.pdf&gt; &lt;new.pdf&gt; [-o marked.pdf]   what changed: words, pages, pictures (-o: the new version with each change marked)
   washi pdf replace-text &lt;in.pdf&gt; (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           change text on the page (one line at a time; checked before it is kept)
   washi pdf stamp &lt;in.pdf&gt; [--header "left|center|right"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PREFIX [--bates-start 1] [--bates-digits 6]]
@@ -831,4 +832,35 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} could not be read as an image.</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>Page {0} did not look like {1}, so the PDF was not kept.</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} does not exist.</value></data>
+  <data name="Ui_ToolCompare" xml:space="preserve"><value>Compare</value></data>
+  <data name="Ui_CompareTitle" xml:space="preserve"><value>Compare versions</value></data>
+  <data name="Ui_CompareLead" xml:space="preserve"><value>Compare the open file with another version of it: changed, added and removed words, added and removed pages, and changes to pictures and drawings.</value></data>
+  <data name="Ui_CompareChoose" xml:space="preserve"><value>Choose the other version…</value></data>
+  <data name="Ui_CompareOther" xml:space="preserve"><value>Compared with: {0}</value></data>
+  <data name="Ui_CompareOtherNewer" xml:space="preserve"><value>That file is the newer version</value></data>
+  <data name="Ui_CompareRun" xml:space="preserve"><value>Compare</value></data>
+  <data name="Ui_CompareNone" xml:space="preserve"><value>No differences: the two versions have the same text and look the same.</value></data>
+  <data name="Ui_CompareSummary" xml:space="preserve"><value>{0} difference(s): {1} changed, {2} added, {3} removed, {4} outside the text, {5} page(s) added, {6} removed.</value></data>
+  <data name="Ui_CompareLegend" xml:space="preserve"><value>Green: added · yellow: changed · red: removed · purple: pictures and drawings</value></data>
+  <data name="Ui_CompareSave" xml:space="preserve"><value>Save marked copy…</value></data>
+  <data name="Ui_CompareSaveNote" xml:space="preserve"><value>A copy of the newer version with each difference marked as a comment (the old wording in it), to send or review. The files compared are not changed.</value></data>
+  <data name="Ui_CompareMarked" xml:space="preserve"><value>Saved {0}: {1} comment(s) mark the differences.</value></data>
+  <data name="Ui_CompareSameFile" xml:space="preserve"><value>Choose another file: that is the one already open.</value></data>
+  <data name="Ui_CmpWhere" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_CmpRowChanged" xml:space="preserve"><value>“{0}” → “{1}”</value></data>
+  <data name="Ui_CmpRowAdded" xml:space="preserve"><value>Added “{0}”</value></data>
+  <data name="Ui_CmpRowDeleted" xml:space="preserve"><value>Removed “{0}”</value></data>
+  <data name="Ui_CmpRowVisual" xml:space="preserve"><value>Changed outside the text (picture or drawing)</value></data>
+  <data name="Ui_CmpRowPageAdded" xml:space="preserve"><value>New page</value></data>
+  <data name="Ui_CmpRowPageRemoved" xml:space="preserve"><value>Page {0} of the old version was removed</value></data>
+  <data name="Cmp_Size" xml:space="preserve"><value>{0} × {1} pt</value></data>
+  <data name="Cmp_NoteAdded" xml:space="preserve"><value>Added: {0}</value></data>
+  <data name="Cmp_NoteChanged" xml:space="preserve"><value>Was: {0}</value></data>
+  <data name="Cmp_NoteDeleted" xml:space="preserve"><value>Removed: {0}</value></data>
+  <data name="Cmp_NoteVisual" xml:space="preserve"><value>Changed here (picture or drawing)</value></data>
+  <data name="Cmp_NoteSize" xml:space="preserve"><value>Page size changed from {0} to {1}</value></data>
+  <data name="Cmp_NotePageAdded" xml:space="preserve"><value>This page is new.</value></data>
+  <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>Page {0} of the old version was removed: {1}</value></data>
+  <data name="Pdf_CompareLine" xml:space="preserve"><value>  old p.{0} / new p.{1}: {2}</value></data>
+  <data name="Err_CompareSame" xml:space="preserve"><value>The two versions are the same: there is nothing to mark.</value></data>
 </root>

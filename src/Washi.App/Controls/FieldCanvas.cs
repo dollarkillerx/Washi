@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Washi.App.ViewModels;
 using Washi.Core;
+using Washi.Core.Pages;
 using Washi.Masume;
 
 namespace Washi.App.Controls;
@@ -69,6 +70,7 @@ public sealed class FieldCanvas : Control
         vm.Redact.Changed += InvalidateVisual;
         vm.EditText.Changed += InvalidateVisual;
         vm.Stamp.Changed += InvalidateVisual;
+        vm.Compare.Changed += InvalidateVisual;
         vm.Find.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
@@ -83,6 +85,7 @@ public sealed class FieldCanvas : Control
         vm.Redact.Changed -= InvalidateVisual;
         vm.EditText.Changed -= InvalidateVisual;
         vm.Stamp.Changed -= InvalidateVisual;
+        vm.Compare.Changed -= InvalidateVisual;
         vm.Find.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
@@ -149,6 +152,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsEditTextTool: true } et)
         {
             RenderEditText(ctx, et);
+            return;
+        }
+        if (Editor is { IsCompareTool: true } cp)
+        {
+            RenderCompare(ctx, cp);
             return;
         }
         if (Editor is { IsStampTool: true } st)
@@ -424,6 +432,27 @@ public sealed class FieldCanvas : Control
         }
         if (vm.EditText.Selected is { } sel)
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1.5), Screen(sel.Box).Inflate(2));
+    }
+
+    /// <summary>Compare tool: the differences on this page (added green, changed yellow, removed red, pictures purple).</summary>
+    private void RenderCompare(DrawingContext ctx, MainViewModel vm)
+    {
+        foreach (var row in vm.Compare.On(vm.PageIndex))
+        {
+            var color = row.Change.Kind switch
+            {
+                ChangeKind.Inserted or ChangeKind.PageAdded => Color.FromRgb(63, 185, 80),
+                ChangeKind.Changed => Color.FromRgb(242, 204, 96),
+                ChangeKind.Deleted or ChangeKind.PageRemoved => Color.FromRgb(248, 81, 73),
+                _ => Color.FromRgb(163, 113, 247),
+            };
+            // what the open document holds is filled; what it lost is only outlined
+            bool here = row.OpenIsNew ? row.Change.Kind is ChangeKind.Inserted or ChangeKind.Changed : row.Change.Kind is ChangeKind.Deleted or ChangeKind.Changed;
+            var fill = row.Change.Kind == ChangeKind.Visual ? null : new SolidColorBrush(color, here ? 0.35 : 0.15);
+            var pen = new Pen(new SolidColorBrush(color), row.Change.Kind == ChangeKind.Visual ? 2 : 1);
+            foreach (var b in row.Boxes)
+                ctx.DrawRectangle(fill, pen, Screen(b).Inflate(1));
+        }
     }
 
     /// <summary>Headers tool: the header, footer and watermark as they will come out on this page (a preview).</summary>

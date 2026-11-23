@@ -129,6 +129,7 @@
   washi pdf redact &lt;in.pdf&gt; [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）
   washi pdf find &lt;in.pdf&gt; &lt;語句&gt; [--case] [--whole-words]   語句のある場所をページごとに表示
+  washi pdf compare &lt;旧.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）
   washi pdf replace-text &lt;in.pdf&gt; (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           ページの文字を書き換える（1 行ずつ。保存前に確認）
   washi pdf stamp &lt;in.pdf&gt; [--header "左|中央|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 接頭辞 [--bates-start 1] [--bates-digits 6]]
@@ -831,4 +832,35 @@
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} を画像として読み取れませんでした。</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>{0} ページが {1} と同じに見えなかったため、PDF を保存しませんでした。</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} がありません。</value></data>
+  <data name="Ui_ToolCompare" xml:space="preserve"><value>比較</value></data>
+  <data name="Ui_CompareTitle" xml:space="preserve"><value>版の比較</value></data>
+  <data name="Ui_CompareLead" xml:space="preserve"><value>開いているファイルを別の版と比べます。変わった語句・増えた語句・消えた語句、増えたページ・消えたページ、図や画像の変化がわかります。</value></data>
+  <data name="Ui_CompareChoose" xml:space="preserve"><value>比べる版を選ぶ…</value></data>
+  <data name="Ui_CompareOther" xml:space="preserve"><value>比較対象：{0}</value></data>
+  <data name="Ui_CompareOtherNewer" xml:space="preserve"><value>そちらが新しい版</value></data>
+  <data name="Ui_CompareRun" xml:space="preserve"><value>比較する</value></data>
+  <data name="Ui_CompareNone" xml:space="preserve"><value>違いはありません。2 つの版の文字も見た目も同じです。</value></data>
+  <data name="Ui_CompareSummary" xml:space="preserve"><value>違い {0} 件：変更 {1}、追加 {2}、削除 {3}、文字以外 {4}、ページ追加 {5}、ページ削除 {6}。</value></data>
+  <data name="Ui_CompareLegend" xml:space="preserve"><value>緑：追加 · 黄：変更 · 赤：削除 · 紫：図や画像</value></data>
+  <data name="Ui_CompareSave" xml:space="preserve"><value>注釈付きコピーを保存…</value></data>
+  <data name="Ui_CompareSaveNote" xml:space="preserve"><value>新しい版のコピーに、違いごとの注釈（元の文言入り）を付けます。送付や確認用です。比べたファイルは変わりません。</value></data>
+  <data name="Ui_CompareMarked" xml:space="preserve"><value>{0} を保存しました：{1} 件の注釈で違いを示しています。</value></data>
+  <data name="Ui_CompareSameFile" xml:space="preserve"><value>別のファイルを選んでください（それは開いているファイルです）。</value></data>
+  <data name="Ui_CmpWhere" xml:space="preserve"><value>{0} ページ</value></data>
+  <data name="Ui_CmpRowChanged" xml:space="preserve"><value>「{0}」→「{1}」</value></data>
+  <data name="Ui_CmpRowAdded" xml:space="preserve"><value>追加「{0}」</value></data>
+  <data name="Ui_CmpRowDeleted" xml:space="preserve"><value>削除「{0}」</value></data>
+  <data name="Ui_CmpRowVisual" xml:space="preserve"><value>文字以外が変化（図や画像）</value></data>
+  <data name="Ui_CmpRowPageAdded" xml:space="preserve"><value>新しいページ</value></data>
+  <data name="Ui_CmpRowPageRemoved" xml:space="preserve"><value>旧版の {0} ページが削除されました</value></data>
+  <data name="Cmp_Size" xml:space="preserve"><value>{0} × {1} pt</value></data>
+  <data name="Cmp_NoteAdded" xml:space="preserve"><value>追加：{0}</value></data>
+  <data name="Cmp_NoteChanged" xml:space="preserve"><value>変更前：{0}</value></data>
+  <data name="Cmp_NoteDeleted" xml:space="preserve"><value>削除：{0}</value></data>
+  <data name="Cmp_NoteVisual" xml:space="preserve"><value>ここが変化（図や画像）</value></data>
+  <data name="Cmp_NoteSize" xml:space="preserve"><value>ページの大きさが {0} から {1} に変化</value></data>
+  <data name="Cmp_NotePageAdded" xml:space="preserve"><value>このページは新しく追加されました。</value></data>
+  <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>旧版の {0} ページが削除されました：{1}</value></data>
+  <data name="Pdf_CompareLine" xml:space="preserve"><value>  旧 {0} / 新 {1} ページ：{2}</value></data>
+  <data name="Err_CompareSame" xml:space="preserve"><value>2 つの版は同じです。示す違いがありません。</value></data>
 </root>

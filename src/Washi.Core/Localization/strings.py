@@ -519,6 +519,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find word ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          remove words, personal data or areas for real and cover them in black (--list only shows the matches)\n'
             '  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n'
+            '  washi pdf compare <old.pdf> <new.pdf> [-o marked.pdf]   what changed: words, pages, pictures (-o: the new version with each change marked)\n'
             '  washi pdf replace-text <in.pdf> (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          change text on the page (one line at a time; checked before it is kept)\n'
             '  washi pdf stamp <in.pdf> [--header "left|center|right"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PREFIX [--bates-start 1] [--bates-digits 6]]\n'
@@ -554,6 +555,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 語句 ...] [--pattern email,phone,number] [--regex 正規表現] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          語句・個人情報・範囲を本当に削除して黒く塗る（--list は一致箇所の表示だけ）\n'
             '  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n'
+            '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   変わったところ（語句・ページ・図や画像）を表示（-o：変更箇所に注釈を付けた新版）\n'
             '  washi pdf replace-text <in.pdf> (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
             '  washi pdf stamp <in.pdf> [--header "左|中央|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 接頭辞 [--bates-start 1] [--bates-digits 6]]\n'
@@ -589,6 +591,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 词 ...] [--pattern email,phone,number] [--regex 正则] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          真正删除词语、个人信息或区域并涂黑（--list 只列出匹配处）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n'
+            '  washi pdf compare <旧.pdf> <新.pdf> [-o marked.pdf]   列出变化（文字、页面、图片）（-o：在新版上用批注标出每处变化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改页面上的文字（一次一行；保存前会检查）\n'
             '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前缀 [--bates-start 1] [--bates-digits 6]]\n'
@@ -624,6 +627,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）\n'
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n'
+            '  washi pdf compare <舊.pdf> <新.pdf> [-o marked.pdf]   列出變化（文字、頁面、圖片）（-o：在新版上用註解標出每處變化）\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
             '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前綴 [--bates-start 1] [--bates-digits 6]]\n'
@@ -659,6 +663,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)\n'
             '  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n'
+            '  washi pdf compare <이전.pdf> <새.pdf> [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)\n'
             '  washi pdf replace-text <in.pdf> (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
             '  washi pdf stamp <in.pdf> [--header "왼쪽|가운데|오른쪽"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 접두사 [--bates-start 1] [--bates-digits 6]]\n'
@@ -694,6 +699,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)\n'
             '  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n'
+            '  washi pdf compare <ancien.pdf> <nouveau.pdf> [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)\n'
             '  washi pdf replace-text <in.pdf> (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
             '  washi pdf stamp <in.pdf> [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]\n'
@@ -729,6 +735,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf redact <in.pdf> [--find Wort ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]\n'
             '                                          Wörter, persönliche Daten oder Bereiche wirklich entfernen und schwarz abdecken (--list zeigt nur die Treffer)\n'
             '  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n'
+            '  washi pdf compare <alt.pdf> <neu.pdf> [-o marked.pdf]   was sich geändert hat: Wörter, Seiten, Bilder (-o: die neue Version mit markierten Änderungen)\n'
             '  washi pdf replace-text <in.pdf> (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
             '  washi pdf stamp <in.pdf> [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]\n'
@@ -1736,6 +1743,37 @@ _UI = {
     "Err_ImageUnreadable": ["{0} could not be read as an image.", "{0} を画像として読み取れませんでした。", "无法把 {0} 当作图片读取。", "無法把 {0} 當作圖片讀取。", "{0}을(를) 이미지로 읽을 수 없습니다.", "{0} n’a pas pu être lu comme une image.", "{0} ließ sich nicht als Bild lesen."],
     "Err_ImagesCheck": ["Page {0} did not look like {1}, so the PDF was not kept.", "{0} ページが {1} と同じに見えなかったため、PDF を保存しませんでした。", "第 {0} 页与 {1} 不一致，因此没有保留 PDF。", "第 {0} 頁與 {1} 不一致，因此沒有保留 PDF。", "{0}쪽이 {1}과(와) 달라 PDF 를 저장하지 않았습니다.", "La page {0} ne ressemblait pas à {1} ; le PDF n’a pas été conservé.", "Seite {0} sah nicht aus wie {1}; das PDF wurde nicht behalten."],
     "Err_NotFound": ["{0} does not exist.", "{0} がありません。", "{0} 不存在。", "{0} 不存在。", "{0}이(가) 없습니다.", "{0} n’existe pas.", "{0} existiert nicht."],
+    "Ui_ToolCompare": ["Compare", "比較", "比较", "比較", "비교", "Comparer", "Vergleichen"],
+    "Ui_CompareTitle": ["Compare versions", "版の比較", "比较版本", "比較版本", "버전 비교", "Comparer des versions", "Versionen vergleichen"],
+    "Ui_CompareLead": ["Compare the open file with another version of it: changed, added and removed words, added and removed pages, and changes to pictures and drawings.", "開いているファイルを別の版と比べます。変わった語句・増えた語句・消えた語句、増えたページ・消えたページ、図や画像の変化がわかります。", "将打开的文件与它的另一个版本比较：修改、新增和删除的文字，新增和删除的页面，以及图片和图形的变化。", "將開啟的檔案與它的另一個版本比較：修改、新增和刪除的文字，新增和刪除的頁面，以及圖片和圖形的變化。", "열린 파일을 다른 버전과 비교합니다. 바뀐 단어, 추가·삭제된 단어, 추가·삭제된 페이지, 그림과 도형의 변화를 보여 줍니다.", "Comparez le fichier ouvert avec une autre version : mots modifiés, ajoutés et supprimés, pages ajoutées et supprimées, changements d’images et de dessins.", "Vergleichen Sie die geöffnete Datei mit einer anderen Version: geänderte, hinzugefügte und entfernte Wörter, hinzugefügte und entfernte Seiten, Änderungen an Bildern und Zeichnungen."],
+    "Ui_CompareChoose": ["Choose the other version…", "比べる版を選ぶ…", "选择另一个版本…", "選擇另一個版本…", "비교할 버전 선택…", "Choisir l’autre version…", "Andere Version wählen…"],
+    "Ui_CompareOther": ["Compared with: {0}", "比較対象：{0}", "比较对象：{0}", "比較對象：{0}", "비교 대상: {0}", "Comparé avec : {0}", "Verglichen mit: {0}"],
+    "Ui_CompareOtherNewer": ["That file is the newer version", "そちらが新しい版", "那个文件是较新的版本", "那個檔案是較新的版本", "그 파일이 새 버전", "Ce fichier est la version la plus récente", "Diese Datei ist die neuere Version"],
+    "Ui_CompareRun": ["Compare", "比較する", "比较", "比較", "비교", "Comparer", "Vergleichen"],
+    "Ui_CompareNone": ["No differences: the two versions have the same text and look the same.", "違いはありません。2 つの版の文字も見た目も同じです。", "没有差异：两个版本的文字和外观都相同。", "沒有差異：兩個版本的文字和外觀都相同。", "차이가 없습니다. 두 버전의 글자와 모양이 같습니다.", "Aucune différence : les deux versions ont le même texte et le même aspect.", "Keine Unterschiede: beide Versionen haben denselben Text und sehen gleich aus."],
+    "Ui_CompareSummary": ["{0} difference(s): {1} changed, {2} added, {3} removed, {4} outside the text, {5} page(s) added, {6} removed.", "違い {0} 件：変更 {1}、追加 {2}、削除 {3}、文字以外 {4}、ページ追加 {5}、ページ削除 {6}。", "{0} 处差异：修改 {1}，新增 {2}，删除 {3}，文字以外 {4}，新增页面 {5}，删除页面 {6}。", "{0} 處差異：修改 {1}，新增 {2}，刪除 {3}，文字以外 {4}，新增頁面 {5}，刪除頁面 {6}。", "차이 {0}개: 변경 {1}, 추가 {2}, 삭제 {3}, 글자 외 {4}, 페이지 추가 {5}, 페이지 삭제 {6}.", "{0} différence(s) : {1} modifiée(s), {2} ajoutée(s), {3} supprimée(s), {4} hors du texte, {5} page(s) ajoutée(s), {6} supprimée(s).", "{0} Unterschied(e): {1} geändert, {2} hinzugefügt, {3} entfernt, {4} außerhalb des Texts, {5} Seite(n) hinzugefügt, {6} entfernt."],
+    "Ui_CompareLegend": ["Green: added · yellow: changed · red: removed · purple: pictures and drawings", "緑：追加 · 黄：変更 · 赤：削除 · 紫：図や画像", "绿：新增 · 黄：修改 · 红：删除 · 紫：图片和图形", "綠：新增 · 黃：修改 · 紅：刪除 · 紫：圖片和圖形", "초록: 추가 · 노랑: 변경 · 빨강: 삭제 · 보라: 그림과 도형", "Vert : ajouté · jaune : modifié · rouge : supprimé · violet : images et dessins", "Grün: hinzugefügt · Gelb: geändert · Rot: entfernt · Lila: Bilder und Zeichnungen"],
+    "Ui_CompareSave": ["Save marked copy…", "注釈付きコピーを保存…", "另存带标记的副本…", "另存帶標記的副本…", "표시한 사본 저장…", "Enregistrer une copie annotée…", "Markierte Kopie speichern…"],
+    "Ui_CompareSaveNote": ["A copy of the newer version with each difference marked as a comment (the old wording in it), to send or review. The files compared are not changed.", "新しい版のコピーに、違いごとの注釈（元の文言入り）を付けます。送付や確認用です。比べたファイルは変わりません。", "在较新版本的副本上为每处差异加上批注（附原文），便于发送或审阅。比较的文件不会改变。", "在較新版本的副本上為每處差異加上註解（附原文），便於傳送或審閱。比較的檔案不會改變。", "새 버전의 사본에 차이마다 주석(원래 문구 포함)을 답니다. 보내거나 검토할 때 쓰세요. 비교한 파일은 바뀌지 않습니다.", "Une copie de la version récente où chaque différence est annotée (avec l’ancien libellé), à envoyer ou relire. Les fichiers comparés ne sont pas modifiés.", "Eine Kopie der neueren Version, in der jeder Unterschied als Kommentar markiert ist (mit dem alten Wortlaut), zum Versenden oder Prüfen. Die verglichenen Dateien bleiben unverändert."],
+    "Ui_CompareMarked": ["Saved {0}: {1} comment(s) mark the differences.", "{0} を保存しました：{1} 件の注釈で違いを示しています。", "已保存 {0}：用 {1} 条批注标出差异。", "已儲存 {0}：用 {1} 則註解標出差異。", "{0} 저장: 주석 {1}개로 차이를 표시했습니다.", "{0} enregistré : {1} commentaire(s) signalent les différences.", "{0} gespeichert: {1} Kommentar(e) markieren die Unterschiede."],
+    "Ui_CompareSameFile": ["Choose another file: that is the one already open.", "別のファイルを選んでください（それは開いているファイルです）。", "请选择另一个文件：那是已经打开的文件。", "請選擇另一個檔案：那是已經開啟的檔案。", "다른 파일을 고르세요. 그것은 이미 열린 파일입니다.", "Choisissez un autre fichier : c’est celui qui est déjà ouvert.", "Wählen Sie eine andere Datei: Das ist die bereits geöffnete."],
+    "Ui_CmpWhere": ["Page {0}", "{0} ページ", "第 {0} 页", "第 {0} 頁", "{0}페이지", "Page {0}", "Seite {0}"],
+    "Ui_CmpRowChanged": ["“{0}” → “{1}”", "「{0}」→「{1}」", "“{0}” → “{1}”", "「{0}」→「{1}」", "“{0}” → “{1}”", "« {0} » → « {1} »", "„{0}“ → „{1}“"],
+    "Ui_CmpRowAdded": ["Added “{0}”", "追加「{0}」", "新增“{0}”", "新增「{0}」", "추가 “{0}”", "Ajouté « {0} »", "Hinzugefügt „{0}“"],
+    "Ui_CmpRowDeleted": ["Removed “{0}”", "削除「{0}」", "删除“{0}”", "刪除「{0}」", "삭제 “{0}”", "Supprimé « {0} »", "Entfernt „{0}“"],
+    "Ui_CmpRowVisual": ["Changed outside the text (picture or drawing)", "文字以外が変化（図や画像）", "文字以外有变化（图片或图形）", "文字以外有變化（圖片或圖形）", "글자 외 변화 (그림 또는 도형)", "Modifié hors du texte (image ou dessin)", "Außerhalb des Texts geändert (Bild oder Zeichnung)"],
+    "Ui_CmpRowPageAdded": ["New page", "新しいページ", "新页面", "新頁面", "새 페이지", "Nouvelle page", "Neue Seite"],
+    "Ui_CmpRowPageRemoved": ["Page {0} of the old version was removed", "旧版の {0} ページが削除されました", "旧版第 {0} 页被删除", "舊版第 {0} 頁被刪除", "이전 버전의 {0}페이지가 삭제됨", "La page {0} de l’ancienne version a été supprimée", "Seite {0} der alten Version wurde entfernt"],
+    "Cmp_Size": ["{0} × {1} pt", "{0} × {1} pt", "{0} × {1} pt", "{0} × {1} pt", "{0} × {1} pt", "{0} × {1} pt", "{0} × {1} pt"],
+    "Cmp_NoteAdded": ["Added: {0}", "追加：{0}", "新增：{0}", "新增：{0}", "추가: {0}", "Ajouté : {0}", "Hinzugefügt: {0}"],
+    "Cmp_NoteChanged": ["Was: {0}", "変更前：{0}", "原为：{0}", "原為：{0}", "변경 전: {0}", "Avant : {0}", "Vorher: {0}"],
+    "Cmp_NoteDeleted": ["Removed: {0}", "削除：{0}", "删除：{0}", "刪除：{0}", "삭제: {0}", "Supprimé : {0}", "Entfernt: {0}"],
+    "Cmp_NoteVisual": ["Changed here (picture or drawing)", "ここが変化（図や画像）", "此处有变化（图片或图形）", "此處有變化（圖片或圖形）", "여기가 바뀜 (그림 또는 도형)", "Modifié ici (image ou dessin)", "Hier geändert (Bild oder Zeichnung)"],
+    "Cmp_NoteSize": ["Page size changed from {0} to {1}", "ページの大きさが {0} から {1} に変化", "页面大小从 {0} 变为 {1}", "頁面大小從 {0} 變為 {1}", "페이지 크기가 {0}에서 {1}(으)로 바뀜", "Taille de page passée de {0} à {1}", "Seitengröße von {0} auf {1} geändert"],
+    "Cmp_NotePageAdded": ["This page is new.", "このページは新しく追加されました。", "此页为新增。", "此頁為新增。", "새로 추가된 페이지입니다.", "Cette page est nouvelle.", "Diese Seite ist neu."],
+    "Cmp_NotePageRemoved": ["Page {0} of the old version was removed: {1}", "旧版の {0} ページが削除されました：{1}", "旧版第 {0} 页被删除：{1}", "舊版第 {0} 頁被刪除：{1}", "이전 버전의 {0}페이지가 삭제됨: {1}", "La page {0} de l’ancienne version a été supprimée : {1}", "Seite {0} der alten Version wurde entfernt: {1}"],
+    "Pdf_CompareLine": ["  old p.{0} / new p.{1}: {2}", "  旧 {0} / 新 {1} ページ：{2}", "  旧第 {0} 页 / 新第 {1} 页：{2}", "  舊第 {0} 頁 / 新第 {1} 頁：{2}", "  이전 {0} / 새 {1}페이지: {2}", "  anc. p. {0} / nouv. p. {1} : {2}", "  alt S. {0} / neu S. {1}: {2}"],
+    "Err_CompareSame": ["The two versions are the same: there is nothing to mark.", "2 つの版は同じです。示す違いがありません。", "两个版本相同：没有要标记的内容。", "兩個版本相同：沒有要標記的內容。", "두 버전이 같아 표시할 것이 없습니다.", "Les deux versions sont identiques : rien à signaler.", "Beide Versionen sind gleich: Es gibt nichts zu markieren."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, EditText, Stamp, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, EditText, Stamp, Compare, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields, Bookmarks }
@@ -65,6 +65,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Redact = new RedactToolViewModel(this);
         EditText = new EditTextViewModel(this);
         Stamp = new StampToolViewModel(this);
+        Compare = new CompareToolViewModel(this);
         Find = new FindViewModel(this);
         Bookmarks = new BookmarksViewModel(this);
         Print = new PrintViewModel(this);
@@ -88,6 +89,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public RedactToolViewModel Redact { get; }
     public EditTextViewModel EditText { get; }
     public StampToolViewModel Stamp { get; }
+    public CompareToolViewModel Compare { get; }
     public FindViewModel Find { get; }
     public BookmarksViewModel Bookmarks { get; }
     public PrintViewModel Print { get; }
@@ -205,7 +207,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsCompressTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsCompareTool), nameof(IsCompressTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -227,6 +229,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsRedactTool { get => ActiveTool == Tool.Redact; set { if (value) ActiveTool = Tool.Redact; } }
     public bool IsEditTextTool { get => ActiveTool == Tool.EditText; set { if (value) ActiveTool = Tool.EditText; } }
     public bool IsStampTool { get => ActiveTool == Tool.Stamp; set { if (value) ActiveTool = Tool.Stamp; } }
+    public bool IsCompareTool { get => ActiveTool == Tool.Compare; set { if (value) ActiveTool = Tool.Compare; } }
     public bool IsCompressTool { get => ActiveTool == Tool.Compress; set { if (value) ActiveTool = Tool.Compress; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
@@ -507,6 +510,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Protect.Reset();
         Redact.Reset();
         EditText.Reset();
+        Compare.ClearResults();
         Find.Reset();
         Bookmarks.Clear();
         if (ShowBookmarksPanel) await Bookmarks.LoadAsync();
@@ -549,6 +553,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Protect.Reset();
         Redact.Reset();
         EditText.Reset();
+        Compare.Reset();
         Find.CloseCommand.Execute(null);
         Find.Reset();
         Bookmarks.Clear();

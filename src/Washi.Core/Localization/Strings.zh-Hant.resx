@@ -129,6 +129,7 @@
   washi pdf redact &lt;in.pdf&gt; [--find 詞 ...] [--pattern email,phone,number] [--regex 規則運算式] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           真正刪除詞語、個人資訊或區域並塗黑（--list 只列出相符處）
   washi pdf find &lt;in.pdf&gt; &lt;文字&gt; [--case] [--whole-words]   逐頁列出文字所在位置
+  washi pdf compare &lt;舊.pdf&gt; &lt;新.pdf&gt; [-o marked.pdf]   列出變化（文字、頁面、圖片）（-o：在新版上用註解標出每處變化）
   washi pdf replace-text &lt;in.pdf&gt; (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           修改頁面上的文字（一次一行；儲存前會檢查）
   washi pdf stamp &lt;in.pdf&gt; [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前綴 [--bates-start 1] [--bates-digits 6]]
@@ -831,4 +832,35 @@
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>無法把 {0} 當作圖片讀取。</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>第 {0} 頁與 {1} 不一致，因此沒有保留 PDF。</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} 不存在。</value></data>
+  <data name="Ui_ToolCompare" xml:space="preserve"><value>比較</value></data>
+  <data name="Ui_CompareTitle" xml:space="preserve"><value>比較版本</value></data>
+  <data name="Ui_CompareLead" xml:space="preserve"><value>將開啟的檔案與它的另一個版本比較：修改、新增和刪除的文字，新增和刪除的頁面，以及圖片和圖形的變化。</value></data>
+  <data name="Ui_CompareChoose" xml:space="preserve"><value>選擇另一個版本…</value></data>
+  <data name="Ui_CompareOther" xml:space="preserve"><value>比較對象：{0}</value></data>
+  <data name="Ui_CompareOtherNewer" xml:space="preserve"><value>那個檔案是較新的版本</value></data>
+  <data name="Ui_CompareRun" xml:space="preserve"><value>比較</value></data>
+  <data name="Ui_CompareNone" xml:space="preserve"><value>沒有差異：兩個版本的文字和外觀都相同。</value></data>
+  <data name="Ui_CompareSummary" xml:space="preserve"><value>{0} 處差異：修改 {1}，新增 {2}，刪除 {3}，文字以外 {4}，新增頁面 {5}，刪除頁面 {6}。</value></data>
+  <data name="Ui_CompareLegend" xml:space="preserve"><value>綠：新增 · 黃：修改 · 紅：刪除 · 紫：圖片和圖形</value></data>
+  <data name="Ui_CompareSave" xml:space="preserve"><value>另存帶標記的副本…</value></data>
+  <data name="Ui_CompareSaveNote" xml:space="preserve"><value>在較新版本的副本上為每處差異加上註解（附原文），便於傳送或審閱。比較的檔案不會改變。</value></data>
+  <data name="Ui_CompareMarked" xml:space="preserve"><value>已儲存 {0}：用 {1} 則註解標出差異。</value></data>
+  <data name="Ui_CompareSameFile" xml:space="preserve"><value>請選擇另一個檔案：那是已經開啟的檔案。</value></data>
+  <data name="Ui_CmpWhere" xml:space="preserve"><value>第 {0} 頁</value></data>
+  <data name="Ui_CmpRowChanged" xml:space="preserve"><value>「{0}」→「{1}」</value></data>
+  <data name="Ui_CmpRowAdded" xml:space="preserve"><value>新增「{0}」</value></data>
+  <data name="Ui_CmpRowDeleted" xml:space="preserve"><value>刪除「{0}」</value></data>
+  <data name="Ui_CmpRowVisual" xml:space="preserve"><value>文字以外有變化（圖片或圖形）</value></data>
+  <data name="Ui_CmpRowPageAdded" xml:space="preserve"><value>新頁面</value></data>
+  <data name="Ui_CmpRowPageRemoved" xml:space="preserve"><value>舊版第 {0} 頁被刪除</value></data>
+  <data name="Cmp_Size" xml:space="preserve"><value>{0} × {1} pt</value></data>
+  <data name="Cmp_NoteAdded" xml:space="preserve"><value>新增：{0}</value></data>
+  <data name="Cmp_NoteChanged" xml:space="preserve"><value>原為：{0}</value></data>
+  <data name="Cmp_NoteDeleted" xml:space="preserve"><value>刪除：{0}</value></data>
+  <data name="Cmp_NoteVisual" xml:space="preserve"><value>此處有變化（圖片或圖形）</value></data>
+  <data name="Cmp_NoteSize" xml:space="preserve"><value>頁面大小從 {0} 變為 {1}</value></data>
+  <data name="Cmp_NotePageAdded" xml:space="preserve"><value>此頁為新增。</value></data>
+  <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>舊版第 {0} 頁被刪除：{1}</value></data>
+  <data name="Pdf_CompareLine" xml:space="preserve"><value>  舊第 {0} 頁 / 新第 {1} 頁：{2}</value></data>
+  <data name="Err_CompareSame" xml:space="preserve"><value>兩個版本相同：沒有要標記的內容。</value></data>
 </root>

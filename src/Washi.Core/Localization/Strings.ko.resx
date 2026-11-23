@@ -129,6 +129,7 @@
   washi pdf redact &lt;in.pdf&gt; [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)
   washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시
+  washi pdf compare &lt;이전.pdf&gt; &lt;새.pdf&gt; [-o marked.pdf]   바뀐 곳(글자, 페이지, 그림) 표시 (-o: 바뀐 곳마다 주석을 단 새 버전)
   washi pdf replace-text &lt;in.pdf&gt; (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)
   washi pdf stamp &lt;in.pdf&gt; [--header "왼쪽|가운데|오른쪽"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 접두사 [--bates-start 1] [--bates-digits 6]]
@@ -831,4 +832,35 @@
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0}을(를) 이미지로 읽을 수 없습니다.</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>{0}쪽이 {1}과(와) 달라 PDF 를 저장하지 않았습니다.</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0}이(가) 없습니다.</value></data>
+  <data name="Ui_ToolCompare" xml:space="preserve"><value>비교</value></data>
+  <data name="Ui_CompareTitle" xml:space="preserve"><value>버전 비교</value></data>
+  <data name="Ui_CompareLead" xml:space="preserve"><value>열린 파일을 다른 버전과 비교합니다. 바뀐 단어, 추가·삭제된 단어, 추가·삭제된 페이지, 그림과 도형의 변화를 보여 줍니다.</value></data>
+  <data name="Ui_CompareChoose" xml:space="preserve"><value>비교할 버전 선택…</value></data>
+  <data name="Ui_CompareOther" xml:space="preserve"><value>비교 대상: {0}</value></data>
+  <data name="Ui_CompareOtherNewer" xml:space="preserve"><value>그 파일이 새 버전</value></data>
+  <data name="Ui_CompareRun" xml:space="preserve"><value>비교</value></data>
+  <data name="Ui_CompareNone" xml:space="preserve"><value>차이가 없습니다. 두 버전의 글자와 모양이 같습니다.</value></data>
+  <data name="Ui_CompareSummary" xml:space="preserve"><value>차이 {0}개: 변경 {1}, 추가 {2}, 삭제 {3}, 글자 외 {4}, 페이지 추가 {5}, 페이지 삭제 {6}.</value></data>
+  <data name="Ui_CompareLegend" xml:space="preserve"><value>초록: 추가 · 노랑: 변경 · 빨강: 삭제 · 보라: 그림과 도형</value></data>
+  <data name="Ui_CompareSave" xml:space="preserve"><value>표시한 사본 저장…</value></data>
+  <data name="Ui_CompareSaveNote" xml:space="preserve"><value>새 버전의 사본에 차이마다 주석(원래 문구 포함)을 답니다. 보내거나 검토할 때 쓰세요. 비교한 파일은 바뀌지 않습니다.</value></data>
+  <data name="Ui_CompareMarked" xml:space="preserve"><value>{0} 저장: 주석 {1}개로 차이를 표시했습니다.</value></data>
+  <data name="Ui_CompareSameFile" xml:space="preserve"><value>다른 파일을 고르세요. 그것은 이미 열린 파일입니다.</value></data>
+  <data name="Ui_CmpWhere" xml:space="preserve"><value>{0}페이지</value></data>
+  <data name="Ui_CmpRowChanged" xml:space="preserve"><value>“{0}” → “{1}”</value></data>
+  <data name="Ui_CmpRowAdded" xml:space="preserve"><value>추가 “{0}”</value></data>
+  <data name="Ui_CmpRowDeleted" xml:space="preserve"><value>삭제 “{0}”</value></data>
+  <data name="Ui_CmpRowVisual" xml:space="preserve"><value>글자 외 변화 (그림 또는 도형)</value></data>
+  <data name="Ui_CmpRowPageAdded" xml:space="preserve"><value>새 페이지</value></data>
+  <data name="Ui_CmpRowPageRemoved" xml:space="preserve"><value>이전 버전의 {0}페이지가 삭제됨</value></data>
+  <data name="Cmp_Size" xml:space="preserve"><value>{0} × {1} pt</value></data>
+  <data name="Cmp_NoteAdded" xml:space="preserve"><value>추가: {0}</value></data>
+  <data name="Cmp_NoteChanged" xml:space="preserve"><value>변경 전: {0}</value></data>
+  <data name="Cmp_NoteDeleted" xml:space="preserve"><value>삭제: {0}</value></data>
+  <data name="Cmp_NoteVisual" xml:space="preserve"><value>여기가 바뀜 (그림 또는 도형)</value></data>
+  <data name="Cmp_NoteSize" xml:space="preserve"><value>페이지 크기가 {0}에서 {1}(으)로 바뀜</value></data>
+  <data name="Cmp_NotePageAdded" xml:space="preserve"><value>새로 추가된 페이지입니다.</value></data>
+  <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>이전 버전의 {0}페이지가 삭제됨: {1}</value></data>
+  <data name="Pdf_CompareLine" xml:space="preserve"><value>  이전 {0} / 새 {1}페이지: {2}</value></data>
+  <data name="Err_CompareSame" xml:space="preserve"><value>두 버전이 같아 표시할 것이 없습니다.</value></data>
 </root>
