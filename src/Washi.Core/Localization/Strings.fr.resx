@@ -131,6 +131,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf redact &lt;in.pdf&gt; [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)
   washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page
+  washi pdf links &lt;in.pdf&gt; [--find-addresses] [--add page:x0,y0,x1,y1=cible ...] [--remove 1-2,3-1] [-o out.pdf]   lister les liens, ou en ajouter (adresse web/mail, page) et en retirer
   washi pdf compare &lt;ancien.pdf&gt; &lt;nouveau.pdf&gt; [-o marked.pdf]   ce qui a changé : mots, pages, images (-o : la nouvelle version annotée)
   washi pdf replace-text &lt;in.pdf&gt; (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)
@@ -891,4 +892,29 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_CropTooSmall" xml:space="preserve"><value>La page {0} ferait moins d’un demi-pouce.</value></data>
   <data name="Err_CropBlank" xml:space="preserve"><value>Les pages sont blanches : rien à quoi rogner.</value></data>
   <data name="Err_CropCheck" xml:space="preserve"><value>La page {0} ne ressemblait pas à la partie gardée ; la copie n’a pas été conservée.</value></data>
+  <data name="Ui_ToolLinks" xml:space="preserve"><value>Liens</value></data>
+  <data name="Ui_LinksTitle" xml:space="preserve"><value>Liens</value></data>
+  <data name="Ui_LinksLead" xml:space="preserve"><value>Tracez un cadre sur la page et tapez sa cible : une adresse web ou mail, ou un numéro de page. Ou transformez les adresses écrites dans le texte en liens. Les pages gardent le même aspect.</value></data>
+  <data name="Ui_LinkNew" xml:space="preserve"><value>Où mène ce lien ?</value></data>
+  <data name="Ui_LinkTargetHint" xml:space="preserve"><value>https://…, nom@example.com ou un numéro de page</value></data>
+  <data name="Ui_LinksFind" xml:space="preserve"><value>Lier les adresses du texte</value></data>
+  <data name="Ui_LinksFound" xml:space="preserve"><value>{0} adresse(s) trouvée(s) : elles deviendront des liens.</value></data>
+  <data name="Ui_LinksNoneFound" xml:space="preserve"><value>Aucune adresse web ou mail sans lien n’a été trouvée dans le texte.</value></data>
+  <data name="Ui_LinksNew" xml:space="preserve"><value>Nouveaux liens</value></data>
+  <data name="Ui_LinksExisting" xml:space="preserve"><value>Liens du fichier</value></data>
+  <data name="Ui_LinksNone" xml:space="preserve"><value>Le fichier n’a aucun lien.</value></data>
+  <data name="Ui_LinkRemove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="Ui_LinkWhere" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_LinkToPage" xml:space="preserve"><value>Vers la page {0}</value></data>
+  <data name="Ui_LinkOther" xml:space="preserve"><value>Autre type de lien (gardé tel quel)</value></data>
+  <data name="Ui_LinksSave" xml:space="preserve"><value>Enregistrer {0} modification(s) dans une copie…</value></data>
+  <data name="Ui_LinksSaveNote" xml:space="preserve"><value>Les liens n’ont pas de bordure : les pages gardent le même aspect. La copie est vérifiée avant d’être gardée ; l’original n’est pas modifié.</value></data>
+  <data name="Ui_LinksSaved" xml:space="preserve"><value>{0} enregistré : {1} lien(s) ajouté(s), {2} retiré(s). Vérifié : les pages ont le même aspect.</value></data>
+  <data name="Pdf_LinkLine" xml:space="preserve"><value>  {0}  page {1} : {2}  [{3}]</value></data>
+  <data name="Err_LinkTarget" xml:space="preserve"><value>« {0} » n’est ni une adresse web, ni une adresse mail, ni un numéro de page.</value></data>
+  <data name="Err_LinkNothing" xml:space="preserve"><value>Aucun lien à ajouter, modifier ou retirer.</value></data>
+  <data name="Err_LinkId" xml:space="preserve"><value>Il n’y a pas de lien {0}.</value></data>
+  <data name="Err_LinkAdd" xml:space="preserve"><value>--add prend page:x0,y0,x1,y1=cible.</value></data>
+  <data name="Err_LinkCheck" xml:space="preserve"><value>Le lien vers {0} page {1} ne se relisait pas ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_LinkChanged" xml:space="preserve"><value>La page {0} changeait d’aspect avec ses liens ; la copie n’a pas été conservée.</value></data>
 </root>

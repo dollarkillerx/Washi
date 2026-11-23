@@ -296,6 +296,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsStampTool}" x:Name="StampToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Stamp}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolStamp}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsLinksTool}" x:Name="LinksToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Link}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolLinks}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCompareTool}" x:Name="CompareToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Compare}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCompare}" /></StackPanel>
                 </RadioButton>
@@ -1216,6 +1219,83 @@
                                 </ComboBox>
                             </Grid>
                             <CheckBox IsChecked="{Binding Stamp.WatermarkBehind}" Content="{l:Tr Ui_StampBehind}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <DockPanel IsVisible="{Binding IsLinksTool}">
+                    <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Spacing="6">
+                            <Button Classes="accent primary" Command="{Binding Links.SaveCommand}" IsEnabled="{Binding Links.CanSave}" x:Name="LinksSaveButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <c:Icon Data="{StaticResource I.Link}" Size="18" />
+                                    <TextBlock Text="{Binding Links.SaveText}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LinksSaveNote}" />
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer>
+                        <StackPanel Margin="20,18,20,18">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_LinksTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_LinksLead}" />
+                            <StackPanel IsVisible="{Binding Links.HasDraft}" Spacing="6" Margin="0,12,0,0">
+                                <TextBlock Classes="section" Text="{l:Tr Ui_LinkNew}" Margin="0" />
+                                <TextBox Text="{Binding Links.Target}" PlaceholderText="{l:Tr Ui_LinkTargetHint}" x:Name="LinkTargetBox">
+                                    <TextBox.KeyBindings>
+                                        <KeyBinding Gesture="Enter" Command="{Binding Links.KeepCommand}" />
+                                        <KeyBinding Gesture="Escape" Command="{Binding Links.CancelCommand}" />
+                                    </TextBox.KeyBindings>
+                                </TextBox>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="{l:Tr Ui_EditTextKeep}" Command="{Binding Links.KeepCommand}" Padding="12,4" />
+                                    <Button Content="{l:Tr Ui_Cancel}" Command="{Binding Links.CancelCommand}" Padding="12,4" />
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Content="{l:Tr Ui_LinksFind}" Command="{Binding Links.FindAddressesCommand}" IsEnabled="{Binding HasDocument}"
+                                    Padding="12,5" Margin="0,12,0,0" x:Name="LinksFindButton" />
+                            <TextBlock Classes="note" Text="{Binding Links.Message}" Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                       IsVisible="{Binding Links.Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_LinksNew}" IsVisible="{Binding Links.HasPending}" />
+                            <ItemsControl ItemsSource="{Binding Links.Pending}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PendingLink">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <Button DockPanel.Dock="Right" Padding="6,2" Background="Transparent" ToolTip.Tip="{l:Tr Ui_Remove}" VerticalAlignment="Top"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Links.RemovePendingCommand}" CommandParameter="{Binding}">
+                                                <c:Icon Data="{StaticResource I.Close}" Size="12" />
+                                            </Button>
+                                            <Button Background="Transparent" Padding="2,1" HorizontalContentAlignment="Left" HorizontalAlignment="Stretch"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Links.ShowCommand}" CommandParameter="{Binding}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Where}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                                    <TextBlock Text="{Binding Target}" FontSize="12" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Classes="section" Text="{l:Tr Ui_LinksExisting}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LinksNone}" IsVisible="{Binding !Links.HasExisting}" />
+                            <ItemsControl ItemsSource="{Binding Links.Existing}" x:Name="LinksExistingList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:LinkRow">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <CheckBox DockPanel.Dock="Right" IsChecked="{Binding Remove}" Content="{l:Tr Ui_LinkRemove}" FontSize="11" VerticalAlignment="Top" />
+                                            <Button Background="Transparent" Padding="2,1" HorizontalContentAlignment="Left" HorizontalAlignment="Stretch"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).Links.ShowCommand}" CommandParameter="{Binding}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Where}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                                    <TextBlock Text="{Binding Target}" FontSize="12" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Button>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>

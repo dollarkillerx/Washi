@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Headers, Compare, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Headers, Links, Compare, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -202,6 +202,8 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   and are saved to a copy, checked before it is kept (see below).
 - **Headers**: header and footer texts (left, centre, right) with page numbers, the file name, the date and Bates
   numbers, and a see-through watermark; previewed on the page, saved to a copy (see below).
+- **Links**: the file's links outlined on the page; drag a box and type a web or mail address or a page number, or
+  link every address written in the text; mark links to remove; save a copy (see below).
 - **Compare**: the open file against another version of it; the differences are listed, shown on the page, and can
   be saved as a copy with each one marked as a comment (see below).
 - **Ask AI** answers questions about the document, after showing what it will send.
@@ -481,6 +483,24 @@ choose the page size, *Combine*. Each image becomes a page.
   a page turned the wrong way or with inverted colours.
 - HEIC photos are not read: save them as JPEG first. Run OCR afterwards to make scanned text searchable.
 
+## Links
+
+```bash
+washi pdf links brochure.pdf                                   # list: id, page, target, box
+washi pdf links brochure.pdf --find-addresses                  # brochure_links.pdf: every web and mail address in the text linked
+washi pdf links brochure.pdf --add "1:40,700,200,716=https://example.com" --add "1:40,720,200,736=5" --remove 2-1
+```
+
+In the editor: **Links** shows the file's links on the page. Drag a box, type where it goes (`example.com`,
+`name@example.com` or a page number) and press Enter; *Link the addresses in the text* finds them all; tick
+*Remove* on a link to drop it. Agents use `list_links` and `edit_links` (which can also point a link elsewhere).
+
+- A web address without a scheme gets `https://`, a mail address `mailto:`; a number is a page of the document.
+- Links are drawn without a border, so the pages look exactly the same: the copy is rendered next to the original
+  (no pixel may differ) and every new link is read back with its target before the copy is kept.
+- Addresses that already have a link are left alone. Links of other kinds (named destinations, scripts, files) are
+  listed and kept.
+
 ## Comparing versions
 
 ```bash
@@ -677,6 +697,8 @@ There are two ways to run it:
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `edit_text` | new PDF with page text changed: find and replace, or the text inside a rect, in the document's font when it has the characters; one line at a time, checked afterwards | writes a **new** file |
+| `list_links` | the links in a PDF: id, page, rect, web/mail address or page number | no |
+| `edit_links` | new PDF with links added (over a rect, or every address in the text), pointed elsewhere or removed; pages unchanged, checked afterwards | writes a **new** file |
 | `compare_pdfs` | the differences between two versions: page pairs, words changed, added and removed, pages added and removed, changes outside the text, with their boxes | no |
 | `crop_pages` | new PDF with margins cut off the pages or the pages trimmed to their content (the crop box), checked afterwards | writes a **new** file |
 | `export_page_images` | the pages as PNG or JPEG files at a resolution, in a folder, each read back | writes **new** files |
@@ -777,9 +799,9 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfPageImages`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfPageImages`; `PdfLinks`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 28 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 30 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -842,7 +864,9 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 20. ~~Images to PDF.~~ Done (`washi pdf from-images`, Combine, `images_to_pdf`).
 21. ~~Comparing versions.~~ Done (`washi pdf compare`, the Compare tool, `compare_pdfs`).
 22. ~~Pages as images; cropping.~~ Done (`washi pdf export-images|crop`, Organize, `export_page_images`, `crop_pages`).
-23. Next: editing a paragraph that reflows over several lines.
+23. ~~Links.~~ Done (`washi pdf links`, the Links tool, `list_links`, `edit_links`).
+24. Next: images on the page (add, replace); updating and removing headers and footers; then editing a paragraph that
+    reflows over several lines.
 
 ## License
 

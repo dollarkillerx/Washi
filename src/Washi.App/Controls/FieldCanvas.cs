@@ -71,6 +71,7 @@ public sealed class FieldCanvas : Control
         vm.EditText.Changed += InvalidateVisual;
         vm.Stamp.Changed += InvalidateVisual;
         vm.Compare.Changed += InvalidateVisual;
+        vm.Links.Changed += InvalidateVisual;
         vm.Find.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
@@ -86,6 +87,7 @@ public sealed class FieldCanvas : Control
         vm.EditText.Changed -= InvalidateVisual;
         vm.Stamp.Changed -= InvalidateVisual;
         vm.Compare.Changed -= InvalidateVisual;
+        vm.Links.Changed -= InvalidateVisual;
         vm.Find.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
@@ -152,6 +154,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsEditTextTool: true } et)
         {
             RenderEditText(ctx, et);
+            return;
+        }
+        if (Editor is { IsLinksTool: true } lk)
+        {
+            RenderLinks(ctx, lk);
             return;
         }
         if (Editor is { IsCompareTool: true } cp)
@@ -434,6 +441,23 @@ public sealed class FieldCanvas : Control
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1.5), Screen(sel.Box).Inflate(2));
     }
 
+    /// <summary>Links tool: the file's links (blue; red dashed when they go), new ones (green), the box drawn (vermilion).</summary>
+    private void RenderLinks(DrawingContext ctx, MainViewModel vm)
+    {
+        int page = vm.PageIndex;
+        var blue = new SolidColorBrush(Color.FromRgb(31, 73, 224));
+        var green = new SolidColorBrush(Color.FromRgb(13, 150, 64));
+        foreach (var row in vm.Links.Existing.Where(r => r.Link.Page == page))
+            ctx.DrawRectangle(new SolidColorBrush(row.Remove ? Colors.Red : Color.FromRgb(31, 73, 224), 0.08),
+                              row.Remove ? new Pen(Brushes.Red, 1.5, new DashStyle([4, 3], 0)) : new Pen(blue, 1.2), Screen(row.Link.Rect).Inflate(1));
+        foreach (var p in vm.Links.Pending.Where(p => p.Link.Page == page))
+            ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(13, 150, 64), 0.12), new Pen(green, 1.5), Screen(p.Link.Rect).Inflate(1));
+        if (vm.Links.Draft is { } d && d.Page == page)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.1), new Pen(new SolidColorBrush(Active), 1.5), Screen(d.Rect));
+        if (_eraseBox is { } drawing)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1, new DashStyle([4, 3], 0)), Screen(drawing));
+    }
+
     /// <summary>Compare tool: the differences on this page (added green, changed yellow, removed red, pictures purple).</summary>
     private void RenderCompare(DrawingContext ctx, MainViewModel vm)
     {
@@ -666,7 +690,7 @@ public sealed class FieldCanvas : Control
             e.Handled = true;
             return;
         }
-        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsRedactTool || ev.IsSignTool || ev.IsCommentTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Editor is { HasDocument: true } ev && (ev.IsEraseTool || ev.IsRedactTool || ev.IsSignTool || ev.IsCommentTool || ev.IsLinksTool) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             _start = ToPage(e.GetPosition(this));
             _eraseBox = Normal(_start, _start);
@@ -806,6 +830,7 @@ public sealed class FieldCanvas : Control
             {
                 if (ed.IsSignTool) ed.Sign.Place(box);
                 else if (ed.IsRedactTool) ed.Redact.AddArea(box);
+                else if (ed.IsLinksTool) ed.Links.Draw(box);
                 else _ = ed.Erase.AddBoxAsync(box);
             }
             InvalidateVisual();
@@ -840,7 +865,7 @@ public sealed class FieldCanvas : Control
                  : over.Kind == FieldKind.Signature ? StandardCursorType.Arrow : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
         else if (vm.IsEditTextTool) type = vm.EditText.SegmentAt(ToPage(screen).X, ToPage(screen).Y) is not null ? StandardCursorType.Ibeam : StandardCursorType.Arrow;
-        else if (vm.DrawMode || vm.IsEraseTool || vm.IsRedactTool || vm.IsSignTool || vm.IsCommentTool) type = StandardCursorType.Cross;
+        else if (vm.DrawMode || vm.IsEraseTool || vm.IsRedactTool || vm.IsSignTool || vm.IsCommentTool || vm.IsLinksTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);
     }

@@ -407,6 +407,50 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Links_are_drawn_found_in_the_text_and_saved_in_a_copy()
+    {
+        var pdf = TextPdf("l.pdf", "Order at https://example.com/shop", "Questions: help@example.com", "Terms on page 1");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "l_links.pdf") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Links;
+        await vm.Links.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("LinksFindButton")!.IsEffectivelyVisible);
+        Assert.False(vm.Links.HasExisting);
+        Assert.False(vm.Links.CanSave);
+
+        // a box drawn on the third line, to page 1
+        vm.Links.Draw(new Washi.Core.PdfRect(40, 100, 200, 120));
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<TextBox>("LinkTargetBox")!.IsEffectivelyVisible);
+        vm.Links.Target = "not a link";
+        vm.Links.KeepCommand.Execute(null);
+        Assert.Equal(L.F("Err_LinkTarget", "not a link"), vm.Links.Message);
+        vm.Links.Target = "1";
+        vm.Links.KeepCommand.Execute(null);
+        Assert.Single(vm.Links.Pending);
+        Assert.False(vm.Links.HasDraft);
+
+        await vm.Links.FindAddressesCommand.ExecuteAsync(null);
+        Assert.Equal(3, vm.Links.Pending.Count);
+        Assert.Equal(L.F("Ui_LinksFound", 2), vm.Links.Message);
+        Assert.Equal(L.F("Ui_LinksSave", 3), vm.Links.SaveText);
+
+        await vm.Links.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(L.F("Ui_LinksSaved", "l_links.pdf", 3, 0), vm.Status);
+        Assert.Equal(3, vm.Links.Existing.Count);                  // the new file's links
+        Assert.Contains(vm.Links.Existing, r => r.Target == "help@example.com");
+
+        // remove one
+        dialogs.SavePdf = Path.Combine(_dir, "l_fewer.pdf");
+        vm.Links.Existing.First(r => r.Link.Kind == "page").Remove = true;
+        Assert.True(vm.Links.CanSave);
+        await vm.Links.SaveCommand.ExecuteAsync(null);
+        Assert.Equal(2, vm.Links.Existing.Count);
+    }
+
+    [AvaloniaFact]
     public async Task Organize_crops_pages_and_saves_them_as_images()
     {
         var pdf = TextPdf("o.pdf", "Quarterly report", "Figures inside");

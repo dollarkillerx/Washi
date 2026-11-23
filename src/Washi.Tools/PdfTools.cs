@@ -41,6 +41,8 @@ public static class WashiTools
         .Add(new ComparePdfsTool(policy))
         .Add(new ExportPageImagesTool(policy))
         .Add(new CropPagesTool(policy))
+        .Add(new ListLinksTool(policy))
+        .Add(new EditLinksTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -1127,6 +1129,84 @@ public sealed class CropPagesTool(PathPolicy p) : PdfTool(p)
         int n = PdfPageImages.Crop(path, output, new CropOptions(D("top", 0), D("right", 0), D("bottom", 0), D("left", 0),
             a.TryGetProperty("trim", out var t) && t.ValueKind == JsonValueKind.True, D("padding", 6), OptStr(a, "pages")));
         return new ToolResult(ToJson(new { output, pages = n, verified = "each cropped page looks like the same part of the original" }));
+    }
+}
+
+public sealed class ListLinksTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_links";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "The links in a PDF: id (for edit_links), page (1-based), rect [x0,y0,x1,y1] in points from the top-left of the upright " +
+        "page, kind (uri, page or other) and target (the web or mail address, or the page number it goes to).";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        return new ToolResult(ToJson(new
+        {
+            links = PdfLinks.List(path).Select(l => new
+            {
+                id = l.Id, page = l.Page + 1, rect = new[] { l.Rect.X0, l.Rect.Y0, l.Rect.X1, l.Rect.Y1 }.Select(v => Math.Round(v, 1)),
+                kind = l.Kind, target = l.Target,
+            }),
+        }));
+    }
+}
+
+public sealed class EditLinksTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "edit_links";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Add, change and remove links in a PDF. A new link covers a rect on a page and goes to a web address (https:// is added " +
+        "when missing), a mail address, or a page number. find_addresses turns the web and mail addresses written in the text " +
+        "into links. change and remove take ids from list_links. Links have no border, so the pages look the same; the copy is " +
+        "rendered next to the original and its links read back before it is kept. Never overwrites: output defaults to <name>_links.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "add":{"type":"array","items":{"type":"object","properties":{
+                   "page":{"type":"integer","description":"1-based"},
+                   "rect":{"type":"array","items":{"type":"number"},"minItems":4,"maxItems":4,
+                           "description":"[x0,y0,x1,y1] in points from the top-left of the upright page"},
+                   "target":{"type":"string","description":"Web or mail address, or a page number"}},
+                 "required":["page","rect","target"],"additionalProperties":false}},
+          "find_addresses":{"type":"boolean","description":"Also link every web and mail address written in the text"},
+          "change":{"type":"object","additionalProperties":{"type":"string"},"description":"Link id → new target"},
+          "remove":{"type":"array","items":{"type":"string"},"description":"Link ids"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_links.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var add = new List<NewLink>();
+        if (a.TryGetProperty("add", out var list) && list.ValueKind == JsonValueKind.Array)
+            foreach (var e in list.EnumerateArray())
+            {
+                var r = e.GetProperty("rect").EnumerateArray().Select(x => x.GetDouble()).ToArray();
+                add.Add(new NewLink(e.GetProperty("page").GetInt32() - 1,
+                                    new PdfRect(Math.Min(r[0], r[2]), Math.Min(r[1], r[3]), Math.Max(r[0], r[2]), Math.Max(r[1], r[3])),
+                                    e.GetProperty("target").GetString() ?? ""));
+            }
+        if (a.TryGetProperty("find_addresses", out var fa) && fa.ValueKind == JsonValueKind.True) add.AddRange(PdfLinks.FindAddresses(path));
+        var change = a.TryGetProperty("change", out var ch) && ch.ValueKind == JsonValueKind.Object
+            ? ch.EnumerateObject().ToDictionary(x => x.Name, x => x.Value.GetString() ?? "") : new Dictionary<string, string>();
+        var remove = a.TryGetProperty("remove", out var rm) && rm.ValueKind == JsonValueKind.Array
+            ? rm.EnumerateArray().Select(x => x.GetString() ?? "").ToList() : [];
+        var output = Policy.Output(OptStr(a, "output"), path, "_links");
+        var res = PdfLinks.Apply(path, output, add, remove, change);
+        return new ToolResult(ToJson(new
+        {
+            output, added = res.Added, changed = res.Changed, removed = res.Removed,
+            verified = "the pages look the same; every new link reads back with its target",
+        }));
     }
 }
 

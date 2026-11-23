@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, EditText, Stamp, Compare, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, EditText, Stamp, Links, Compare, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields, Bookmarks }
@@ -66,6 +66,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         EditText = new EditTextViewModel(this);
         Stamp = new StampToolViewModel(this);
         Compare = new CompareToolViewModel(this);
+        Links = new LinksToolViewModel(this);
         Find = new FindViewModel(this);
         Bookmarks = new BookmarksViewModel(this);
         Print = new PrintViewModel(this);
@@ -90,6 +91,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public EditTextViewModel EditText { get; }
     public StampToolViewModel Stamp { get; }
     public CompareToolViewModel Compare { get; }
+    public LinksToolViewModel Links { get; }
     public FindViewModel Find { get; }
     public BookmarksViewModel Bookmarks { get; }
     public PrintViewModel Print { get; }
@@ -207,7 +209,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsCompareTool), nameof(IsCompressTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsLinksTool), nameof(IsCompareTool), nameof(IsCompressTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -229,6 +231,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsRedactTool { get => ActiveTool == Tool.Redact; set { if (value) ActiveTool = Tool.Redact; } }
     public bool IsEditTextTool { get => ActiveTool == Tool.EditText; set { if (value) ActiveTool = Tool.EditText; } }
     public bool IsStampTool { get => ActiveTool == Tool.Stamp; set { if (value) ActiveTool = Tool.Stamp; } }
+    public bool IsLinksTool { get => ActiveTool == Tool.Links; set { if (value) ActiveTool = Tool.Links; } }
     public bool IsCompareTool { get => ActiveTool == Tool.Compare; set { if (value) ActiveTool = Tool.Compare; } }
     public bool IsCompressTool { get => ActiveTool == Tool.Compress; set { if (value) ActiveTool = Tool.Compress; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
@@ -287,6 +290,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Protect) _ = Protect.PrepareAsync();
         if (value == Tool.Compress) Compress.Prepare();
         if (value == Tool.EditText) _ = EditText.PrepareAsync();
+        if (value == Tool.Links) _ = Links.PrepareAsync();
     }
 
     private string? _detectedFor;
@@ -511,6 +515,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Redact.Reset();
         EditText.Reset();
         Compare.ClearResults();
+        Links.Reset();
         Find.Reset();
         Bookmarks.Clear();
         if (ShowBookmarksPanel) await Bookmarks.LoadAsync();
@@ -523,6 +528,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         else if (ActiveTool == Tool.Protect) await Protect.PrepareAsync();
         else if (ActiveTool == Tool.Compress) Compress.Prepare();
         else if (ActiveTool == Tool.EditText) await EditText.PrepareAsync();
+        else if (ActiveTool == Tool.Links) await Links.PrepareAsync();
     }
 
     /// <summary>Files dropped on the window: Combine collects them, other tools open the first PDF.</summary>
@@ -554,6 +560,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Redact.Reset();
         EditText.Reset();
         Compare.Reset();
+        Links.Reset();
         Find.CloseCommand.Execute(null);
         Find.Reset();
         Bookmarks.Clear();
