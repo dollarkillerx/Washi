@@ -506,6 +506,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          reorder, drop (leave out) and turn pages (form fields are kept)\n'
+            '  washi pdf crop <in.pdf> (--margins top,right,bottom,left | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   cut margins (points) or trim to the content\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o folder]   pages as image files\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          make scanned pages searchable (an invisible text layer; the page image is unchanged)\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -542,6 +544,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          ページの並べ替え・削除（指定しないページ）・回転（記入欄はそのまま残ります）\n'
+            '  washi pdf crop <in.pdf> (--margins 上,右,下,左 | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   余白を切る（ポイント）か、内容に合わせて切り詰める\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o フォルダー]   ページを画像ファイルに\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          スキャンしたページを検索できるようにする（見えない文字層を追加。ページの画像は変わりません）\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -578,6 +582,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          调整页面顺序、删除（不列出的页）和旋转页面（保留表单栏位）\n'
+            '  washi pdf crop <in.pdf> (--margins 上,右,下,左 | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   裁掉边距（点）或按内容裁剪\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o 文件夹]   将页面存为图片文件\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          让扫描页可以搜索（加一层看不见的文字，页面图像不变）\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -614,6 +620,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          調整頁面順序、刪除（不列出的頁）和旋轉頁面（保留表單欄位）\n'
+            '  washi pdf crop <in.pdf> (--margins 上,右,下,左 | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   裁掉邊界（點）或依內容裁切\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o 資料夾]   將頁面存為圖片檔\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -650,6 +658,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          페이지 순서 바꾸기, 삭제(나열하지 않은 페이지), 회전 (입력란 유지)\n'
+            '  washi pdf crop <in.pdf> (--margins 위,오른쪽,아래,왼쪽 | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   여백 자르기(포인트) 또는 내용에 맞춰 자르기\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o 폴더]   페이지를 이미지 파일로\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          스캔한 페이지를 검색 가능하게 (보이지 않는 텍스트 레이어 추가, 페이지 이미지는 그대로)\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -686,6 +696,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dossier]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          réordonne, retire (pages non listées) et fait pivoter les pages (les champs de formulaire sont conservés)\n'
+            '  washi pdf crop <in.pdf> (--margins haut,droite,bas,gauche | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   rogner les marges (points) ou au contenu\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o dossier]   pages en fichiers image\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -722,6 +734,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o Ordner]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          Seiten umordnen, entfernen (nicht aufgeführte) und drehen (Formularfelder bleiben erhalten)\n'
+            '  washi pdf crop <in.pdf> (--margins oben,rechts,unten,links | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   Ränder abschneiden (Punkt) oder auf den Inhalt zuschneiden\n'
+            '  washi pdf export-images <in.pdf> [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o Ordner]   Seiten als Bilddateien\n'
             '  washi ocr <in.pdf> [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]\n'
             '                                          gescannte Seiten durchsuchbar machen (unsichtbare Textebene; das Seitenbild bleibt unverändert)\n'
             '  washi pdf erase <in.pdf> --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]\n'
@@ -1774,6 +1788,32 @@ _UI = {
     "Cmp_NotePageRemoved": ["Page {0} of the old version was removed: {1}", "旧版の {0} ページが削除されました：{1}", "旧版第 {0} 页被删除：{1}", "舊版第 {0} 頁被刪除：{1}", "이전 버전의 {0}페이지가 삭제됨: {1}", "La page {0} de l’ancienne version a été supprimée : {1}", "Seite {0} der alten Version wurde entfernt: {1}"],
     "Pdf_CompareLine": ["  old p.{0} / new p.{1}: {2}", "  旧 {0} / 新 {1} ページ：{2}", "  旧第 {0} 页 / 新第 {1} 页：{2}", "  舊第 {0} 頁 / 新第 {1} 頁：{2}", "  이전 {0} / 새 {1}페이지: {2}", "  anc. p. {0} / nouv. p. {1} : {2}", "  alt S. {0} / neu S. {1}: {2}"],
     "Err_CompareSame": ["The two versions are the same: there is nothing to mark.", "2 つの版は同じです。示す違いがありません。", "两个版本相同：没有要标记的内容。", "兩個版本相同：沒有要標記的內容。", "두 버전이 같아 표시할 것이 없습니다.", "Les deux versions sont identiques : rien à signaler.", "Beide Versionen sind gleich: Es gibt nichts zu markieren."],
+    "Ui_PagesScopeAll": ["Crop and images: every page (select pages below for some only).", "切り抜きと画像：すべてのページ（一部だけなら下でページを選択）。", "裁剪和图片：所有页面（只处理部分页面时请在下方选择）。", "裁切和圖片：所有頁面（只處理部分頁面時請在下方選擇）。", "자르기와 이미지: 모든 페이지 (일부만 하려면 아래에서 페이지 선택).", "Rognage et images : toutes les pages (sélectionnez-en ci-dessous pour n’en traiter que certaines).", "Zuschneiden und Bilder: alle Seiten (für einige unten Seiten auswählen)."],
+    "Ui_PagesScopeSome": ["Crop and images: pages {0}.", "切り抜きと画像：{0} ページ。", "裁剪和图片：第 {0} 页。", "裁切和圖片：第 {0} 頁。", "자르기와 이미지: {0}페이지.", "Rognage et images : pages {0}.", "Zuschneiden und Bilder: Seiten {0}."],
+    "Ui_CropTitle": ["Crop pages", "ページの切り抜き", "裁剪页面", "裁切頁面", "페이지 자르기", "Rogner les pages", "Seiten zuschneiden"],
+    "Ui_CropTop": ["Top", "上", "上", "上", "위", "Haut", "Oben"],
+    "Ui_CropBottom": ["Bottom", "下", "下", "下", "아래", "Bas", "Unten"],
+    "Ui_CropLeft": ["Left", "左", "左", "左", "왼쪽", "Gauche", "Links"],
+    "Ui_CropRight": ["Right", "右", "右", "右", "오른쪽", "Droite", "Rechts"],
+    "Ui_CropMm": ["Margins to cut off, in millimetres, on the page as shown.", "切り落とす余白（mm、表示どおりの向き）。", "要裁掉的边距（毫米，按显示方向）。", "要裁掉的邊界（公釐，依顯示方向）。", "잘라낼 여백 (mm, 보이는 방향 기준).", "Marges à couper, en millimètres, sur la page telle qu’affichée.", "Abzuschneidende Ränder in Millimetern, auf der Seite wie angezeigt."],
+    "Ui_CropTrim": ["Trim to the content instead (cut the white paper around it)", "代わりに内容に合わせて切り詰める（周りの白い余白を切る）", "改为按内容裁剪（裁掉周围的空白）", "改為依內容裁切（裁掉周圍的空白）", "대신 내용에 맞춰 자르기 (주변의 흰 여백 자르기)", "Rogner plutôt au contenu (couper le papier blanc autour)", "Stattdessen auf den Inhalt zuschneiden (weißes Papier ringsum abschneiden)"],
+    "Ui_CropRun": ["Crop and save copy…", "切り抜いてコピーを保存…", "裁剪并另存副本…", "裁切並另存副本…", "자르고 사본 저장…", "Rogner et enregistrer une copie…", "Zuschneiden und Kopie speichern…"],
+    "Ui_Cropped": ["Saved {0}: {1} page(s) cropped. Checked: each looks like the part of the page it was cropped to.", "{0} を保存しました：{1} ページを切り抜き。確認済み：各ページが元の該当部分と同じに見えます。", "已保存 {0}：裁剪了 {1} 页。已检查：每页都与原页对应部分一致。", "已儲存 {0}：裁切了 {1} 頁。已檢查：每頁都與原頁對應部分一致。", "{0} 저장: {1}페이지 자름. 확인: 각 페이지가 원래의 해당 부분과 같습니다.", "{0} enregistré : {1} page(s) rognée(s). Vérifié : chacune ressemble à la partie gardée.", "{0} gespeichert: {1} Seite(n) zugeschnitten. Geprüft: jede sieht aus wie der behaltene Teil."],
+    "Ui_ExportTitle": ["Save pages as images", "ページを画像として保存", "将页面存为图片", "將頁面存為圖片", "페이지를 이미지로 저장", "Enregistrer les pages en images", "Seiten als Bilder speichern"],
+    "Ui_ExportRun": ["Choose a folder and save…", "フォルダーを選んで保存…", "选择文件夹并保存…", "選擇資料夾並儲存…", "폴더를 골라 저장…", "Choisir un dossier et enregistrer…", "Ordner wählen und speichern…"],
+    "Ui_Exported": ["Saved {0} image(s) in {1}.", "{1} に {0} 枚の画像を保存しました。", "已在 {1} 保存 {0} 张图片。", "已在 {1} 儲存 {0} 張圖片。", "{1}에 이미지 {0}장을 저장했습니다.", "{0} image(s) enregistrée(s) dans {1}.", "{0} Bild(er) in {1} gespeichert."],
+    "Pdf_Exported": ["Saved {0} image(s) in {1}; each was read back.", "{1} に {0} 枚の画像を保存しました（それぞれ読み戻して確認）。", "已在 {1} 保存 {0} 张图片（均已读回检查）。", "已在 {1} 儲存 {0} 張圖片（均已讀回檢查）。", "{1}에 이미지 {0}장을 저장했습니다 (각각 다시 읽어 확인).", "{0} image(s) enregistrée(s) dans {1} ; chacune relue.", "{0} Bild(er) in {1} gespeichert; jedes wurde zurückgelesen."],
+    "Pdf_Cropped": ["Saved {0}: {1} page(s) cropped. Checked: each looks like the part of the page it was cropped to.", "{0} を保存しました：{1} ページを切り抜き。確認済み：各ページが元の該当部分と同じに見えます。", "已保存 {0}：裁剪了 {1} 页。已检查：每页都与原页对应部分一致。", "已儲存 {0}：裁切了 {1} 頁。已檢查：每頁都與原頁對應部分一致。", "{0} 저장: {1}페이지 자름. 확인: 각 페이지가 원래의 해당 부분과 같습니다.", "{0} enregistré : {1} page(s) rognée(s). Vérifié : chacune ressemble à la partie gardée.", "{0} gespeichert: {1} Seite(n) zugeschnitten. Geprüft: jede sieht aus wie der behaltene Teil."],
+    "Err_ExportFormat": ["Unknown image format “{0}”: use png or jpeg.", "画像形式「{0}」は使えません。png か jpeg にしてください。", "未知的图片格式“{0}”：请用 png 或 jpeg。", "未知的圖片格式「{0}」：請用 png 或 jpeg。", "알 수 없는 이미지 형식 “{0}”: png 또는 jpeg를 쓰세요.", "Format d’image inconnu « {0} » : utilisez png ou jpeg.", "Unbekanntes Bildformat „{0}“: verwenden Sie png oder jpeg."],
+    "Err_ExportDpi": ["The resolution must be 36 to 600 dpi.", "解像度は 36〜600 dpi にしてください。", "分辨率必须在 36 到 600 dpi 之间。", "解析度必須在 36 到 600 dpi 之間。", "해상도는 36~600dpi여야 합니다.", "La résolution doit être de 36 à 600 ppp.", "Die Auflösung muss 36 bis 600 dpi betragen."],
+    "Err_ExportQuality": ["The JPEG quality must be 1 to 100.", "JPEG の品質は 1〜100 にしてください。", "JPEG 质量必须在 1 到 100 之间。", "JPEG 品質必須在 1 到 100 之間。", "JPEG 품질은 1~100이어야 합니다.", "La qualité JPEG doit être de 1 à 100.", "Die JPEG-Qualität muss 1 bis 100 betragen."],
+    "Err_ExportCheck": ["{0} did not read back, so nothing was kept.", "{0} を読み戻せなかったため、何も残しませんでした。", "{0} 无法读回，因此没有保留任何文件。", "{0} 無法讀回，因此沒有保留任何檔案。", "{0}을(를) 다시 읽을 수 없어 아무것도 남기지 않았습니다.", "{0} ne se relisait pas ; rien n’a été conservé.", "{0} ließ sich nicht zurücklesen; nichts wurde behalten."],
+    "Err_CropNothing": ["Nothing to crop: give margins or trim.", "切り抜くものがありません。余白を指定するか、切り詰めを選んでください。", "没有要裁剪的内容：请指定边距或按内容裁剪。", "沒有要裁切的內容：請指定邊界或依內容裁切。", "자를 것이 없습니다. 여백을 지정하거나 내용에 맞춰 자르기를 고르세요.", "Rien à rogner : indiquez des marges ou rognez au contenu.", "Nichts zuzuschneiden: Ränder angeben oder auf den Inhalt zuschneiden."],
+    "Err_CropNegative": ["Margins cannot be negative.", "余白は負の値にできません。", "边距不能为负数。", "邊界不能為負數。", "여백은 음수일 수 없습니다.", "Les marges ne peuvent pas être négatives.", "Ränder können nicht negativ sein."],
+    "Err_CropMargins": ["--margins takes 1, 2 or 4 numbers (points).", "--margins には 1・2・4 個の数（ポイント）を指定します。", "--margins 需要 1、2 或 4 个数字（点）。", "--margins 需要 1、2 或 4 個數字（點）。", "--margins에는 숫자(포인트) 1, 2 또는 4개를 씁니다.", "--margins prend 1, 2 ou 4 nombres (points).", "--margins nimmt 1, 2 oder 4 Zahlen (Punkt)."],
+    "Err_CropTooSmall": ["Page {0} would be smaller than half an inch.", "{0} ページが半インチより小さくなってしまいます。", "第 {0} 页会小于半英寸。", "第 {0} 頁會小於半英寸。", "{0}페이지가 반 인치보다 작아집니다.", "La page {0} ferait moins d’un demi-pouce.", "Seite {0} würde kleiner als ein halber Zoll."],
+    "Err_CropBlank": ["The pages are blank: there is nothing to trim to.", "ページが白紙のため、切り詰める対象がありません。", "页面是空白的：没有可按内容裁剪的东西。", "頁面是空白的：沒有可依內容裁切的東西。", "페이지가 비어 있어 내용에 맞춰 자를 것이 없습니다.", "Les pages sont blanches : rien à quoi rogner.", "Die Seiten sind leer: Es gibt nichts, worauf zugeschnitten werden kann."],
+    "Err_CropCheck": ["Page {0} did not look like the part of the original it was cropped to, so the copy was not kept.", "{0} ページが元の該当部分と同じに見えなかったため、保存しませんでした。", "第 {0} 页与原页对应部分不一致，因此没有保留副本。", "第 {0} 頁與原頁對應部分不一致，因此沒有保留副本。", "{0}페이지가 원래의 해당 부분과 달라 사본을 저장하지 않았습니다.", "La page {0} ne ressemblait pas à la partie gardée ; la copie n’a pas été conservée.", "Seite {0} sah nicht aus wie der behaltene Teil; die Kopie wurde nicht behalten."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

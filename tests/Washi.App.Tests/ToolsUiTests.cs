@@ -407,6 +407,34 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Organize_crops_pages_and_saves_them_as_images()
+    {
+        var pdf = TextPdf("o.pdf", "Quarterly report", "Figures inside");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "o_cropped.pdf"), Folder = Path.Combine(_dir, "pngs") };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Organize;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Expander>("CropExpander")!.IsEffectivelyVisible);
+        Assert.Null(vm.Organize.SelectedRange);
+        Assert.Equal(L.Get("Ui_PagesScopeAll"), vm.Organize.ScopeText);
+
+        // the page is 842 × 595 pt; 10 mm off each side
+        await vm.Organize.CropCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(L.F("Ui_Cropped", "o_cropped.pdf", 1), vm.Status);
+        Assert.Equal(842 - 2 * 10 * 72 / 25.4, vm.PageWidth, 0);
+
+        vm.Organize.ExportFormatIndex = 1;
+        vm.Organize.ExportDpiIndex = 0;
+        await vm.Organize.ExportImagesCommand.ExecuteAsync(null);
+        var file = Assert.Single(Directory.GetFiles(dialogs.Folder!));
+        Assert.Equal("o_cropped_p1.jpg", Path.GetFileName(file));
+        Assert.Equal(L.F("Ui_Exported", 1, dialogs.Folder!), vm.Status);
+        using var img = SkiaSharp.SKBitmap.Decode(file);
+        Assert.InRange(img.Width, 783, 787);
+    }
+
+    [AvaloniaFact]
     public async Task Compare_lists_the_differences_and_saves_a_marked_copy()
     {
         var older = TextPdf("v1.pdf", "Contract 2025", "Rent: 80,000 yen", "Notice: one month");

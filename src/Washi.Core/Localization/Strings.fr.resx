@@ -116,6 +116,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dossier]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           réordonne, retire (pages non listées) et fait pivoter les pages (les champs de formulaire sont conservés)
+  washi pdf crop &lt;in.pdf&gt; (--margins haut,droite,bas,gauche | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   rogner les marges (points) ou au contenu
+  washi pdf export-images &lt;in.pdf&gt; [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o dossier]   pages en fichiers image
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           rend les pages numérisées cherchables (couche de texte invisible ; l’image de la page ne change pas)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -863,4 +865,30 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>La page {0} de l’ancienne version a été supprimée : {1}</value></data>
   <data name="Pdf_CompareLine" xml:space="preserve"><value>  anc. p. {0} / nouv. p. {1} : {2}</value></data>
   <data name="Err_CompareSame" xml:space="preserve"><value>Les deux versions sont identiques : rien à signaler.</value></data>
+  <data name="Ui_PagesScopeAll" xml:space="preserve"><value>Rognage et images : toutes les pages (sélectionnez-en ci-dessous pour n’en traiter que certaines).</value></data>
+  <data name="Ui_PagesScopeSome" xml:space="preserve"><value>Rognage et images : pages {0}.</value></data>
+  <data name="Ui_CropTitle" xml:space="preserve"><value>Rogner les pages</value></data>
+  <data name="Ui_CropTop" xml:space="preserve"><value>Haut</value></data>
+  <data name="Ui_CropBottom" xml:space="preserve"><value>Bas</value></data>
+  <data name="Ui_CropLeft" xml:space="preserve"><value>Gauche</value></data>
+  <data name="Ui_CropRight" xml:space="preserve"><value>Droite</value></data>
+  <data name="Ui_CropMm" xml:space="preserve"><value>Marges à couper, en millimètres, sur la page telle qu’affichée.</value></data>
+  <data name="Ui_CropTrim" xml:space="preserve"><value>Rogner plutôt au contenu (couper le papier blanc autour)</value></data>
+  <data name="Ui_CropRun" xml:space="preserve"><value>Rogner et enregistrer une copie…</value></data>
+  <data name="Ui_Cropped" xml:space="preserve"><value>{0} enregistré : {1} page(s) rognée(s). Vérifié : chacune ressemble à la partie gardée.</value></data>
+  <data name="Ui_ExportTitle" xml:space="preserve"><value>Enregistrer les pages en images</value></data>
+  <data name="Ui_ExportRun" xml:space="preserve"><value>Choisir un dossier et enregistrer…</value></data>
+  <data name="Ui_Exported" xml:space="preserve"><value>{0} image(s) enregistrée(s) dans {1}.</value></data>
+  <data name="Pdf_Exported" xml:space="preserve"><value>{0} image(s) enregistrée(s) dans {1} ; chacune relue.</value></data>
+  <data name="Pdf_Cropped" xml:space="preserve"><value>{0} enregistré : {1} page(s) rognée(s). Vérifié : chacune ressemble à la partie gardée.</value></data>
+  <data name="Err_ExportFormat" xml:space="preserve"><value>Format d’image inconnu « {0} » : utilisez png ou jpeg.</value></data>
+  <data name="Err_ExportDpi" xml:space="preserve"><value>La résolution doit être de 36 à 600 ppp.</value></data>
+  <data name="Err_ExportQuality" xml:space="preserve"><value>La qualité JPEG doit être de 1 à 100.</value></data>
+  <data name="Err_ExportCheck" xml:space="preserve"><value>{0} ne se relisait pas ; rien n’a été conservé.</value></data>
+  <data name="Err_CropNothing" xml:space="preserve"><value>Rien à rogner : indiquez des marges ou rognez au contenu.</value></data>
+  <data name="Err_CropNegative" xml:space="preserve"><value>Les marges ne peuvent pas être négatives.</value></data>
+  <data name="Err_CropMargins" xml:space="preserve"><value>--margins prend 1, 2 ou 4 nombres (points).</value></data>
+  <data name="Err_CropTooSmall" xml:space="preserve"><value>La page {0} ferait moins d’un demi-pouce.</value></data>
+  <data name="Err_CropBlank" xml:space="preserve"><value>Les pages sont blanches : rien à quoi rogner.</value></data>
+  <data name="Err_CropCheck" xml:space="preserve"><value>La page {0} ne ressemblait pas à la partie gardée ; la copie n’a pas été conservée.</value></data>
 </root>

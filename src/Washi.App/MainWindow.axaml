@@ -556,6 +556,42 @@
                             <TextBlock Classes="note" Text="{Binding Organize.Summary}" VerticalAlignment="Center" TextWrapping="Wrap" />
                         </DockPanel>
                     </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="20,0,20,8" Spacing="6" IsVisible="{Binding HasDocument}">
+                        <TextBlock Classes="note" Text="{Binding Organize.ScopeText}" TextWrapping="Wrap" />
+                        <Expander Header="{l:Tr Ui_CropTitle}" HorizontalAlignment="Stretch" x:Name="CropExpander">
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="Auto,6,*,10,Auto,6,*" RowDefinitions="Auto,6,Auto" IsEnabled="{Binding !Organize.CropTrim}">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{l:Tr Ui_CropTop}" VerticalAlignment="Center" FontSize="12" />
+                                    <NumericUpDown Grid.Row="0" Grid.Column="2" Value="{Binding Organize.CropTop}" Minimum="0" Maximum="300" Increment="1" FormatString="0" />
+                                    <TextBlock Grid.Row="0" Grid.Column="4" Text="{l:Tr Ui_CropBottom}" VerticalAlignment="Center" FontSize="12" />
+                                    <NumericUpDown Grid.Row="0" Grid.Column="6" Value="{Binding Organize.CropBottom}" Minimum="0" Maximum="300" Increment="1" FormatString="0" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{l:Tr Ui_CropLeft}" VerticalAlignment="Center" FontSize="12" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="2" Value="{Binding Organize.CropLeft}" Minimum="0" Maximum="300" Increment="1" FormatString="0" />
+                                    <TextBlock Grid.Row="2" Grid.Column="4" Text="{l:Tr Ui_CropRight}" VerticalAlignment="Center" FontSize="12" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="6" Value="{Binding Organize.CropRight}" Minimum="0" Maximum="300" Increment="1" FormatString="0" />
+                                </Grid>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_CropMm}" />
+                                <CheckBox IsChecked="{Binding Organize.CropTrim}" Content="{l:Tr Ui_CropTrim}" />
+                                <Button Content="{l:Tr Ui_CropRun}" Command="{Binding Organize.CropCommand}" Padding="12,4" x:Name="CropButton" />
+                            </StackPanel>
+                        </Expander>
+                        <Expander Header="{l:Tr Ui_ExportTitle}" HorizontalAlignment="Stretch" x:Name="ExportExpander">
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="*,8,*">
+                                    <ComboBox Grid.Column="0" SelectedIndex="{Binding Organize.ExportFormatIndex}" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="PNG" />
+                                        <ComboBoxItem Content="JPEG" />
+                                    </ComboBox>
+                                    <ComboBox Grid.Column="2" SelectedIndex="{Binding Organize.ExportDpiIndex}" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="72 dpi" />
+                                        <ComboBoxItem Content="150 dpi" />
+                                        <ComboBoxItem Content="300 dpi" />
+                                    </ComboBox>
+                                </Grid>
+                                <Button Content="{l:Tr Ui_ExportRun}" Command="{Binding Organize.ExportImagesCommand}" Padding="12,4" x:Name="ExportButton" />
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
                     <Panel Margin="20,0,20,12">
                         <ListBox ItemsSource="{Binding Organize.Pages}" SelectedItems="{Binding Organize.Selected}" SelectionMode="Multiple"
                                  BorderBrush="{StaticResource RuleBrush}" BorderThickness="1" x:Name="OrganizeList">
