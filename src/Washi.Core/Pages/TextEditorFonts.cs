@@ -35,22 +35,32 @@ public static partial class PdfTextEditor
         }
 
         // a standard font of the same kind
-        if (CanWinAnsi(text))
-        {
-            var dict = AcroFormWriter.TextFont(doc, FormScript.Latin, Serif(first));
-            var face = StandardFonts.Find(Serif(first) ? "Times-Roman" : "Helvetica")!;
-            var bytes = Encoding.GetEncoding(1252).GetBytes(text);
-            double width = bytes.Sum(b => StandardFonts.WinAnsi[b] is var n && face.Widths.TryGetValue(n, out var w) ? w / 1000.0 : 0.5);
-            return (dict.Reference!, "<" + Convert.ToHexString(bytes) + ">", width, false, Serif(first) ? "Times-Roman" : "Helvetica");
-        }
-        var script = FormScripts.Detect(text) is { } s && s != FormScript.Latin ? s : FormScript.Japanese;
-        var cid = AcroFormWriter.TextFont(doc, script, Serif(first));
-        double cw = text.EnumerateRunes().Sum(r => r.Value <= 0x7E ? 0.5 : 1.0);
-        var name = cid.Elements.GetName("/BaseFont").TrimStart('/');
-        return (cid.Reference!, "<" + Convert.ToHexString(Encoding.BigEndianUnicode.GetBytes(text)) + ">", cw, false, name);
+        var script = ScriptFor(text);
+        var dict = AcroFormWriter.TextFont(doc, script, Serif(first));
+        var (hex, em) = EncodeStandard(text, script, Serif(first));
+        return (dict.Reference!, hex, em, false, StandardName(dict));
     }
 
-    private static bool CanWinAnsi(string text)
+    /// <summary>The standard font that can draw <paramref name="text"/>: Latin (WinAnsi) when it can, otherwise the CJK script it is in.</summary>
+    internal static FormScript ScriptFor(string text) =>
+        CanWinAnsi(text) ? FormScript.Latin : FormScripts.Detect(text) is { } s && s != FormScript.Latin ? s : FormScript.Japanese;
+
+    /// <summary><paramref name="text"/> as a hex string for the standard font of <paramref name="script"/>, and its width in em.</summary>
+    internal static (string Hex, double Width) EncodeStandard(string text, FormScript script, bool serif)
+    {
+        if (script == FormScript.Latin)
+        {
+            var face = StandardFonts.Find(serif ? "Times-Roman" : "Helvetica")!;
+            var bytes = Encoding.GetEncoding(1252).GetBytes(text);
+            double width = bytes.Sum(b => face.Widths.TryGetValue(StandardFonts.WinAnsi[b], out var w) ? w / 1000.0 : 0.5);
+            return ("<" + Convert.ToHexString(bytes) + ">", width);
+        }
+        return ("<" + Convert.ToHexString(Encoding.BigEndianUnicode.GetBytes(text)) + ">", text.EnumerateRunes().Sum(r => r.Value <= 0x7E ? 0.5 : 1.0));
+    }
+
+    internal static string StandardName(PdfDictionary font) => font.Elements.GetName("/BaseFont").TrimStart('/');
+
+    internal static bool CanWinAnsi(string text)
     {
         try
         {

@@ -68,6 +68,7 @@ public sealed class FieldCanvas : Control
         vm.Erase.Changed += InvalidateVisual;
         vm.Redact.Changed += InvalidateVisual;
         vm.EditText.Changed += InvalidateVisual;
+        vm.Stamp.Changed += InvalidateVisual;
         vm.Find.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
@@ -81,6 +82,7 @@ public sealed class FieldCanvas : Control
         vm.Erase.Changed -= InvalidateVisual;
         vm.Redact.Changed -= InvalidateVisual;
         vm.EditText.Changed -= InvalidateVisual;
+        vm.Stamp.Changed -= InvalidateVisual;
         vm.Find.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
@@ -147,6 +149,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsEditTextTool: true } et)
         {
             RenderEditText(ctx, et);
+            return;
+        }
+        if (Editor is { IsStampTool: true } st)
+        {
+            RenderStamp(ctx, st);
             return;
         }
         if (Editor is { IsSignTool: true } sg)
@@ -417,6 +424,52 @@ public sealed class FieldCanvas : Control
         }
         if (vm.EditText.Selected is { } sel)
             ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1.5), Screen(sel.Box).Inflate(2));
+    }
+
+    /// <summary>Headers tool: the header, footer and watermark as they will come out on this page (a preview).</summary>
+    private void RenderStamp(DrawingContext ctx, MainViewModel vm)
+    {
+        var st = vm.Stamp;
+        int page = vm.PageIndex;
+        if (!vm.HasDocument || !st.Marks(page)) return;
+        var o = st.Options();
+        double w = vm.PageWidth, h = vm.PageHeight;
+        var file = Path.GetFileName(vm.PdfPath ?? "");
+        var bates = st.BatesFor(page);
+        var typeface = new Typeface("Inter");
+        var ink = new SolidColorBrush(Color.FromRgb(20, 20, 20));
+        var texts = new (string T, int Row, int Col)[]
+        {
+            (o.HeaderLeft, 0, 0), (o.HeaderCenter, 0, 1), (o.HeaderRight, 0, 2),
+            (o.FooterLeft, 1, 0), (o.FooterCenter, 1, 1), (o.FooterRight, 1, 2),
+        };
+        foreach (var (template, row, col) in texts)
+        {
+            var text = Washi.Core.Pages.PdfStamper.Resolve(template, page + 1, vm.PageCount, file, DateTime.Now, bates).Trim();
+            if (text.Length == 0) continue;
+            var ft = new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, o.FontSize * Zoom, ink);
+            double tw = ft.Width / Zoom;
+            double x = col switch { 0 => o.Margin, 1 => (w - tw) / 2, _ => w - o.Margin - tw };
+            double top = row == 0 ? o.Margin : h - o.Margin - o.FontSize * 0.75;
+            ctx.DrawText(ft, new Point(x * Zoom, top * Zoom - ft.Baseline + o.FontSize * 0.75 * Zoom));
+        }
+        if (o.Watermark is { } wm)
+        {
+            var c = wm.Color;
+            var brush = new SolidColorBrush(Color.FromRgb((byte)(c >> 16), (byte)(c >> 8), (byte)c));
+            var probe = new FormattedText(wm.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, 100, brush);
+            double em = probe.Width / 100, a = wm.Angle * Math.PI / 180, cos = Math.Abs(Math.Cos(a)), sin = Math.Abs(Math.Sin(a));
+            double size = wm.Size > 0 ? wm.Size : Math.Min(200, Math.Min(0.85 * w / (em * cos + sin), 0.85 * h / (em * sin + cos)));
+            var ft = new FormattedText(wm.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, size * Zoom, brush);
+            var centre = new Point(w / 2 * Zoom, h / 2 * Zoom);
+            using (ctx.PushOpacity(wm.Opacity))
+            using (ctx.PushTransform(Matrix.CreateTranslation(-centre.X, -centre.Y) * Matrix.CreateRotation(-a) * Matrix.CreateTranslation(centre.X, centre.Y)))
+                ctx.DrawText(ft, new Point(centre.X - ft.Width / 2, centre.Y - ft.Height / 2));
+        }
+        // where the header and footer lines sit
+        var guide = new Pen(new SolidColorBrush(Color.FromRgb(31, 73, 224), 0.25), 1, new DashStyle([4, 4], 0));
+        ctx.DrawLine(guide, new Point(o.Margin * Zoom, (o.Margin + o.FontSize) * Zoom + 3), new Point((w - o.Margin) * Zoom, (o.Margin + o.FontSize) * Zoom + 3));
+        ctx.DrawLine(guide, new Point(o.Margin * Zoom, (h - o.Margin - o.FontSize) * Zoom - 3), new Point((w - o.Margin) * Zoom, (h - o.Margin - o.FontSize) * Zoom - 3));
     }
 
     /// <summary>Sign tool: the signature fields (dashed), the placed signatures as they will print, the box being dragged.</summary>

@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Headers, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -200,6 +200,8 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   removed from the file for real (see below).
 - **Edit text**: click a line on the page and type its new text, or find and replace; the changes show on the page
   and are saved to a copy, checked before it is kept (see below).
+- **Headers**: header and footer texts (left, centre, right) with page numbers, the file name, the date and Bates
+  numbers, and a see-through watermark; previewed on the page, saved to a copy (see below).
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Find:** ⌘/Ctrl+F opens the find bar over the page, in every tool. It searches as you type, highlights every
@@ -446,6 +448,32 @@ the page (the old text covered, the new one over it) until *Save as copy*. Agent
 - Files whose permissions forbid changes are refused (remove the protection with its password first). Scanned pages
   have no text to edit; Erase and a comment text box are the way there.
 
+## Headers, footers and watermarks
+
+```bash
+washi pdf stamp report.pdf --footer "{page} / {pages}"                        # page numbers, bottom centre
+washi pdf stamp report.pdf --header "株式会社和紙||{date}" --footer "|{page}|"  # left and right header, centred footer
+washi pdf stamp evidence.pdf --footer "||{bates}" --bates ACME- --bates-start 1001   # ACME-001001, ACME-001002, …
+washi pdf stamp draft.pdf --watermark "社外秘" --opacity 0.2 --pages 2-5
+```
+
+A header or footer is `left|centre|right` (one part is centred, two are left and right). The texts may hold
+`{page}`, `{pages}`, `{date}` (yyyy-MM-dd), `{file}` and `{bates}`. In the editor: **Headers** in the tool rail,
+*Page numbers* and *Bates numbers* fill in the usual places, and the page shows what will be added. Agents use
+`stamp_pages`.
+
+- **The page is not touched.** The marks go in content streams of their own before and after the page's content,
+  which stays byte for byte as it was, and are tagged as page artifacts so screen readers skip them.
+- Pages turned with /Rotate get their header at the top as shown. Japanese, Chinese and Korean text get a Mincho or
+  Gothic CJK font; Latin text Helvetica (or Times with `serif`).
+- **Bates numbers** count the pages that are stamped, from the start number, with at least the given digits.
+- **Watermarks** are centred and turned (45° unless told otherwise), as large as fits unless a size is given,
+  see-through, over the content or behind it.
+- **Checked before it is kept.** Both versions are rendered (nothing may change outside the marks) and the pages'
+  text read back (every header, footer and watermark must be there). A long document is checked on a sample of
+  its pages: the first, the last and some between.
+- Files whose permissions forbid changes are refused.
+
 ## Formats, ranges and calculations
 
 A typed field can carry rules, set in its properties (Form tool) or in `fields.json`:
@@ -596,6 +624,7 @@ There are two ways to run it:
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
 | `edit_text` | new PDF with page text changed: find and replace, or the text inside a rect, in the document's font when it has the characters; one line at a time, checked afterwards | writes a **new** file |
+| `stamp_pages` | new PDF with headers, footers, page and Bates numbers and/or a watermark, the page's own content untouched, checked afterwards | writes a **new** file |
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
 | `verify_signatures` | the digital signatures in a PDF: signer, time, intact, trusted, changed afterwards, status | no |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
@@ -691,9 +720,9 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 23 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 24 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -751,7 +780,9 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 15. ~~Edit existing comments.~~ Done (the Comment tool, `edit_comments`).
 16. ~~Compression.~~ Done (`washi pdf compress`, the Compress tool, `compress_pdf`).
 17. ~~Digital signatures (PAdES) and their checking.~~ Done (`washi pdf sign|verify|make-id`, the Sign tool, `verify_signatures`).
-18. ~~Editing page text: a line at a time, and find and replace.~~ Done (`washi pdf replace-text`, the Edit text tool, `edit_text`). Next: editing a paragraph that reflows over several lines.
+18. ~~Editing page text: a line at a time, and find and replace.~~ Done (`washi pdf replace-text`, the Edit text tool, `edit_text`).
+19. ~~Headers, footers, page and Bates numbers, watermarks.~~ Done (`washi pdf stamp`, the Headers tool, `stamp_pages`).
+20. Next: images to PDF; then editing a paragraph that reflows over several lines.
 
 ## License
 

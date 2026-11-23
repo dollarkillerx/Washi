@@ -36,6 +36,7 @@ public static class WashiTools
         .Add(new RemoveHiddenInfoTool(policy))
         .Add(new RedactTool(policy))
         .Add(new EditTextTool(policy))
+        .Add(new StampPagesTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -911,6 +912,74 @@ public sealed class EditTextTool(PathPolicy p) : PdfTool(p)
             output,
             changes = results.Select(r => new { page = r.Page + 1, old = r.Old, @new = r.New, font = r.Font, kept_font = r.KeptFont, wider = r.Wider }),
             verified = "nothing changed outside the edited text; the new text reads back at the same size",
+        }));
+    }
+}
+
+public sealed class StampPagesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "stamp_pages";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Add headers, footers, page numbers, Bates numbers and/or a watermark to PDF pages. Header and footer texts (left, center, " +
+        "right) may hold {page}, {pages}, {date} (yyyy-MM-dd), {file} and {bates}. The page's own content is not changed: the marks " +
+        "go in their own content streams, tagged as page artifacts, and the copy is checked before it is kept (nothing changed " +
+        "outside the marks, every text reads back). Japanese, Chinese and Korean text get a CJK font. Never overwrites: output " +
+        "defaults to <name>_stamped.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "header":{"type":"object","properties":{"left":{"type":"string"},"center":{"type":"string"},"right":{"type":"string"}},"additionalProperties":false},
+          "footer":{"type":"object","properties":{"left":{"type":"string"},"center":{"type":"string"},"right":{"type":"string"}},"additionalProperties":false},
+          "font_size":{"type":"number","description":"Points, 4 to 72 (default 9)"},
+          "serif":{"type":"boolean"},
+          "pages":{"type":"string","description":"Page range such as 1-3,5 (default: every page)"},
+          "bates":{"type":"object","properties":{"prefix":{"type":"string"},"start":{"type":"integer"},"digits":{"type":"integer"},"suffix":{"type":"string"}},
+                   "additionalProperties":false,"description":"For {bates}: numbers count the stamped pages"},
+          "watermark":{"type":"object","properties":{
+                     "text":{"type":"string"},
+                     "size":{"type":"number","description":"Points; 0 or absent: as large as fits"},
+                     "angle":{"type":"number","description":"Degrees, counter-clockwise (default 45)"},
+                     "opacity":{"type":"number","description":"Above 0, at most 1 (default 0.3)"},
+                     "color":{"type":"string","description":"#RRGGBB (default #808080)"},
+                     "behind":{"type":"boolean","description":"Under the page's content"}},
+                   "required":["text"],"additionalProperties":false},
+          "output":{"type":"string","description":"New PDF path (default: <name>_stamped.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        static string S(JsonElement o, string k) => o.ValueKind == JsonValueKind.Object && o.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString()! : "";
+        static double D(JsonElement o, string k, double d) => o.ValueKind == JsonValueKind.Object && o.TryGetProperty(k, out var v) && v.TryGetDouble(out var x) ? x : d;
+        var header = a.TryGetProperty("header", out var h) ? h : default;
+        var footer = a.TryGetProperty("footer", out var f) ? f : default;
+        BatesNumbers? bates = a.TryGetProperty("bates", out var b) && b.ValueKind == JsonValueKind.Object
+            ? new BatesNumbers(S(b, "prefix"), (int)D(b, "start", 1), (int)D(b, "digits", 6), S(b, "suffix")) : null;
+        Watermark? watermark = null;
+        if (a.TryGetProperty("watermark", out var w) && w.ValueKind == JsonValueKind.Object)
+        {
+            var color = S(w, "color").TrimStart('#');
+            int rgb = color.Length == 0 ? 0x808080
+                : int.TryParse(color, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var c) && color.Length == 6 ? c
+                : throw new ToolException("watermark color must be #RRGGBB");
+            watermark = new Watermark(S(w, "text"), D(w, "size", 0), D(w, "angle", 45), D(w, "opacity", 0.3), rgb,
+                                      w.TryGetProperty("behind", out var bh) && bh.ValueKind == JsonValueKind.True);
+        }
+        var options = new StampOptions
+        {
+            HeaderLeft = S(header, "left"), HeaderCenter = S(header, "center"), HeaderRight = S(header, "right"),
+            FooterLeft = S(footer, "left"), FooterCenter = S(footer, "center"), FooterRight = S(footer, "right"),
+            FontSize = D(a, "font_size", 9), Serif = a.TryGetProperty("serif", out var se) && se.ValueKind == JsonValueKind.True,
+            Pages = OptStr(a, "pages"), Bates = bates, Watermark = watermark,
+        };
+        var output = Policy.Output(OptStr(a, "output"), path, "_stamped");
+        var r = PdfStamper.Apply(path, output, options);
+        return new ToolResult(ToJson(new
+        {
+            output, pages = r.Pages, first_bates = r.FirstBates, last_bates = r.LastBates,
+            verified = "nothing changed outside the header, footer and watermark; every text reads back",
         }));
     }
 }

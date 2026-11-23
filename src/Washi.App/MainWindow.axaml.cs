@@ -34,7 +34,7 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
 
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
-        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EditTextToolButton, EraseToolButton, AskToolButton })
+        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EditTextToolButton, StampToolButton, EraseToolButton, AskToolButton })
             rail.AddHandler(PointerPressedEvent, (_, _) =>
             {
                 // a second click on the active tool folds its panel away; any tool click opens it

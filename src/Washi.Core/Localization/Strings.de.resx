@@ -130,6 +130,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   washi pdf find &lt;in.pdf&gt; &lt;Text&gt; [--case] [--whole-words]   wo der Text steht, Seite für Seite
   washi pdf replace-text &lt;in.pdf&gt; (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)
+  washi pdf stamp &lt;in.pdf&gt; [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]
+                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   Kopf- und Fußzeilen, Seiten- und Bates-Nummern ({page} {pages} {date} {file} {bates}), Wasserzeichen
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)
                                           oder eine Kopie mit denen aus einer solchen Datei schreiben
@@ -775,4 +777,41 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_EditChanged" xml:space="preserve"><value>Die bearbeitete Kopie änderte {0} Pixel außerhalb des bearbeiteten Texts; sie wurde nicht behalten.</value></data>
   <data name="Err_EditCheck" xml:space="preserve"><value>Der neue Text ließ sich nicht wie eingegeben lesen (gelesen: „{0}“); die Kopie wurde nicht behalten.</value></data>
   <data name="Err_EditNotFound" xml:space="preserve"><value>„{0}“ steht nicht im Dokument.</value></data>
+  <data name="Ui_ToolStamp" xml:space="preserve"><value>Kopfzeilen</value></data>
+  <data name="Ui_StampTitle" xml:space="preserve"><value>Kopf-, Fußzeilen und Wasserzeichen</value></data>
+  <data name="Ui_StampLead" xml:space="preserve"><value>Fügen Sie oben und unten auf den Seiten Text hinzu (Seitenzahlen, Dateiname, Datum, Bates-Nummern) und ein durchscheinendes Wasserzeichen. Die Seite selbst bleibt unverändert.</value></data>
+  <data name="Ui_StampHeader" xml:space="preserve"><value>Kopfzeile</value></data>
+  <data name="Ui_StampFooter" xml:space="preserve"><value>Fußzeile</value></data>
+  <data name="Ui_StampLeft" xml:space="preserve"><value>Links</value></data>
+  <data name="Ui_StampCenter" xml:space="preserve"><value>Mitte</value></data>
+  <data name="Ui_StampRight" xml:space="preserve"><value>Rechts</value></data>
+  <data name="Ui_StampTokens" xml:space="preserve"><value>{page} Seitenzahl, {pages} Seitenanzahl, {date} heutiges Datum, {file} Dateiname, {bates} Bates-Nummer</value></data>
+  <data name="Ui_StampPageNumbers" xml:space="preserve"><value>Seitenzahlen</value></data>
+  <data name="Ui_StampBates" xml:space="preserve"><value>Bates-Nummern</value></data>
+  <data name="Ui_StampSize" xml:space="preserve"><value>Größe</value></data>
+  <data name="Ui_StampPages" xml:space="preserve"><value>Seiten</value></data>
+  <data name="Ui_StampAllPages" xml:space="preserve"><value>Alle (oder z. B. 2-5)</value></data>
+  <data name="Ui_StampBatesTitle" xml:space="preserve"><value>Bates-Nummern</value></data>
+  <data name="Ui_StampBatesPrefix" xml:space="preserve"><value>Präfix (z. B. ACME-)</value></data>
+  <data name="Ui_StampBatesStart" xml:space="preserve"><value>Start</value></data>
+  <data name="Ui_StampBatesDigits" xml:space="preserve"><value>Stellen</value></data>
+  <data name="Ui_StampWatermark" xml:space="preserve"><value>Wasserzeichen</value></data>
+  <data name="Ui_StampWatermarkHint" xml:space="preserve"><value>z. B. VERTRAULICH</value></data>
+  <data name="Ui_StampOpacity" xml:space="preserve"><value>Deckkraft</value></data>
+  <data name="Ui_StampAngle" xml:space="preserve"><value>Winkel</value></data>
+  <data name="Ui_StampGrey" xml:space="preserve"><value>Grau</value></data>
+  <data name="Ui_StampRed" xml:space="preserve"><value>Rot</value></data>
+  <data name="Ui_StampBlue" xml:space="preserve"><value>Blau</value></data>
+  <data name="Ui_StampBehind" xml:space="preserve"><value>Hinter den Seiteninhalt</value></data>
+  <data name="Ui_StampSave" xml:space="preserve"><value>Hinzufügen und Kopie speichern…</value></data>
+  <data name="Ui_StampSaveNote" xml:space="preserve"><value>Die Kopie wird vor dem Behalten geprüft: sonst ändert sich nichts auf den Seiten, und jeder Text lässt sich lesen. Das Original bleibt unverändert.</value></data>
+  <data name="Ui_Stamped" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n) versehen. Geprüft: sonst hat sich nichts verschoben.</value></data>
+  <data name="Ui_StampedBates" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n) versehen, Bates {2} bis {3}. Geprüft: sonst hat sich nichts verschoben.</value></data>
+  <data name="Pdf_Stamped" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n) versehen. Geprüft: sonst nichts verändert, jeder Text lässt sich lesen.</value></data>
+  <data name="Pdf_StampedBates" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n) versehen, Bates {2} bis {3}. Geprüft: sonst nichts verändert, jeder Text lässt sich lesen.</value></data>
+  <data name="Err_StampNothing" xml:space="preserve"><value>Nichts hinzuzufügen: geben Sie eine Kopf-, Fußzeile oder ein Wasserzeichen ein.</value></data>
+  <data name="Err_StampSize" xml:space="preserve"><value>Die Textgröße muss 4 bis 72 Punkt betragen.</value></data>
+  <data name="Err_StampWatermark" xml:space="preserve"><value>Die Deckkraft des Wasserzeichens muss über 0 und höchstens 100 % liegen, seine Größe 0 bis 400 Punkt.</value></data>
+  <data name="Err_StampChanged" xml:space="preserve"><value>Seite {0} hat sich außerhalb von Kopf-, Fußzeile und Wasserzeichen verändert; die Kopie wurde nicht behalten.</value></data>
+  <data name="Err_StampCheck" xml:space="preserve"><value>„{0}“ ließ sich auf Seite {1} nicht lesen; die Kopie wurde nicht behalten.</value></data>
 </root>

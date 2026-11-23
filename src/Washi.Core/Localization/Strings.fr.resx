@@ -130,6 +130,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page
   washi pdf replace-text &lt;in.pdf&gt; (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)
+  washi pdf stamp &lt;in.pdf&gt; [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]
+                 [--watermark TEXTE [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   en-têtes, pieds de page, numéros de page et Bates ({page} {pages} {date} {file} {bates}), filigrane
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),
                                           ou écrit une copie avec ceux d’un fichier de cette forme
@@ -775,4 +777,41 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_EditChanged" xml:space="preserve"><value>La copie modifiée changeait {0} pixels hors du texte modifié ; elle n’a pas été conservée.</value></data>
   <data name="Err_EditCheck" xml:space="preserve"><value>Le nouveau texte ne se relisait pas tel que saisi (lu « {0} ») ; la copie n’a pas été conservée.</value></data>
   <data name="Err_EditNotFound" xml:space="preserve"><value>« {0} » n’est pas dans le document.</value></data>
+  <data name="Ui_ToolStamp" xml:space="preserve"><value>En-têtes</value></data>
+  <data name="Ui_StampTitle" xml:space="preserve"><value>En-têtes, pieds de page et filigrane</value></data>
+  <data name="Ui_StampLead" xml:space="preserve"><value>Ajoutez du texte en haut et en bas des pages (numéros de page, nom du fichier, date, numéros Bates) et un filigrane transparent. La page elle-même n’est pas modifiée.</value></data>
+  <data name="Ui_StampHeader" xml:space="preserve"><value>En-tête</value></data>
+  <data name="Ui_StampFooter" xml:space="preserve"><value>Pied de page</value></data>
+  <data name="Ui_StampLeft" xml:space="preserve"><value>Gauche</value></data>
+  <data name="Ui_StampCenter" xml:space="preserve"><value>Centre</value></data>
+  <data name="Ui_StampRight" xml:space="preserve"><value>Droite</value></data>
+  <data name="Ui_StampTokens" xml:space="preserve"><value>{page} numéro de page, {pages} nombre de pages, {date} date du jour, {file} nom du fichier, {bates} numéro Bates</value></data>
+  <data name="Ui_StampPageNumbers" xml:space="preserve"><value>Numéros de page</value></data>
+  <data name="Ui_StampBates" xml:space="preserve"><value>Numéros Bates</value></data>
+  <data name="Ui_StampSize" xml:space="preserve"><value>Taille</value></data>
+  <data name="Ui_StampPages" xml:space="preserve"><value>Pages</value></data>
+  <data name="Ui_StampAllPages" xml:space="preserve"><value>Toutes (ou p. ex. 2-5)</value></data>
+  <data name="Ui_StampBatesTitle" xml:space="preserve"><value>Numéros Bates</value></data>
+  <data name="Ui_StampBatesPrefix" xml:space="preserve"><value>Préfixe (p. ex. ACME-)</value></data>
+  <data name="Ui_StampBatesStart" xml:space="preserve"><value>Début</value></data>
+  <data name="Ui_StampBatesDigits" xml:space="preserve"><value>Chiffres</value></data>
+  <data name="Ui_StampWatermark" xml:space="preserve"><value>Filigrane</value></data>
+  <data name="Ui_StampWatermarkHint" xml:space="preserve"><value>p. ex. CONFIDENTIEL</value></data>
+  <data name="Ui_StampOpacity" xml:space="preserve"><value>Opacité</value></data>
+  <data name="Ui_StampAngle" xml:space="preserve"><value>Angle</value></data>
+  <data name="Ui_StampGrey" xml:space="preserve"><value>Gris</value></data>
+  <data name="Ui_StampRed" xml:space="preserve"><value>Rouge</value></data>
+  <data name="Ui_StampBlue" xml:space="preserve"><value>Bleu</value></data>
+  <data name="Ui_StampBehind" xml:space="preserve"><value>Derrière le contenu de la page</value></data>
+  <data name="Ui_StampSave" xml:space="preserve"><value>Ajouter et enregistrer une copie…</value></data>
+  <data name="Ui_StampSaveNote" xml:space="preserve"><value>La copie est vérifiée avant d’être gardée : rien d’autre ne change sur les pages et chaque texte se relit. L’original n’est pas modifié.</value></data>
+  <data name="Ui_Stamped" xml:space="preserve"><value>{0} enregistré : {1} page(s) marquée(s). Vérifié : rien d’autre n’a bougé.</value></data>
+  <data name="Ui_StampedBates" xml:space="preserve"><value>{0} enregistré : {1} page(s) marquée(s), Bates {2} à {3}. Vérifié : rien d’autre n’a bougé.</value></data>
+  <data name="Pdf_Stamped" xml:space="preserve"><value>{0} enregistré : {1} page(s) marquée(s). Vérifié : rien d’autre n’a changé, chaque texte se relit.</value></data>
+  <data name="Pdf_StampedBates" xml:space="preserve"><value>{0} enregistré : {1} page(s) marquée(s), Bates {2} à {3}. Vérifié : rien d’autre n’a changé, chaque texte se relit.</value></data>
+  <data name="Err_StampNothing" xml:space="preserve"><value>Rien à ajouter : saisissez un en-tête, un pied de page ou un filigrane.</value></data>
+  <data name="Err_StampSize" xml:space="preserve"><value>La taille du texte doit être de 4 à 72 points.</value></data>
+  <data name="Err_StampWatermark" xml:space="preserve"><value>L’opacité du filigrane doit être supérieure à 0 et au plus 100 %, sa taille de 0 à 400 points.</value></data>
+  <data name="Err_StampChanged" xml:space="preserve"><value>La page {0} a changé hors de l’en-tête, du pied de page et du filigrane ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_StampCheck" xml:space="preserve"><value>« {0} » ne se relisait pas sur la page {1} ; la copie n’a pas été conservée.</value></data>
 </root>

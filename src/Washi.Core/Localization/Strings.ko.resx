@@ -130,6 +130,8 @@
   washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시
   washi pdf replace-text &lt;in.pdf&gt; (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
                                           페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)
+  washi pdf stamp &lt;in.pdf&gt; [--header "왼쪽|가운데|오른쪽"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 접두사 [--bates-start 1] [--bates-digits 6]]
+                 [--watermark 텍스트 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   머리글·바닥글·쪽 번호·베이츠 번호({page} {pages} {date} {file} {bates}), 워터마크
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),
                                           또는 같은 형식의 파일로 책갈피를 넣은 사본 작성
@@ -775,4 +777,41 @@
   <data name="Err_EditChanged" xml:space="preserve"><value>편집한 사본이 고친 곳 밖에서 {0} 픽셀 바뀌어 저장하지 않았습니다.</value></data>
   <data name="Err_EditCheck" xml:space="preserve"><value>새 글자가 입력한 대로 읽히지 않아 (“{0}”) 사본을 저장하지 않았습니다.</value></data>
   <data name="Err_EditNotFound" xml:space="preserve"><value>문서에 “{0}”이(가) 없습니다.</value></data>
+  <data name="Ui_ToolStamp" xml:space="preserve"><value>머리글</value></data>
+  <data name="Ui_StampTitle" xml:space="preserve"><value>머리글, 바닥글, 워터마크</value></data>
+  <data name="Ui_StampLead" xml:space="preserve"><value>페이지 위아래에 글자(쪽 번호, 파일 이름, 날짜, 베이츠 번호)를, 페이지 위에 비치는 워터마크를 넣습니다. 페이지 자체는 바뀌지 않습니다.</value></data>
+  <data name="Ui_StampHeader" xml:space="preserve"><value>머리글</value></data>
+  <data name="Ui_StampFooter" xml:space="preserve"><value>바닥글</value></data>
+  <data name="Ui_StampLeft" xml:space="preserve"><value>왼쪽</value></data>
+  <data name="Ui_StampCenter" xml:space="preserve"><value>가운데</value></data>
+  <data name="Ui_StampRight" xml:space="preserve"><value>오른쪽</value></data>
+  <data name="Ui_StampTokens" xml:space="preserve"><value>{page} 쪽 번호, {pages} 전체 쪽수, {date} 오늘 날짜, {file} 파일 이름, {bates} 베이츠 번호</value></data>
+  <data name="Ui_StampPageNumbers" xml:space="preserve"><value>쪽 번호</value></data>
+  <data name="Ui_StampBates" xml:space="preserve"><value>베이츠 번호</value></data>
+  <data name="Ui_StampSize" xml:space="preserve"><value>크기</value></data>
+  <data name="Ui_StampPages" xml:space="preserve"><value>페이지</value></data>
+  <data name="Ui_StampAllPages" xml:space="preserve"><value>전체 (예: 2-5)</value></data>
+  <data name="Ui_StampBatesTitle" xml:space="preserve"><value>베이츠 번호</value></data>
+  <data name="Ui_StampBatesPrefix" xml:space="preserve"><value>접두사 (예: ACME-)</value></data>
+  <data name="Ui_StampBatesStart" xml:space="preserve"><value>시작</value></data>
+  <data name="Ui_StampBatesDigits" xml:space="preserve"><value>자릿수</value></data>
+  <data name="Ui_StampWatermark" xml:space="preserve"><value>워터마크</value></data>
+  <data name="Ui_StampWatermarkHint" xml:space="preserve"><value>예: 대외비, CONFIDENTIAL</value></data>
+  <data name="Ui_StampOpacity" xml:space="preserve"><value>불투명도</value></data>
+  <data name="Ui_StampAngle" xml:space="preserve"><value>각도</value></data>
+  <data name="Ui_StampGrey" xml:space="preserve"><value>회색</value></data>
+  <data name="Ui_StampRed" xml:space="preserve"><value>빨간색</value></data>
+  <data name="Ui_StampBlue" xml:space="preserve"><value>파란색</value></data>
+  <data name="Ui_StampBehind" xml:space="preserve"><value>페이지 내용 뒤에 두기</value></data>
+  <data name="Ui_StampSave" xml:space="preserve"><value>추가하고 사본 저장…</value></data>
+  <data name="Ui_StampSaveNote" xml:space="preserve"><value>저장하기 전에 사본을 확인합니다 (페이지의 다른 부분은 그대로이고 모든 글자가 읽힘). 원본은 바뀌지 않습니다.</value></data>
+  <data name="Ui_Stamped" xml:space="preserve"><value>{0} 저장: {1}쪽에 추가. 확인: 다른 부분은 바뀌지 않았습니다.</value></data>
+  <data name="Ui_StampedBates" xml:space="preserve"><value>{0} 저장: {1}쪽에 추가, 베이츠 {2}~{3}. 확인: 다른 부분은 바뀌지 않았습니다.</value></data>
+  <data name="Pdf_Stamped" xml:space="preserve"><value>{0} 저장: {1}쪽에 추가. 확인: 다른 부분은 그대로이고 모든 글자가 읽힙니다.</value></data>
+  <data name="Pdf_StampedBates" xml:space="preserve"><value>{0} 저장: {1}쪽에 추가, 베이츠 {2}~{3}. 확인: 다른 부분은 그대로이고 모든 글자가 읽힙니다.</value></data>
+  <data name="Err_StampNothing" xml:space="preserve"><value>추가할 내용이 없습니다. 머리글, 바닥글 또는 워터마크를 입력하세요.</value></data>
+  <data name="Err_StampSize" xml:space="preserve"><value>글자 크기는 4~72포인트여야 합니다.</value></data>
+  <data name="Err_StampWatermark" xml:space="preserve"><value>워터마크의 불투명도는 0보다 크고 100% 이하, 크기는 0~400포인트여야 합니다.</value></data>
+  <data name="Err_StampChanged" xml:space="preserve"><value>{0}쪽이 머리글·바닥글·워터마크 밖에서 바뀌어 사본을 저장하지 않았습니다.</value></data>
+  <data name="Err_StampCheck" xml:space="preserve"><value>{1}쪽에서 “{0}”이(가) 읽히지 않아 사본을 저장하지 않았습니다.</value></data>
 </root>

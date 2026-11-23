@@ -410,6 +410,17 @@ public sealed class EditorTests : IDisposable
         Shot(w, "bookmarks");
         vm.ShowPagesPanel = true;
 
+        // headers: page numbers, a company name, a watermark (a preview on the page)
+        vm.ActiveTool = Tool.Stamp;
+        vm.Stamp.HeaderLeft = "株式会社サンプル";
+        vm.Stamp.HeaderRight = "{date}";
+        vm.Stamp.PageNumbersCommand.Execute(null);
+        vm.Stamp.WatermarkText = Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_WATERMARK") ?? "社外秘";
+        vm.Stamp.WatermarkColorIndex = 1;
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "stamp");
+        vm.Stamp.HeaderLeft = vm.Stamp.HeaderRight = vm.Stamp.FooterCenter = vm.Stamp.WatermarkText = "";
+
         // edit text: a line being typed into, and a change waiting to be saved
         vm.ActiveTool = Tool.EditText;
         await vm.EditText.PrepareAsync();

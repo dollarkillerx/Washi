@@ -520,6 +520,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <text> [--case] [--whole-words]   where the text is, page by page\n'
             '  washi pdf replace-text <in.pdf> (--find old | --box page:x0,y0,x1,y1) --with new [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          change text on the page (one line at a time; checked before it is kept)\n'
+            '  washi pdf stamp <in.pdf> [--header "left|center|right"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PREFIX [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   headers, footers, page and Bates numbers ({page} {pages} {date} {file} {bates}), a watermark\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          list the bookmarks (one per line: two spaces per level, a tab, the page),\n'
             '                                          or write a copy with the ones in a file of that form\n'
@@ -552,6 +554,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <語句> [--case] [--whole-words]   語句のある場所をページごとに表示\n'
             '  washi pdf replace-text <in.pdf> (--find 元の語句 | --box page:x0,y0,x1,y1) --with 新しい語句 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
+            '  washi pdf stamp <in.pdf> [--header "左|中央|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 接頭辞 [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   ヘッダー・フッター・ページ番号・ベイツ番号（{page} {pages} {date} {file} {bates}）、透かし\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、\n'
             '                                          または同じ形式のファイルのしおりでコピーを作成\n'
@@ -584,6 +588,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐页列出文字所在位置\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改页面上的文字（一次一行；保存前会检查）\n'
+            '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前缀 [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   页眉、页脚、页码、贝茨编号（{page} {pages} {date} {file} {bates}）、水印\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          列出书签（每行一个：每级缩进两个空格，制表符，页码），\n'
             '                                          或用同样格式的文件写出带书签的副本\n'
@@ -616,6 +622,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <文字> [--case] [--whole-words]   逐頁列出文字所在位置\n'
             '  washi pdf replace-text <in.pdf> (--find 原文字 | --box page:x0,y0,x1,y1) --with 新文字 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
+            '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前綴 [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   頁首、頁尾、頁碼、貝茨編號（{page} {pages} {date} {file} {bates}）、浮水印\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），\n'
             '                                          或用同樣格式的檔案寫出帶書籤的副本\n'
@@ -648,6 +656,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <텍스트> [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시\n'
             '  washi pdf replace-text <in.pdf> (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
+            '  washi pdf stamp <in.pdf> [--header "왼쪽|가운데|오른쪽"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 접두사 [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark 텍스트 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   머리글·바닥글·쪽 번호·베이츠 번호({page} {pages} {date} {file} {bates}), 워터마크\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),\n'
             '                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성\n'
@@ -680,6 +690,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <texte> [--case] [--whole-words]   où se trouve le texte, page par page\n'
             '  washi pdf replace-text <in.pdf> (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
+            '  washi pdf stamp <in.pdf> [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark TEXTE [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   en-têtes, pieds de page, numéros de page et Bates ({page} {pages} {date} {file} {bates}), filigrane\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),\n'
             '                                          ou écrit une copie avec ceux d’un fichier de cette forme\n'
@@ -712,6 +724,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf find <in.pdf> <Text> [--case] [--whole-words]   wo der Text steht, Seite für Seite\n'
             '  washi pdf replace-text <in.pdf> (--find alt | --box page:x0,y0,x1,y1) --with neu [--page n] [--ignore-case] [--whole-words] [-o out.pdf]\n'
             '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
+            '  washi pdf stamp <in.pdf> [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]\n'
+            '                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   Kopf- und Fußzeilen, Seiten- und Bates-Nummern ({page} {pages} {date} {file} {bates}), Wasserzeichen\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)\n'
             '                                          oder eine Kopie mit denen aus einer solchen Datei schreiben\n'
@@ -1668,6 +1682,43 @@ _UI = {
     "Err_EditChanged": ["The edited copy changed {0} pixels outside the edited text, so it was not kept.", "編集したコピーが編集箇所の外で {0} 画素変わったため、保存しませんでした。", "编辑后的副本在修改处以外变化了 {0} 个像素，因此没有保留。", "編輯後的副本在修改處以外變化了 {0} 個像素，因此沒有保留。", "편집한 사본이 고친 곳 밖에서 {0} 픽셀 바뀌어 저장하지 않았습니다.", "La copie modifiée changeait {0} pixels hors du texte modifié ; elle n’a pas été conservée.", "Die bearbeitete Kopie änderte {0} Pixel außerhalb des bearbeiteten Texts; sie wurde nicht behalten."],
     "Err_EditCheck": ["The new text did not read back as typed (read “{0}”), so the copy was not kept.", "新しい文字が入力どおりに読み取れなかった（「{0}」）ため、保存しませんでした。", "新文字没有按输入读出（读到“{0}”），因此没有保留副本。", "新文字沒有按輸入讀出（讀到「{0}」），因此沒有保留副本。", "새 글자가 입력한 대로 읽히지 않아 (“{0}”) 사본을 저장하지 않았습니다.", "Le nouveau texte ne se relisait pas tel que saisi (lu « {0} ») ; la copie n’a pas été conservée.", "Der neue Text ließ sich nicht wie eingegeben lesen (gelesen: „{0}“); die Kopie wurde nicht behalten."],
     "Err_EditNotFound": ["“{0}” is not in the document.", "「{0}」は文書にありません。", "文档中没有“{0}”。", "文件中沒有「{0}」。", "문서에 “{0}”이(가) 없습니다.", "« {0} » n’est pas dans le document.", "„{0}“ steht nicht im Dokument."],
+    "Ui_ToolStamp": ["Headers", "ヘッダー", "页眉水印", "頁首浮水印", "머리글", "En-têtes", "Kopfzeilen"],
+    "Ui_StampTitle": ["Headers, footers and watermark", "ヘッダー・フッター・透かし", "页眉、页脚和水印", "頁首、頁尾和浮水印", "머리글, 바닥글, 워터마크", "En-têtes, pieds de page et filigrane", "Kopf-, Fußzeilen und Wasserzeichen"],
+    "Ui_StampLead": ["Add text at the top and bottom of the pages (page numbers, the file name, a date, Bates numbers) and a see-through watermark across them. The page itself is not changed.", "ページの上下に文字（ページ番号・ファイル名・日付・ベイツ番号）を、ページの上に透ける透かしを入れます。ページそのものは変わりません。", "在页面上下加入文字（页码、文件名、日期、贝茨编号），并在页面上加入半透明水印。页面本身不会改变。", "在頁面上下加入文字（頁碼、檔名、日期、貝茨編號），並在頁面上加入半透明浮水印。頁面本身不會改變。", "페이지 위아래에 글자(쪽 번호, 파일 이름, 날짜, 베이츠 번호)를, 페이지 위에 비치는 워터마크를 넣습니다. 페이지 자체는 바뀌지 않습니다.", "Ajoutez du texte en haut et en bas des pages (numéros de page, nom du fichier, date, numéros Bates) et un filigrane transparent. La page elle-même n’est pas modifiée.", "Fügen Sie oben und unten auf den Seiten Text hinzu (Seitenzahlen, Dateiname, Datum, Bates-Nummern) und ein durchscheinendes Wasserzeichen. Die Seite selbst bleibt unverändert."],
+    "Ui_StampHeader": ["Header", "ヘッダー", "页眉", "頁首", "머리글", "En-tête", "Kopfzeile"],
+    "Ui_StampFooter": ["Footer", "フッター", "页脚", "頁尾", "바닥글", "Pied de page", "Fußzeile"],
+    "Ui_StampLeft": ["Left", "左", "左", "左", "왼쪽", "Gauche", "Links"],
+    "Ui_StampCenter": ["Centre", "中央", "中", "中", "가운데", "Centre", "Mitte"],
+    "Ui_StampRight": ["Right", "右", "右", "右", "오른쪽", "Droite", "Rechts"],
+    "Ui_StampTokens": ["{page} page number, {pages} page count, {date} today, {file} file name, {bates} Bates number", "{page} ページ番号、{pages} 総ページ数、{date} 今日の日付、{file} ファイル名、{bates} ベイツ番号", "{page} 页码，{pages} 总页数，{date} 今天日期，{file} 文件名，{bates} 贝茨编号", "{page} 頁碼，{pages} 總頁數，{date} 今天日期，{file} 檔名，{bates} 貝茨編號", "{page} 쪽 번호, {pages} 전체 쪽수, {date} 오늘 날짜, {file} 파일 이름, {bates} 베이츠 번호", "{page} numéro de page, {pages} nombre de pages, {date} date du jour, {file} nom du fichier, {bates} numéro Bates", "{page} Seitenzahl, {pages} Seitenanzahl, {date} heutiges Datum, {file} Dateiname, {bates} Bates-Nummer"],
+    "Ui_StampPageNumbers": ["Page numbers", "ページ番号", "页码", "頁碼", "쪽 번호", "Numéros de page", "Seitenzahlen"],
+    "Ui_StampBates": ["Bates numbers", "ベイツ番号", "贝茨编号", "貝茨編號", "베이츠 번호", "Numéros Bates", "Bates-Nummern"],
+    "Ui_StampSize": ["Size", "大きさ", "字号", "字級", "크기", "Taille", "Größe"],
+    "Ui_StampPages": ["Pages", "ページ", "页面", "頁面", "페이지", "Pages", "Seiten"],
+    "Ui_StampAllPages": ["All pages (or e.g. 2-5)", "すべて（例：2-5）", "全部（例如 2-5）", "全部（例如 2-5）", "전체 (예: 2-5)", "Toutes (ou p. ex. 2-5)", "Alle (oder z. B. 2-5)"],
+    "Ui_StampBatesTitle": ["Bates numbers", "ベイツ番号", "贝茨编号", "貝茨編號", "베이츠 번호", "Numéros Bates", "Bates-Nummern"],
+    "Ui_StampBatesPrefix": ["Prefix (e.g. ACME-)", "接頭辞（例：ACME-）", "前缀（例如 ACME-）", "前綴（例如 ACME-）", "접두사 (예: ACME-)", "Préfixe (p. ex. ACME-)", "Präfix (z. B. ACME-)"],
+    "Ui_StampBatesStart": ["Start", "開始", "起始", "起始", "시작", "Début", "Start"],
+    "Ui_StampBatesDigits": ["Digits", "桁数", "位数", "位數", "자릿수", "Chiffres", "Stellen"],
+    "Ui_StampWatermark": ["Watermark", "透かし", "水印", "浮水印", "워터마크", "Filigrane", "Wasserzeichen"],
+    "Ui_StampWatermarkHint": ["e.g. CONFIDENTIAL, 社外秘", "例：社外秘、CONFIDENTIAL", "例如：机密、CONFIDENTIAL", "例如：機密、CONFIDENTIAL", "예: 대외비, CONFIDENTIAL", "p. ex. CONFIDENTIEL", "z. B. VERTRAULICH"],
+    "Ui_StampOpacity": ["Opacity", "不透明度", "不透明度", "不透明度", "불투명도", "Opacité", "Deckkraft"],
+    "Ui_StampAngle": ["Angle", "角度", "角度", "角度", "각도", "Angle", "Winkel"],
+    "Ui_StampGrey": ["Grey", "グレー", "灰色", "灰色", "회색", "Gris", "Grau"],
+    "Ui_StampRed": ["Red", "赤", "红色", "紅色", "빨간색", "Rouge", "Rot"],
+    "Ui_StampBlue": ["Blue", "青", "蓝色", "藍色", "파란색", "Bleu", "Blau"],
+    "Ui_StampBehind": ["Behind the page's content", "ページの内容の後ろに置く", "放在页面内容后面", "放在頁面內容後面", "페이지 내용 뒤에 두기", "Derrière le contenu de la page", "Hinter den Seiteninhalt"],
+    "Ui_StampSave": ["Add and save copy…", "追加してコピーを保存…", "添加并另存副本…", "加入並另存副本…", "추가하고 사본 저장…", "Ajouter et enregistrer une copie…", "Hinzufügen und Kopie speichern…"],
+    "Ui_StampSaveNote": ["The copy is checked before it is kept: nothing else on the pages changes and every text reads back. The original is not changed.", "保存前にコピーを確認します（ページのほかの部分が変わらず、すべての文字が読み取れること）。元のファイルは変わりません。", "保存前会检查副本：页面其他部分不变，所有文字都能读出。原文件不会改变。", "儲存前會檢查副本：頁面其他部分不變，所有文字都能讀出。原檔案不會改變。", "저장하기 전에 사본을 확인합니다 (페이지의 다른 부분은 그대로이고 모든 글자가 읽힘). 원본은 바뀌지 않습니다.", "La copie est vérifiée avant d’être gardée : rien d’autre ne change sur les pages et chaque texte se relit. L’original n’est pas modifié.", "Die Kopie wird vor dem Behalten geprüft: sonst ändert sich nichts auf den Seiten, und jeder Text lässt sich lesen. Das Original bleibt unverändert."],
+    "Ui_Stamped": ["Saved {0}: {1} page(s) marked. Checked: nothing else moved.", "{0} を保存しました：{1} ページに追加。確認済み：ほかの部分は変わっていません。", "已保存 {0}：已添加到 {1} 页。已检查：其他部分没有变化。", "已儲存 {0}：已加入 {1} 頁。已檢查：其他部分沒有變化。", "{0} 저장: {1}쪽에 추가. 확인: 다른 부분은 바뀌지 않았습니다.", "{0} enregistré : {1} page(s) marquée(s). Vérifié : rien d’autre n’a bougé.", "{0} gespeichert: {1} Seite(n) versehen. Geprüft: sonst hat sich nichts verschoben."],
+    "Ui_StampedBates": ["Saved {0}: {1} page(s) marked, Bates {2} to {3}. Checked: nothing else moved.", "{0} を保存しました：{1} ページに追加、ベイツ番号 {2}〜{3}。確認済み：ほかの部分は変わっていません。", "已保存 {0}：已添加到 {1} 页，贝茨编号 {2} 至 {3}。已检查：其他部分没有变化。", "已儲存 {0}：已加入 {1} 頁，貝茨編號 {2} 至 {3}。已檢查：其他部分沒有變化。", "{0} 저장: {1}쪽에 추가, 베이츠 {2}~{3}. 확인: 다른 부분은 바뀌지 않았습니다.", "{0} enregistré : {1} page(s) marquée(s), Bates {2} à {3}. Vérifié : rien d’autre n’a bougé.", "{0} gespeichert: {1} Seite(n) versehen, Bates {2} bis {3}. Geprüft: sonst hat sich nichts verschoben."],
+    "Pdf_Stamped": ["Saved {0}: {1} page(s) marked. Checked: nothing else changed, every text reads back.", "{0} を保存しました：{1} ページに追加。確認済み：ほかは変わらず、すべての文字が読み取れます。", "已保存 {0}：已添加到 {1} 页。已检查：其他部分不变，所有文字都能读出。", "已儲存 {0}：已加入 {1} 頁。已檢查：其他部分不變，所有文字都能讀出。", "{0} 저장: {1}쪽에 추가. 확인: 다른 부분은 그대로이고 모든 글자가 읽힙니다.", "{0} enregistré : {1} page(s) marquée(s). Vérifié : rien d’autre n’a changé, chaque texte se relit.", "{0} gespeichert: {1} Seite(n) versehen. Geprüft: sonst nichts verändert, jeder Text lässt sich lesen."],
+    "Pdf_StampedBates": ["Saved {0}: {1} page(s) marked, Bates {2} to {3}. Checked: nothing else changed, every text reads back.", "{0} を保存しました：{1} ページに追加、ベイツ番号 {2}〜{3}。確認済み：ほかは変わらず、すべての文字が読み取れます。", "已保存 {0}：已添加到 {1} 页，贝茨编号 {2} 至 {3}。已检查：其他部分不变，所有文字都能读出。", "已儲存 {0}：已加入 {1} 頁，貝茨編號 {2} 至 {3}。已檢查：其他部分不變，所有文字都能讀出。", "{0} 저장: {1}쪽에 추가, 베이츠 {2}~{3}. 확인: 다른 부분은 그대로이고 모든 글자가 읽힙니다.", "{0} enregistré : {1} page(s) marquée(s), Bates {2} à {3}. Vérifié : rien d’autre n’a changé, chaque texte se relit.", "{0} gespeichert: {1} Seite(n) versehen, Bates {2} bis {3}. Geprüft: sonst nichts verändert, jeder Text lässt sich lesen."],
+    "Err_StampNothing": ["Nothing to add: type a header, a footer or a watermark.", "追加するものがありません。ヘッダー・フッター・透かしのどれかを入力してください。", "没有要添加的内容：请输入页眉、页脚或水印。", "沒有要加入的內容：請輸入頁首、頁尾或浮水印。", "추가할 내용이 없습니다. 머리글, 바닥글 또는 워터마크를 입력하세요.", "Rien à ajouter : saisissez un en-tête, un pied de page ou un filigrane.", "Nichts hinzuzufügen: geben Sie eine Kopf-, Fußzeile oder ein Wasserzeichen ein."],
+    "Err_StampSize": ["The text size must be 4 to 72 points.", "文字の大きさは 4〜72 ポイントにしてください。", "字号必须在 4 到 72 点之间。", "字級必須在 4 到 72 點之間。", "글자 크기는 4~72포인트여야 합니다.", "La taille du texte doit être de 4 à 72 points.", "Die Textgröße muss 4 bis 72 Punkt betragen."],
+    "Err_StampWatermark": ["The watermark's opacity must be above 0 and at most 100%, its size 0 to 400 points.", "透かしの不透明度は 0 より大きく 100% 以下、大きさは 0〜400 ポイントにしてください。", "水印的不透明度必须大于 0 且不超过 100%，字号在 0 到 400 点之间。", "浮水印的不透明度必須大於 0 且不超過 100%，字級在 0 到 400 點之間。", "워터마크의 불투명도는 0보다 크고 100% 이하, 크기는 0~400포인트여야 합니다.", "L’opacité du filigrane doit être supérieure à 0 et au plus 100 %, sa taille de 0 à 400 points.", "Die Deckkraft des Wasserzeichens muss über 0 und höchstens 100 % liegen, seine Größe 0 bis 400 Punkt."],
+    "Err_StampChanged": ["Page {0} changed outside the header, footer and watermark, so the copy was not kept.", "{0} ページがヘッダー・フッター・透かし以外の場所で変わったため、保存しませんでした。", "第 {0} 页在页眉、页脚和水印以外发生了变化，因此没有保留副本。", "第 {0} 頁在頁首、頁尾和浮水印以外發生了變化，因此沒有保留副本。", "{0}쪽이 머리글·바닥글·워터마크 밖에서 바뀌어 사본을 저장하지 않았습니다.", "La page {0} a changé hors de l’en-tête, du pied de page et du filigrane ; la copie n’a pas été conservée.", "Seite {0} hat sich außerhalb von Kopf-, Fußzeile und Wasserzeichen verändert; die Kopie wurde nicht behalten."],
+    "Err_StampCheck": ["“{0}” did not read back on page {1}, so the copy was not kept.", "{1} ページで「{0}」が読み取れなかったため、保存しませんでした。", "第 {1} 页读不出“{0}”，因此没有保留副本。", "第 {1} 頁讀不出「{0}」，因此沒有保留副本。", "{1}쪽에서 “{0}”이(가) 읽히지 않아 사본을 저장하지 않았습니다.", "« {0} » ne se relisait pas sur la page {1} ; la copie n’a pas été conservée.", "„{0}“ ließ sich auf Seite {1} nicht lesen; die Kopie wurde nicht behalten."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k
