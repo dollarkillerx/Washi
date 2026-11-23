@@ -41,7 +41,7 @@ public class SecretMaskerTests
     [Theory]
     [InlineData("生年月日 1999-06-27")]
     [InlineData("born 1999/6/27")]
-    [InlineData("〒175-0094")]
+    [InlineData("〒100-0001")]
     public void Dates_and_postal_codes_are_not_hidden(string text)
     {
         var m = new SecretMasker();
