@@ -528,6 +528,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          change text on the page (one line at a time; checked before it is kept)\n'
             '  washi pdf stamp <in.pdf> [--header "left|center|right"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PREFIX [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   headers, footers, page and Bates numbers ({page} {pages} {date} {file} {bates}), a watermark\n'
+            '                 --replace-existing: take out what Washi added before; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]: only take it out\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          list the bookmarks (one per line: two spaces per level, a tab, the page),\n'
             '                                          or write a copy with the ones in a file of that form\n'
@@ -568,6 +569,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          ページの文字を書き換える（1 行ずつ。保存前に確認）\n'
             '  washi pdf stamp <in.pdf> [--header "左|中央|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 接頭辞 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   ヘッダー・フッター・ページ番号・ベイツ番号（{page} {pages} {date} {file} {bates}）、透かし\n'
+            '                 --replace-existing：Washi が以前に入れたものを外してから追加；washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]：外すだけ\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          しおりを一覧表示（1 行に 1 つ: 階層ごとに空白 2 つ、タブ、ページ）、\n'
             '                                          または同じ形式のファイルのしおりでコピーを作成\n'
@@ -608,6 +610,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          修改页面上的文字（一次一行；保存前会检查）\n'
             '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前缀 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   页眉、页脚、页码、贝茨编号（{page} {pages} {date} {file} {bates}）、水印\n'
+            '                 --replace-existing：先去掉 Washi 以前加入的内容；washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]：只去掉\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          列出书签（每行一个：每级缩进两个空格，制表符，页码），\n'
             '                                          或用同样格式的文件写出带书签的副本\n'
@@ -648,6 +651,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          修改頁面上的文字（一次一行；儲存前會檢查）\n'
             '  washi pdf stamp <in.pdf> [--header "左|中|右"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 前綴 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 文字 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   頁首、頁尾、頁碼、貝茨編號（{page} {pages} {date} {file} {bates}）、浮水印\n'
+            '                 --replace-existing：先去掉 Washi 先前加入的內容；washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]：只去掉\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          列出書籤（每行一個：每層縮排兩個空格，定位字元，頁碼），\n'
             '                                          或用同樣格式的檔案寫出帶書籤的副本\n'
@@ -688,6 +692,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)\n'
             '  washi pdf stamp <in.pdf> [--header "왼쪽|가운데|오른쪽"] [--footer "…"] [--size 9] [--pages 1-3] [--bates 접두사 [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark 텍스트 [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   머리글·바닥글·쪽 번호·베이츠 번호({page} {pages} {date} {file} {bates}), 워터마크\n'
+            '                 --replace-existing: Washi가 전에 넣은 것을 빼고 추가; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]: 빼기만\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),\n'
             '                                          또는 같은 형식의 파일로 책갈피를 넣은 사본 작성\n'
@@ -728,6 +733,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)\n'
             '  washi pdf stamp <in.pdf> [--header "gauche|centre|droite"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÉFIXE [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark TEXTE [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   en-têtes, pieds de page, numéros de page et Bates ({page} {pages} {date} {file} {bates}), filigrane\n'
+            '                 --replace-existing : retire d’abord ce que Washi avait ajouté ; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf] : seulement le retirer\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),\n'
             '                                          ou écrit une copie avec ceux d’un fichier de cette forme\n'
@@ -768,6 +774,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '                                          Text auf der Seite ändern (eine Zeile auf einmal; vor dem Behalten geprüft)\n'
             '  washi pdf stamp <in.pdf> [--header "links|Mitte|rechts"] [--footer "…"] [--size 9] [--pages 1-3] [--bates PRÄFIX [--bates-start 1] [--bates-digits 6]]\n'
             '                 [--watermark TEXT [--opacity 0.3] [--angle 45] [--behind]] [-o out.pdf]   Kopf- und Fußzeilen, Seiten- und Bates-Nummern ({page} {pages} {date} {file} {bates}), Wasserzeichen\n'
+            '                 --replace-existing: zuerst entfernen, was Washi früher hinzugefügt hat; washi pdf stamp <in.pdf> --remove headers|watermarks|all [-o out.pdf]: nur entfernen\n'
             '  washi pdf bookmarks <in.pdf> [--set outline.txt | --clear] [-o out.pdf]\n'
             '                                          Lesezeichen auflisten (eins pro Zeile: zwei Leerzeichen pro Ebene, Tab, Seite)\n'
             '                                          oder eine Kopie mit denen aus einer solchen Datei schreiben\n'
@@ -1878,6 +1885,13 @@ _UI = {
     "Err_ImageReplaceArg": ["--replace takes id=image file.", "--replace には id=画像ファイル を指定します。", "--replace 的格式是 id=图片文件。", "--replace 的格式是 id=圖片檔。", "--replace 형식은 id=이미지 파일 입니다.", "--replace prend id=fichier image.", "--replace nimmt id=Bilddatei."],
     "Err_ImageEditChanged": ["Page {0} changed outside the images, so the copy was not kept.", "{0} ページが画像以外の場所で変わったため、保存しませんでした。", "第 {0} 页在图片以外发生了变化，因此没有保留副本。", "第 {0} 頁在圖片以外發生了變化，因此沒有保留副本。", "{0}페이지가 이미지 밖에서 바뀌어 사본을 저장하지 않았습니다.", "La page {0} a changé hors des images ; la copie n’a pas été conservée.", "Seite {0} hat sich außerhalb der Bilder verändert; die Kopie wurde nicht behalten."],
     "Err_ImageEditCheck": ["{0} did not show on page {1} as it should, so the copy was not kept.", "{1} ページで {0} が正しく表示されなかったため、保存しませんでした。", "{0} 在第 {1} 页显示不正确，因此没有保留副本。", "{0} 在第 {1} 頁顯示不正確，因此沒有保留副本。", "{1}페이지에서 {0}이(가) 제대로 보이지 않아 사본을 저장하지 않았습니다.", "{0} ne s’affichait pas comme prévu page {1} ; la copie n’a pas été conservée.", "{0} wurde auf Seite {1} nicht richtig angezeigt; die Kopie wurde nicht behalten."],
+    "Ui_StampExisting": ["Washi added headers or footers to {0} page(s) and a watermark to {1} page(s) of this file before.", "このファイルには、Washi が以前に入れたヘッダー・フッター（{0} ページ）と透かし（{1} ページ）があります。", "此文件中有 Washi 之前加入的页眉页脚（{0} 页）和水印（{1} 页）。", "此檔案中有 Washi 先前加入的頁首頁尾（{0} 頁）和浮水印（{1} 頁）。", "이 파일에는 Washi가 전에 넣은 머리글·바닥글({0}쪽)과 워터마크({1}쪽)가 있습니다.", "Washi a déjà ajouté des en-têtes ou pieds de page à {0} page(s) et un filigrane à {1} page(s) de ce fichier.", "Washi hat dieser Datei früher Kopf- oder Fußzeilen auf {0} Seite(n) und ein Wasserzeichen auf {1} Seite(n) hinzugefügt."],
+    "Ui_StampReplace": ["Replace them with the new ones", "新しいものに置き換える", "用新的内容替换", "用新的內容取代", "새 것으로 바꾸기", "Les remplacer par les nouveaux", "Durch die neuen ersetzen"],
+    "Ui_StampRemove": ["Remove them and save copy…", "外してコピーを保存…", "去掉并另存副本…", "去掉並另存副本…", "빼고 사본 저장…", "Les retirer et enregistrer une copie…", "Entfernen und Kopie speichern…"],
+    "Ui_StampRemoved": ["Saved {0}: {1} header, footer or watermark block(s) Washi added were taken out. Checked: none is left, nothing else changed.", "{0} を保存しました：Washi が入れたヘッダー・フッター・透かしを {1} か所外しました。確認済み：残りはなく、ほかは変わっていません。", "已保存 {0}：去掉了 Washi 加入的 {1} 处页眉、页脚或水印。已检查：没有残留，其他部分没有变化。", "已儲存 {0}：去掉了 Washi 加入的 {1} 處頁首、頁尾或浮水印。已檢查：沒有殘留，其他部分沒有變化。", "{0} 저장: Washi가 넣은 머리글·바닥글·워터마크 {1}곳을 뺐습니다. 확인: 남은 것이 없고 다른 부분은 그대로입니다.", "{0} enregistré : {1} bloc(s) d’en-tête, de pied de page ou de filigrane ajoutés par Washi retirés. Vérifié : il n’en reste aucun, rien d’autre n’a changé.", "{0} gespeichert: {1} von Washi hinzugefügte(r) Kopf-, Fußzeilen- oder Wasserzeichen-Block/Blöcke entfernt. Geprüft: keiner ist übrig, sonst hat sich nichts geändert."],
+    "Err_StampNone": ["There are no headers, footers or watermarks that Washi added.", "Washi が入れたヘッダー・フッター・透かしはありません。", "没有 Washi 加入的页眉、页脚或水印。", "沒有 Washi 加入的頁首、頁尾或浮水印。", "Washi가 넣은 머리글·바닥글·워터마크가 없습니다.", "Il n’y a ni en-tête, ni pied de page, ni filigrane ajouté par Washi.", "Es gibt keine von Washi hinzugefügten Kopf-, Fußzeilen oder Wasserzeichen."],
+    "Err_StampRemoveCheck": ["Some of the marks were still there after removing them, so the copy was not kept.", "外したはずのものが残っていたため、保存しませんでした。", "去掉后仍有残留，因此没有保留副本。", "去掉後仍有殘留，因此沒有保留副本。", "뺀 뒤에도 남은 것이 있어 사본을 저장하지 않았습니다.", "Certaines marques étaient encore là après leur retrait ; la copie n’a pas été conservée.", "Einige Markierungen waren nach dem Entfernen noch da; die Kopie wurde nicht behalten."],
+    "Err_StampRemoveArg": ["--remove takes headers, watermarks or all.", "--remove には headers・watermarks・all のどれかを指定します。", "--remove 的值为 headers、watermarks 或 all。", "--remove 的值為 headers、watermarks 或 all。", "--remove에는 headers, watermarks, all 중 하나를 씁니다.", "--remove prend headers, watermarks ou all.", "--remove nimmt headers, watermarks oder all."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k
