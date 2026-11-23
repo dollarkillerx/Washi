@@ -502,6 +502,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "en": (
             'Pages and OCR:\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      join files (form fields are kept)\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   photos and scans into pages (JPEG kept as it is)\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          reorder, drop (leave out) and turn pages (form fields are kept)\n'
@@ -536,6 +537,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "ja": (
             'ページと OCR:\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      ファイルを結合（記入欄はそのまま残ります）\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   写真・スキャン画像を PDF のページに（JPEG はそのまま）\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          ページの並べ替え・削除（指定しないページ）・回転（記入欄はそのまま残ります）\n'
@@ -570,6 +572,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "zh-Hans": (
             '页面与 OCR：\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      合并文件（保留表单栏位）\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   把照片和扫描图片做成 PDF 页面（JPEG 原样保留）\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          调整页面顺序、删除（不列出的页）和旋转页面（保留表单栏位）\n'
@@ -604,6 +607,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "zh-Hant": (
             '頁面與 OCR：\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      合併檔案（保留表單欄位）\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   把照片和掃描圖片做成 PDF 頁面（JPEG 原樣保留）\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          調整頁面順序、刪除（不列出的頁）和旋轉頁面（保留表單欄位）\n'
@@ -638,6 +642,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "ko": (
             '페이지와 OCR:\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      파일 합치기 (입력란 유지)\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   사진과 스캔 이미지를 PDF 페이지로 (JPEG 는 그대로)\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dir]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          페이지 순서 바꾸기, 삭제(나열하지 않은 페이지), 회전 (입력란 유지)\n'
@@ -672,6 +677,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "fr": (
             'Pages et OCR :\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      assemble des fichiers (les champs de formulaire sont conservés)\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   photos et numérisations en pages (JPEG gardé tel quel)\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o dossier]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          réordonne, retire (pages non listées) et fait pivoter les pages (les champs de formulaire sont conservés)\n'
@@ -706,6 +712,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
         "de": (
             'Seiten und OCR:\n'
             '  washi pdf merge <a.pdf> <b.pdf> ... -o out.pdf      Dateien zusammenfügen (Formularfelder bleiben erhalten)\n'
+            '  washi pdf from-images <a.jpg> <b.png> ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   Fotos und Scans als Seiten (JPEG bleibt, wie es ist)\n'
             '  washi pdf split <in.pdf> [--pages 1-3,5|each] [-o Ordner]\n'
             '  washi pdf organize <in.pdf> [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf\n'
             '                                          Seiten umordnen, entfernen (nicht aufgeführte) und drehen (Formularfelder bleiben erhalten)\n'
@@ -990,17 +997,11 @@ _UI = {
     "Ui_OcrRun": ["Make searchable PDF…", "検索可能な PDF を作成…", "生成可搜索的 PDF…", "產生可搜尋的 PDF…", "검색 가능한 PDF 만들기…", "Créer le PDF cherchable…", "Durchsuchbares PDF erstellen…"],
     "Ui_OcrProgress": ["Recognising page {0} of {1}…", "{1} ページ中 {0} ページ目を認識中…", "正在识别第 {0}/{1} 页…", "正在辨識第 {0}/{1} 頁…", "{1}페이지 중 {0}페이지 인식 중…", "Reconnaissance de la page {0} sur {1}…", "Seite {0} von {1} wird erkannt…"],
     "Ui_CombineTitle": ["Combine files", "ファイルを結合", "合并文件", "合併檔案", "파일 합치기", "Assembler des fichiers", "Dateien zusammenfügen"],
-    "Ui_CombineLead": ["Puts PDFs together in the order below. Form fields stay fillable.",
-                       "下の順番で PDF をまとめます。記入欄はそのまま記入できます。",
-                       "按下面的顺序合并 PDF。表单栏位仍可填写。",
-                       "依下方順序合併 PDF。表單欄位仍可填寫。",
-                       "아래 순서대로 PDF 를 합칩니다. 입력란은 계속 입력할 수 있습니다.",
-                       "Assemble les PDF dans l’ordre ci-dessous. Les champs restent remplissables.",
-                       "Fügt die PDFs in der Reihenfolge unten zusammen. Formularfelder bleiben ausfüllbar."],
+    "Ui_CombineLead": ["Puts PDFs, photos and scans together in the order below. Form fields stay fillable; each image becomes a page.", "下の順番で PDF・写真・スキャン画像をまとめます。記入欄はそのまま記入でき、画像は 1 枚ずつページになります。", "按下面的顺序合并 PDF、照片和扫描图片。表单栏位仍可填写，每张图片成为一页。", "依下方順序合併 PDF、照片和掃描圖片。表單欄位仍可填寫，每張圖片成為一頁。", "아래 순서대로 PDF, 사진, 스캔 이미지를 합칩니다. 입력란은 계속 입력할 수 있고, 이미지는 한 장씩 페이지가 됩니다.", "Assemble les PDF, photos et numérisations dans l’ordre ci-dessous. Les champs restent remplissables ; chaque image devient une page.", "Fügt PDFs, Fotos und Scans in der Reihenfolge unten zusammen. Formularfelder bleiben ausfüllbar; jedes Bild wird eine Seite."],
     "Ui_AddFiles": ["Add files…", "ファイルを追加…", "添加文件…", "加入檔案…", "파일 추가…", "Ajouter…", "Dateien hinzufügen…"],
     "Ui_MoveUp": ["Move up", "上へ", "上移", "上移", "위로", "Monter", "Nach oben"],
     "Ui_MoveDown": ["Move down", "下へ", "下移", "下移", "아래로", "Descendre", "Nach unten"],
-    "Ui_CombineEmpty": ["Add two or more PDFs, or drop them here.", "PDF を 2 つ以上追加するか、ここにドロップしてください。", "添加两个或更多 PDF，或拖到这里。", "加入兩個或更多 PDF，或拖到這裡。", "PDF 를 두 개 이상 추가하거나 여기로 끌어다 놓으세요.", "Ajoutez au moins deux PDF, ou déposez-les ici.", "Zwei oder mehr PDFs hinzufügen oder hier ablegen."],
+    "Ui_CombineEmpty": ["Add PDFs or images (JPEG, PNG…), or drop them here.", "PDF や画像（JPEG・PNG など）を追加するか、ここにドロップしてください。", "添加 PDF 或图片（JPEG、PNG 等），或拖到这里。", "加入 PDF 或圖片（JPEG、PNG 等），或拖到這裡。", "PDF 나 이미지(JPEG, PNG 등)를 추가하거나 여기로 끌어다 놓으세요.", "Ajoutez des PDF ou des images (JPEG, PNG…), ou déposez-les ici.", "PDFs oder Bilder (JPEG, PNG …) hinzufügen oder hier ablegen."],
     "Ui_ProtectedFile": ["protected: cannot be combined", "保護あり: 結合できません", "受保护：无法合并", "受保護：無法合併", "보호됨: 합칠 수 없음", "protégé : impossible à assembler", "geschützt: nicht kombinierbar"],
     "Ui_ProtectedNote": ["{0} is protected: its permissions forbid reusing its pages. Washi does not remove protection.",
                          "{0} は保護されています。ページの再利用が許可されていません。Washi は保護を解除しません。",
@@ -1719,6 +1720,22 @@ _UI = {
     "Err_StampWatermark": ["The watermark's opacity must be above 0 and at most 100%, its size 0 to 400 points.", "透かしの不透明度は 0 より大きく 100% 以下、大きさは 0〜400 ポイントにしてください。", "水印的不透明度必须大于 0 且不超过 100%，字号在 0 到 400 点之间。", "浮水印的不透明度必須大於 0 且不超過 100%，字級在 0 到 400 點之間。", "워터마크의 불투명도는 0보다 크고 100% 이하, 크기는 0~400포인트여야 합니다.", "L’opacité du filigrane doit être supérieure à 0 et au plus 100 %, sa taille de 0 à 400 points.", "Die Deckkraft des Wasserzeichens muss über 0 und höchstens 100 % liegen, seine Größe 0 bis 400 Punkt."],
     "Err_StampChanged": ["Page {0} changed outside the header, footer and watermark, so the copy was not kept.", "{0} ページがヘッダー・フッター・透かし以外の場所で変わったため、保存しませんでした。", "第 {0} 页在页眉、页脚和水印以外发生了变化，因此没有保留副本。", "第 {0} 頁在頁首、頁尾和浮水印以外發生了變化，因此沒有保留副本。", "{0}쪽이 머리글·바닥글·워터마크 밖에서 바뀌어 사본을 저장하지 않았습니다.", "La page {0} a changé hors de l’en-tête, du pied de page et du filigrane ; la copie n’a pas été conservée.", "Seite {0} hat sich außerhalb von Kopf-, Fußzeile und Wasserzeichen verändert; die Kopie wurde nicht behalten."],
     "Err_StampCheck": ["“{0}” did not read back on page {1}, so the copy was not kept.", "{1} ページで「{0}」が読み取れなかったため、保存しませんでした。", "第 {1} 页读不出“{0}”，因此没有保留副本。", "第 {1} 頁讀不出「{0}」，因此沒有保留副本。", "{1}쪽에서 “{0}”이(가) 읽히지 않아 사본을 저장하지 않았습니다.", "« {0} » ne se relisait pas sur la page {1} ; la copie n’a pas été conservée.", "„{0}“ ließ sich auf Seite {1} nicht lesen; die Kopie wurde nicht behalten."],
+    "Ui_ImageFile": ["Image · becomes one page", "画像 · 1 ページになります", "图片 · 成为一页", "圖片 · 成為一頁", "이미지 · 한 페이지가 됩니다", "Image · devient une page", "Bild · wird eine Seite"],
+    "Ui_ImageFiles": ["Images", "画像", "图片", "圖片", "이미지", "Images", "Bilder"],
+    "Ui_PdfOrImageFiles": ["PDFs and images", "PDF と画像", "PDF 和图片", "PDF 和圖片", "PDF 와 이미지", "PDF et images", "PDFs und Bilder"],
+    "Ui_ImagesPage": ["Page for each image", "画像を置くページ", "图片所在的页面", "圖片所在的頁面", "이미지를 놓을 페이지", "Page de chaque image", "Seite für jedes Bild"],
+    "Ui_ImagesA4": ["A4, turned to suit the image", "A4（画像に合わせて縦横）", "A4（随图片横竖）", "A4（隨圖片橫直）", "A4 (이미지에 맞춰 가로세로)", "A4, orientée selon l’image", "A4, nach dem Bild gedreht"],
+    "Ui_ImagesLetter": ["Letter, turned to suit the image", "レター（画像に合わせて縦横）", "Letter（随图片横竖）", "Letter（隨圖片橫直）", "레터 (이미지에 맞춰 가로세로)", "Lettre US, orientée selon l’image", "Letter, nach dem Bild gedreht"],
+    "Ui_ImagesOwnSize": ["The image's own size", "画像と同じ大きさ", "与图片相同大小", "與圖片相同大小", "이미지와 같은 크기", "La taille de l’image", "Die Größe des Bildes"],
+    "Ui_ImagesCombined": ["Made {1} from {0} image(s). Checked: each page looks like its image.", "{0} 枚の画像から {1} を作りました。確認済み：各ページが元の画像と同じに見えます。", "已用 {0} 张图片生成 {1}。已检查：每页都与原图一致。", "已用 {0} 張圖片產生 {1}。已檢查：每頁都與原圖一致。", "이미지 {0}장으로 {1}을(를) 만들었습니다. 확인: 각 페이지가 원래 이미지와 같습니다.", "{1} créé à partir de {0} image(s). Vérifié : chaque page ressemble à son image.", "{1} aus {0} Bild(ern) erstellt. Geprüft: jede Seite sieht aus wie ihr Bild."],
+    "Pdf_FromImages": ["Saved {0}: {1} page(s), {2} JPEG(s) kept as they were. Checked: each page looks like its image.", "{0} を保存しました：{1} ページ、JPEG {2} 枚はそのまま。確認済み：各ページが元の画像と同じに見えます。", "已保存 {0}：{1} 页，{2} 张 JPEG 原样保留。已检查：每页都与原图一致。", "已儲存 {0}：{1} 頁，{2} 張 JPEG 原樣保留。已檢查：每頁都與原圖一致。", "{0} 저장: {1}쪽, JPEG {2}장은 그대로. 확인: 각 페이지가 원래 이미지와 같습니다.", "{0} enregistré : {1} page(s), {2} JPEG gardé(s) tel(s) quel(s). Vérifié : chaque page ressemble à son image.", "{0} gespeichert: {1} Seite(n), {2} JPEG(s) unverändert übernommen. Geprüft: jede Seite sieht aus wie ihr Bild."],
+    "Err_ImagesNone": ["No images to put in a PDF.", "PDF にする画像がありません。", "没有要做成 PDF 的图片。", "沒有要做成 PDF 的圖片。", "PDF 로 만들 이미지가 없습니다.", "Aucune image à mettre dans un PDF.", "Keine Bilder für ein PDF."],
+    "Err_ImagesPageSize": ["Unknown page size “{0}”: use a4, letter or image.", "ページの大きさ「{0}」は使えません。a4・letter・image のどれかにしてください。", "未知的页面大小“{0}”：请用 a4、letter 或 image。", "未知的頁面大小「{0}」：請用 a4、letter 或 image。", "알 수 없는 페이지 크기 “{0}”: a4, letter, image 중 하나를 쓰세요.", "Taille de page inconnue « {0} » : utilisez a4, letter ou image.", "Unbekannte Seitengröße „{0}“: verwenden Sie a4, letter oder image."],
+    "Err_ImagesMargin": ["The margin must be 0 to 144 points and the resolution 36 to 1200 dpi.", "余白は 0〜144 ポイント、解像度は 36〜1200 dpi にしてください。", "边距必须在 0 到 144 点之间，分辨率在 36 到 1200 dpi 之间。", "邊界必須在 0 到 144 點之間，解析度在 36 到 1200 dpi 之間。", "여백은 0~144포인트, 해상도는 36~1200dpi여야 합니다.", "La marge doit être de 0 à 144 points et la résolution de 36 à 1200 ppp.", "Der Rand muss 0 bis 144 Punkt und die Auflösung 36 bis 1200 dpi betragen."],
+    "Err_ImageUnsupported": ["{0} is not an image Washi can read (JPEG, PNG, WebP, BMP, GIF). HEIC photos: save them as JPEG first.", "{0} は Washi が読める画像（JPEG・PNG・WebP・BMP・GIF）ではありません。HEIC の写真は先に JPEG で保存してください。", "{0} 不是 Washi 能读取的图片（JPEG、PNG、WebP、BMP、GIF）。HEIC 照片请先另存为 JPEG。", "{0} 不是 Washi 能讀取的圖片（JPEG、PNG、WebP、BMP、GIF）。HEIC 照片請先另存為 JPEG。", "{0}은(는) Washi가 읽을 수 있는 이미지(JPEG, PNG, WebP, BMP, GIF)가 아닙니다. HEIC 사진은 먼저 JPEG로 저장하세요.", "{0} n’est pas une image que Washi sait lire (JPEG, PNG, WebP, BMP, GIF). Photos HEIC : enregistrez-les d’abord en JPEG.", "{0} ist kein Bild, das Washi lesen kann (JPEG, PNG, WebP, BMP, GIF). HEIC-Fotos zuerst als JPEG speichern."],
+    "Err_ImageUnreadable": ["{0} could not be read as an image.", "{0} を画像として読み取れませんでした。", "无法把 {0} 当作图片读取。", "無法把 {0} 當作圖片讀取。", "{0}을(를) 이미지로 읽을 수 없습니다.", "{0} n’a pas pu être lu comme une image.", "{0} ließ sich nicht als Bild lesen."],
+    "Err_ImagesCheck": ["Page {0} did not look like {1}, so the PDF was not kept.", "{0} ページが {1} と同じに見えなかったため、PDF を保存しませんでした。", "第 {0} 页与 {1} 不一致，因此没有保留 PDF。", "第 {0} 頁與 {1} 不一致，因此沒有保留 PDF。", "{0}쪽이 {1}과(와) 달라 PDF 를 저장하지 않았습니다.", "La page {0} ne ressemblait pas à {1} ; le PDF n’a pas été conservé.", "Seite {0} sah nicht aus wie {1}; das PDF wurde nicht behalten."],
+    "Err_NotFound": ["{0} does not exist.", "{0} がありません。", "{0} 不存在。", "{0} 不存在。", "{0}이(가) 없습니다.", "{0} n’existe pas.", "{0} existiert nicht."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

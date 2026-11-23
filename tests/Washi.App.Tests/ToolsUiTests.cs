@@ -407,6 +407,47 @@ public sealed class ToolsUiTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task Dropped_photos_go_to_Combine_and_become_a_PDF()
+    {
+        string Photo(string name, SkiaSharp.SKColor color)
+        {
+            using var bmp = new SkiaSharp.SKBitmap(240, 320);
+            bmp.Erase(color);
+            using var data = SkiaSharp.SKImage.FromBitmap(bmp).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 90);
+            var path = Path.Combine(_dir, name);
+            File.WriteAllBytes(path, data.ToArray());
+            return path;
+        }
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "receipts.pdf") };
+        var (w, vm) = await Open(TextPdf("cover.pdf", "Expense report"), dialogs);
+        Assert.Equal(Tool.Form, vm.ActiveTool);
+
+        await vm.DropAsync([Photo("r1.jpg", SkiaSharp.SKColors.Orange), Photo("r2.jpg", SkiaSharp.SKColors.Teal)]);
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(Tool.Combine, vm.ActiveTool);                 // photos open Combine
+        Assert.Equal(["r1.jpg", "r2.jpg"], vm.Combine.Files.Select(f => f.Name));
+        Assert.All(vm.Combine.Files, f => Assert.True(f.IsImage));
+        Assert.True(vm.Combine.HasImages);
+        Assert.True(w.FindControl<ComboBox>("CombinePageSize")!.IsEffectivelyVisible);
+        Assert.True(vm.Combine.CanCombine);
+
+        await vm.Combine.RunCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(2, vm.PageCount);
+        Assert.Equal(L.F("Ui_ImagesCombined", 2, "receipts.pdf"), vm.Status);
+
+        // PDFs and a photo together: the new file is offered first, as for any open document
+        dialogs.SavePdf = Path.Combine(_dir, "mixed.pdf");
+        for (int i = 0; i < 100 && vm.Combine.Files.Count == 0; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        await vm.Combine.AddAsync([Path.Combine(_dir, "cover.pdf"), Path.Combine(_dir, "r1.jpg")]);
+        Assert.Equal(["receipts.pdf", "cover.pdf", "r1.jpg"], vm.Combine.Files.Select(f => f.Name));
+        vm.Combine.PageSizeIndex = 2;                              // the image's own size
+        await vm.Combine.RunCommand.ExecuteAsync(null);
+        Assert.Equal(dialogs.SavePdf, vm.PdfPath);
+        Assert.Equal(4, vm.PageCount);
+    }
+
+    [AvaloniaFact]
     public async Task Headers_tool_adds_page_and_Bates_numbers_and_a_watermark_to_a_copy()
     {
         var pdf = TextPdf("s.pdf", "Contract", "Signed by both parties");

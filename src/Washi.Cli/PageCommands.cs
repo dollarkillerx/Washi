@@ -211,6 +211,15 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_Redacted", output, report.Glyphs, report.Images, report.Paths, report.Annotations, report.Strings));
                     return 0;
                 }
+                case ["from-images", .. var images] when images.Length > 0 && opt.ContainsKey("-o"):
+                {
+                    var o = new ImagePageOptions(opt.GetValueOrDefault("--page", "a4").ToLowerInvariant(),
+                        opt.TryGetValue("--margin", out var mg) ? double.Parse(mg, System.Globalization.CultureInfo.InvariantCulture) : 0,
+                        opt.TryGetValue("--dpi", out var dpi) ? double.Parse(dpi, System.Globalization.CultureInfo.InvariantCulture) : 150);
+                    var r = PdfFromImages.Create(images, opt["-o"], o);
+                    Console.WriteLine(L.F("Pdf_FromImages", opt["-o"], r.Pages, r.KeptAsIs));
+                    return 0;
+                }
                 case ["stamp", var input] when opt.ContainsKey("--header") || opt.ContainsKey("--footer") || opt.ContainsKey("--watermark"):
                 {
                     static (string L, string C, string R) Split3(string? v)

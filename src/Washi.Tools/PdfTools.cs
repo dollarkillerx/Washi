@@ -37,6 +37,7 @@ public static class WashiTools
         .Add(new RedactTool(policy))
         .Add(new EditTextTool(policy))
         .Add(new StampPagesTool(policy))
+        .Add(new ImagesToPdfTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -980,6 +981,44 @@ public sealed class StampPagesTool(PathPolicy p) : PdfTool(p)
         {
             output, pages = r.Pages, first_bates = r.FirstBates, last_bates = r.LastBates,
             verified = "nothing changed outside the header, footer and watermark; every text reads back",
+        }));
+    }
+}
+
+public sealed class ImagesToPdfTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "images_to_pdf";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Make a PDF from photos and scans (JPEG, PNG, WebP, BMP, GIF), one page per image, in the order given. JPEG files go in " +
+        "as they are (no loss, no growth); the others are stored losslessly with their transparency. A photo's EXIF " +
+        "orientation is applied. Pages are A4 or Letter turned to suit each image, or the image's own size at a resolution. " +
+        "Each page is rendered and compared with its image before the file is kept. HEIC is not read: convert it to JPEG " +
+        "first. Run ocr_pdf afterwards to make the text searchable. Never overwrites: output defaults to <first image>.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "images":{"type":"array","minItems":1,"items":{"type":"string"},"description":"Image files, in page order"},
+          "page_size":{"type":"string","enum":["a4","letter","image"],"description":"Default a4"},
+          "margin":{"type":"number","description":"Points of paper around each image (0 to 144, default 0)"},
+          "dpi":{"type":"number","description":"With page_size image: pixels per inch (default 150)"},
+          "output":{"type":"string","description":"New PDF path (default: the first image's name with .pdf, next to it)"}},
+         "required":["images"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        if (!a.TryGetProperty("images", out var list) || list.ValueKind != JsonValueKind.Array || list.GetArrayLength() == 0)
+            throw new ToolException("images must list at least one file");
+        var images = list.EnumerateArray().Select(e => Policy.Input(e.GetString() ?? "")).ToList();
+        var output = Policy.Output(OptStr(a, "output"), images[0], "");
+        var o = new ImagePageOptions(OptStr(a, "page_size") ?? "a4",
+                                     a.TryGetProperty("margin", out var m) && m.TryGetDouble(out var mv) ? mv : 0,
+                                     a.TryGetProperty("dpi", out var d) && d.TryGetDouble(out var dv) ? dv : 150);
+        var r = PdfFromImages.Create(images, output, o);
+        return new ToolResult(ToJson(new
+        {
+            output, pages = r.Pages, jpegs_kept_as_is = r.KeptAsIs,
+            verified = "each page rendered and compared with its image",
         }));
     }
 }

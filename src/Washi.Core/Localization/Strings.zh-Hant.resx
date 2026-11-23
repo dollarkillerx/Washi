@@ -112,6 +112,7 @@
   <data name="Kind_signature" xml:space="preserve"><value>簽名</value></data>
   <data name="UsagePdf" xml:space="preserve"><value>頁面與 OCR：
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      合併檔案（保留表單欄位）
+  washi pdf from-images &lt;a.jpg&gt; &lt;b.png&gt; ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   把照片和掃描圖片做成 PDF 頁面（JPEG 原樣保留）
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           調整頁面順序、刪除（不列出的頁）和旋轉頁面（保留表單欄位）
@@ -220,11 +221,11 @@
   <data name="Ui_OcrRun" xml:space="preserve"><value>產生可搜尋的 PDF…</value></data>
   <data name="Ui_OcrProgress" xml:space="preserve"><value>正在辨識第 {0}/{1} 頁…</value></data>
   <data name="Ui_CombineTitle" xml:space="preserve"><value>合併檔案</value></data>
-  <data name="Ui_CombineLead" xml:space="preserve"><value>依下方順序合併 PDF。表單欄位仍可填寫。</value></data>
+  <data name="Ui_CombineLead" xml:space="preserve"><value>依下方順序合併 PDF、照片和掃描圖片。表單欄位仍可填寫，每張圖片成為一頁。</value></data>
   <data name="Ui_AddFiles" xml:space="preserve"><value>加入檔案…</value></data>
   <data name="Ui_MoveUp" xml:space="preserve"><value>上移</value></data>
   <data name="Ui_MoveDown" xml:space="preserve"><value>下移</value></data>
-  <data name="Ui_CombineEmpty" xml:space="preserve"><value>加入兩個或更多 PDF，或拖到這裡。</value></data>
+  <data name="Ui_CombineEmpty" xml:space="preserve"><value>加入 PDF 或圖片（JPEG、PNG 等），或拖到這裡。</value></data>
   <data name="Ui_ProtectedFile" xml:space="preserve"><value>受保護：無法合併</value></data>
   <data name="Ui_ProtectedNote" xml:space="preserve"><value>{0} 受保護：其權限禁止重複使用頁面。Washi 不會解除保護。</value></data>
   <data name="Ui_CombineRun" xml:space="preserve"><value>合併…</value></data>
@@ -814,4 +815,20 @@
   <data name="Err_StampWatermark" xml:space="preserve"><value>浮水印的不透明度必須大於 0 且不超過 100%，字級在 0 到 400 點之間。</value></data>
   <data name="Err_StampChanged" xml:space="preserve"><value>第 {0} 頁在頁首、頁尾和浮水印以外發生了變化，因此沒有保留副本。</value></data>
   <data name="Err_StampCheck" xml:space="preserve"><value>第 {1} 頁讀不出「{0}」，因此沒有保留副本。</value></data>
+  <data name="Ui_ImageFile" xml:space="preserve"><value>圖片 · 成為一頁</value></data>
+  <data name="Ui_ImageFiles" xml:space="preserve"><value>圖片</value></data>
+  <data name="Ui_PdfOrImageFiles" xml:space="preserve"><value>PDF 和圖片</value></data>
+  <data name="Ui_ImagesPage" xml:space="preserve"><value>圖片所在的頁面</value></data>
+  <data name="Ui_ImagesA4" xml:space="preserve"><value>A4（隨圖片橫直）</value></data>
+  <data name="Ui_ImagesLetter" xml:space="preserve"><value>Letter（隨圖片橫直）</value></data>
+  <data name="Ui_ImagesOwnSize" xml:space="preserve"><value>與圖片相同大小</value></data>
+  <data name="Ui_ImagesCombined" xml:space="preserve"><value>已用 {0} 張圖片產生 {1}。已檢查：每頁都與原圖一致。</value></data>
+  <data name="Pdf_FromImages" xml:space="preserve"><value>已儲存 {0}：{1} 頁，{2} 張 JPEG 原樣保留。已檢查：每頁都與原圖一致。</value></data>
+  <data name="Err_ImagesNone" xml:space="preserve"><value>沒有要做成 PDF 的圖片。</value></data>
+  <data name="Err_ImagesPageSize" xml:space="preserve"><value>未知的頁面大小「{0}」：請用 a4、letter 或 image。</value></data>
+  <data name="Err_ImagesMargin" xml:space="preserve"><value>邊界必須在 0 到 144 點之間，解析度在 36 到 1200 dpi 之間。</value></data>
+  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} 不是 Washi 能讀取的圖片（JPEG、PNG、WebP、BMP、GIF）。HEIC 照片請先另存為 JPEG。</value></data>
+  <data name="Err_ImageUnreadable" xml:space="preserve"><value>無法把 {0} 當作圖片讀取。</value></data>
+  <data name="Err_ImagesCheck" xml:space="preserve"><value>第 {0} 頁與 {1} 不一致，因此沒有保留 PDF。</value></data>
+  <data name="Err_NotFound" xml:space="preserve"><value>{0} 不存在。</value></data>
 </root>

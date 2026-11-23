@@ -461,6 +461,14 @@
                             </Button>
                         </Grid>
                     </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="20,0,20,12" Spacing="4" IsVisible="{Binding Combine.HasImages}">
+                        <TextBlock Classes="note" Text="{l:Tr Ui_ImagesPage}" />
+                        <ComboBox SelectedIndex="{Binding Combine.PageSizeIndex}" HorizontalAlignment="Stretch" x:Name="CombinePageSize">
+                            <ComboBoxItem Content="{l:Tr Ui_ImagesA4}" />
+                            <ComboBoxItem Content="{l:Tr Ui_ImagesLetter}" />
+                            <ComboBoxItem Content="{l:Tr Ui_ImagesOwnSize}" />
+                        </ComboBox>
+                    </StackPanel>
                     <Panel Margin="20,0,20,12">
                         <ListBox ItemsSource="{Binding Combine.Files}" SelectedItem="{Binding Combine.Selected}"
                                  BorderBrush="{StaticResource RuleBrush}" BorderThickness="1">

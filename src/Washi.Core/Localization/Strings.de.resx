@@ -112,6 +112,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Kind_signature" xml:space="preserve"><value>Unterschrift</value></data>
   <data name="UsagePdf" xml:space="preserve"><value>Seiten und OCR:
   washi pdf merge &lt;a.pdf&gt; &lt;b.pdf&gt; ... -o out.pdf      Dateien zusammenfügen (Formularfelder bleiben erhalten)
+  washi pdf from-images &lt;a.jpg&gt; &lt;b.png&gt; ... [--page a4|letter|image] [--margin pt] [--dpi 150] -o out.pdf   Fotos und Scans als Seiten (JPEG bleibt, wie es ist)
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o Ordner]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           Seiten umordnen, entfernen (nicht aufgeführte) und drehen (Formularfelder bleiben erhalten)
@@ -220,11 +221,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_OcrRun" xml:space="preserve"><value>Durchsuchbares PDF erstellen…</value></data>
   <data name="Ui_OcrProgress" xml:space="preserve"><value>Seite {0} von {1} wird erkannt…</value></data>
   <data name="Ui_CombineTitle" xml:space="preserve"><value>Dateien zusammenfügen</value></data>
-  <data name="Ui_CombineLead" xml:space="preserve"><value>Fügt die PDFs in der Reihenfolge unten zusammen. Formularfelder bleiben ausfüllbar.</value></data>
+  <data name="Ui_CombineLead" xml:space="preserve"><value>Fügt PDFs, Fotos und Scans in der Reihenfolge unten zusammen. Formularfelder bleiben ausfüllbar; jedes Bild wird eine Seite.</value></data>
   <data name="Ui_AddFiles" xml:space="preserve"><value>Dateien hinzufügen…</value></data>
   <data name="Ui_MoveUp" xml:space="preserve"><value>Nach oben</value></data>
   <data name="Ui_MoveDown" xml:space="preserve"><value>Nach unten</value></data>
-  <data name="Ui_CombineEmpty" xml:space="preserve"><value>Zwei oder mehr PDFs hinzufügen oder hier ablegen.</value></data>
+  <data name="Ui_CombineEmpty" xml:space="preserve"><value>PDFs oder Bilder (JPEG, PNG …) hinzufügen oder hier ablegen.</value></data>
   <data name="Ui_ProtectedFile" xml:space="preserve"><value>geschützt: nicht kombinierbar</value></data>
   <data name="Ui_ProtectedNote" xml:space="preserve"><value>{0} ist geschützt: Die Rechte verbieten, seine Seiten weiterzuverwenden. Washi hebt keinen Schutz auf.</value></data>
   <data name="Ui_CombineRun" xml:space="preserve"><value>Zusammenfügen…</value></data>
@@ -814,4 +815,20 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_StampWatermark" xml:space="preserve"><value>Die Deckkraft des Wasserzeichens muss über 0 und höchstens 100 % liegen, seine Größe 0 bis 400 Punkt.</value></data>
   <data name="Err_StampChanged" xml:space="preserve"><value>Seite {0} hat sich außerhalb von Kopf-, Fußzeile und Wasserzeichen verändert; die Kopie wurde nicht behalten.</value></data>
   <data name="Err_StampCheck" xml:space="preserve"><value>„{0}“ ließ sich auf Seite {1} nicht lesen; die Kopie wurde nicht behalten.</value></data>
+  <data name="Ui_ImageFile" xml:space="preserve"><value>Bild · wird eine Seite</value></data>
+  <data name="Ui_ImageFiles" xml:space="preserve"><value>Bilder</value></data>
+  <data name="Ui_PdfOrImageFiles" xml:space="preserve"><value>PDFs und Bilder</value></data>
+  <data name="Ui_ImagesPage" xml:space="preserve"><value>Seite für jedes Bild</value></data>
+  <data name="Ui_ImagesA4" xml:space="preserve"><value>A4, nach dem Bild gedreht</value></data>
+  <data name="Ui_ImagesLetter" xml:space="preserve"><value>Letter, nach dem Bild gedreht</value></data>
+  <data name="Ui_ImagesOwnSize" xml:space="preserve"><value>Die Größe des Bildes</value></data>
+  <data name="Ui_ImagesCombined" xml:space="preserve"><value>{1} aus {0} Bild(ern) erstellt. Geprüft: jede Seite sieht aus wie ihr Bild.</value></data>
+  <data name="Pdf_FromImages" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n), {2} JPEG(s) unverändert übernommen. Geprüft: jede Seite sieht aus wie ihr Bild.</value></data>
+  <data name="Err_ImagesNone" xml:space="preserve"><value>Keine Bilder für ein PDF.</value></data>
+  <data name="Err_ImagesPageSize" xml:space="preserve"><value>Unbekannte Seitengröße „{0}“: verwenden Sie a4, letter oder image.</value></data>
+  <data name="Err_ImagesMargin" xml:space="preserve"><value>Der Rand muss 0 bis 144 Punkt und die Auflösung 36 bis 1200 dpi betragen.</value></data>
+  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} ist kein Bild, das Washi lesen kann (JPEG, PNG, WebP, BMP, GIF). HEIC-Fotos zuerst als JPEG speichern.</value></data>
+  <data name="Err_ImageUnreadable" xml:space="preserve"><value>{0} ließ sich nicht als Bild lesen.</value></data>
+  <data name="Err_ImagesCheck" xml:space="preserve"><value>Seite {0} sah nicht aus wie {1}; das PDF wurde nicht behalten.</value></data>
+  <data name="Err_NotFound" xml:space="preserve"><value>{0} existiert nicht.</value></data>
 </root>
