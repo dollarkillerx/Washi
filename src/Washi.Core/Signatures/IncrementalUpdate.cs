@@ -32,7 +32,7 @@ internal sealed partial class IncrementalUpdate
         if (sx.Count == 0) throw new Pages.PageAssemblyException("the file has no cross-reference table to add to", "Err_SignDamaged");
         PreviousXref = long.Parse(sx[^1].Groups[1].Value, CultureInfo.InvariantCulture);
         if (PreviousXref <= 0 || PreviousXref >= original.Length) throw new Pages.PageAssemblyException("the file's cross-reference offset is wrong", "Err_SignDamaged");
-        var at = Encoding.Latin1.GetString(original, (int)PreviousXref, (int)Math.Min(original.Length - PreviousXref, 1 << 20));
+        var at = Encoding.Latin1.GetString(original, (int)PreviousXref, (int)(original.Length - PreviousXref));
         string dict;
         if (at.StartsWith("xref", StringComparison.Ordinal))
         {

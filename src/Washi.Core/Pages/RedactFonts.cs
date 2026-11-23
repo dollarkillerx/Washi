@@ -206,7 +206,7 @@ internal sealed partial class FontMetrics
     }
 
     /// <summary>/W (n = 1) or /W2 (n = 3): "c [v v …]" and "c1 c2 v…" forms.</summary>
-    private static Dictionary<int, double[]> Ranges(PdfArray a, int n)
+    internal static Dictionary<int, double[]> Ranges(PdfArray a, int n)
     {
         var d = new Dictionary<int, double[]>();
         var items = a.Elements.Select(Deref).ToList();

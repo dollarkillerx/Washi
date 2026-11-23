@@ -156,8 +156,8 @@ internal sealed class SubsetFont
 
     // ------------------------------------------------------------------ the fonts of this computer, per document
 
-    private static readonly ConditionalWeakTable<PdfDocument, Dictionary<(FormScript, bool), SubsetFont?>> PerDocument = new();
-    private static readonly Dictionary<(FormScript, bool), OpenTypeFont?> Loaded = [];
+    private static readonly ConditionalWeakTable<PdfDocument, Dictionary<(FormScript, FaceStyle), SubsetFont?>> PerDocument = new();
+    private static readonly Dictionary<(FormScript, FaceStyle), OpenTypeFont?> Loaded = [];
     private static readonly Lock Gate = new();
 
     /// <summary>
@@ -167,12 +167,24 @@ internal sealed class SubsetFont
     /// </summary>
     public static SubsetFont? For(PdfDocument doc, FormScript script, bool serif, string text)
     {
-        if (script == FormScript.Latin || Environment.GetEnvironmentVariable("WASHI_NO_EMBED") == "1") return null;
+        if (script == FormScript.Latin) return null;
+        return Substitute(doc, script, new FaceStyle(serif), text);
+    }
+
+    /// <summary>
+    /// Like <see cref="For"/>, for any script (Latin too) and style: the font that stands in for one a PDF names without
+    /// embedding it. Bold, italic and fixed-width faces are found for Latin text; other scripts get the regular face.
+    /// </summary>
+    public static SubsetFont? Substitute(PdfDocument doc, FormScript script, FaceStyle style, string text)
+    {
+        if (Environment.GetEnvironmentVariable("WASHI_NO_EMBED") == "1") return null;
+        if (style.Family is not null) script = FormScript.Latin;
+        else if (script != FormScript.Latin) style = new FaceStyle(style.Serif);
         var fonts = PerDocument.GetOrCreateValue(doc);
-        if (!fonts.TryGetValue((script, serif), out var f))
+        if (!fonts.TryGetValue((script, style), out var f))
         {
-            var font = System(script, serif);
-            fonts[(script, serif)] = f = font is null ? null : new SubsetFont(doc, font);
+            var font = System(script, style);
+            fonts[(script, style)] = f = font is null ? null : new SubsetFont(doc, font);
         }
         return f is not null && f.Covers(text) ? f : null;
     }
@@ -184,13 +196,13 @@ internal sealed class SubsetFont
             foreach (var f in fonts.Values) f?.Finish();
     }
 
-    private static OpenTypeFont? System(FormScript script, bool serif)
+    private static OpenTypeFont? System(FormScript script, FaceStyle style)
     {
         lock (Gate)
         {
-            if (Loaded.TryGetValue((script, serif), out var cached)) return cached;
+            if (Loaded.TryGetValue((script, style), out var cached)) return cached;
             OpenTypeFont? found = null;
-            foreach (var (path, face) in Candidates(script, serif))
+            foreach (var (path, face) in script == FormScript.Latin ? LatinCandidates(style) : Candidates(script, style.Serif))
             {
                 if (!File.Exists(path)) continue;
                 try
@@ -201,8 +213,54 @@ internal sealed class SubsetFont
                 catch (FontNotUsableException) { }
                 catch (IOException) { }
             }
-            Loaded[(script, serif)] = found;
+            Loaded[(script, style)] = found;
             return found;
+        }
+    }
+
+    /// <summary>
+    /// Latin faces with the widths of the standard PDF fonts (Arial for Helvetica, Times New Roman for Times, Courier New
+    /// for Courier, or Liberation on Linux): the ones a viewer would show for a font that is not embedded.
+    /// </summary>
+    private static IEnumerable<(string Path, int Face)> LatinCandidates(FaceStyle s)
+    {
+        if (s.Family is { } symbolFamily)
+        {
+            // the symbol fonts: the same design where the system has it, otherwise a font with those characters
+            if (OperatingSystem.IsMacOS())
+            {
+                yield return ("/System/Library/Fonts/" + (symbolFamily == "ZapfDingbats" ? "ZapfDingbats.ttf" : "Symbol.ttf"), 0);
+                yield return ("/System/Library/Fonts/Apple Symbols.ttf", 0);
+                yield return ("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", 0);
+            }
+            else if (OperatingSystem.IsWindows())
+                yield return (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Fonts", "seguisym.ttf"), 0);
+            else
+                foreach (var f in new[] { "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu/DejaVuSans.ttf", "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf" })
+                    yield return (f, 0);
+            yield break;
+        }
+        string suffix = (s.Bold, s.Italic) switch { (true, true) => " Bold Italic", (true, false) => " Bold", (false, true) => " Italic", _ => "" };
+        string family = s.Mono ? "Courier New" : s.Serif ? "Times New Roman" : "Arial";
+        if (OperatingSystem.IsMacOS())
+        {
+            yield return ("/System/Library/Fonts/Supplemental/" + family + suffix + ".ttf", 0);
+            yield return ("/Library/Fonts/" + family + suffix + ".ttf", 0);
+        }
+        else if (OperatingSystem.IsWindows())
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Fonts");
+            string stem = s.Mono ? "cour" : s.Serif ? "times" : "arial";
+            string end = (s.Bold, s.Italic) switch { (true, true) => "bi", (true, false) => "bd", (false, true) => "i", _ => "" };
+            yield return (Path.Combine(dir, stem + end + ".ttf"), 0);
+        }
+        else
+        {
+            string lib = s.Mono ? "LiberationMono" : s.Serif ? "LiberationSerif" : "LiberationSans";
+            string style = (s.Bold, s.Italic) switch { (true, true) => "BoldItalic", (true, false) => "Bold", (false, true) => "Italic", _ => "Regular" };
+            foreach (var dir in new[] { "/usr/share/fonts/truetype/liberation/", "/usr/share/fonts/truetype/liberation2/", "/usr/share/fonts/liberation-sans/",
+                                        "/usr/share/fonts/liberation-serif/", "/usr/share/fonts/liberation-mono/", "/usr/share/fonts/liberation/" })
+                yield return (dir + lib + "-" + style + ".ttf", 0);
         }
     }
 
@@ -249,3 +307,6 @@ internal sealed class SubsetFont
         }
     }
 }
+
+/// <summary>The look a stand-in font should have.</summary>
+internal readonly record struct FaceStyle(bool Serif, bool Bold = false, bool Italic = false, bool Mono = false, string? Family = null);

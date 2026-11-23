@@ -236,7 +236,7 @@ public static partial class PdfTextEditor
         return d;
     });
 
-    private static string? Unicode(string glyph)
+    internal static string? Unicode(string glyph)
     {
         if (GlyphToUnicode.Value.TryGetValue(glyph, out var u)) return u;
         var m = Regex.Match(glyph, @"^(?:uni([0-9A-Fa-f]{4})|u([0-9A-Fa-f]{4,6}))$");
@@ -245,7 +245,7 @@ public static partial class PdfTextEditor
     }
 
     /// <summary>The pairs (code bytes, text) of a ToUnicode CMap's bfchar and bfrange entries.</summary>
-    private static IEnumerable<(byte[] Code, string Text)> ToUnicode(string cmap)
+    internal static IEnumerable<(byte[] Code, string Text)> ToUnicode(string cmap)
     {
         foreach (Match block in Regex.Matches(cmap, @"beginbfchar(.*?)endbfchar", RegexOptions.Singleline))
             foreach (Match m in Regex.Matches(block.Groups[1].Value, @"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]*)>"))

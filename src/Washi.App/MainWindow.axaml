@@ -278,6 +278,9 @@
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCompressTool}" x:Name="CompressToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Compress}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCompress}" /></StackPanel>
                 </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsArchiveTool}" x:Name="ArchiveToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Archive}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolArchive}" /></StackPanel>
+                </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCommentTool}" x:Name="CommentToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Comment}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolComment}" /></StackPanel>
                 </RadioButton>
@@ -1002,6 +1005,43 @@
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
+
+                <!-- Finalize: flatten, PDF/A -->
+                <ScrollViewer IsVisible="{Binding IsArchiveTool}">
+                    <StackPanel Margin="20,18,20,18" Spacing="4">
+                        <TextBlock Classes="title" Text="{l:Tr Ui_ArchiveTitle}" />
+                        <TextBlock Classes="lead" Text="{l:Tr Ui_ArchiveLead}" />
+
+                        <TextBlock Text="{l:Tr Ui_FlattenTitle}" FontWeight="SemiBold" Margin="0,12,0,2" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_FlattenLead}" TextWrapping="Wrap" />
+                        <CheckBox IsChecked="{Binding Archive.FlattenFields}" Content="{l:Tr Ui_FlattenFields}" x:Name="FlattenFieldsCheck" />
+                        <CheckBox IsChecked="{Binding Archive.FlattenComments}" Content="{l:Tr Ui_FlattenComments}" x:Name="FlattenCommentsCheck" />
+                        <Button Classes="accent" Command="{Binding Archive.FlattenCommand}" IsEnabled="{Binding Archive.CanFlatten}" Margin="0,6,0,0" x:Name="FlattenButton">
+                            <TextBlock Text="{l:Tr Ui_FlattenRun}" />
+                        </Button>
+
+                        <TextBlock Text="{l:Tr Ui_PdfaTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_PdfaLead}" TextWrapping="Wrap" />
+                        <Button Command="{Binding Archive.CheckCommand}" IsEnabled="{Binding Archive.CanRun}" Margin="0,6,0,0" x:Name="PdfaCheckButton">
+                            <TextBlock Text="{l:Tr Ui_PdfaCheckRun}" />
+                        </Button>
+                        <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,6,0,0"
+                                IsVisible="{Binding Archive.CheckText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding Archive.CheckText}" TextWrapping="Wrap" FontSize="12" x:Name="PdfaCheckText" />
+                        </Border>
+                        <CheckBox IsChecked="{Binding Archive.FlattenFirst}" Content="{l:Tr Ui_PdfaFlattenFirst}" Margin="0,6,0,0" x:Name="PdfaFlattenFirst" />
+                        <Button Classes="accent primary" Command="{Binding Archive.ConvertCommand}" IsEnabled="{Binding Archive.CanRun}" Margin="0,6,0,0" x:Name="PdfaButton">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Archive}" Size="18" />
+                                <TextBlock Text="{l:Tr Ui_PdfaRun}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,10,0,0"
+                                IsVisible="{Binding Archive.Result, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding Archive.Result}" TextWrapping="Wrap" FontSize="12" x:Name="ArchiveResult" />
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
 
                 <DockPanel IsVisible="{Binding IsRedactTool}">
                     <Border DockPanel.Dock="Bottom" Padding="20,14" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0">

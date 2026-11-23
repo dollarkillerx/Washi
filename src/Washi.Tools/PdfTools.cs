@@ -46,6 +46,8 @@ public static class WashiTools
         .Add(new ListPageImagesTool(policy))
         .Add(new EditPageImagesTool(policy))
         .Add(new CompressPdfTool(policy))
+        .Add(new FlattenPdfTool(policy))
+        .Add(new ConvertToPdfaTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
@@ -773,6 +775,73 @@ public sealed class CompressPdfTool(PathPolicy p) : PdfTool(p)
             images = r.Images, downsampled = r.Downsampled, duplicates = r.Duplicates, streams = r.Streams,
             page_difference = r.Difference, notes = r.Notes,
         }));
+    }
+}
+
+public sealed class FlattenPdfTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "flatten_pdf";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW copy of a PDF with its form fields and/or comments flattened: each one's own appearance is drawn into the " +
+        "page where it was and the field or comment is taken away, so the page looks the same everywhere and can no longer be " +
+        "changed (a final version to submit). Links stay. A field whose value the viewer was left to draw is drawn by Washi " +
+        "first. Every page is rendered next to the original before the copy is kept. Signed files are refused (flattening " +
+        "would break the signatures). Never overwrites: output defaults to <name>_flattened.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "fields":{"type":"boolean","description":"Flatten form fields (default true)"},
+          "comments":{"type":"boolean","description":"Flatten comments and markup (default true)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_flattened.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        bool fields = !a.TryGetProperty("fields", out var f) || f.ValueKind != JsonValueKind.False;
+        bool comments = !a.TryGetProperty("comments", out var c) || c.ValueKind != JsonValueKind.False;
+        var output = Policy.Output(OptStr(a, "output"), path, "_flattened");
+        var r = PdfFlattener.Flatten(path, output, fields, comments);
+        return new ToolResult(ToJson(new { output, fields = r.Fields, comments = r.Comments, pages_drawn_on = r.Pages, notes = r.Notes }));
+    }
+}
+
+public sealed class ConvertToPdfaTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "convert_to_pdfa";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "PDF/A-2b, for archiving. With check_only it lists what stands between the file and PDF/A-2b (kinds such as Fonts, " +
+        "Scripts, OutputIntent, with counts and details) and writes nothing. Otherwise it writes a NEW copy that conforms: " +
+        "fonts embedded (a font the file only names is replaced by a font of this computer, every character staying where it " +
+        "was), colours tied to sRGB (or this computer's CMYK profile for CMYK files), JavaScript, actions, attachments and XFA " +
+        "taken out, comments and fields given their own appearance, and XMP metadata that says PDF/A. flatten: flatten fields " +
+        "and comments first. The copy is checked again, rendered next to the original and its text read back before it is " +
+        "kept. Signed files are refused. Never overwrites: output defaults to <name>_pdfa.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "check_only":{"type":"boolean","description":"Only list what stands in the way (default false)"},
+          "flatten":{"type":"boolean","description":"Flatten form fields and comments first (default false)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_pdfa.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        static object Items(IEnumerable<ArchiveItem> items) => items.Select(i => new { kind = i.Kind, count = i.Count, details = i.Details }).ToList();
+        if (a.TryGetProperty("check_only", out var co) && co.ValueKind == JsonValueKind.True)
+        {
+            var found = PdfArchive.Check(path);
+            return new ToolResult(ToJson(new { conforms = found.Count == 0, standard = "PDF/A-2b", in_the_way = Items(found) }));
+        }
+        bool flatten = a.TryGetProperty("flatten", out var fl) && fl.ValueKind == JsonValueKind.True;
+        var output = Policy.Output(OptStr(a, "output"), path, "_pdfa");
+        var r = PdfArchive.Convert(path, output, flatten);
+        return new ToolResult(ToJson(new { output, standard = r.Conformance, changes = Items(r.Changes) }));
     }
 }
 

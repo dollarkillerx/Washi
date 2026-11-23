@@ -536,6 +536,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      list the printers\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   draw fields and comments into the page (checked before it is kept)\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   a PDF/A-2b copy for archiving (--check only lists what stands in the way)\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          sign with a digital ID (password from WASHI_ID_PASSWORD or asked for)\n'
             '  washi pdf verify <in.pdf>               check the signatures in a file\n'
@@ -578,6 +580,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer 名前] [--copies 部数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      プリンターの一覧\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   記入欄とコメントをページに描き込んで確定（保存前に確認）\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   長期保存用の PDF/A-2b のコピー（--check は直す点の一覧だけ）\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          デジタル ID で署名（パスワードは WASHI_ID_PASSWORD か入力）\n'
             '  washi pdf verify <in.pdf>               ファイルの署名を確認\n'
@@ -620,6 +624,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer 名称] [--copies 份数] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      列出打印机\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   把栏位和注释画进页面（保存前检查）\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   用于长期保存的 PDF/A-2b 副本（--check 只列出需处理的地方）\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field 名称 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          用数字标识签名（密码取自 WASHI_ID_PASSWORD 或提示输入）\n'
             '  washi pdf verify <in.pdf>               核实文件中的签名\n'
@@ -662,6 +668,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      列出印表機\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   把欄位和註解畫進頁面（儲存前檢查）\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   用於長期保存的 PDF/A-2b 副本（--check 只列出需處理的地方）\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field 名稱 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          以數位識別碼簽署（密碼取自 WASHI_ID_PASSWORD 或提示輸入）\n'
             '  washi pdf verify <in.pdf>               核實檔案中的簽章\n'
@@ -704,6 +712,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer 이름] [--copies 매수] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      프린터 목록\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   더 작은 사본 (저장 전 페이지 비교)\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   입력란과 주석을 페이지에 그려 넣어 확정(저장 전 확인)\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   장기 보존용 PDF/A-2b 사본(--check는 고칠 점만 표시)\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field 이름 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          디지털 ID 로 서명 (암호는 WASHI_ID_PASSWORD 또는 입력)\n'
             '  washi pdf verify <in.pdf>               파일의 서명 확인\n'
@@ -746,6 +756,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer nom] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      liste les imprimantes\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   dessiner champs et commentaires dans la page (vérifié avant d’être conservé)\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   une copie PDF/A-2b pour l’archivage (--check liste seulement ce qui fait obstacle)\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          signe avec une identité numérique (mot de passe : WASHI_ID_PASSWORD ou demandé)\n'
             '  washi pdf verify <in.pdf>               vérifie les signatures d’un fichier\n'
@@ -788,6 +800,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf print <in.pdf> [--printer Name] [--copies n] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]\n'
             '  washi pdf printers                      Drucker auflisten\n'
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)\n'
+            '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   Felder und Kommentare in die Seite zeichnen (vor dem Speichern geprüft)\n'
+            '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   eine PDF/A-2b-Kopie zum Archivieren (--check listet nur, was im Weg steht)\n'
             '  washi pdf sign <in.pdf> --id id.p12 [--field Name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
             '                                          mit digitaler ID signieren (Passwort aus WASHI_ID_PASSWORD oder abgefragt)\n'
             '  washi pdf verify <in.pdf>               Signaturen einer Datei prüfen\n'
@@ -1906,6 +1920,61 @@ _UI = {
     "Err_ParagraphMixed": ["The paragraph mixes text sizes: edit its lines one at a time.", "段落内で文字の大きさが混ざっています。1 行ずつ編集してください。", "段落中混有不同字号：请逐行编辑。", "段落中混有不同字級：請逐行編輯。", "문단에 글자 크기가 섞여 있습니다. 한 줄씩 고치세요.", "Le paragraphe mélange des tailles de texte : modifiez ses lignes une à une.", "Der Absatz mischt Textgrößen: bearbeiten Sie seine Zeilen einzeln."],
     "Err_ParagraphNone": ["“{0}” is not in a paragraph that can be set again.", "「{0}」は組み直せる段落の中にありません。", "“{0}”不在可以重新排版的段落中。", "「{0}」不在可以重新排版的段落中。", "“{0}”은(는) 다시 조판할 수 있는 문단 안에 없습니다.", "« {0} » n’est pas dans un paragraphe recomposable.", "„{0}“ steht nicht in einem Absatz, der neu gesetzt werden kann."],
     "Err_ImageHeic": ["{0} is a HEIC photo and this computer has nothing to convert it with (macOS does; on Linux install libheif's heif-convert): save it as JPEG first.", "{0} は HEIC 写真ですが、このコンピューターには変換する手段がありません（macOS にはあります。Linux では libheif の heif-convert を入れてください）。先に JPEG で保存してください。", "{0} 是 HEIC 照片，但这台电脑没有转换工具（macOS 自带；Linux 请安装 libheif 的 heif-convert）：请先另存为 JPEG。", "{0} 是 HEIC 照片，但這台電腦沒有轉換工具（macOS 內建；Linux 請安裝 libheif 的 heif-convert）：請先另存為 JPEG。", "{0}은(는) HEIC 사진인데 이 컴퓨터에는 변환 도구가 없습니다 (macOS에는 있음, Linux는 libheif의 heif-convert 설치). 먼저 JPEG로 저장하세요.", "{0} est une photo HEIC et cet ordinateur n’a rien pour la convertir (macOS le peut ; sous Linux installez heif-convert de libheif) : enregistrez-la d’abord en JPEG.", "{0} ist ein HEIC-Foto, und dieser Computer kann es nicht umwandeln (macOS kann es; unter Linux heif-convert aus libheif installieren): zuerst als JPEG speichern."],
+    "Err_FlattenNothing": ["Nothing to flatten: choose form fields, comments or both.", "確定する対象がありません。記入欄・コメントのどちらか（または両方）を選んでください。", "没有要拼合的内容：请选择表单栏位、注释或两者。", "沒有要平面化的內容：請選擇表單欄位、註解或兩者。", "병합할 대상이 없습니다. 입력란, 주석 또는 둘 다를 선택하세요.", "Rien à aplatir : choisissez les champs, les commentaires ou les deux.", "Nichts zu reduzieren: Formularfelder, Kommentare oder beides wählen."],
+    "Err_FlattenNone": ["There are no form fields or comments to flatten.", "確定する記入欄やコメントがありません。", "没有可拼合的表单栏位或注释。", "沒有可平面化的表單欄位或註解。", "병합할 입력란이나 주석이 없습니다.", "Il n’y a ni champ ni commentaire à aplatir.", "Es gibt keine Formularfelder oder Kommentare zum Reduzieren."],
+    "Err_FlattenSigned": ["The file is signed: flattening it would break its signatures.", "このファイルには署名があります。確定すると署名が無効になります。", "此文件已签名：拼合会使签名失效。", "此檔案已簽署：平面化會使簽章失效。", "서명된 파일입니다. 병합하면 서명이 무효가 됩니다.", "Le fichier est signé : l’aplatir casserait ses signatures.", "Die Datei ist signiert: Reduzieren würde die Signaturen ungültig machen."],
+    "Err_FlattenCannotDraw": ["Washi cannot draw these fields in their fonts: {0}.", "次の記入欄はそのフォントで描けません: {0}", "Washi 无法用其字体绘制这些栏位：{0}。", "Washi 無法用其字型繪製這些欄位：{0}。", "Washi가 해당 글꼴로 그릴 수 없는 입력란: {0}", "Washi ne peut pas dessiner ces champs dans leur police : {0}.", "Washi kann diese Felder nicht in ihrer Schrift zeichnen: {0}."],
+    "Err_FlattenChanged": ["Page {0} looks different after flattening ({1} pixels); the copy was not kept.", "確定すると {0} ページ目の見た目が変わるため（{1} ピクセル）、コピーは保存しませんでした。", "拼合后第 {0} 页的外观不同（{1} 像素），未保存副本。", "平面化後第 {0} 頁的外觀不同（{1} 像素），未儲存副本。", "병합 후 {0}쪽의 모양이 달라져({1}픽셀) 사본을 저장하지 않았습니다.", "La page {0} change d’aspect une fois aplatie ({1} pixels) ; la copie n’a pas été conservée.", "Seite {0} sieht nach dem Reduzieren anders aus ({1} Pixel); die Kopie wurde nicht behalten."],
+    "Err_FlattenCheck": ["Checking the flattened copy failed ({0}, page {1}); it was not kept.", "確定したコピーの確認に失敗しました（{0}、{1} ページ）。保存しませんでした。", "拼合副本检查失败（{0}，第 {1} 页），未保存。", "平面化副本檢查失敗（{0}，第 {1} 頁），未儲存。", "병합한 사본 확인에 실패했습니다({0}, {1}쪽). 저장하지 않았습니다.", "La vérification de la copie aplatie a échoué ({0}, page {1}) ; elle n’a pas été conservée.", "Die Prüfung der reduzierten Kopie ist fehlgeschlagen ({0}, Seite {1}); sie wurde nicht behalten."],
+    "Err_PdfaSigned": ["The file is signed: making it PDF/A would break its signatures.", "このファイルには署名があります。PDF/A にすると署名が無効になります。", "此文件已签名：转为 PDF/A 会使签名失效。", "此檔案已簽署：轉為 PDF/A 會使簽章失效。", "서명된 파일입니다. PDF/A로 만들면 서명이 무효가 됩니다.", "Le fichier est signé : le convertir en PDF/A casserait ses signatures.", "Die Datei ist signiert: PDF/A würde die Signaturen ungültig machen."],
+    "Err_PdfaFont": ["These fonts are not embedded and cannot be replaced: {0}.", "埋め込まれておらず、置き換えもできないフォントがあります: {0}", "以下字体未嵌入且无法替换：{0}。", "以下字型未內嵌且無法替換：{0}。", "포함되지 않았고 대체할 수도 없는 글꼴: {0}", "Ces polices ne sont pas incorporées et ne peuvent pas être remplacées : {0}.", "Diese Schriften sind nicht eingebettet und lassen sich nicht ersetzen: {0}."],
+    "Err_PdfaCmyk": ["The file paints in CMYK ({0}) and no CMYK colour profile was found on this computer to describe it.", "このファイルは CMYK で色を塗っていますが（{0}）、それを表す CMYK のカラープロファイルがこのコンピューターに見つかりません。", "此文件使用 CMYK 颜色（{0}），但这台电脑上没有可描述它的 CMYK 色彩配置文件。", "此檔案使用 CMYK 色彩（{0}），但這台電腦上沒有可描述它的 CMYK 色彩描述檔。", "이 파일은 CMYK로 색을 칠하는데({0}) 이를 나타낼 CMYK 색상 프로필이 이 컴퓨터에 없습니다.", "Le fichier peint en CMJN ({0}) et aucun profil couleur CMJN n’a été trouvé sur cet ordinateur pour le décrire.", "Die Datei malt in CMYK ({0}), und auf diesem Computer wurde kein CMYK-Farbprofil gefunden, das es beschreibt."],
+    "Err_PdfaCannot": ["Washi cannot make this file PDF/A: {0}.", "このファイルは PDF/A にできません: {0}", "Washi 无法将此文件转为 PDF/A：{0}。", "Washi 無法將此檔案轉為 PDF/A：{0}。", "Washi가 이 파일을 PDF/A로 만들 수 없습니다: {0}", "Washi ne peut pas convertir ce fichier en PDF/A : {0}.", "Washi kann diese Datei nicht in PDF/A umwandeln: {0}."],
+    "Err_PdfaCheck": ["The PDF/A copy still has: {0}; it was not kept.", "PDF/A のコピーにまだ問題が残っています: {0}。保存しませんでした。", "PDF/A 副本仍有问题：{0}；未保存。", "PDF/A 副本仍有問題：{0}；未儲存。", "PDF/A 사본에 아직 남은 문제: {0}. 저장하지 않았습니다.", "La copie PDF/A a encore : {0} ; elle n’a pas été conservée.", "Die PDF/A-Kopie hat noch: {0}; sie wurde nicht behalten."],
+    "Err_PdfaChanged": ["Page {0} looks or reads differently in the PDF/A copy; it was not kept.", "PDF/A のコピーでは {0} ページ目の見た目か文字が変わるため、保存しませんでした。", "PDF/A 副本中第 {0} 页的外观或文字不同，未保存。", "PDF/A 副本中第 {0} 頁的外觀或文字不同，未儲存。", "PDF/A 사본에서 {0}쪽의 모양이나 글자가 달라져 저장하지 않았습니다.", "La page {0} a un autre aspect ou un autre texte dans la copie PDF/A ; elle n’a pas été conservée.", "Seite {0} sieht in der PDF/A-Kopie anders aus oder liest sich anders; sie wurde nicht behalten."],
+    "Ui_ToolArchive": ["Finalize", "確定・保存", "定稿", "定稿", "확정", "Finaliser", "Abschließen"],
+    "Ui_ArchiveTitle": ["Flatten and archive", "確定と長期保存", "拼合与长期保存", "平面化與長期保存", "병합과 장기 보존", "Aplatir et archiver", "Reduzieren und archivieren"],
+    "Ui_ArchiveLead": ["Make a final version to submit or keep: fields and comments become part of the page, or a PDF/A copy that will look the same in years to come.", "提出用・保管用の最終版を作ります。記入欄やコメントをページの一部にしたり、何年たっても同じように表示される PDF/A のコピーを作ったりします。", "制作提交或保存用的最终版本：把表单栏位和注释变成页面的一部分，或生成多年后外观依旧的 PDF/A 副本。", "製作提交或保存用的最終版本：把表單欄位和註解變成頁面的一部分，或產生多年後外觀依舊的 PDF/A 副本。", "제출하거나 보관할 최종본을 만듭니다. 입력란과 주석을 페이지의 일부로 만들거나, 몇 년이 지나도 똑같이 보이는 PDF/A 사본을 만듭니다.", "Créez une version finale à envoyer ou à conserver : les champs et commentaires font partie de la page, ou une copie PDF/A qui gardera son aspect pendant des années.", "Eine endgültige Fassung zum Einreichen oder Aufbewahren: Felder und Kommentare werden Teil der Seite, oder eine PDF/A-Kopie, die auch in Jahren gleich aussieht."],
+    "Ui_FlattenTitle": ["Flatten", "確定（フラット化）", "拼合", "平面化", "병합(평면화)", "Aplatir", "Reduzieren"],
+    "Ui_FlattenLead": ["Each field and comment is drawn into the page exactly as it shows now and can no longer be changed. Links stay.", "記入欄とコメントを今の見た目のままページに描き込みます。以後は変更できなくなります。リンクは残ります。", "把每个栏位和注释按当前外观画进页面，之后无法再修改。链接保留。", "把每個欄位和註解按目前外觀畫進頁面，之後無法再修改。連結保留。", "각 입력란과 주석을 지금 보이는 그대로 페이지에 그려 넣으며, 이후에는 바꿀 수 없습니다. 링크는 남습니다.", "Chaque champ et commentaire est dessiné dans la page tel qu’il apparaît et ne peut plus être modifié. Les liens restent.", "Jedes Feld und jeder Kommentar wird genau so, wie er jetzt aussieht, in die Seite gezeichnet und lässt sich nicht mehr ändern. Links bleiben."],
+    "Ui_FlattenFields": ["Form fields", "記入欄", "表单栏位", "表單欄位", "입력란", "Champs de formulaire", "Formularfelder"],
+    "Ui_FlattenComments": ["Comments", "コメント", "注释", "註解", "주석", "Commentaires", "Kommentare"],
+    "Ui_FlattenRun": ["Flatten and save copy…", "確定してコピーを保存…", "拼合并另存副本…", "平面化並另存副本…", "병합하여 사본 저장…", "Aplatir et enregistrer une copie…", "Reduzieren und Kopie speichern…"],
+    "Ui_Flattening": ["Flattening…", "確定しています…", "正在拼合…", "正在平面化…", "병합하는 중…", "Aplatissement…", "Wird reduziert…"],
+    "Ui_Flattened": ["Saved {0}: {1} form field(s) and {2} comment(s) are now part of the page. Checked: every page looks as it did.", "{0} を保存しました：記入欄 {1} 件とコメント {2} 件をページの一部にしました。確認済み：どのページも見た目は変わっていません。", "已保存 {0}：{1} 个表单栏位和 {2} 条注释已成为页面的一部分。已检查：每页外观不变。", "已儲存 {0}：{1} 個表單欄位和 {2} 則註解已成為頁面的一部分。已檢查：每頁外觀不變。", "{0} 저장: 입력란 {1}개와 주석 {2}개가 페이지의 일부가 되었습니다. 확인: 모든 페이지의 모양이 그대로입니다.", "{0} enregistré : {1} champ(s) et {2} commentaire(s) font désormais partie de la page. Vérifié : chaque page a le même aspect.", "{0} gespeichert: {1} Formularfeld(er) und {2} Kommentar(e) sind jetzt Teil der Seite. Geprüft: Jede Seite sieht aus wie zuvor."],
+    "Ui_PdfaTitle": ["PDF/A (long-term archive)", "PDF/A（長期保存）", "PDF/A（长期保存）", "PDF/A（長期保存）", "PDF/A(장기 보존)", "PDF/A (archivage)", "PDF/A (Langzeitarchiv)"],
+    "Ui_PdfaLead": ["PDF/A-2b keeps everything a page needs inside the file: fonts are embedded (a font that is only named is replaced by one of this computer, each character staying where it was), colours are tied to a profile, and nothing runs. Scripts, attachments and field calculations are taken out.", "PDF/A-2b は、ページの表示に必要なものをすべてファイルの中に持ちます。フォントは埋め込み（名前だけのフォントはこのコンピューターのフォントに置き換え、文字の位置はそのまま）、色はプロファイルに結び付け、何も実行されないようにします。スクリプト・添付ファイル・記入欄の計算は取り除きます。", "PDF/A-2b 把页面所需的一切都放在文件内：嵌入字体（仅有名称的字体用这台电脑的字体替换，每个字符位置不变），颜色绑定色彩配置文件，且不运行任何内容。脚本、附件和栏位计算会被移除。", "PDF/A-2b 把頁面所需的一切都放在檔案內：內嵌字型（只有名稱的字型以這台電腦的字型替換，每個字元位置不變），色彩綁定色彩描述檔，且不執行任何內容。指令碼、附件和欄位計算會被移除。", "PDF/A-2b는 페이지에 필요한 모든 것을 파일 안에 담습니다. 글꼴을 포함하고(이름만 있는 글꼴은 이 컴퓨터의 글꼴로 바꾸며 글자 위치는 그대로), 색상을 프로필에 연결하며, 아무것도 실행되지 않게 합니다. 스크립트·첨부 파일·입력란 계산은 제거됩니다.", "Le PDF/A-2b garde dans le fichier tout ce dont une page a besoin : polices incorporées (une police seulement nommée est remplacée par une police de cet ordinateur, chaque caractère restant à sa place), couleurs liées à un profil, rien qui s’exécute. Scripts, pièces jointes et calculs de champs sont retirés.", "PDF/A-2b enthält alles, was eine Seite braucht, in der Datei: Schriften eingebettet (eine nur genannte Schrift wird durch eine dieses Computers ersetzt, jedes Zeichen bleibt an seiner Stelle), Farben an ein Profil gebunden, nichts wird ausgeführt. Skripte, Anhänge und Feldberechnungen werden entfernt."],
+    "Ui_PdfaCheckRun": ["Check", "確認", "检查", "檢查", "확인", "Vérifier", "Prüfen"],
+    "Ui_PdfaChecking": ["Checking…", "確認しています…", "正在检查…", "正在檢查…", "확인하는 중…", "Vérification…", "Wird geprüft…"],
+    "Ui_PdfaOk": ["This file already meets the PDF/A-2b rules Washi checks.", "このファイルは、Washi が確認する PDF/A-2b の規則をすでに満たしています。", "此文件已符合 Washi 检查的 PDF/A-2b 规则。", "此檔案已符合 Washi 檢查的 PDF/A-2b 規則。", "이 파일은 Washi가 확인하는 PDF/A-2b 규칙을 이미 충족합니다.", "Ce fichier respecte déjà les règles PDF/A-2b que Washi vérifie.", "Diese Datei erfüllt bereits die PDF/A-2b-Regeln, die Washi prüft."],
+    "Ui_PdfaIssues": ["Between this file and PDF/A-2b (a PDF/A copy fixes these):", "PDF/A-2b にするために直す点（PDF/A のコピーで直します）:", "转为 PDF/A-2b 需要处理的地方（PDF/A 副本会处理）：", "轉為 PDF/A-2b 需要處理的地方（PDF/A 副本會處理）：", "PDF/A-2b가 되려면 고칠 점(PDF/A 사본에서 고칩니다):", "Ce qui sépare ce fichier du PDF/A-2b (une copie PDF/A le corrige) :", "Was diese Datei von PDF/A-2b trennt (eine PDF/A-Kopie behebt es):"],
+    "Ui_PdfaFlattenFirst": ["Flatten fields and comments first", "先に記入欄とコメントを確定する", "先拼合表单栏位和注释", "先平面化表單欄位和註解", "먼저 입력란과 주석을 병합", "Aplatir d’abord les champs et commentaires", "Zuerst Felder und Kommentare reduzieren"],
+    "Ui_PdfaRun": ["Save as PDF/A…", "PDF/A で保存…", "另存为 PDF/A…", "另存為 PDF/A…", "PDF/A로 저장…", "Enregistrer en PDF/A…", "Als PDF/A speichern…"],
+    "Ui_PdfaConverting": ["Making a PDF/A copy…", "PDF/A のコピーを作っています…", "正在生成 PDF/A 副本…", "正在產生 PDF/A 副本…", "PDF/A 사본을 만드는 중…", "Création de la copie PDF/A…", "PDF/A-Kopie wird erstellt…"],
+    "Ui_PdfaSaved": ["Saved {0} as PDF/A-2b. Checked: it meets the rules Washi checks, every page looks as it did and its text reads the same.", "{0} を PDF/A-2b で保存しました。確認済み：Washi が確認する規則を満たし、どのページも見た目と文字が変わっていません。", "已将 {0} 保存为 PDF/A-2b。已检查：符合 Washi 检查的规则，每页外观和文字不变。", "已將 {0} 儲存為 PDF/A-2b。已檢查：符合 Washi 檢查的規則，每頁外觀和文字不變。", "{0}을(를) PDF/A-2b로 저장했습니다. 확인: Washi가 확인하는 규칙을 충족하며 모든 페이지의 모양과 글자가 그대로입니다.", "{0} enregistré en PDF/A-2b. Vérifié : il respecte les règles que Washi vérifie, chaque page a le même aspect et le même texte.", "{0} als PDF/A-2b gespeichert. Geprüft: Es erfüllt die Regeln, die Washi prüft, jede Seite sieht gleich aus und ihr Text liest sich gleich."],
+    "Ui_PdfaChanges": ["Changed:", "変更した点:", "更改：", "變更：", "바꾼 점:", "Modifié :", "Geändert:"],
+    "Ui_PdfaFontReplaced": ["{0} → {1} (embedded)", "{0} → {1}（埋め込み）", "{0} → {1}（已嵌入）", "{0} → {1}（已內嵌）", "{0} → {1}(포함됨)", "{0} → {1} (incorporée)", "{0} → {1} (eingebettet)"],
+    "Pdfa_Version": ["File version newer than PDF 1.7", "PDF 1.7 より新しいファイル形式", "文件版本高于 PDF 1.7", "檔案版本高於 PDF 1.7", "PDF 1.7보다 새로운 파일 형식", "Version de fichier postérieure à PDF 1.7", "Dateiversion neuer als PDF 1.7"],
+    "Pdfa_Encrypted": ["Password protection (encryption)", "パスワード保護（暗号化）", "密码保护（加密）", "密碼保護（加密）", "암호 보호(암호화)", "Protection par mot de passe (chiffrement)", "Passwortschutz (Verschlüsselung)"],
+    "Pdfa_Metadata": ["XMP metadata that says PDF/A and matches the document properties", "PDF/A であることを示し、文書のプロパティと一致する XMP メタデータ", "声明 PDF/A 且与文档属性一致的 XMP 元数据", "宣告 PDF/A 且與文件屬性一致的 XMP 中繼資料", "PDF/A임을 밝히고 문서 속성과 일치하는 XMP 메타데이터", "Métadonnées XMP déclarant le PDF/A et conformes aux propriétés", "XMP-Metadaten, die PDF/A angeben und zu den Dokumenteigenschaften passen"],
+    "Pdfa_OutputIntent": ["Colour profile for the file (output intent)", "ファイルのカラープロファイル（出力インテント）", "文件的色彩配置文件（输出意图）", "檔案的色彩描述檔（輸出意圖）", "파일의 색상 프로필(출력 의도)", "Profil couleur du fichier (intention de sortie)", "Farbprofil der Datei (Output Intent)"],
+    "Pdfa_Cmyk": ["Colours in CMYK", "CMYK の色", "CMYK 颜色", "CMYK 色彩", "CMYK 색상", "Couleurs en CMJN", "Farben in CMYK"],
+    "Pdfa_Rgb": ["RGB colours tied to sRGB", "RGB の色を sRGB に結び付け", "RGB 颜色绑定 sRGB", "RGB 色彩綁定 sRGB", "RGB 색상을 sRGB에 연결", "Couleurs RVB liées au sRGB", "RGB-Farben an sRGB gebunden"],
+    "Pdfa_Fonts": ["Fonts not embedded", "埋め込まれていないフォント", "未嵌入的字体", "未內嵌的字型", "포함되지 않은 글꼴", "Polices non incorporées", "Nicht eingebettete Schriften"],
+    "Pdfa_Scripts": ["JavaScript", "JavaScript", "JavaScript", "JavaScript", "JavaScript", "JavaScript", "JavaScript"],
+    "Pdfa_Actions": ["Actions that run (on opening, on events, in fields)", "実行される動作（開いたとき・操作時・記入欄）", "会运行的动作（打开时、事件时、栏位中）", "會執行的動作（開啟時、事件時、欄位中）", "실행되는 동작(열 때, 이벤트, 입력란)", "Actions qui s’exécutent (à l’ouverture, sur événement, dans les champs)", "Aktionen, die ausgeführt werden (beim Öffnen, bei Ereignissen, in Feldern)"],
+    "Pdfa_Attachments": ["Attached files", "添付ファイル", "附件", "附件", "첨부 파일", "Pièces jointes", "Angehängte Dateien"],
+    "Pdfa_Xfa": ["XFA form data", "XFA フォームのデータ", "XFA 表单数据", "XFA 表單資料", "XFA 양식 데이터", "Données de formulaire XFA", "XFA-Formulardaten"],
+    "Pdfa_Fields": ["Fields without an appearance of their own", "自分の表示を持たない記入欄", "没有自身外观的栏位", "沒有自身外觀的欄位", "자체 모양이 없는 입력란", "Champs sans apparence propre", "Felder ohne eigenes Erscheinungsbild"],
+    "Pdfa_Annotations": ["Hidden comments, sounds, videos and 3D", "非表示のコメント・音声・動画・3D", "隐藏的注释、声音、视频和 3D", "隱藏的註解、聲音、影片和 3D", "숨겨진 주석·소리·동영상·3D", "Commentaires masqués, sons, vidéos et 3D", "Versteckte Kommentare, Töne, Videos und 3D"],
+    "Pdfa_AnnotationFlags": ["Comments and fields not set to print", "印刷しない設定のコメント・記入欄", "设为不打印的注释和栏位", "設為不列印的註解和欄位", "인쇄하지 않도록 설정된 주석·입력란", "Commentaires et champs non imprimables", "Kommentare und Felder, die nicht gedruckt werden"],
+    "Pdfa_Appearances": ["Extra or missing appearances", "余分な・欠けている表示", "多余或缺少的外观", "多餘或缺少的外觀", "불필요하거나 빠진 모양", "Apparences en trop ou manquantes", "Überzählige oder fehlende Erscheinungsbilder"],
+    "Pdfa_Images": ["Image smoothing and alternate images", "画像の補間指定と代替画像", "图像插值和替代图像", "影像內插與替代影像", "이미지 보간과 대체 이미지", "Lissage et images de remplacement", "Bildglättung und Alternativbilder"],
+    "Pdfa_External": ["Content outside the file", "ファイル外の内容", "文件外的内容", "檔案外的內容", "파일 밖의 내용", "Contenu hors du fichier", "Inhalt außerhalb der Datei"],
+    "Pdfa_Graphics": ["Transfer functions and halftones", "転送関数と網点の指定", "传递函数和半色调", "轉換函數與半色調", "전달 함수와 하프톤", "Fonctions de transfert et trames", "Transferfunktionen und Raster"],
+    "Pdfa_Lzw": ["LZW compression", "LZW 圧縮", "LZW 压缩", "LZW 壓縮", "LZW 압축", "Compression LZW", "LZW-Komprimierung"],
+    "Pdfa_Layers": ["Layer settings", "レイヤーの設定", "图层设置", "圖層設定", "레이어 설정", "Réglages des calques", "Ebeneneinstellungen"],
+    "Pdfa_Other": ["Other entries PDF/A does not allow", "PDF/A で使えないその他の項目", "PDF/A 不允许的其他项目", "PDF/A 不允許的其他項目", "PDF/A에서 허용되지 않는 기타 항목", "Autres entrées interdites en PDF/A", "Sonstige in PDF/A nicht erlaubte Einträge"],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

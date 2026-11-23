@@ -146,6 +146,8 @@
   washi pdf print &lt;in.pdf&gt; [--printer 名稱] [--copies 份數] [--pages 1-3,5] [--two-sided] [--gray] [--actual-size]
   washi pdf printers                      列出印表機
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）
+  washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   把欄位和註解畫進頁面（儲存前檢查）
+  washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   用於長期保存的 PDF/A-2b 副本（--check 只列出需處理的地方）
   washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名稱 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
                                           以數位識別碼簽署（密碼取自 WASHI_ID_PASSWORD 或提示輸入）
   washi pdf verify &lt;in.pdf&gt;               核實檔案中的簽章
@@ -959,4 +961,59 @@
   <data name="Err_ParagraphMixed" xml:space="preserve"><value>段落中混有不同字級：請逐行編輯。</value></data>
   <data name="Err_ParagraphNone" xml:space="preserve"><value>「{0}」不在可以重新排版的段落中。</value></data>
   <data name="Err_ImageHeic" xml:space="preserve"><value>{0} 是 HEIC 照片，但這台電腦沒有轉換工具（macOS 內建；Linux 請安裝 libheif 的 heif-convert）：請先另存為 JPEG。</value></data>
+  <data name="Err_FlattenNothing" xml:space="preserve"><value>沒有要平面化的內容：請選擇表單欄位、註解或兩者。</value></data>
+  <data name="Err_FlattenNone" xml:space="preserve"><value>沒有可平面化的表單欄位或註解。</value></data>
+  <data name="Err_FlattenSigned" xml:space="preserve"><value>此檔案已簽署：平面化會使簽章失效。</value></data>
+  <data name="Err_FlattenCannotDraw" xml:space="preserve"><value>Washi 無法用其字型繪製這些欄位：{0}。</value></data>
+  <data name="Err_FlattenChanged" xml:space="preserve"><value>平面化後第 {0} 頁的外觀不同（{1} 像素），未儲存副本。</value></data>
+  <data name="Err_FlattenCheck" xml:space="preserve"><value>平面化副本檢查失敗（{0}，第 {1} 頁），未儲存。</value></data>
+  <data name="Err_PdfaSigned" xml:space="preserve"><value>此檔案已簽署：轉為 PDF/A 會使簽章失效。</value></data>
+  <data name="Err_PdfaFont" xml:space="preserve"><value>以下字型未內嵌且無法替換：{0}。</value></data>
+  <data name="Err_PdfaCmyk" xml:space="preserve"><value>此檔案使用 CMYK 色彩（{0}），但這台電腦上沒有可描述它的 CMYK 色彩描述檔。</value></data>
+  <data name="Err_PdfaCannot" xml:space="preserve"><value>Washi 無法將此檔案轉為 PDF/A：{0}。</value></data>
+  <data name="Err_PdfaCheck" xml:space="preserve"><value>PDF/A 副本仍有問題：{0}；未儲存。</value></data>
+  <data name="Err_PdfaChanged" xml:space="preserve"><value>PDF/A 副本中第 {0} 頁的外觀或文字不同，未儲存。</value></data>
+  <data name="Ui_ToolArchive" xml:space="preserve"><value>定稿</value></data>
+  <data name="Ui_ArchiveTitle" xml:space="preserve"><value>平面化與長期保存</value></data>
+  <data name="Ui_ArchiveLead" xml:space="preserve"><value>製作提交或保存用的最終版本：把表單欄位和註解變成頁面的一部分，或產生多年後外觀依舊的 PDF/A 副本。</value></data>
+  <data name="Ui_FlattenTitle" xml:space="preserve"><value>平面化</value></data>
+  <data name="Ui_FlattenLead" xml:space="preserve"><value>把每個欄位和註解按目前外觀畫進頁面，之後無法再修改。連結保留。</value></data>
+  <data name="Ui_FlattenFields" xml:space="preserve"><value>表單欄位</value></data>
+  <data name="Ui_FlattenComments" xml:space="preserve"><value>註解</value></data>
+  <data name="Ui_FlattenRun" xml:space="preserve"><value>平面化並另存副本…</value></data>
+  <data name="Ui_Flattening" xml:space="preserve"><value>正在平面化…</value></data>
+  <data name="Ui_Flattened" xml:space="preserve"><value>已儲存 {0}：{1} 個表單欄位和 {2} 則註解已成為頁面的一部分。已檢查：每頁外觀不變。</value></data>
+  <data name="Ui_PdfaTitle" xml:space="preserve"><value>PDF/A（長期保存）</value></data>
+  <data name="Ui_PdfaLead" xml:space="preserve"><value>PDF/A-2b 把頁面所需的一切都放在檔案內：內嵌字型（只有名稱的字型以這台電腦的字型替換，每個字元位置不變），色彩綁定色彩描述檔，且不執行任何內容。指令碼、附件和欄位計算會被移除。</value></data>
+  <data name="Ui_PdfaCheckRun" xml:space="preserve"><value>檢查</value></data>
+  <data name="Ui_PdfaChecking" xml:space="preserve"><value>正在檢查…</value></data>
+  <data name="Ui_PdfaOk" xml:space="preserve"><value>此檔案已符合 Washi 檢查的 PDF/A-2b 規則。</value></data>
+  <data name="Ui_PdfaIssues" xml:space="preserve"><value>轉為 PDF/A-2b 需要處理的地方（PDF/A 副本會處理）：</value></data>
+  <data name="Ui_PdfaFlattenFirst" xml:space="preserve"><value>先平面化表單欄位和註解</value></data>
+  <data name="Ui_PdfaRun" xml:space="preserve"><value>另存為 PDF/A…</value></data>
+  <data name="Ui_PdfaConverting" xml:space="preserve"><value>正在產生 PDF/A 副本…</value></data>
+  <data name="Ui_PdfaSaved" xml:space="preserve"><value>已將 {0} 儲存為 PDF/A-2b。已檢查：符合 Washi 檢查的規則，每頁外觀和文字不變。</value></data>
+  <data name="Ui_PdfaChanges" xml:space="preserve"><value>變更：</value></data>
+  <data name="Ui_PdfaFontReplaced" xml:space="preserve"><value>{0} → {1}（已內嵌）</value></data>
+  <data name="Pdfa_Version" xml:space="preserve"><value>檔案版本高於 PDF 1.7</value></data>
+  <data name="Pdfa_Encrypted" xml:space="preserve"><value>密碼保護（加密）</value></data>
+  <data name="Pdfa_Metadata" xml:space="preserve"><value>宣告 PDF/A 且與文件屬性一致的 XMP 中繼資料</value></data>
+  <data name="Pdfa_OutputIntent" xml:space="preserve"><value>檔案的色彩描述檔（輸出意圖）</value></data>
+  <data name="Pdfa_Cmyk" xml:space="preserve"><value>CMYK 色彩</value></data>
+  <data name="Pdfa_Rgb" xml:space="preserve"><value>RGB 色彩綁定 sRGB</value></data>
+  <data name="Pdfa_Fonts" xml:space="preserve"><value>未內嵌的字型</value></data>
+  <data name="Pdfa_Scripts" xml:space="preserve"><value>JavaScript</value></data>
+  <data name="Pdfa_Actions" xml:space="preserve"><value>會執行的動作（開啟時、事件時、欄位中）</value></data>
+  <data name="Pdfa_Attachments" xml:space="preserve"><value>附件</value></data>
+  <data name="Pdfa_Xfa" xml:space="preserve"><value>XFA 表單資料</value></data>
+  <data name="Pdfa_Fields" xml:space="preserve"><value>沒有自身外觀的欄位</value></data>
+  <data name="Pdfa_Annotations" xml:space="preserve"><value>隱藏的註解、聲音、影片和 3D</value></data>
+  <data name="Pdfa_AnnotationFlags" xml:space="preserve"><value>設為不列印的註解和欄位</value></data>
+  <data name="Pdfa_Appearances" xml:space="preserve"><value>多餘或缺少的外觀</value></data>
+  <data name="Pdfa_Images" xml:space="preserve"><value>影像內插與替代影像</value></data>
+  <data name="Pdfa_External" xml:space="preserve"><value>檔案外的內容</value></data>
+  <data name="Pdfa_Graphics" xml:space="preserve"><value>轉換函數與半色調</value></data>
+  <data name="Pdfa_Lzw" xml:space="preserve"><value>LZW 壓縮</value></data>
+  <data name="Pdfa_Layers" xml:space="preserve"><value>圖層設定</value></data>
+  <data name="Pdfa_Other" xml:space="preserve"><value>PDF/A 不允許的其他項目</value></data>
 </root>
