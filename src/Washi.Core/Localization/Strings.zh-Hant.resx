@@ -116,6 +116,8 @@
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           調整頁面順序、刪除（不列出的頁）和旋轉頁面（保留表單欄位）
+  washi pdf crop &lt;in.pdf&gt; (--margins 上,右,下,左 | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   裁掉邊界（點）或依內容裁切
+  washi pdf export-images &lt;in.pdf&gt; [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o 資料夾]   將頁面存為圖片檔
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           讓掃描頁可以搜尋（加一層看不見的文字，頁面影像不變）
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -863,4 +865,30 @@
   <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>舊版第 {0} 頁被刪除：{1}</value></data>
   <data name="Pdf_CompareLine" xml:space="preserve"><value>  舊第 {0} 頁 / 新第 {1} 頁：{2}</value></data>
   <data name="Err_CompareSame" xml:space="preserve"><value>兩個版本相同：沒有要標記的內容。</value></data>
+  <data name="Ui_PagesScopeAll" xml:space="preserve"><value>裁切和圖片：所有頁面（只處理部分頁面時請在下方選擇）。</value></data>
+  <data name="Ui_PagesScopeSome" xml:space="preserve"><value>裁切和圖片：第 {0} 頁。</value></data>
+  <data name="Ui_CropTitle" xml:space="preserve"><value>裁切頁面</value></data>
+  <data name="Ui_CropTop" xml:space="preserve"><value>上</value></data>
+  <data name="Ui_CropBottom" xml:space="preserve"><value>下</value></data>
+  <data name="Ui_CropLeft" xml:space="preserve"><value>左</value></data>
+  <data name="Ui_CropRight" xml:space="preserve"><value>右</value></data>
+  <data name="Ui_CropMm" xml:space="preserve"><value>要裁掉的邊界（公釐，依顯示方向）。</value></data>
+  <data name="Ui_CropTrim" xml:space="preserve"><value>改為依內容裁切（裁掉周圍的空白）</value></data>
+  <data name="Ui_CropRun" xml:space="preserve"><value>裁切並另存副本…</value></data>
+  <data name="Ui_Cropped" xml:space="preserve"><value>已儲存 {0}：裁切了 {1} 頁。已檢查：每頁都與原頁對應部分一致。</value></data>
+  <data name="Ui_ExportTitle" xml:space="preserve"><value>將頁面存為圖片</value></data>
+  <data name="Ui_ExportRun" xml:space="preserve"><value>選擇資料夾並儲存…</value></data>
+  <data name="Ui_Exported" xml:space="preserve"><value>已在 {1} 儲存 {0} 張圖片。</value></data>
+  <data name="Pdf_Exported" xml:space="preserve"><value>已在 {1} 儲存 {0} 張圖片（均已讀回檢查）。</value></data>
+  <data name="Pdf_Cropped" xml:space="preserve"><value>已儲存 {0}：裁切了 {1} 頁。已檢查：每頁都與原頁對應部分一致。</value></data>
+  <data name="Err_ExportFormat" xml:space="preserve"><value>未知的圖片格式「{0}」：請用 png 或 jpeg。</value></data>
+  <data name="Err_ExportDpi" xml:space="preserve"><value>解析度必須在 36 到 600 dpi 之間。</value></data>
+  <data name="Err_ExportQuality" xml:space="preserve"><value>JPEG 品質必須在 1 到 100 之間。</value></data>
+  <data name="Err_ExportCheck" xml:space="preserve"><value>{0} 無法讀回，因此沒有保留任何檔案。</value></data>
+  <data name="Err_CropNothing" xml:space="preserve"><value>沒有要裁切的內容：請指定邊界或依內容裁切。</value></data>
+  <data name="Err_CropNegative" xml:space="preserve"><value>邊界不能為負數。</value></data>
+  <data name="Err_CropMargins" xml:space="preserve"><value>--margins 需要 1、2 或 4 個數字（點）。</value></data>
+  <data name="Err_CropTooSmall" xml:space="preserve"><value>第 {0} 頁會小於半英寸。</value></data>
+  <data name="Err_CropBlank" xml:space="preserve"><value>頁面是空白的：沒有可依內容裁切的東西。</value></data>
+  <data name="Err_CropCheck" xml:space="preserve"><value>第 {0} 頁與原頁對應部分不一致，因此沒有保留副本。</value></data>
 </root>

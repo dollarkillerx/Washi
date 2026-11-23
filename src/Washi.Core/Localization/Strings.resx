@@ -116,6 +116,8 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o dir]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           reorder, drop (leave out) and turn pages (form fields are kept)
+  washi pdf crop &lt;in.pdf&gt; (--margins top,right,bottom,left | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   cut margins (points) or trim to the content
+  washi pdf export-images &lt;in.pdf&gt; [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o folder]   pages as image files
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           make scanned pages searchable (an invisible text layer; the page image is unchanged)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -863,4 +865,30 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>Page {0} of the old version was removed: {1}</value></data>
   <data name="Pdf_CompareLine" xml:space="preserve"><value>  old p.{0} / new p.{1}: {2}</value></data>
   <data name="Err_CompareSame" xml:space="preserve"><value>The two versions are the same: there is nothing to mark.</value></data>
+  <data name="Ui_PagesScopeAll" xml:space="preserve"><value>Crop and images: every page (select pages below for some only).</value></data>
+  <data name="Ui_PagesScopeSome" xml:space="preserve"><value>Crop and images: pages {0}.</value></data>
+  <data name="Ui_CropTitle" xml:space="preserve"><value>Crop pages</value></data>
+  <data name="Ui_CropTop" xml:space="preserve"><value>Top</value></data>
+  <data name="Ui_CropBottom" xml:space="preserve"><value>Bottom</value></data>
+  <data name="Ui_CropLeft" xml:space="preserve"><value>Left</value></data>
+  <data name="Ui_CropRight" xml:space="preserve"><value>Right</value></data>
+  <data name="Ui_CropMm" xml:space="preserve"><value>Margins to cut off, in millimetres, on the page as shown.</value></data>
+  <data name="Ui_CropTrim" xml:space="preserve"><value>Trim to the content instead (cut the white paper around it)</value></data>
+  <data name="Ui_CropRun" xml:space="preserve"><value>Crop and save copy…</value></data>
+  <data name="Ui_Cropped" xml:space="preserve"><value>Saved {0}: {1} page(s) cropped. Checked: each looks like the part of the page it was cropped to.</value></data>
+  <data name="Ui_ExportTitle" xml:space="preserve"><value>Save pages as images</value></data>
+  <data name="Ui_ExportRun" xml:space="preserve"><value>Choose a folder and save…</value></data>
+  <data name="Ui_Exported" xml:space="preserve"><value>Saved {0} image(s) in {1}.</value></data>
+  <data name="Pdf_Exported" xml:space="preserve"><value>Saved {0} image(s) in {1}; each was read back.</value></data>
+  <data name="Pdf_Cropped" xml:space="preserve"><value>Saved {0}: {1} page(s) cropped. Checked: each looks like the part of the page it was cropped to.</value></data>
+  <data name="Err_ExportFormat" xml:space="preserve"><value>Unknown image format “{0}”: use png or jpeg.</value></data>
+  <data name="Err_ExportDpi" xml:space="preserve"><value>The resolution must be 36 to 600 dpi.</value></data>
+  <data name="Err_ExportQuality" xml:space="preserve"><value>The JPEG quality must be 1 to 100.</value></data>
+  <data name="Err_ExportCheck" xml:space="preserve"><value>{0} did not read back, so nothing was kept.</value></data>
+  <data name="Err_CropNothing" xml:space="preserve"><value>Nothing to crop: give margins or trim.</value></data>
+  <data name="Err_CropNegative" xml:space="preserve"><value>Margins cannot be negative.</value></data>
+  <data name="Err_CropMargins" xml:space="preserve"><value>--margins takes 1, 2 or 4 numbers (points).</value></data>
+  <data name="Err_CropTooSmall" xml:space="preserve"><value>Page {0} would be smaller than half an inch.</value></data>
+  <data name="Err_CropBlank" xml:space="preserve"><value>The pages are blank: there is nothing to trim to.</value></data>
+  <data name="Err_CropCheck" xml:space="preserve"><value>Page {0} did not look like the part of the original it was cropped to, so the copy was not kept.</value></data>
 </root>

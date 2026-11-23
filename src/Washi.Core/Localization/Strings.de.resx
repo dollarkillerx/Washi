@@ -116,6 +116,8 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   washi pdf split &lt;in.pdf&gt; [--pages 1-3,5|each] [-o Ordner]
   washi pdf organize &lt;in.pdf&gt; [--pages 3,1-2,5] [--rotate 2:90,5:-90] -o out.pdf
                                           Seiten umordnen, entfernen (nicht aufgeführte) und drehen (Formularfelder bleiben erhalten)
+  washi pdf crop &lt;in.pdf&gt; (--margins oben,rechts,unten,links | --trim [--padding 6]) [--pages 1-3] [-o out.pdf]   Ränder abschneiden (Punkt) oder auf den Inhalt zuschneiden
+  washi pdf export-images &lt;in.pdf&gt; [--format png|jpeg] [--dpi 150] [--pages 1-3] [--quality 90] [-o Ordner]   Seiten als Bilddateien
   washi ocr &lt;in.pdf&gt; [-o out.pdf] [--engine auto|vision|tesseract|ai] [--lang ja,en] [--pages 1-3] [--force] [--text out.txt] [--yes]
                                           gescannte Seiten durchsuchbar machen (unsichtbare Textebene; das Seitenbild bleibt unverändert)
   washi pdf erase &lt;in.pdf&gt; --box page:x0,y0,x1,y1 [--box ...] [-o out.pdf] [--all-ink] [--rules]
@@ -863,4 +865,30 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Cmp_NotePageRemoved" xml:space="preserve"><value>Seite {0} der alten Version wurde entfernt: {1}</value></data>
   <data name="Pdf_CompareLine" xml:space="preserve"><value>  alt S. {0} / neu S. {1}: {2}</value></data>
   <data name="Err_CompareSame" xml:space="preserve"><value>Beide Versionen sind gleich: Es gibt nichts zu markieren.</value></data>
+  <data name="Ui_PagesScopeAll" xml:space="preserve"><value>Zuschneiden und Bilder: alle Seiten (für einige unten Seiten auswählen).</value></data>
+  <data name="Ui_PagesScopeSome" xml:space="preserve"><value>Zuschneiden und Bilder: Seiten {0}.</value></data>
+  <data name="Ui_CropTitle" xml:space="preserve"><value>Seiten zuschneiden</value></data>
+  <data name="Ui_CropTop" xml:space="preserve"><value>Oben</value></data>
+  <data name="Ui_CropBottom" xml:space="preserve"><value>Unten</value></data>
+  <data name="Ui_CropLeft" xml:space="preserve"><value>Links</value></data>
+  <data name="Ui_CropRight" xml:space="preserve"><value>Rechts</value></data>
+  <data name="Ui_CropMm" xml:space="preserve"><value>Abzuschneidende Ränder in Millimetern, auf der Seite wie angezeigt.</value></data>
+  <data name="Ui_CropTrim" xml:space="preserve"><value>Stattdessen auf den Inhalt zuschneiden (weißes Papier ringsum abschneiden)</value></data>
+  <data name="Ui_CropRun" xml:space="preserve"><value>Zuschneiden und Kopie speichern…</value></data>
+  <data name="Ui_Cropped" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n) zugeschnitten. Geprüft: jede sieht aus wie der behaltene Teil.</value></data>
+  <data name="Ui_ExportTitle" xml:space="preserve"><value>Seiten als Bilder speichern</value></data>
+  <data name="Ui_ExportRun" xml:space="preserve"><value>Ordner wählen und speichern…</value></data>
+  <data name="Ui_Exported" xml:space="preserve"><value>{0} Bild(er) in {1} gespeichert.</value></data>
+  <data name="Pdf_Exported" xml:space="preserve"><value>{0} Bild(er) in {1} gespeichert; jedes wurde zurückgelesen.</value></data>
+  <data name="Pdf_Cropped" xml:space="preserve"><value>{0} gespeichert: {1} Seite(n) zugeschnitten. Geprüft: jede sieht aus wie der behaltene Teil.</value></data>
+  <data name="Err_ExportFormat" xml:space="preserve"><value>Unbekanntes Bildformat „{0}“: verwenden Sie png oder jpeg.</value></data>
+  <data name="Err_ExportDpi" xml:space="preserve"><value>Die Auflösung muss 36 bis 600 dpi betragen.</value></data>
+  <data name="Err_ExportQuality" xml:space="preserve"><value>Die JPEG-Qualität muss 1 bis 100 betragen.</value></data>
+  <data name="Err_ExportCheck" xml:space="preserve"><value>{0} ließ sich nicht zurücklesen; nichts wurde behalten.</value></data>
+  <data name="Err_CropNothing" xml:space="preserve"><value>Nichts zuzuschneiden: Ränder angeben oder auf den Inhalt zuschneiden.</value></data>
+  <data name="Err_CropNegative" xml:space="preserve"><value>Ränder können nicht negativ sein.</value></data>
+  <data name="Err_CropMargins" xml:space="preserve"><value>--margins nimmt 1, 2 oder 4 Zahlen (Punkt).</value></data>
+  <data name="Err_CropTooSmall" xml:space="preserve"><value>Seite {0} würde kleiner als ein halber Zoll.</value></data>
+  <data name="Err_CropBlank" xml:space="preserve"><value>Die Seiten sind leer: Es gibt nichts, worauf zugeschnitten werden kann.</value></data>
+  <data name="Err_CropCheck" xml:space="preserve"><value>Seite {0} sah nicht aus wie der behaltene Teil; die Kopie wurde nicht behalten.</value></data>
 </root>

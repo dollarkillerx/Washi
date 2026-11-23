@@ -39,6 +39,8 @@ public static class WashiTools
         .Add(new StampPagesTool(policy))
         .Add(new ImagesToPdfTool(policy))
         .Add(new ComparePdfsTool(policy))
+        .Add(new ExportPageImagesTool(policy))
+        .Add(new CropPagesTool(policy))
         .Add(new CompressPdfTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new OcrPdfTool(policy))
@@ -1064,6 +1066,67 @@ public sealed class ComparePdfsTool(PathPolicy p) : PdfTool(p)
                 old_text = c.OldText, new_text = c.NewText, old_boxes = Boxes(c.OldBoxes), new_boxes = Boxes(c.NewBoxes),
             }),
         }));
+    }
+}
+
+public sealed class ExportPageImagesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "export_page_images";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Save PDF pages as image files (PNG or JPEG) at a resolution, as they are shown (turned pages upright, form fields and " +
+        "comments drawn): <name>_p<n>.png in a folder (default <name>_images next to the PDF). Each file is read back. Never " +
+        "overwrites: nothing is written when any of the files is already there.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "format":{"type":"string","enum":["png","jpeg"],"description":"Default png"},
+          "dpi":{"type":"number","description":"36 to 600 (default 150)"},
+          "pages":{"type":"string","description":"Page range such as 1-3,5 (default: every page)"},
+          "quality":{"type":"integer","description":"JPEG quality 1 to 100 (default 90)"},
+          "folder":{"type":"string","description":"Where the images go (default <name>_images next to the PDF)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var folder = Policy.OutputFolder(OptStr(a, "folder"), path, "_images");
+        var files = PdfPageImages.Export(path, folder, new ExportOptions(OptStr(a, "format") ?? "png",
+            a.TryGetProperty("dpi", out var d) && d.TryGetDouble(out var dv) ? dv : 150, OptStr(a, "pages"),
+            a.TryGetProperty("quality", out var q) && q.TryGetInt32(out var qv) ? qv : 90));
+        return new ToolResult(ToJson(new { folder, files }));
+    }
+}
+
+public sealed class CropPagesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "crop_pages";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Crop PDF pages: cut margins off (points, on the page as shown) or trim the white paper around the content (with a " +
+        "little padding). The pages' crop box is set; nothing is removed from the file (text outside it is still there; redact " +
+        "to remove it). Each cropped page is rendered and compared with the same part of the original. Blank pages are left " +
+        "as they are when trimming. Never overwrites: output defaults to <name>_cropped.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "top":{"type":"number"},"right":{"type":"number"},"bottom":{"type":"number"},"left":{"type":"number"},
+          "trim":{"type":"boolean","description":"Trim to the content instead of cutting margins"},
+          "padding":{"type":"number","description":"With trim: points of paper kept around the content (default 6)"},
+          "pages":{"type":"string","description":"Page range such as 1-3,5 (default: every page)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_cropped.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        double D(string k, double d) => a.TryGetProperty(k, out var v) && v.TryGetDouble(out var x) ? x : d;
+        var output = Policy.Output(OptStr(a, "output"), path, "_cropped");
+        int n = PdfPageImages.Crop(path, output, new CropOptions(D("top", 0), D("right", 0), D("bottom", 0), D("left", 0),
+            a.TryGetProperty("trim", out var t) && t.ValueKind == JsonValueKind.True, D("padding", 6), OptStr(a, "pages")));
+        return new ToolResult(ToJson(new { output, pages = n, verified = "each cropped page looks like the same part of the original" }));
     }
 }
 

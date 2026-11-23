@@ -10,7 +10,7 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -209,6 +209,31 @@ internal static class PageCommands
                         Path.GetFileNameWithoutExtension(input) + "_redacted.pdf"));
                     var report = PdfRedactor.Redact(input, output, areas, search);
                     Console.WriteLine(L.F("Pdf_Redacted", output, report.Glyphs, report.Images, report.Paths, report.Annotations, report.Strings));
+                    return 0;
+                }
+                case ["export-images", var input]:
+                {
+                    double Num(string key, double fallback) =>
+                        opt.TryGetValue(key, out var v) ? double.Parse(v, System.Globalization.CultureInfo.InvariantCulture) : fallback;
+                    var folder = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + "_images"));
+                    var files = PdfPageImages.Export(input, folder, new ExportOptions(opt.GetValueOrDefault("--format", "png"), Num("--dpi", 150),
+                                                                                    opt.GetValueOrDefault("--pages"), (int)Num("--quality", 90)));
+                    Console.WriteLine(L.F("Pdf_Exported", files.Count, folder));
+                    return 0;
+                }
+                case ["crop", var input] when opt.ContainsKey("--margins") || opt.ContainsKey("--trim"):
+                {
+                    var m = (opt.GetValueOrDefault("--margins") ?? "0").Split(',').Select(v => double.Parse(v, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+                    // like CSS: one value for all sides, two for top/bottom and left/right, four for top, right, bottom, left
+                    var (t, r, b, l) = m.Length switch
+                    {
+                        1 => (m[0], m[0], m[0], m[0]), 2 => (m[0], m[1], m[0], m[1]), 4 => (m[0], m[1], m[2], m[3]),
+                        _ => throw new PageAssemblyException("--margins takes 1, 2 or 4 numbers (points)", "Err_CropMargins"),
+                    };
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + "_cropped.pdf"));
+                    var padding = opt.TryGetValue("--padding", out var pd) ? double.Parse(pd, System.Globalization.CultureInfo.InvariantCulture) : 6;
+                    int n = PdfPageImages.Crop(input, output, new CropOptions(t, r, b, l, opt.ContainsKey("--trim"), padding, opt.GetValueOrDefault("--pages")));
+                    Console.WriteLine(L.F("Pdf_Cropped", output, n));
                     return 0;
                 }
                 case ["compare", var older, var newer]:

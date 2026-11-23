@@ -48,6 +48,8 @@ public sealed partial class OrganizeToolViewModel : ObservableObject
         Selected.CollectionChanged += (_, _) =>
         {
             NotifySelection();
+            OnPropertyChanged(nameof(SelectedRange));
+            OnPropertyChanged(nameof(ScopeText));
             // one page of the open document selected: show it in the page view
             if (Selected is [{ Inserted: false } only] && only.Source == _main.PdfPath) _main.PageIndex = only.Page - 1;
         };
@@ -231,5 +233,71 @@ public sealed partial class OrganizeToolViewModel : ObservableObject
             await _main.LoadAsync(written);     // Prepare() runs from LoadAsync: the grid shows the new file
             _main.Status = status;
         }
+    }
+
+    // ------------------------------------------------------------------ crop, and pages as images
+
+    [ObservableProperty] private decimal? _cropTop = 10;
+    [ObservableProperty] private decimal? _cropRight = 10;
+    [ObservableProperty] private decimal? _cropBottom = 10;
+    [ObservableProperty] private decimal? _cropLeft = 10;
+    /// <summary>Trim the white paper around the content instead of cutting margins.</summary>
+    [ObservableProperty] private bool _cropTrim;
+    /// <summary>0 PNG, 1 JPEG.</summary>
+    [ObservableProperty] private int _exportFormatIndex;
+    /// <summary>0 72 dpi, 1 150 dpi, 2 300 dpi.</summary>
+    [ObservableProperty] private int _exportDpiIndex = 1;
+
+    /// <summary>The open document's selected pages as a range ("2,5"), or null for all of them.</summary>
+    public string? SelectedRange
+    {
+        get
+        {
+            var own = Selected.Where(p => !p.Inserted && p.Source == _main.PdfPath).Select(p => p.Page).Distinct().Order().ToList();
+            return own.Count == 0 ? null : string.Join(",", own);
+        }
+    }
+
+    public string ScopeText => SelectedRange is { } r ? L.F("Ui_PagesScopeSome", r) : L.Get("Ui_PagesScopeAll");
+
+    private static double Mm(decimal? v) => (double)(v ?? 0) * 72 / 25.4;
+
+    /// <summary>Saves &lt;name&gt;_cropped.pdf (the user picks the name) and opens it.</summary>
+    [RelayCommand]
+    private async Task CropAsync()
+    {
+        if (_main.PdfPath is not { } pdf) return;
+        if (await _main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_cropped.pdf") is not { } output) return;
+        if (Path.GetFullPath(output) == Path.GetFullPath(pdf)) { _main.Status = L.Get("Ui_BookmarksNotOriginal"); return; }
+        var options = new CropOptions(Mm(CropTop), Mm(CropRight), Mm(CropBottom), Mm(CropLeft), CropTrim, 6, SelectedRange);
+        int pages = -1;
+        await _main.Run(async () =>
+        {
+            var tmp = output + ".tmp";
+            if (File.Exists(tmp)) File.Delete(tmp);
+            try
+            {
+                pages = await MainViewModel.Pdfium(() => PdfPageImages.Crop(pdf, tmp, options));
+                File.Move(tmp, output, overwrite: true);
+            }
+            finally { if (File.Exists(tmp)) File.Delete(tmp); }
+        });
+        if (pages < 0) return;
+        var at = _main.PageIndex;
+        await _main.LoadAsync(output);
+        if (at < _main.PageCount) _main.PageIndex = at;
+        _main.Status = L.F("Ui_Cropped", Path.GetFileName(output), pages);
+    }
+
+    /// <summary>Writes the pages as images into a folder the user picks.</summary>
+    [RelayCommand]
+    private async Task ExportImagesAsync()
+    {
+        if (_main.PdfPath is not { } pdf) return;
+        if (await _main.Dialogs.PickFolderAsync() is not { } folder) return;
+        var options = new ExportOptions(ExportFormatIndex == 1 ? "jpeg" : "png", ExportDpiIndex switch { 0 => 72, 2 => 300, _ => 150 }, SelectedRange);
+        IReadOnlyList<string>? files = null;
+        await _main.Run(async () => files = await MainViewModel.Pdfium(() => PdfPageImages.Export(pdf, folder, options)));
+        if (files is not null) _main.Status = L.F("Ui_Exported", files.Count, folder);
     }
 }
