@@ -298,6 +298,9 @@ public sealed class PdfiumDocument : IDisposable
             return new PdfRect(Math.Min(ax, bx), Math.Min(ay, by), Math.Max(ax, bx), Math.Max(ay, by));
         }
 
+        /// <summary>A point of PDF space on the upright page.</summary>
+        public (double X, double Y) ToDevice(double x, double y) => Point(x, y);
+
         private (double, double) Point(double x, double y)
         {
             int dx = 0, dy = 0;

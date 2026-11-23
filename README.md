@@ -131,7 +131,7 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Erase, AI assistant, and **Settings** at the
+- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Erase, AI assistant, and **Settings** at the
   bottom. Settings opens as a page in place of the document, not as a separate window
 - the **tool's panel** next to the rail, with its main action always at the bottom.
   Click the active tool again to fold the panel away.
@@ -198,6 +198,8 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 - **Redact**: find words, phrases, e-mail addresses, phone numbers and long ID numbers (or drag over any area: a
   photo, a signature, a stamp), untick what should stay, then save a copy where what lies under each black box is
   removed from the file for real (see below).
+- **Edit text**: click a line on the page and type its new text, or find and replace; the changes show on the page
+  and are saved to a copy, checked before it is kept (see below).
 - **Ask AI** answers questions about the document, after showing what it will send.
 
 **Find:** ⌘/Ctrl+F opens the find bar over the page, in every tool. It searches as you type, highlights every
@@ -417,6 +419,33 @@ matches).
   unticked stay. If a check fails the copy is deleted, so you never get a half-redacted file.
 - Files whose permissions forbid changes are refused (remove the protection with its password first).
 
+## Editing page text
+
+```bash
+washi pdf replace-text invoice.pdf --find 2025 --with 2026                  # invoice_edited.pdf, every match
+washi pdf replace-text invoice.pdf --find "1,200" --with "1,350" --page 1
+washi pdf replace-text form.pdf --box 1:40,52,180,66 --with "令和9年分"       # the text inside a box
+```
+
+In the editor: choose **Edit text**. Each line of the page is outlined; click one, type, Enter keeps the change and
+Esc leaves the line as it was. *Replace all* adds a change for every place the text appears. The changes show on
+the page (the old text covered, the new one over it) until *Save as copy*. Agents use the `edit_text` tool.
+
+- **In place.** The old characters are taken out of the page content (the rest of the line stays exactly where it
+  was, as in redaction) and the new text is drawn at the same baseline, size, colour and angle, inside the same text
+  run, so copying the page's text or searching it reads in order.
+- **The document's font when it can.** The new text uses the font the old text used when that font has every
+  character (found through its ToUnicode map, or its encoding when the font is complete). Otherwise a similar
+  standard font draws it: Times or Helvetica for Latin text, a Mincho or Gothic CJK font (serif or not, like the
+  original) for Japanese, Chinese and Korean. The report says which.
+- **One line at a time, left to right.** A change covers part of one line; text that runs down the page (vertical
+  writing, or a turned page whose text runs sideways) is refused. A longer text that would run into the next
+  characters on the line is refused too: change the whole line instead. A shorter one leaves a gap.
+- **Checked before it is kept.** Both versions are rendered (nothing may change outside the edited text) and the
+  page's text is read back (the new text must be there, at the old size). If a check fails the copy is deleted.
+- Files whose permissions forbid changes are refused (remove the protection with its password first). Scanned pages
+  have no text to edit; Erase and a comment text box are the way there.
+
 ## Formats, ranges and calculations
 
 A typed field can carry rules, set in its properties (Form tool) or in `fields.json`:
@@ -566,6 +595,7 @@ There are two ways to run it:
 | `edit_comments` | new PDF with existing comments reworded, recoloured, moved, removed (with replies) or answered, by id | writes a **new** file |
 | `remove_hidden_info` | list (`dry_run`) or remove metadata, attachments, scripts and actions, comments, private data and earlier versions | writes a **new** file |
 | `redact` | find words, e-mail addresses, phone and ID numbers (`dry_run` lists them), then remove them and any `areas` for real under black boxes, checked afterwards | writes a **new** file |
+| `edit_text` | new PDF with page text changed: find and replace, or the text inside a rect, in the document's font when it has the characters; one line at a time, checked afterwards | writes a **new** file |
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
 | `verify_signatures` | the digital signatures in a PDF: signer, time, intact, trusted, changed afterwards, status | no |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
@@ -661,9 +691,9 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 
 | project | role |
 |---|---|
-| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
+| `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 22 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 23 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -720,7 +750,8 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 14. ~~Formats, ranges and calculations in forms.~~ Done (field rules, written as Acrobat's field actions and applied when filling).
 15. ~~Edit existing comments.~~ Done (the Comment tool, `edit_comments`).
 16. ~~Compression.~~ Done (`washi pdf compress`, the Compress tool, `compress_pdf`).
-17. ~~Digital signatures (PAdES) and their checking.~~ Done (`washi pdf sign|verify|make-id`, the Sign tool, `verify_signatures`). Next: editing page text.
+17. ~~Digital signatures (PAdES) and their checking.~~ Done (`washi pdf sign|verify|make-id`, the Sign tool, `verify_signatures`).
+18. ~~Editing page text: a line at a time, and find and replace.~~ Done (`washi pdf replace-text`, the Edit text tool, `edit_text`). Next: editing a paragraph that reflows over several lines.
 
 ## License
 

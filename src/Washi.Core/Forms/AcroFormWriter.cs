@@ -366,6 +366,15 @@ public static class AcroFormWriter
 
     /// <summary>A font object for drawing text of a script (Helvetica for Latin, the script's Gothic CID font
     /// otherwise; not embedded), added to the document. Codes: WinAnsi bytes for Latin, UTF-16BE for CJK.</summary>
+    /// <summary>A standard font for <paramref name="script"/>: Times / Mincho-style when <paramref name="serif"/>, else Helvetica / Gothic-style.</summary>
+    internal static PdfDictionary TextFont(PdfDocument doc, FormScript script, bool serif)
+    {
+        var f = script == FormScript.Latin ? Simple(doc, serif ? "Times-Roman" : "Helvetica", withEncoding: true)
+                                           : Cid(doc, (serif ? CidFonts : CidSansFonts)[script]);
+        doc.Internals.AddObject(f);
+        return f;
+    }
+
     internal static PdfDictionary TextFont(PdfDocument doc, FormScript script)
     {
         var f = script == FormScript.Latin ? Simple(doc, "Helvetica", withEncoding: true) : Cid(doc, CidSansFonts[script]);

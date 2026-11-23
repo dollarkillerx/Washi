@@ -128,6 +128,8 @@
   washi pdf redact &lt;in.pdf&gt; [--find 단어 ...] [--pattern email,phone,number] [--regex 정규식] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           단어·개인정보·영역을 실제로 삭제하고 검게 가림 (--list 는 일치 항목만 표시)
   washi pdf find &lt;in.pdf&gt; &lt;텍스트&gt; [--case] [--whole-words]   텍스트가 있는 곳을 페이지별로 표시
+  washi pdf replace-text &lt;in.pdf&gt; (--find 원래 텍스트 | --box page:x0,y0,x1,y1) --with 새 텍스트 [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
+                                          페이지의 글자를 고칩니다 (한 줄씩, 저장 전에 확인)
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           책갈피 목록 (한 줄에 하나: 수준마다 공백 두 칸, 탭, 페이지),
                                           또는 같은 형식의 파일로 책갈피를 넣은 사본 작성
@@ -740,4 +742,37 @@
   <data name="Pdf_SigNone" xml:space="preserve"><value>서명이 없습니다.</value></data>
   <data name="Pdf_SigLine" xml:space="preserve"><value>{0}: {1} — {2}</value></data>
   <data name="Pdf_AskIdPassword" xml:space="preserve"><value>디지털 ID 암호: </value></data>
+  <data name="Ui_ToolEditText" xml:space="preserve"><value>글자 편집</value></data>
+  <data name="Ui_EditTextTitle" xml:space="preserve"><value>글자 편집</value></data>
+  <data name="Ui_EditTextLead" xml:space="preserve"><value>페이지에 인쇄된 글자를 고칩니다. 줄을 클릭해 입력하거나 찾아서 바꿉니다. 새 글자는 원래 자리에 같은 크기와 색으로, 문서 글꼴에 글자가 있으면 그 글꼴로 그립니다.</value></data>
+  <data name="Ui_EditTextLine" xml:space="preserve"><value>줄</value></data>
+  <data name="Ui_EditTextClick" xml:space="preserve"><value>페이지의 글자 줄을 클릭하세요.</value></data>
+  <data name="Ui_EditTextKeep" xml:space="preserve"><value>확정</value></data>
+  <data name="Ui_EditTextKeys" xml:space="preserve"><value>Enter로 확정, Esc로 그대로 둡니다.</value></data>
+  <data name="Ui_EditTextFindTitle" xml:space="preserve"><value>찾아 바꾸기</value></data>
+  <data name="Ui_EditTextFindHint" xml:space="preserve"><value>찾을 텍스트</value></data>
+  <data name="Ui_EditTextReplaceHint" xml:space="preserve"><value>바꿀 텍스트</value></data>
+  <data name="Ui_EditTextReplaceAll" xml:space="preserve"><value>모두 바꾸기</value></data>
+  <data name="Ui_EditTextReplaced" xml:space="preserve"><value>변경 {0}개를 추가했습니다. 페이지에서 확인한 뒤 저장하세요.</value></data>
+  <data name="Ui_EditTextNotFound" xml:space="preserve"><value>문서에 “{0}”이(가) 없습니다.</value></data>
+  <data name="Ui_EditTextChanges" xml:space="preserve"><value>변경</value></data>
+  <data name="Ui_EditTextNoChanges" xml:space="preserve"><value>아직 변경이 없습니다.</value></data>
+  <data name="Ui_EditTextOnPage" xml:space="preserve"><value>{0}페이지</value></data>
+  <data name="Ui_EditTextChange" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="Ui_EditTextNothing" xml:space="preserve"><value>(삭제)</value></data>
+  <data name="Ui_EditTextSave" xml:space="preserve"><value>변경 {0}개를 사본으로 저장…</value></data>
+  <data name="Ui_EditTextSaveNote" xml:space="preserve"><value>저장하기 전에 사본을 확인합니다 (페이지의 다른 부분은 그대로이고 새 글자가 읽힘). 원본은 바뀌지 않습니다.</value></data>
+  <data name="Ui_TextEdited" xml:space="preserve"><value>{0} 저장: 변경 {1}개, 문서 글꼴로 그림. 확인: 다른 부분은 바뀌지 않았습니다.</value></data>
+  <data name="Ui_TextEditedSimilar" xml:space="preserve"><value>{0} 저장: 변경 {1}개. 문서 글꼴에 없는 글자가 있어 {2}개는 비슷한 글꼴로 그렸습니다. 확인: 다른 부분은 바뀌지 않았습니다.</value></data>
+  <data name="Pdf_TextEditKept" xml:space="preserve"><value>{0}페이지: “{1}” → “{2}” ({3})</value></data>
+  <data name="Pdf_TextEditSimilar" xml:space="preserve"><value>{0}페이지: “{1}” → “{2}” (비슷한 글꼴 {3})</value></data>
+  <data name="Pdf_TextEdited" xml:space="preserve"><value>{0} 저장: 변경 {1}개. 확인: 다른 부분은 그대로이고 새 글자가 읽힙니다.</value></data>
+  <data name="Err_EditNothing" xml:space="preserve"><value>바꿀 글자가 없습니다.</value></data>
+  <data name="Err_EditNoText" xml:space="preserve"><value>{0}페이지의 그 자리에는 글자가 없습니다.</value></data>
+  <data name="Err_EditNotHorizontal" xml:space="preserve"><value>왼쪽에서 오른쪽으로 쓴 가로 글자만 고칠 수 있습니다.</value></data>
+  <data name="Err_EditOneLine" xml:space="preserve"><value>그 자리에 여러 줄이 있습니다. 한 줄씩 고치세요.</value></data>
+  <data name="Err_EditTooLong" xml:space="preserve"><value>“{0}”이(가) “{1}”보다 길어 같은 줄 뒤의 글자와 겹칩니다. 줄 전체를 고치세요.</value></data>
+  <data name="Err_EditChanged" xml:space="preserve"><value>편집한 사본이 고친 곳 밖에서 {0} 픽셀 바뀌어 저장하지 않았습니다.</value></data>
+  <data name="Err_EditCheck" xml:space="preserve"><value>새 글자가 입력한 대로 읽히지 않아 (“{0}”) 사본을 저장하지 않았습니다.</value></data>
+  <data name="Err_EditNotFound" xml:space="preserve"><value>문서에 “{0}”이(가) 없습니다.</value></data>
 </root>

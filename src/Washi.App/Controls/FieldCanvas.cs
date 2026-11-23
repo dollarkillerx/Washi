@@ -67,6 +67,7 @@ public sealed class FieldCanvas : Control
         vm.PropertyChanged += OnEditorChanged;
         vm.Erase.Changed += InvalidateVisual;
         vm.Redact.Changed += InvalidateVisual;
+        vm.EditText.Changed += InvalidateVisual;
         vm.Find.Changed += InvalidateVisual;
         vm.Sign.Changed += InvalidateVisual;
         vm.Comment.Changed += InvalidateVisual;
@@ -79,6 +80,7 @@ public sealed class FieldCanvas : Control
         vm.PropertyChanged -= OnEditorChanged;
         vm.Erase.Changed -= InvalidateVisual;
         vm.Redact.Changed -= InvalidateVisual;
+        vm.EditText.Changed -= InvalidateVisual;
         vm.Find.Changed -= InvalidateVisual;
         vm.Sign.Changed -= InvalidateVisual;
         vm.Comment.Changed -= InvalidateVisual;
@@ -140,6 +142,11 @@ public sealed class FieldCanvas : Control
         if (Editor is { IsRedactTool: true } rd)
         {
             RenderRedact(ctx, rd);
+            return;
+        }
+        if (Editor is { IsEditTextTool: true } et)
+        {
+            RenderEditText(ctx, et);
             return;
         }
         if (Editor is { IsSignTool: true } sg)
@@ -382,6 +389,36 @@ public sealed class FieldCanvas : Control
             ctx.DrawRectangle(new SolidColorBrush(Color.FromRgb(20, 20, 20), 0.35), edge, Screen(drawing));
     }
 
+    /// <summary>
+    /// Edit text tool: the lines that can be clicked (faint), the one being edited, and each change as it will look
+    /// (the old text covered, the new text over it).
+    /// </summary>
+    private void RenderEditText(DrawingContext ctx, MainViewModel vm)
+    {
+        int page = vm.PageIndex;
+        var line = new Pen(new SolidColorBrush(Color.FromRgb(31, 73, 224), 0.35), 1);
+        var off = new Pen(new SolidColorBrush(Color.FromRgb(120, 120, 120), 0.35), 1, new DashStyle([2, 2], 0));
+        foreach (var s in vm.EditText.Segments)
+            if (vm.EditText.Pending.All(p => p.Edit.Page != page || p.Edit.Box.Intersect(s.Box).Area <= 0))
+                ctx.DrawRectangle(null, s.Horizontal ? line : off, Screen(s.Box).Inflate(1));
+        var paper = Brushes.White;
+        var edge = new Pen(new SolidColorBrush(Color.FromRgb(13, 150, 64)), 1);
+        foreach (var p in vm.EditText.Pending.Where(p => p.Edit.Page == page))
+        {
+            var r = Screen(p.Edit.Box);
+            ctx.FillRectangle(paper, r.Inflate(1));
+            if (p.Edit.Text.Length > 0)
+            {
+                var text = new FormattedText(p.Edit.Text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter"),
+                                             Math.Max(4, p.Size * Zoom), Brushes.Black);
+                ctx.DrawText(text, new Point(r.X, r.Bottom - text.Height));
+            }
+            ctx.DrawRectangle(null, edge, r.Inflate(2));
+        }
+        if (vm.EditText.Selected is { } sel)
+            ctx.DrawRectangle(new SolidColorBrush(Active, 0.08), new Pen(new SolidColorBrush(Active), 1.5), Screen(sel.Box).Inflate(2));
+    }
+
     /// <summary>Sign tool: the signature fields (dashed), the placed signatures as they will print, the box being dragged.</summary>
     private void RenderSign(DrawingContext ctx, MainViewModel vm)
     {
@@ -537,6 +574,13 @@ public sealed class FieldCanvas : Control
             var p0 = ToPage(e.GetPosition(this));
             _penStroke = [(p0.X, p0.Y)];
             e.Pointer.Capture(this);
+            e.Handled = true;
+            return;
+        }
+        if (Editor is { HasDocument: true, IsEditTextTool: true } tv && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            var click = ToPage(e.GetPosition(this));
+            tv.EditText.Select(tv.EditText.SegmentAt(click.X, click.Y));
             e.Handled = true;
             return;
         }
@@ -713,6 +757,7 @@ public sealed class FieldCanvas : Control
             type = over.Kind is FieldKind.Checkbox or FieldKind.Radio or FieldKind.Choice ? StandardCursorType.Hand
                  : over.Kind == FieldKind.Signature ? StandardCursorType.Arrow : StandardCursorType.Ibeam;
         else if (vm.PreviewMode) type = StandardCursorType.Arrow;
+        else if (vm.IsEditTextTool) type = vm.EditText.SegmentAt(ToPage(screen).X, ToPage(screen).Y) is not null ? StandardCursorType.Ibeam : StandardCursorType.Arrow;
         else if (vm.DrawMode || vm.IsEraseTool || vm.IsRedactTool || vm.IsSignTool || vm.IsCommentTool) type = StandardCursorType.Cross;
         else if (HitField(screen) is not null) type = StandardCursorType.SizeAll;
         Cursor = new Cursor(type);

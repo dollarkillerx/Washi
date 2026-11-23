@@ -60,11 +60,24 @@ internal sealed class RedactContext(PdfDocument doc, IReadOnlyList<Box> boxes, F
     /// <summary>True for text that must not stay (marked-content /ActualText, /Alt, /E).</summary>
     public Func<string, bool>? Matches { get; } = matches;
     public RedactStats Stats { get; } = new();
+    /// <summary>Only text goes (editing text): drawings, images and forms' other content stay.</summary>
+    public bool TextOnly { get; init; }
+    /// <summary>Editing text: content drawn in page space right after the text object whose glyphs inside its box went.</summary>
+    public IReadOnlyList<TextInsert> Inserts { get; init; } = [];
     public Dictionary<PdfDictionary, FontMetrics> Fonts { get; } = new(ReferenceEqualityComparer.Instance);
 
     public bool AnyOverlap(Box b) => Boxes.Any(x => x.Overlaps(b));
     public bool InsideOne(Box b) => Boxes.Any(x => x.Contains(b));
     public bool ContainsPoint(double x, double y) => Boxes.Any(b => b.Contains(x, y));
+}
+
+/// <summary>New content (in page space) that takes the place of the glyphs removed inside <see cref="Box"/>.</summary>
+internal sealed class TextInsert(Box box, string draw)
+{
+    public Box Box { get; } = box;
+    public string Draw { get; } = draw;
+    public bool Pending { get; set; }
+    public bool Placed { get; set; }
 }
 
 /// <summary>
@@ -146,11 +159,12 @@ internal sealed class ContentRedactor(RedactContext ctx)
     {
         public Mx Ctm = Mx.Identity;
         public FontMetrics Font = FontMetrics.Fallback;
-        public double Size, Tc, Tw, Th = 1, TL, Ts;
+        public double Size, Tc, Tw, Th = 1, TL, Ts, Tr;
         public GState Copy() => (GState)MemberwiseClone();
     }
 
     private const int MaxDepth = 12;
+    private readonly List<(double X, double Y)> _removed = [];   // centres of the glyphs the last text operator lost
 
     /// <summary>The redacted bytes, or null when nothing changed (resources may still have been given new entries).</summary>
     public byte[]? Run(byte[] bytes, ResourceScope res, Mx ctm, int depth = 0)
@@ -176,12 +190,13 @@ internal sealed class ContentRedactor(RedactContext ctx)
                 case "Q": if (stack.Count > 0) gs = stack.Pop(); break;
                 case "cm": gs.Ctm = Mx.From(Numbers(op)).Then(gs.Ctm); break;
                 case "BT": tm = tlm = Mx.Identity; Placed(); break;
-                case "ET": Placed(); break;
+                case "ET": Placed(); if (depth == 0) Insert(op.End, gs.Ctm); break;
                 case "Tc": gs.Tc = Num(op, 0); break;
                 case "Tw": gs.Tw = Num(op, 0); break;
                 case "Tz": gs.Th = Num(op, 0) / 100; break;
                 case "TL": gs.TL = Num(op, 0); break;
                 case "Ts": gs.Ts = Num(op, 0); break;
+                case "Tr": gs.Tr = Num(op, 0); break;
                 case "Tf":
                     gs.Size = Num(op, 0);
                     gs.Font = op.Names.Count > 0 ? Font(res.Get("/Font", "/" + op.Names[^1])) : FontMetrics.Fallback;
@@ -198,7 +213,11 @@ internal sealed class ContentRedactor(RedactContext ctx)
                 case "Tm": tlm = tm = Mx.From(Numbers(op)); Placed(); break;
                 case "T*": tlm = Mx.Translate(0, -gs.TL).Then(tlm); tm = tlm; Placed(); break;
                 case "Tj" or "TJ" or "'" or "\"":
-                    ShowText(content, op, gs, ref tm, ref tlm, ref killChain, ref reliable, edits);
+                    ShowText(content, op, gs, ref tm, ref tlm, ref killChain, ref reliable, edits, depth);
+                    if (depth == 0)
+                        foreach (var ins in ctx.Inserts)
+                            if (!ins.Placed && _removed.Any(h => ins.Box.Contains(h.X, h.Y))) ins.Pending = true;
+                    _removed.Clear();
                     break;
                 case "m" or "l":
                     if (op.Numbers.Count >= 2) path.Add(gs.Ctm.Apply(Num(op, 0), Num(op, 1)));
@@ -220,7 +239,7 @@ internal sealed class ContentRedactor(RedactContext ctx)
                     if (path.Count > 0)
                     {
                         var b = new Box(path.Min(p => p.X), path.Min(p => p.Y), path.Max(p => p.X), path.Max(p => p.Y));
-                        if (ctx.InsideOne(b))
+                        if (!ctx.TextOnly && ctx.InsideOne(b))
                         {
                             // the shape goes with its painting (a drawn signature must not stay as coordinates);
                             // a path that also clips keeps its outline, unpainted
@@ -235,7 +254,7 @@ internal sealed class ContentRedactor(RedactContext ctx)
                 case "Do" when op.Names.Count > 0:
                     DoXObject(op, res, gs.Ctm, depth, edits);
                     break;
-                case "BI":
+                case "BI" when !ctx.TextOnly:
                     var ib = gs.Ctm.Bounds(new Box(0, 0, 1, 1));
                     if (!ctx.AnyOverlap(ib)) break;
                     if (ctx.InsideOne(ib)) { edits.Add((op.Start, op.End, "")); ctx.Stats.ImagesRemoved++; break; }
@@ -251,9 +270,21 @@ internal sealed class ContentRedactor(RedactContext ctx)
                     break;
             }
         }
+        if (depth == 0) Insert(bytes.Length, gs.Ctm);   // text left open at the end
         return edits.Count == 0 ? null : Apply(bytes, edits);
 
         void Placed() { killChain = false; reliable = true; }
+
+        void Insert(int at, Mx ctm)
+        {
+            foreach (var ins in ctx.Inserts.Where(i => i.Pending && !i.Placed))
+            {
+                if (ctm.Inverse() is not { } inv) return;
+                var undo = inv == Mx.Identity ? "" : Matrix(inv) + " cm ";
+                edits.Add((at, at, "q " + undo + ins.Draw + " Q"));
+                ins.Placed = true;
+            }
+        }
     }
 
     private FontMetrics Font(PdfDictionary? font)
@@ -274,7 +305,7 @@ internal sealed class ContentRedactor(RedactContext ctx)
     // ------------------------------------------------------------------ text
 
     private void ShowText(ContentStream content, ContentStream.Op op, GState gs, ref Mx tm, ref Mx tlm, ref bool killChain,
-                          ref bool reliable, List<(int, int, string)> edits)
+                          ref bool reliable, List<(int, int, string)> edits, int depth)
     {
         var operands = content.Operands(op);
         string prefix = "";
@@ -299,6 +330,8 @@ internal sealed class ContentRedactor(RedactContext ctx)
         bool vertical = font.Vertical;
         // pass 1: where each glyph is, and which are inside a box
         var glyphs = new List<(int Element, int Start, int Length, double Advance, bool Known, bool Inside)>();
+        var centres = new List<(double X, double Y)>();
+        var startTm = tm;
         var m = tm;
         bool allKnown = reliable;
         bool touched = false;
@@ -329,11 +362,13 @@ internal sealed class ContentRedactor(RedactContext ctx)
                 {
                     var (cx, cy) = trm.Apply(w0 / 2, (font.Ascent + font.Descent) / 2);
                     inside = ctx.ContainsPoint(cx, cy);
+                    centres.Add((cx, cy));
                     advance = (w0 * size + gs.Tc + tw) * th;
                     m = Mx.Translate(advance, 0).Then(m);
                 }
                 touched |= inside;
                 allKnown &= known;
+                if (inside && ctx.Inserts.Count > 0 && !vertical) _removed.Add(centres[^1]);
                 glyphs.Add((e, start, len, advance, known, inside));
             }
         }
@@ -357,9 +392,21 @@ internal sealed class ContentRedactor(RedactContext ctx)
         var hex = new StringBuilder();
         double pending = 0;
         int gi = 0;
+        // editing text: where the pen is, from the start of the line (Tlm), so the text object can be split there
+        double x = 0;
+        Mx? undo = null;
+        if (depth == 0 && ctx.Inserts.Count > 0 && !vertical && size != 0 && th != 0 && gs.Tr < 4 && tlm.Inverse() is { } tlmInv
+            && startTm.Then(tlmInv) is var off && Math.Abs(off.A - 1) < 1e-6 && Math.Abs(off.B) < 1e-6 && Math.Abs(off.C) < 1e-6
+            && Math.Abs(off.D - 1) < 1e-6 && Math.Abs(off.F) < 1e-6)
+        {
+            x = off.E;
+            undo = gs.Ctm.Inverse();
+        }
+        var gone = new List<(double X, double Y)>();
+        var lineMatrix = tlm;
         for (int e = 0; e < elements.Count; e++)
         {
-            if (elements[e] is double kern) { pending += kern; continue; }
+            if (elements[e] is double kern) { pending += kern; x -= kern / 1000 * size * th; continue; }
             if (elements[e] is not byte[] s) continue;
             for (; gi < glyphs.Count && glyphs[gi].Element == e; gi++)
             {
@@ -369,17 +416,35 @@ internal sealed class ContentRedactor(RedactContext ctx)
                     // the same displacement as the glyph: -n/1000 × size (× Th horizontally) = advance
                     pending += vertical ? -g.Advance * 1000 / size : -g.Advance / th * 1000 / size;
                     ctx.Stats.Glyphs++;
+                    x += g.Advance;
+                    if (!vertical) gone.Add(centres[gi]);
                     continue;
                 }
+                if (gone.Count > 0) Split();
                 if (Math.Abs(pending) > 1e-9) { Flush(); sb.Append(N(pending)).Append(' '); pending = 0; }
                 for (int b = 0; b < g.Length; b++) hex.Append(s[g.Start + b].ToString("X2", CultureInfo.InvariantCulture));
+                x += g.Advance;
             }
         }
+        if (gone.Count > 0) Split();
         Flush();
         if (Math.Abs(pending) > 1e-9) sb.Append(N(pending));
         sb.Append("] TJ");
         edits.Add((op.Start, op.End, prefix + sb.ToString().Replace(" ]", "]")));
         ctx.Stats.Runs++;
+
+        // the new text where the old went: the text object ends, the new text is drawn in page space, and a new text
+        // object goes on from the same pen position (the line matrix again, then a kerning to where the pen was)
+        void Split()
+        {
+            var ins = undo is null ? null : ctx.Inserts.FirstOrDefault(i => !i.Placed && gone.Any(h => i.Box.Contains(h.X, h.Y)));
+            gone.Clear();
+            if (ins is null || undo is not { } u) return;
+            Flush();
+            sb.Append("] TJ ET q ").Append(Matrix(u)).Append(" cm ").Append(ins.Draw).Append(" Q BT ").Append(Matrix(lineMatrix)).Append(" Tm [");
+            pending = -x * 1000 / (size * th);
+            ins.Placed = true;
+        }
 
         void Flush()
         {
@@ -398,6 +463,7 @@ internal sealed class ContentRedactor(RedactContext ctx)
         var subtype = x.Elements.GetName("/Subtype");
         if (subtype == "/Image")
         {
+            if (ctx.TextOnly) return;
             var bounds = ctm.Bounds(new Box(0, 0, 1, 1));
             if (!ctx.AnyOverlap(bounds)) return;
             if (ctx.InsideOne(bounds))
@@ -472,6 +538,9 @@ internal sealed class ContentRedactor(RedactContext ctx)
 
     private static double Num(ContentStream.Op op, int i) =>
         i < op.Numbers.Count && double.TryParse(op.Numbers[i], NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : 0;
+
+    private static string Matrix(Mx m) => string.Join(' ', new[] { m.A, m.B, m.C, m.D, m.E, m.F }
+        .Select(v => Math.Round(v, 6).ToString("0.######", CultureInfo.InvariantCulture)));
 
     internal static string N(double v) => Math.Round(v, 3).ToString("0.###", CultureInfo.InvariantCulture);
 

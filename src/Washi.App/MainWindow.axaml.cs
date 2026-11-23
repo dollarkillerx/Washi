@@ -34,7 +34,7 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
 
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
-        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EraseToolButton, AskToolButton })
+        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EditTextToolButton, EraseToolButton, AskToolButton })
             rail.AddHandler(PointerPressedEvent, (_, _) =>
             {
                 // a second click on the active tool folds its panel away; any tool click opens it
@@ -61,6 +61,12 @@ public partial class MainWindow : Window
                 SettingsPage.DataContext = ViewModel.Settings;
         };
         ViewModel.EditRequested += BeginEdit;
+        // edit text: a click on a line puts the cursor in its box, the whole text selected
+        ViewModel.EditText.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(EditTextViewModel.Selected) && ViewModel.EditText.Selected is not null)
+                Dispatcher.UIThread.Post(() => { EditTextBox.Focus(); EditTextBox.SelectAll(); }, DispatcherPriority.Input);
+        };
         // find bar: the cursor goes to the box; the current hit is scrolled into view (after its page is drawn)
         ViewModel.Find.Opened += () => Dispatcher.UIThread.Post(() => { FindBox.Focus(); FindBox.SelectAll(); }, DispatcherPriority.Input);
         ViewModel.Find.Changed += () => Dispatcher.UIThread.Post(ShowFindHit, DispatcherPriority.Background);

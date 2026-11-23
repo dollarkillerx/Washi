@@ -128,6 +128,8 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf redact &lt;in.pdf&gt; [--find mot ...] [--pattern email,phone,number] [--regex RE] [--box page:x0,y0,x1,y1] [--case] [--whole-words] [--list] [-o out.pdf]
                                           supprime pour de bon des mots, des données personnelles ou des zones et les couvre de noir (--list affiche seulement les occurrences)
   washi pdf find &lt;in.pdf&gt; &lt;texte&gt; [--case] [--whole-words]   où se trouve le texte, page par page
+  washi pdf replace-text &lt;in.pdf&gt; (--find ancien | --box page:x0,y0,x1,y1) --with nouveau [--page n] [--ignore-case] [--whole-words] [-o out.pdf]
+                                          modifier le texte de la page (une ligne à la fois ; vérifié avant d’être gardé)
   washi pdf bookmarks &lt;in.pdf&gt; [--set outline.txt | --clear] [-o out.pdf]
                                           liste les signets (un par ligne : deux espaces par niveau, une tabulation, la page),
                                           ou écrit une copie avec ceux d’un fichier de cette forme
@@ -740,4 +742,37 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Pdf_SigNone" xml:space="preserve"><value>Aucune signature.</value></data>
   <data name="Pdf_SigLine" xml:space="preserve"><value>{0} : {1} — {2}</value></data>
   <data name="Pdf_AskIdPassword" xml:space="preserve"><value>Mot de passe de l’identité : </value></data>
+  <data name="Ui_ToolEditText" xml:space="preserve"><value>Modifier le texte</value></data>
+  <data name="Ui_EditTextTitle" xml:space="preserve"><value>Modifier le texte</value></data>
+  <data name="Ui_EditTextLead" xml:space="preserve"><value>Modifiez les mots imprimés sur la page : cliquez sur une ligne et tapez, ou cherchez et remplacez. Le nouveau texte prend la place, la taille et la couleur de l’ancien, dans la police du document quand elle a les caractères.</value></data>
+  <data name="Ui_EditTextLine" xml:space="preserve"><value>Ligne</value></data>
+  <data name="Ui_EditTextClick" xml:space="preserve"><value>Cliquez sur une ligne de texte de la page.</value></data>
+  <data name="Ui_EditTextKeep" xml:space="preserve"><value>Garder</value></data>
+  <data name="Ui_EditTextKeys" xml:space="preserve"><value>Entrée garde la modification, Échap laisse la ligne telle quelle.</value></data>
+  <data name="Ui_EditTextFindTitle" xml:space="preserve"><value>Rechercher et remplacer</value></data>
+  <data name="Ui_EditTextFindHint" xml:space="preserve"><value>Texte à chercher</value></data>
+  <data name="Ui_EditTextReplaceHint" xml:space="preserve"><value>Remplacer par</value></data>
+  <data name="Ui_EditTextReplaceAll" xml:space="preserve"><value>Tout remplacer</value></data>
+  <data name="Ui_EditTextReplaced" xml:space="preserve"><value>{0} modification(s) ajoutée(s) : vérifiez-les sur la page, puis enregistrez.</value></data>
+  <data name="Ui_EditTextNotFound" xml:space="preserve"><value>« {0} » n’est pas dans le document.</value></data>
+  <data name="Ui_EditTextChanges" xml:space="preserve"><value>Modifications</value></data>
+  <data name="Ui_EditTextNoChanges" xml:space="preserve"><value>Aucune modification pour l’instant.</value></data>
+  <data name="Ui_EditTextOnPage" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Ui_EditTextChange" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="Ui_EditTextNothing" xml:space="preserve"><value>(supprimé)</value></data>
+  <data name="Ui_EditTextSave" xml:space="preserve"><value>Enregistrer {0} modification(s) dans une copie…</value></data>
+  <data name="Ui_EditTextSaveNote" xml:space="preserve"><value>La copie est vérifiée avant d’être gardée : rien d’autre ne change sur la page et le nouveau texte se relit. L’original n’est pas modifié.</value></data>
+  <data name="Ui_TextEdited" xml:space="preserve"><value>{0} enregistré : {1} modification(s), dans les polices du document. Vérifié : rien d’autre n’a bougé.</value></data>
+  <data name="Ui_TextEditedSimilar" xml:space="preserve"><value>{0} enregistré : {1} modification(s) ; {2} dessinée(s) dans une police proche, car celle du document n’a pas tous les caractères. Vérifié : rien d’autre n’a bougé.</value></data>
+  <data name="Pdf_TextEditKept" xml:space="preserve"><value>page {0} : « {1} » → « {2} » ({3})</value></data>
+  <data name="Pdf_TextEditSimilar" xml:space="preserve"><value>page {0} : « {1} » → « {2} » (police proche, {3})</value></data>
+  <data name="Pdf_TextEdited" xml:space="preserve"><value>{0} enregistré : {1} modification(s). Vérifié : rien d’autre n’a changé, le nouveau texte se relit.</value></data>
+  <data name="Err_EditNothing" xml:space="preserve"><value>Aucun texte à modifier.</value></data>
+  <data name="Err_EditNoText" xml:space="preserve"><value>Il n’y a pas de texte à cet endroit de la page {0}.</value></data>
+  <data name="Err_EditNotHorizontal" xml:space="preserve"><value>Seul le texte écrit de gauche à droite peut être modifié.</value></data>
+  <data name="Err_EditOneLine" xml:space="preserve"><value>Cet endroit contient plus d’une ligne : modifiez une ligne à la fois.</value></data>
+  <data name="Err_EditTooLong" xml:space="preserve"><value>« {0} » est plus long que « {1} » et empiéterait sur le texte qui suit sur la ligne : modifiez plutôt toute la ligne.</value></data>
+  <data name="Err_EditChanged" xml:space="preserve"><value>La copie modifiée changeait {0} pixels hors du texte modifié ; elle n’a pas été conservée.</value></data>
+  <data name="Err_EditCheck" xml:space="preserve"><value>Le nouveau texte ne se relisait pas tel que saisi (lu « {0} ») ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_EditNotFound" xml:space="preserve"><value>« {0} » n’est pas dans le document.</value></data>
 </root>

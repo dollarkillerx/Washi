@@ -410,6 +410,21 @@ public sealed class EditorTests : IDisposable
         Shot(w, "bookmarks");
         vm.ShowPagesPanel = true;
 
+        // edit text: a line being typed into, and a change waiting to be saved
+        vm.ActiveTool = Tool.EditText;
+        await vm.EditText.PrepareAsync();
+        var lines = vm.EditText.Segments.Where(x => x.Horizontal && x.Text.Length >= 2).ToList();
+        if (lines.Count > 3)
+        {
+            vm.EditText.Select(lines[1]);
+            vm.EditText.Text = Environment.GetEnvironmentVariable("WASHI_SCREENSHOT_EDIT") ?? "令和9年分";
+            vm.EditText.CommitCommand.Execute(null);
+            vm.EditText.Select(lines[3]);
+        }
+        Dispatcher.UIThread.RunJobs();
+        Shot(w, "edit-text");
+        vm.EditText.Reset();
+
         vm.ActiveTool = Tool.Compress;
         Dispatcher.UIThread.RunJobs();
         Shot(w, "compress");
