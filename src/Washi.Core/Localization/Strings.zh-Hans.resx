@@ -834,7 +834,7 @@
   <data name="Err_ImagesNone" xml:space="preserve"><value>没有要做成 PDF 的图片。</value></data>
   <data name="Err_ImagesPageSize" xml:space="preserve"><value>未知的页面大小“{0}”：请用 a4、letter 或 image。</value></data>
   <data name="Err_ImagesMargin" xml:space="preserve"><value>边距必须在 0 到 144 点之间，分辨率在 36 到 1200 dpi 之间。</value></data>
-  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} 不是 Washi 能读取的图片（JPEG、PNG、WebP、BMP、GIF）。HEIC 照片请先另存为 JPEG。</value></data>
+  <data name="Err_ImageUnsupported" xml:space="preserve"><value>{0} 不是 Washi 能读取的图片（JPEG、PNG、WebP、BMP、GIF、HEIC）。</value></data>
   <data name="Err_ImageUnreadable" xml:space="preserve"><value>无法把 {0} 当作图片读取。</value></data>
   <data name="Err_ImagesCheck" xml:space="preserve"><value>第 {0} 页与 {1} 不一致，因此没有保留 PDF。</value></data>
   <data name="Err_NotFound" xml:space="preserve"><value>{0} 不存在。</value></data>
@@ -930,7 +930,7 @@
   <data name="Ui_ImageRemove" xml:space="preserve"><value>删除</value></data>
   <data name="Ui_ImageUndo" xml:space="preserve"><value>保持原样</value></data>
   <data name="Ui_ImagesOnPages" xml:space="preserve"><value>文件中的图片</value></data>
-  <data name="Ui_ImagesNone" xml:space="preserve"><value>页面上没有图片（表单内的图片和内嵌图片不会列出）。</value></data>
+  <data name="Ui_ImagesNone" xml:space="preserve"><value>页面上没有图片。</value></data>
   <data name="Ui_ImageWhere" xml:space="preserve"><value>第 {0} 页 · {1} × {2} px</value></data>
   <data name="Ui_ImageWillGo" xml:space="preserve"><value>将删除</value></data>
   <data name="Ui_ImageWillBe" xml:space="preserve"><value>将替换为 {0}</value></data>
@@ -945,11 +945,11 @@
   <data name="Err_ImageReplaceArg" xml:space="preserve"><value>--replace 的格式是 id=图片文件。</value></data>
   <data name="Err_ImageEditChanged" xml:space="preserve"><value>第 {0} 页在图片以外发生了变化，因此没有保留副本。</value></data>
   <data name="Err_ImageEditCheck" xml:space="preserve"><value>{0} 在第 {1} 页显示不正确，因此没有保留副本。</value></data>
-  <data name="Ui_StampExisting" xml:space="preserve"><value>此文件中有 Washi 之前加入的页眉页脚（{0} 页）和水印（{1} 页）。</value></data>
+  <data name="Ui_StampExisting" xml:space="preserve"><value>此文件中有页眉页脚（{0} 页）和水印（{1} 页），由 Washi 或其他软件加入。</value></data>
   <data name="Ui_StampReplace" xml:space="preserve"><value>用新的内容替换</value></data>
   <data name="Ui_StampRemove" xml:space="preserve"><value>去掉并另存副本…</value></data>
-  <data name="Ui_StampRemoved" xml:space="preserve"><value>已保存 {0}：去掉了 Washi 加入的 {1} 处页眉、页脚或水印。已检查：没有残留，其他部分没有变化。</value></data>
-  <data name="Err_StampNone" xml:space="preserve"><value>没有 Washi 加入的页眉、页脚或水印。</value></data>
+  <data name="Ui_StampRemoved" xml:space="preserve"><value>已保存 {0}：去掉了 {1} 处页眉、页脚或水印。已检查：没有残留，其他部分没有变化。</value></data>
+  <data name="Err_StampNone" xml:space="preserve"><value>此文件中没有标记为页眉、页脚或水印的内容（作为普通文字绘制的无法区分）。</value></data>
   <data name="Err_StampRemoveCheck" xml:space="preserve"><value>去掉后仍有残留，因此没有保留副本。</value></data>
   <data name="Err_StampRemoveArg" xml:space="preserve"><value>--remove 的值为 headers、watermarks 或 all。</value></data>
   <data name="Ui_EditTextModeLines" xml:space="preserve"><value>行</value></data>
@@ -958,4 +958,5 @@
   <data name="Err_ParagraphTooLong" xml:space="preserve"><value>新文字需要 {0} 行，段落只能容纳 {1} 行（只能向下扩展到空白处）：请缩短。</value></data>
   <data name="Err_ParagraphMixed" xml:space="preserve"><value>段落中混有不同字号：请逐行编辑。</value></data>
   <data name="Err_ParagraphNone" xml:space="preserve"><value>“{0}”不在可以重新排版的段落中。</value></data>
+  <data name="Err_ImageHeic" xml:space="preserve"><value>{0} 是 HEIC 照片，但这台电脑没有转换工具（macOS 自带；Linux 请安装 libheif 的 heif-convert）：请先另存为 JPEG。</value></data>
 </root>

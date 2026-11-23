@@ -212,7 +212,10 @@ public static partial class PdfTextEditor
                     double size = first.Size;
                     var (ma, mb, mc, md) = first.M;
                     double oldWidth = old[^1].Box.X1 - first.Box.X0;
-                    double newWidth = width * first.FontSize * Math.Sqrt(ma * ma + mb * mb);
+                    // the old text's character spacing, kept
+                    double spacing = Spacing(resources, [old]);
+                    double tc = spacing / Math.Max(1e-9, Math.Sqrt(ma * ma + mb * mb));
+                    double newWidth = width * first.FontSize * Math.Sqrt(ma * ma + mb * mb) + spacing * Math.Max(0, newText.EnumerateRunes().Count() - 1);
                     bool wider = newWidth > oldWidth + 1;
                     // a longer text must not run into what follows on the line
                     if (wider && first.Box.X0 + newWidth > room + 0.5)
@@ -224,12 +227,12 @@ public static partial class PdfTextEditor
                     {
                         fontsDict.Elements[key] = fontRef;
                         draw = string.Create(CultureInfo.InvariantCulture,
-                            $"{N(r)} {N(g)} {N(b)} rg BT {key} {N(first.FontSize)} Tf 0 Tr 0 Tc 0 Tw 100 Tz 0 Ts {N(ma)} {N(mb)} {N(mc)} {N(md)} {N(first.X)} {N(first.Y)} Tm {encoded} Tj ET");
+                            $"{N(r)} {N(g)} {N(b)} rg BT {key} {N(first.FontSize)} Tf 0 Tr {N(tc)} Tc 0 Tw 100 Tz 0 Ts {N(ma)} {N(mb)} {N(mc)} {N(md)} {N(first.X)} {N(first.Y)} Tm {encoded} Tj ET");
                     }
                     inserts.Add(new TextInsert(box, draw));
                     results.Add(new TextEditResult(edit.Page, oldText, newText, kept, fontName, wider));
                     // where change is expected: the old glyphs and the new text, on the upright page
-                    allowed.Add((edit.Page, Union(edit.Box, ToUpright(down, first, width))));
+                    allowed.Add((edit.Page, Union(edit.Box, ToUpright(down, first, newWidth / Math.Max(1e-9, first.FontSize * Math.Sqrt(ma * ma + mb * mb))))));
                 }
 
                 // the old glyphs out, the new text in their place in the content (so the text reads in order)
@@ -244,6 +247,7 @@ public static partial class PdfTextEditor
                     bytes = [.. "q\n"u8.ToArray(), .. bytes, .. "\nQ\n"u8.ToArray(), .. Encoding.Latin1.GetBytes(string.Concat(rest))];
                 PdfEraser.WriteContents(doc, page, bytes);
             }
+            Washi.Core.Fonts.SubsetFont.FinishAll(doc);
             doc.Save(output);
         }
 

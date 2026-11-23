@@ -35,10 +35,55 @@ public static partial class PdfTextEditor
         }
 
         // a standard font of the same kind
+        var (std, stdPen, name) = StandardPen(doc, text, Serif(first));
+        var (hex, em) = stdPen(text);
+        return (std, hex, em, false, name);
+    }
+
+    /// <summary>
+    /// A font of the kind <paramref name="text"/> needs (Latin or CJK, serif or not) and a pen for it: a CJK font of this
+    /// computer embedded as a subset when there is one that may be (the text then looks the same in every viewer),
+    /// otherwise a standard font the viewer supplies (<paramref name="reuse"/> gives the document's one, when it has it).
+    /// </summary>
+    internal static (PdfItem Font, Func<string, (string Hex, double Em)> Pen, string Name) StandardPen(PdfDocument doc, string text, bool serif,
+                                                                                                     Func<FormScript, PdfDictionary>? reuse = null)
+    {
         var script = ScriptFor(text);
-        var dict = AcroFormWriter.TextFont(doc, script, Serif(first));
-        var (hex, em) = EncodeStandard(text, script, Serif(first));
-        return (dict.Reference!, hex, em, false, StandardName(dict));
+        if (Washi.Core.Fonts.SubsetFont.For(doc, script, serif, text) is { } embedded)
+            return (embedded.Type0.Reference!, embedded.Encode, embedded.Name);
+        var dict = reuse?.Invoke(script) ?? AcroFormWriter.TextFont(doc, script, serif);
+        return (dict.Reference!, t => EncodeStandard(t, script, serif), StandardName(dict));
+    }
+
+    /// <summary>
+    /// The extra space the old text was set with between its characters (character spacing, in points): what is left of
+    /// the step from one character to the next once the font's own width is taken off, the median over the text. 0 when
+    /// it cannot be told (a font without a ToUnicode map, too few characters) or is too small to matter.
+    /// </summary>
+    private static double Spacing(PdfDictionary resources, IEnumerable<List<Char>> lines)
+    {
+        var fonts = new Dictionary<string, (Dictionary<string, byte[]> Map, FontMetrics Metrics)?>();
+        var gaps = new List<double>();
+        double size = 0;
+        foreach (var line in lines)
+            for (int i = 0; i + 1 < line.Count; i++)
+            {
+                var (a, b) = (line[i], line[i + 1]);
+                if (string.IsNullOrWhiteSpace(a.Text) || string.IsNullOrWhiteSpace(b.Text) || a.Font != b.Font) continue;
+                if (!fonts.TryGetValue(a.Font, out var f))
+                    fonts[a.Font] = f = FindFont(resources, a.Font) is { } item && Codes(item) is { } map ? (map, FontMetrics.From(Deref(item) as PdfDictionary)) : null;
+                if (f is not { } fm || !fm.Map.TryGetValue(a.Text!, out var code)) continue;
+                int c = 0;
+                foreach (var x in code) c = c << 8 | x;
+                double advance = fm.Metrics.Width(c, code.Length).W * a.FontSize * Math.Sqrt(a.M.A * a.M.A + a.M.B * a.M.B);
+                double gap = b.UX - a.UX - advance;
+                size = a.Size;
+                if (Math.Abs(gap) < 0.5 * a.Size) gaps.Add(gap);
+            }
+        if (gaps.Count < 3) return 0;
+        gaps.Sort();
+        double median = gaps[gaps.Count / 2];
+        return Math.Abs(median) < 0.01 * size ? 0 : median;
     }
 
     /// <summary>
@@ -65,15 +110,20 @@ public static partial class PdfTextEditor
                 return (sb.Append('>').ToString(), em);
             }, true, Clean(first.Font));
         }
-        var script = ScriptFor(text);
-        bool serif = Serif(first);
-        var dict = AcroFormWriter.TextFont(doc, script, serif);
-        return (dict.Reference!, t => EncodeStandard(t, script, serif), false, StandardName(dict));
+        var (std, pen, name) = StandardPen(doc, text, Serif(first));
+        return (std, pen, false, name);
     }
 
     /// <summary>The standard font that can draw <paramref name="text"/>: Latin (WinAnsi) when it can, otherwise the CJK script it is in.</summary>
-    internal static FormScript ScriptFor(string text) =>
-        CanWinAnsi(text) ? FormScript.Latin : FormScripts.Detect(text) is { } s && s != FormScript.Latin ? s : FormScript.Japanese;
+    internal static FormScript ScriptFor(string text)
+    {
+        if (CanWinAnsi(text)) return FormScript.Latin;
+        var detected = FormScripts.Detect(text);
+        // kanji only (社外秘, 御中) tells nothing: unless a character is Chinese-only, the user's language decides
+        if (detected == FormScript.ChineseSimplified && !text.Any(c => FormScripts.IsSimplifiedOnly(c)))
+            return FormScripts.FromCulture(System.Globalization.CultureInfo.CurrentUICulture) is var ui and not FormScript.Latin ? ui : FormScript.Japanese;
+        return detected is { } d && d != FormScript.Latin ? d : FormScript.Japanese;
+    }
 
     /// <summary><paramref name="text"/> as a hex string for the standard font of <paramref name="script"/>, and its width in em.</summary>
     internal static (string Hex, double Width) EncodeStandard(string text, FormScript script, bool serif)

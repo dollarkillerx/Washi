@@ -45,6 +45,9 @@ public static class FormScripts
     };
 
     // Characters that exist in only one of the two Chinese standards (common words on forms).
+    /// <summary>A character written only in Simplified Chinese.</summary>
+    internal static bool IsSimplifiedOnly(char c) => SimplifiedOnly.Contains(c);
+
     private const string SimplifiedOnly = "们这个来时为说国会对发经过动后种进实现学问题员机关长东门车书见边电马鸟语认让议记设许证请调谁读账单户费贷额税务权议签录务";
     private const string TraditionalOnly = "們這個來時為說國會對發經過動後種進實現學問題員機關長東門車書見邊電馬鳥語認讓議記設許證請調誰讀帳單戶費貸額稅務權簽錄";
 

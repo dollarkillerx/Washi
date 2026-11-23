@@ -126,4 +126,59 @@ public sealed class PageImageEditTests : IDisposable
             Locked(() => PdfPageImageEdit.Apply(input, P("c.pdf"), [new AddImage(0, new PdfRect(0, 0, 50, 50), P("nope.png"))]))).Key);
         Assert.False(File.Exists(P("a.pdf")) || File.Exists(P("b.pdf")) || File.Exists(P("c.pdf")));
     }
+
+    /// <summary>
+    /// Two pages drawing one form (a 2 × 2 blue image inside it, under the form's matrix), and page 1 also draws a 2 × 2
+    /// inline red image.
+    /// </summary>
+    private string Forms(string name)
+    {
+        var blue = Encoding.Latin1.GetString([0, 0, 200, 0, 0, 200, 0, 0, 200, 0, 0, 200]);
+        var red = Encoding.Latin1.GetString([200, 0, 0, 200, 0, 0, 200, 0, 0, 200, 0, 0]);
+        var page1 = $"q 1 0 0 1 20 20 cm /Fm0 Do Q\nq 60 0 0 40 250 200 cm BI /W 2 /H 2 /CS /RGB /BPC 8 ID {red} EI Q\nBT /F1 12 Tf 30 100 Td (Text stays) Tj ET";
+        var page2 = "q 1 0 0 1 20 20 cm /Fm0 Do Q";
+        var form = "q 100 0 0 60 0 0 cm /Im0 Do Q";
+        string[] objects =
+        [
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 300] /Contents 5 0 R /Resources << /Font << /F1 9 0 R >> /XObject << /Fm0 7 0 R >> >> >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 300] /Contents 6 0 R /Resources << /XObject << /Fm0 7 0 R >> >> >>",
+            $"<< /Length {Encoding.Latin1.GetByteCount(page1)} >>\nstream\n{page1}\nendstream",
+            $"<< /Length {page2.Length} >>\nstream\n{page2}\nendstream",
+            $"<< /Type /XObject /Subtype /Form /BBox [0 0 200 200] /Matrix [1 0 0 1 30 40] /Resources << /XObject << /Im0 8 0 R >> >> /Length {form.Length} >>\nstream\n{form}\nendstream",
+            $"<< /Type /XObject /Subtype /Image /Width 2 /Height 2 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length 12 >>\nstream\n{blue}\nendstream",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+        ];
+        var sb = new StringBuilder("%PDF-1.7\n");
+        var offsets = new List<int>();
+        for (int i = 0; i < objects.Length; i++) { offsets.Add(Encoding.Latin1.GetByteCount(sb.ToString())); sb.Append($"{i + 1} 0 obj\n{objects[i]}\nendobj\n"); }
+        int xref = Encoding.Latin1.GetByteCount(sb.ToString());
+        sb.Append($"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        foreach (var o in offsets) sb.Append($"{o:D10} 00000 n \n");
+        sb.Append($"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        File.WriteAllBytes(P(name), Encoding.Latin1.GetBytes(sb.ToString()));
+        return P(name);
+    }
+
+    [Fact]
+    public void Images_inside_forms_and_inline_images_are_listed_and_edited()
+    {
+        var input = Forms("forms.pdf");
+        var images = PdfPageImageEdit.List(input);
+        Assert.Equal(["1-1", "1-2", "2-1"], images.Select(i => i.Id));
+        Assert.Equal(new PdfRect(50, 180, 150, 240), images[0].Rect);           // the form's matrix and the page's cm: 20+30, 20+40
+        Assert.Equal((2, 2), (images[1].PixelWidth, images[1].PixelHeight));    // the inline one
+        Assert.Equal(new PdfRect(250, 60, 310, 100), images[1].Rect);
+
+        // the form's image replaced on page 1 only; the inline image removed
+        var r = Locked(() => PdfPageImageEdit.Apply(input, P("out.pdf"), [],
+            replace: new Dictionary<string, string> { ["1-1"] = Photo("logo.png", 100, 60) }, remove: ["1-2"]));
+        Assert.Equal(new ImageEditResult(0, 1, 1), r);
+        var after = PdfPageImageEdit.List(P("out.pdf"));
+        Assert.Equal(["1-1", "2-1"], after.Select(i => i.Id));
+        Assert.Equal((100, 60), (after[0].PixelWidth, after[0].PixelHeight));
+        Assert.Equal((2, 2), (after[1].PixelWidth, after[1].PixelHeight));       // page 2 still draws the old form
+        Assert.Contains("Text stays", Text(P("out.pdf")));
+    }
 }

@@ -132,8 +132,9 @@ public static partial class PdfTextEditor
                 PdfEraser.WithPage(pdfium, group.Key, (page, map) =>
                 {
                     var chars = Chars(page, map);
+                    var shapes = Shapes(page, map);
                     double pageHeight = map.ToDevice(0, 0, fpdfview.FPDF_GetPageWidthF(page), fpdfview.FPDF_GetPageHeightF(page)).Height;
-                    foreach (var e in group) plans.Add(Plan(e, chars, pageHeight));
+                    foreach (var e in group) plans.Add(Plan(e, chars, shapes, pageHeight));
                 });
         }
         finally { fpdfview.FPDF_CloseDocument(pdfium); }
@@ -154,6 +155,7 @@ public static partial class PdfTextEditor
                 page.Elements["/Resources"] = resources;
 
                 var boxes = new List<Box>();
+                var pathBoxes = new List<Box>();
                 var inserts = new List<TextInsert>();
                 int k = 0;
                 foreach (var plan in pageGroup)
@@ -163,7 +165,9 @@ public static partial class PdfTextEditor
                     var (fontRef, pen, kept, fontName) = PenFor(doc, resources, first, text.Replace("\n", ""));
                     var (ma, mb, mc, md) = first.M;
                     double emToPt = first.FontSize * Math.Sqrt(ma * ma + mb * mb);
-                    var lines = Break(text, pen, emToPt, plan.FirstWidth, plan.Width);
+                    double spacing = Spacing(resources, plan.LineChars);               // the old character spacing, kept
+                    double W(string str) => str.Length == 0 ? 0 : pen(str).Em * emToPt + spacing * str.EnumerateRunes().Count();
+                    var lines = Break(text, W, plan.FirstWidth, plan.Width);
                     if (lines.Count > plan.MaxLines)
                         throw new PageAssemblyException($"the new text needs {lines.Count} lines and the paragraph has room for {plan.MaxLines}; shorten it",
                                                         "Err_ParagraphTooLong", lines.Count, plan.MaxLines);
@@ -175,21 +179,40 @@ public static partial class PdfTextEditor
                     double ul = Math.Sqrt(ma * ma + mb * mb), vl = Math.Sqrt(mc * mc + md * md);
                     double ux = ma / ul, uy = mb / ul, vx = -mc / vl, vy = -md / vl;   // along the line, and down the page, in PDF space
                     var (r, g, b) = ((first.Color >> 16 & 255) / 255.0, (first.Color >> 8 & 255) / 255.0, (first.Color & 255) / 255.0);
+                    double tc = spacing / ul;
                     var draw = new StringBuilder(string.Create(CultureInfo.InvariantCulture,
-                        $"{N(r)} {N(g)} {N(b)} rg BT {key} {N(first.FontSize)} Tf 0 Tr 0 Tc 0 Tw 100 Tz 0 Ts "));
+                        $"{N(r)} {N(g)} {N(b)} rg BT {key} {N(first.FontSize)} Tf 0 Tr {N(tc)} Tc 0 Tw 100 Tz 0 Ts "));
                     double widest = 0;
                     for (int i = 0; i < lines.Count; i++)
                     {
                         double along = (i == 0 ? plan.FirstStart : plan.Start) - first.UX, down = i * plan.Leading;
                         double x = first.X + along * ux + down * vx, y = first.Y + along * uy + down * vy;
-                        var (hex, em) = pen(lines[i]);
-                        widest = Math.Max(widest, along + em * emToPt);
+                        var (hex, _) = pen(lines[i]);
+                        widest = Math.Max(widest, along + W(lines[i]));
                         if (lines[i].Length > 0)
                             draw.Append(CultureInfo.InvariantCulture, $"{N(ma)} {N(mb)} {N(mc)} {N(md)} {N(x)} {N(y)} Tm {hex} Tj ");
                     }
                     draw.Append("ET");
+
+                    // underlines and markers go with their words, where the words now are
+                    var marks = Place(plan, lines, W);
+                    var (before, after) = (new StringBuilder(), new StringBuilder());
+                    foreach (var (rect, d) in marks)
+                    {
+                        var target = d.Bottom - d.Top > 0.5 * first.Size ? before : after;   // a marker under the text, an underline over it
+                        var (dr, dg, db) = ((d.Color >> 16 & 255) / 255.0, (d.Color >> 8 & 255) / 255.0, (d.Color & 255) / 255.0);
+                        target.Append(CultureInfo.InvariantCulture,
+                            $"q {N(up.A)} {N(up.B)} {N(up.C)} {N(up.D)} {N(up.E)} {N(up.F)} cm {N(dr)} {N(dg)} {N(db)} rg {N(rect.X0)} {N(rect.Y0)} {N(rect.Width)} {N(rect.Height)} re f Q ");
+                        allowed.Add((plan.Edit.Page, rect));
+                    }
+                    var whole = before + draw.ToString() + (after.Length > 0 ? " " + after.ToString().TrimEnd() : "");
+                    foreach (var d in plan.Decor)
+                    {
+                        pathBoxes.Add(up.Bounds(new Box(d.Box.X0 - 0.5, d.Box.Y0 - 0.5, d.Box.X1 + 0.5, d.Box.Y1 + 0.5)));
+                        allowed.Add((plan.Edit.Page, d.Box));
+                    }
                     foreach (var line in plan.Old) boxes.Add(up.Bounds(new Box(line.X0, line.Y0, line.X1, line.Y1)));
-                    inserts.Add(new TextInsert(up.Bounds(new Box(plan.Old[0].X0, plan.Old[0].Y0, plan.Old[0].X1, plan.Old[0].Y1)), draw.ToString()));
+                    inserts.Add(new TextInsert(up.Bounds(new Box(plan.Old[0].X0, plan.Old[0].Y0, plan.Old[0].X1, plan.Old[0].Y1)), whole));
 
                     var area = new PdfRect(Math.Min(plan.Start, plan.FirstStart), first.UY - first.Size,
                                            first.UX + widest, first.UY + (lines.Count - 1) * plan.Leading + first.Size * 0.35);
@@ -198,7 +221,7 @@ public static partial class PdfTextEditor
                     results.Add(new TextEditResult(plan.Edit.Page, plan.Text, text, kept, fontName, lines.Count > plan.Old.Count));
                 }
 
-                var ctx = new RedactContext(doc, boxes, null) { TextOnly = true, Inserts = inserts };
+                var ctx = new RedactContext(doc, boxes, null) { TextOnly = true, Inserts = inserts, PathBoxes = pathBoxes };
                 var res = new ResourceScope(doc, resources, rs => page.Elements["/Resources"] = rs);
                 var content = PdfEraser.ReadContents(page);
                 var bytes = new ContentRedactor(ctx).Run(content, res, Mx.Identity) ?? content;
@@ -208,6 +231,7 @@ public static partial class PdfTextEditor
                     bytes = [.. "q\n"u8.ToArray(), .. bytes, .. "\nQ\n"u8.ToArray(), .. Encoding.Latin1.GetBytes(string.Concat(rest))];
                 PdfEraser.WriteContents(doc, page, bytes);
             }
+            Washi.Core.Fonts.SubsetFont.FinishAll(doc);
             doc.Save(output);
         }
 
@@ -226,9 +250,81 @@ public static partial class PdfTextEditor
     }
 
     private sealed record Para(TextEdit Edit, Char First, List<PdfRect> Old, string Text, PdfRect Box, double FirstStart, double Start,
-                               double FirstWidth, double Width, double Leading, int MaxLines);
+                               double FirstWidth, double Width, double Leading, int MaxLines, List<List<Char>> LineChars, List<Decoration> Decor);
 
-    private static Para Plan(TextEdit e, List<Char> chars, double pageHeight)
+    /// <summary>A filled or stroked shape on the page (upright points), and its colour.</summary>
+    private sealed record Shape(PdfRect Box, int Color, bool Filled);
+
+    /// <summary>
+    /// An underline or a marker under some of the paragraph's words: the words, and the band it covers relative to their
+    /// line's baseline (upright points).
+    /// </summary>
+    private sealed record Decoration(PdfRect Box, string Text, double Top, double Bottom, int Color);
+
+    /// <summary>The page's own shapes (paths), as PDFium sees them.</summary>
+    private static List<Shape> Shapes(FpdfPageT page, PdfiumDocument.PageMapper map)
+    {
+        var list = new List<Shape>();
+        int n = fpdf_edit.FPDFPageCountObjects(page);
+        for (int i = 0; i < n; i++)
+        {
+            var obj = fpdf_edit.FPDFPageGetObject(page, i);
+            if (fpdf_edit.FPDFPageObjGetType(obj) != 2) continue;   // FPDF_PAGEOBJ_PATH
+            float l = 0, b = 0, r = 0, t = 0;
+            if (fpdf_edit.FPDFPageObjGetBounds(obj, ref l, ref b, ref r, ref t) == 0) continue;
+            int fill = 0, stroke = 0;
+            fpdf_edit.FPDFPathGetDrawMode(obj, ref fill, ref stroke);
+            uint cr = 0, cg = 0, cb = 0, ca = 0;
+            if (fill != 0) fpdf_edit.FPDFPageObjGetFillColor(obj, ref cr, ref cg, ref cb, ref ca);
+            else fpdf_edit.FPDFPageObjGetStrokeColor(obj, ref cr, ref cg, ref cb, ref ca);
+            list.Add(new Shape(map.ToDevice(l, t, r, b), (int)(cr << 16 | cg << 8 | cb), fill != 0));
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// The underlines (a thin rule just under a line's baseline) and markers (a fill as tall as the line) under some of the
+    /// paragraph's words; one running from the end of a line to the start of the next is one.
+    /// </summary>
+    private static List<Decoration> Decorations(List<List<Char>> lines, List<Shape> shapes, double size, double left, double right)
+    {
+        var found = new List<(int Line, int From, int To, Decoration D)>();
+        for (int li = 0; li < lines.Count; li++)
+        {
+            var line = lines[li];
+            double baseline = line[0].UY;
+            foreach (var s in shapes)
+            {
+                var b = s.Box;
+                if (b.Width < 0.5 * size || b.X0 < left - 2 || b.X1 > right + 2 || b.Width > right - left + 1) continue;
+                bool underline = b.Height <= Math.Max(1.5, 0.15 * size) && b.Y0 >= baseline - 0.1 * size && b.Y1 <= baseline + 0.4 * size;
+                bool marker = s.Filled && b.Height >= 0.5 * size && b.Height <= 1.6 * size && (b.Y0 + b.Y1) / 2 > baseline - size && (b.Y0 + b.Y1) / 2 < baseline + 0.2 * size;
+                if (!underline && !marker) continue;
+                var under = Enumerable.Range(0, line.Count).Where(i => line[i].Box.Center.X >= b.X0 - 0.5 && line[i].Box.Center.X <= b.X1 + 0.5).ToList();
+                if (under.Count == 0) continue;
+                var text = string.Concat(under.Select(i => line[i].Text));
+                found.Add((li, under[0], under[^1], new Decoration(b, text, b.Y0 - baseline, b.Y1 - baseline, s.Color)));
+            }
+        }
+        // joined across a line break
+        var merged = new List<Decoration>();
+        foreach (var f in found.OrderBy(f => f.Line).ThenBy(f => f.From))
+        {
+            if (merged.Count > 0 && found.FirstOrDefault(p => p.D == merged[^1]) is var prev && prev.D is not null
+                && prev.Line == f.Line - 1 && prev.To == lines[prev.Line].Count - 1 && f.From == 0
+                && prev.D.Color == f.D.Color && Math.Abs(prev.D.Bottom - prev.D.Top - (f.D.Bottom - f.D.Top)) < 0.5)
+            {
+                var joined = prev.D with { Text = prev.D.Text + f.D.Text };
+                merged[^1] = joined;
+                found[found.IndexOf(prev)] = (prev.Line, prev.From, f.To, joined);
+                continue;
+            }
+            merged.Add(f.D);
+        }
+        return merged;
+    }
+
+    private static Para Plan(TextEdit e, List<Char> chars, List<Shape> shapes, double pageHeight)
     {
         var inside = chars.Where(c => c.Size > 0 && c.Text is not null && e.Box.Contains(c.Box.Center.X, c.Box.Center.Y)).ToList();
         if (inside.Count == 0) throw new PageAssemblyException($"there is no text in that place on page {e.Page + 1}", "Err_EditNoText", e.Page + 1);
@@ -273,8 +369,40 @@ public static partial class PdfTextEditor
             if (text.Length > 0) text.Append(Joiner(text.ToString(), t));
             text.Append(t);
         }
+        var decor = Decorations(lines, shapes, size, Math.Min(start, firstStart), right);
         return new Para(e, first, [.. lines.Select(l => l.Select(c => c.Box).Aggregate(Union))], text.ToString(), box,
-                        firstStart, start, right - firstStart, right - start, leading, maxLines);
+                        firstStart, start, right - firstStart, right - start, leading, maxLines, lines, decor);
+    }
+
+    /// <summary>
+    /// Where each decoration's words are in the new lines: the first place after the one before where they appear
+    /// (spaces aside); a decoration whose words are gone goes with them. A run over a line break gives a piece per line.
+    /// </summary>
+    private static List<(PdfRect Rect, Decoration D)> Place(Para plan, List<string> lines, Func<string, double> W)
+    {
+        var at = new List<(int Line, int Index)>();   // the new text's characters, spaces left out
+        var flat = new StringBuilder();
+        for (int li = 0; li < lines.Count; li++)
+            for (int ci = 0; ci < lines[li].Length; ci++)
+                if (!char.IsWhiteSpace(lines[li][ci])) { at.Add((li, ci)); flat.Append(lines[li][ci]); }
+        var placed = new List<(PdfRect, Decoration)>();
+        int from = 0;
+        foreach (var d in plan.Decor)
+        {
+            var want = string.Concat(d.Text.Where(c => !char.IsWhiteSpace(c)));
+            int k = want.Length == 0 ? -1 : flat.ToString().IndexOf(want, from, StringComparison.Ordinal);
+            if (k < 0) continue;
+            from = k + want.Length;
+            foreach (var g in Enumerable.Range(k, want.Length).Select(i => at[i]).GroupBy(p => p.Line))
+            {
+                var line = lines[g.Key];
+                double start = g.Key == 0 ? plan.FirstStart : plan.Start, baseline = plan.First.UY + g.Key * plan.Leading;
+                int i0 = g.Min(p => p.Index), i1 = g.Max(p => p.Index);
+                double x0 = start + W(line[..i0]), x1 = start + W(line[..(i1 + 1)]);
+                placed.Add((new PdfRect(x0, baseline + d.Top, x1, baseline + d.Bottom), d));
+            }
+        }
+        return placed;
     }
 
     /// <summary>Characters that may hang past the right edge rather than start a line, and ones that never end a line.</summary>
@@ -282,12 +410,11 @@ public static partial class PdfTextEditor
     private const string NoEnd = "([{「『（【〔〈《｛";
 
     /// <summary>The text broken into lines that fit (widths in points; the first line's may differ).</summary>
-    private static List<string> Break(string text, Func<string, (string Hex, double Em)> pen, double emToPt, double firstWidth, double width)
+    private static List<string> Break(string text, Func<string, double> W, double firstWidth, double width)
     {
         var lines = new List<string>();
         var line = new StringBuilder();
         double Fits() => (lines.Count == 0 ? firstWidth : width) * 1.01 + 0.5;   // text set a hair tighter than ours still fits
-        double W(string s) => s.Length == 0 ? 0 : pen(s).Em * emToPt;
 
         // a token on an empty line: as it is, or broken by character when it is longer than the line
         void Start(string token)

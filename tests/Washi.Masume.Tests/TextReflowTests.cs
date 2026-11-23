@@ -168,5 +168,49 @@ public sealed class TextReflowTests : IDisposable
         Assert.Equal(["Notice", "The office stays where it is.", "Thank you."], lines);
     }
 
+    private static (byte R, byte G, byte B) At(string pdf, double x, double y) => Locked(() =>
+    {
+        using var d = PdfiumDocument.Open(pdf);
+        var img = d.RenderPage(0, 4);
+        int q = ((int)(y * 4) * img.Width + (int)(x * 4)) * 3;
+        return (img.Pixels[q], img.Pixels[q + 1], img.Pixels[q + 2]);
+    });
+
+    [Fact]
+    public void Character_spacing_is_kept_in_a_line_edit()
+    {
+        // the line is set with 2 pt between its letters
+        var input = Doc("spaced.pdf", "BT /F1 10 Tf 2 Tc 30 340 Td (Total due: 1,200 yen) Tj ET");
+        var reference = Doc("reference.pdf", "BT /F1 10 Tf 2 Tc 30 340 Td (Total due: 1,350 yen) Tj ET");
+        Locked(() => PdfTextEditor.Replace(input, P("out.pdf"), "1,200", "1,350"));
+        var edited = Lines(P("out.pdf")).Single(l => l.Text.Contains("1,350"));
+        var expected = Lines(reference).Single(l => l.Text.Contains("1,350"));
+        Assert.Equal(expected.Box.X1, edited.Box.X1, 0);                   // as wide as the same text set the old way
+    }
+
+    [Fact]
+    public void Underlines_and_markers_move_with_their_words()
+    {
+        // "office" underlined in blue (line 2 starts with it), "address" marked in yellow
+        var input = Doc("decor.pdf",
+            "0 0 0.9 rg 30 325 23.9 1.2 re f\n" +
+            "1 0.9 0.2 rg 30 312 37 10 re f\n" +
+            Lines("/F1", 10, 13, 340, (40, "We are writing to let you know that the"), (30, "office will move to a new address next"), (30, "address month. Please update your records.")));
+        var para = Locked(() => PdfTextEditor.Paragraphs(input, 0)).Single(p => p.Lines == 3);
+        Locked(() => PdfTextEditor.Reflow(input, P("out.pdf"), [new TextEdit(0, para.Box, "Our office moves next month to a new address.")]));
+
+        // now: line 1 "Our office moves next month to a new" (from x 40), line 2 "address." (from x 30)
+        var lines = Lines(P("out.pdf"));
+        Assert.StartsWith("Our office", lines[0].Text);
+        static bool Blue((byte R, byte G, byte B) c) => c.B > 150 && c.R < 80;
+        static bool Yellow((byte R, byte G, byte B) c) => c.R > 200 && c.G > 180 && c.B < 120;
+        // the underline under "office", where it now is: after "Our " (19.45 pt) on the first line, just below its baseline
+        Assert.True(Blue(At(P("out.pdf"), 40 + 19.45 + 10, 400 - 340 + 1.6)));
+        Assert.True(Blue(At(input, 40, 400 - 325.6)));                    // the old underline, in the original…
+        Assert.False(Blue(At(P("out.pdf"), 40, 400 - 325.6)));            // …is not where it was any more
+        // the marker behind "address", now at the start of the second line
+        Assert.True(Yellow(At(P("out.pdf"), 33, 400 - 327 - 7)));
+    }
+
     private static string Norm(string s) => string.Concat(s.Normalize(NormalizationForm.FormKC).Where(c => !char.IsWhiteSpace(c)));
 }

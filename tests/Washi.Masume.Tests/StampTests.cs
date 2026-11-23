@@ -249,4 +249,59 @@ public sealed class StampTests : IDisposable
 
         Assert.Equal("Err_StampNone", Assert.Throws<PageAssemblyException>(() => Locked(() => PdfStamper.Remove(input, P("x.pdf"), true, true))).Key);
     }
+
+    [Fact]
+    public void Headers_footers_and_watermarks_from_other_programs_are_found_and_removed()
+    {
+        // Acrobat-style header (inline properties, a nested span), Word-style footer (properties by name), a watermark
+        var content =
+            "/Artifact <</Type /Pagination /Subtype /Header>> BDC BT /F1 9 Tf 30 280 Td /Span <</ActualText (Draft)>> BDC (Draft copy) Tj EMC ET EMC\n" +
+            "BT /F1 14 Tf 60 150 Td (Body text stays) Tj ET\n" +
+            "/Artifact /P0 BDC BT /F1 9 Tf 190 20 Td (Page 1 of 1) Tj ET EMC\n" +
+            "/Artifact <</Subtype /Watermark /Type /Pagination>> BDC q 0.5 g BT /F1 40 Tf 1 0 0 1 80 120 Tm (SAMPLE) Tj ET Q EMC";
+        string[] objects =
+        [
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 300] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> /Properties << /P0 << /Type /Pagination /Subtype /Footer >> >> >> >>",
+            $"<< /Length {content.Length} >>\nstream\n{content}\nendstream",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+        ];
+        var sb = new StringBuilder("%PDF-1.7\n");
+        var offsets = new List<int>();
+        for (int i = 0; i < objects.Length; i++) { offsets.Add(sb.Length); sb.Append($"{i + 1} 0 obj\n{objects[i]}\nendobj\n"); }
+        int xref = sb.Length;
+        sb.Append($"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        foreach (var o in offsets) sb.Append($"{o:D10} 00000 n \n");
+        sb.Append($"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        File.WriteAllText(P("other.pdf"), sb.ToString(), Encoding.ASCII);
+
+        Assert.Equal((1, 1), PdfStamper.Existing(P("other.pdf")));
+        Assert.Equal(2, Locked(() => PdfStamper.Remove(P("other.pdf"), P("noheaders.pdf"), headers: true, watermarks: false)));
+        var t = Text(P("noheaders.pdf"), 0);
+        Assert.DoesNotContain("Draft", t);
+        Assert.DoesNotContain("Page 1 of 1", t);
+        Assert.Contains("SAMPLE", t);
+        Assert.Contains("Body text stays", t);
+        Assert.Equal((0, 1), PdfStamper.Existing(P("noheaders.pdf")));
+
+        Locked(() => PdfStamper.Remove(P("other.pdf"), P("clean.pdf"), headers: true, watermarks: true));
+        Assert.Equal("Body text stays", Text(P("clean.pdf"), 0).Trim());
+    }
+
+    [Fact]
+    public void Japanese_marks_are_drawn_in_an_embedded_subset_of_this_computers_font()
+    {
+        Assert.SkipUnless(File.Exists("/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc") || OperatingSystem.IsWindows(), "no Japanese system font to embed here");
+        var input = Three();
+        Stamp(input, P("ja.pdf"), new StampOptions { HeaderLeft = "株式会社サンプル", Watermark = new Watermark("社外秘") });
+        using var d = PdfReader.Open(P("ja.pdf"), PdfDocumentOpenMode.Import);
+        var fonts = d.Pages[0].Resources.Elements.GetDictionary("/Font")!.Elements.Values
+            .Select(v => ((PdfReference)v).Value as PdfDictionary).Where(f => f!.Elements.GetName("/Subtype") == "/Type0").ToList();
+        var font = Assert.Single(fonts.DistinctBy(f => f!.Elements.GetName("/BaseFont")));
+        Assert.Matches("^/[A-Z]{6}\\+", font!.Elements.GetName("/BaseFont"));      // a subset, embedded
+        Assert.NotNull(font.Elements["/ToUnicode"]);
+        Assert.InRange(new FileInfo(P("ja.pdf")).Length - new FileInfo(input).Length, 1, 150_000);
+        Assert.Contains("社外秘", Text(P("ja.pdf"), 0));
+    }
 }

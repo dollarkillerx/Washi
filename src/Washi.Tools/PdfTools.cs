@@ -973,8 +973,8 @@ public sealed class StampPagesTool(PathPolicy p) : PdfTool(p)
                      "color":{"type":"string","description":"#RRGGBB (default #808080)"},
                      "behind":{"type":"boolean","description":"Under the page's content"}},
                    "required":["text"],"additionalProperties":false},
-          "replace_existing":{"type":"boolean","description":"First take out the headers and footers (when new ones are given) and the watermark (when a new one is) that Washi added before"},
-          "remove":{"type":"string","enum":["headers","watermarks","all"],"description":"Only take out what Washi added before (with nothing new to add)"},
+          "replace_existing":{"type":"boolean","description":"First take out the headers and footers (when new ones are given) and the watermark (when a new one is) already in the file (Washi's or another program's, when tagged as page artifacts)"},
+          "remove":{"type":"string","enum":["headers","watermarks","all"],"description":"Only take out the headers, footers and/or watermarks already in the file, Washi's or another program's (tagged as page artifacts, as Acrobat and Word do)"},
           "output":{"type":"string","description":"New PDF path (default: <name>_stamped.pdf next to the input)"}},
          "required":["path"],"additionalProperties":false}
         """;
@@ -1030,8 +1030,8 @@ public sealed class ImagesToPdfTool(PathPolicy p) : PdfTool(p)
         "Make a PDF from photos and scans (JPEG, PNG, WebP, BMP, GIF), one page per image, in the order given. JPEG files go in " +
         "as they are (no loss, no growth); the others are stored losslessly with their transparency. A photo's EXIF " +
         "orientation is applied. Pages are A4 or Letter turned to suit each image, or the image's own size at a resolution. " +
-        "Each page is rendered and compared with its image before the file is kept. HEIC is not read: convert it to JPEG " +
-        "first. Run ocr_pdf afterwards to make the text searchable. Never overwrites: output defaults to <first image>.pdf.";
+        "Each page is rendered and compared with its image before the file is kept. HEIC photos are converted first (macOS; " +
+        "heif-convert on Linux). Run ocr_pdf afterwards to make the text searchable. Never overwrites: output defaults to <first image>.pdf.";
     protected override string Schema => """
         {"type":"object","properties":{
           "images":{"type":"array","minItems":1,"items":{"type":"string"},"description":"Image files, in page order"},
@@ -1249,7 +1249,7 @@ public sealed class ListPageImagesTool(PathPolicy p) : PdfTool(p)
     protected override bool HoldsPdfiumLock => false;
     public override string Description =>
         "The images a PDF's pages draw (photos, logos, scans): id (for edit_page_images), page (1-based), rect [x0,y0,x1,y1] in " +
-        "points from the top-left of the upright page, and the image's size in pixels. Images inside forms and inline images are not listed.";
+        "points from the top-left of the upright page, and the image's size in pixels. Images inside forms (XObjects) and inline images are listed too.";
     protected override string Schema => """
         {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
         """;
