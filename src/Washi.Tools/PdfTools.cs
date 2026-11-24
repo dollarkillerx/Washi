@@ -50,6 +50,14 @@ public static class WashiTools
         .Add(new ConvertToPdfaTool(policy))
         .Add(new VerifySignaturesTool(policy))
         .Add(new AddLtvTool(policy))
+        .Add(new ListAttachmentsTool(policy))
+        .Add(new EditAttachmentsTool(policy))
+        .Add(new ExtractAttachmentsTool(policy))
+        .Add(new ListPageLabelsTool(policy))
+        .Add(new SetPageLabelsTool(policy))
+        .Add(new ListLayersTool(policy))
+        .Add(new SetLayersTool(policy))
+        .Add(new EncryptForCertificatesTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -117,6 +125,12 @@ public abstract class PdfTool(PathPolicy policy) : IWashiTool
 
     protected static string? OptStr(JsonElement a, string key) =>
         a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    /// <summary>A list of strings (absent: empty).</summary>
+    protected static List<string> Strs(JsonElement a, string key) =>
+        a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Array
+            ? [.. v.EnumerateArray().Select(x => x.ValueKind == JsonValueKind.String ? x.GetString()! : throw new ToolException($"'{key}' must be a list of strings"))]
+            : [];
 
     protected static double? OptNum(JsonElement a, string key) =>
         a.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDouble() : null;
@@ -779,6 +793,213 @@ public sealed class AddLtvTool(PathPolicy p) : PdfTool(p)
         {
             output, certificates_added = r.Certificates, ocsp_responses_added = r.Ocsps, revocation_lists_added = r.Crls,
             document_timestamp = r.Timestamped, ltv = r.Ltv, not_ltv = r.NotLtv, notes = r.Notes,
+        }));
+    }
+}
+
+public sealed class ListAttachmentsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_attachments";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "The files attached to a PDF: name, size in bytes, description, modified date, and page (1-based) when the file is on a " +
+        "file-attachment comment rather than in the document's list of attachments.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a) => new(ToJson(new
+    {
+        attachments = PdfAttachments.List(Policy.Input(Str(a, "path"))).Select(x => new
+        {
+            name = x.Name, size = x.Size >= 0 ? x.Size : (long?)null, description = x.Description.Length > 0 ? x.Description : null,
+            modified = x.Modified?.ToString("o", CultureInfo.InvariantCulture), page = x.Page >= 0 ? x.Page + 1 : (int?)null,
+        }),
+    }));
+}
+
+public sealed class EditAttachmentsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "edit_attachments";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a NEW copy of a PDF with files attached (add: paths of files to attach, with an optional description) and/or " +
+        "attachments removed (remove: their names, as list_attachments gives them; a file-attachment comment goes with its file). " +
+        "Names are kept unique. Each added file is read back byte for byte. Never overwrites: output defaults to <name>_attached.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "add":{"type":"array","items":{"type":"string"},"description":"Files to attach"},
+          "description":{"type":"string","description":"Description of the added files"},
+          "remove":{"type":"array","items":{"type":"string"},"description":"Names of attachments to remove"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_attached.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var add = Strs(a, "add").Select(Policy.Input).ToList();
+        var remove = Strs(a, "remove");
+        var output = Policy.Output(OptStr(a, "output"), path, add.Count > 0 ? "_attached" : "_detached");
+        var added = PdfAttachments.Edit(path, output, add, remove, OptStr(a, "description") ?? "");
+        return new ToolResult(ToJson(new { output, added, removed = remove, attachments = PdfAttachments.List(output).Select(x => x.Name) }));
+    }
+}
+
+public sealed class ExtractAttachmentsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "extract_attachments";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Saves the files attached to a PDF into a folder (default <name>_attachments next to it): all of them, or those named. " +
+        "File names from the PDF are reduced to plain names, and a file already there is never replaced (the new one gets " +
+        "\" (2)\"). Returns the paths written.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "names":{"type":"array","items":{"type":"string"},"description":"Attachments to save (default: all)"},
+          "folder":{"type":"string","description":"Folder to save into (default: <name>_attachments next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var folder = Policy.OutputFolder(OptStr(a, "folder"), path, "_attachments");
+        return new ToolResult(ToJson(new { folder, files = PdfAttachments.Extract(path, folder, Strs(a, "names")) }));
+    }
+}
+
+public sealed class ListPageLabelsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_page_labels";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "The page labels of a PDF (the numbers a viewer shows, such as i, ii, 1, 2, A-1): the runs (start page 1-based, style " +
+        "1/I/i/A/a or none, prefix, first number), the same written as set_page_labels takes it, and every page's label.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var ranges = PdfPageLabels.Read(path);
+        return new ToolResult(ToJson(new
+        {
+            spec = PdfPageLabels.Format(ranges),
+            runs = ranges.Select(r => new { start_page = r.Start + 1, style = r.Style.Length > 0 ? r.Style : "none", prefix = r.Prefix, first = r.First }),
+            labels = PdfPageLabels.Labels(path),
+        }));
+    }
+}
+
+public sealed class SetPageLabelsTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "set_page_labels";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a NEW copy of a PDF with page labels set. spec: runs written page:style[:prefix[:first]], comma-separated, pages " +
+        "from 1, styles 1 (decimal), I or i (Roman), A or a (letters), - (prefix only). \"1:i,5:1\" numbers the first four pages " +
+        "i-iv and the rest 1, 2, 3 ...; \"20:A:Appendix \" labels page 20 on Appendix A, Appendix B ... An empty spec removes the " +
+        "labels. Read back to check. Never overwrites: output defaults to <name>_labels.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "spec":{"type":"string","description":"page:style[:prefix[:first]], comma-separated; empty removes the labels"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_labels.pdf next to the input)"}},
+         "required":["path","spec"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var ranges = PdfPageLabels.Parse(OptStr(a, "spec") ?? "");
+        var output = Policy.Output(OptStr(a, "output"), path, "_labels");
+        PdfPageLabels.Write(path, output, ranges);
+        return new ToolResult(ToJson(new { output, labels = PdfPageLabels.Labels(output) }));
+    }
+}
+
+public sealed class ListLayersTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "list_layers";
+    public override ToolRisk Risk => ToolRisk.ReadOnly;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "The layers (optional content groups) of a PDF: id, name, whether it shows when the file opens, whether it is locked, and " +
+        "the pages (1-based) that draw on it.";
+    protected override string Schema => """
+        {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a) => new(ToJson(new
+    {
+        layers = PdfLayers.List(Policy.Input(Str(a, "path"))).Select(l => new { id = l.Id, name = l.Name, visible = l.Visible, locked = l.Locked, pages = l.Pages.Select(x => x + 1) }),
+    }));
+}
+
+public sealed class SetLayersTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "set_layers";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a NEW copy of a PDF in which the layers named in show are shown and those in hide hidden when the file opens (and " +
+        "when it prints). Name layers by name or by id from list_layers. Never overwrites: output defaults to <name>_layers.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "show":{"type":"array","items":{"type":"string"},"description":"Layers to show (names or ids)"},
+          "hide":{"type":"array","items":{"type":"string"},"description":"Layers to hide (names or ids)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_layers.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var output = Policy.Output(OptStr(a, "output"), path, "_layers");
+        var after = PdfLayers.SetVisible(path, output, Strs(a, "show"), Strs(a, "hide"));
+        return new ToolResult(ToJson(new { output, layers = after.Select(l => new { name = l.Name, visible = l.Visible }) }));
+    }
+}
+
+public sealed class EncryptForCertificatesTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "encrypt_for_certificates";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes a NEW copy of a PDF that only the holders of the given certificates (RSA .cer/.pem/.crt files) can open, with " +
+        "their own digital ID, as Acrobat's certificate security (AES-256); no password is shared. Opening such a file needs a " +
+        "private key and is not offered to agents. Signed files are refused. Never overwrites: output defaults to <name>_sealed.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF file"},
+          "certificates":{"type":"array","items":{"type":"string"},"description":"Certificate files of the people who may open it"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_sealed.pdf next to the input)"}},
+         "required":["path","certificates"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var certs = new List<System.Security.Cryptography.X509Certificates.X509Certificate2>();
+        foreach (var f in Strs(a, "certificates"))
+            try { certs.Add(System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadCertificateFromFile(Policy.Input(f))); }
+            catch (System.Security.Cryptography.CryptographicException) { throw new ToolException($"{f} is not a certificate file"); }
+        var output = Policy.Output(OptStr(a, "output"), path, "_sealed");
+        PdfCertificateSecurity.Encrypt(path, output, certs);
+        return new ToolResult(ToJson(new
+        {
+            output, recipients = PdfCertificateSecurity.RecipientsOf(output).Select(r => new { issuer = r.Issuer, serial = r.Serial }),
         }));
     }
 }

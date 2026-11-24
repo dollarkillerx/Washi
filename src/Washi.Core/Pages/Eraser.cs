@@ -431,7 +431,7 @@ public static class PdfEraser
     internal static void WriteContents(PdfDocument d, PdfPage page, byte[] bytes)
     {
         var stream = new PdfDictionary(d);
-        stream.CreateStream(new PdfSharp.Pdf.Filters.FlateDecode().Encode(bytes, PdfFlateEncodeMode.Default));
+        stream.CreateStream(Zlib.Compress(bytes, best: false));
         stream.Elements["/Filter"] = new PdfName("/FlateDecode");
         d.Internals.AddObject(stream);
         page.Elements["/Contents"] = stream.Reference;

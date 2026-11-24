@@ -24,7 +24,11 @@ internal sealed partial class IncrementalUpdate
     public long PreviousXref { get; }
     public bool XrefStream { get; }
 
-    public IncrementalUpdate(byte[] original)
+    /// <summary>The trailer's security handler (a reference), carried into the update; only with allowEncrypted.</summary>
+    public string? Encrypt { get; set; }
+
+    /// <param name="allowEncrypted">Add to an encrypted file (whose new objects must then need no encryption).</param>
+    public IncrementalUpdate(byte[] original, bool allowEncrypted = false)
     {
         _original = original;
         var tail = Encoding.Latin1.GetString(original, Math.Max(0, original.Length - 2048), Math.Min(2048, original.Length));
@@ -48,7 +52,11 @@ internal sealed partial class IncrementalUpdate
             dict = at[..s];
             XrefStream = true;
         }
-        if (dict.Contains("/Encrypt", StringComparison.Ordinal)) throw new Pages.PageAssemblyException("protected files cannot be signed by Washi", "Err_SignProtected");
+        if (dict.Contains("/Encrypt", StringComparison.Ordinal))
+        {
+            if (!allowEncrypted) throw new Pages.PageAssemblyException("protected files cannot be signed by Washi", "Err_SignProtected");
+            Encrypt = EncryptRx().Match(dict) is { Success: true } en ? en.Groups[1].Value : null;
+        }
         Root = RootRx().Match(dict) is { Success: true } r ? r.Groups[1].Value : throw new Pages.PageAssemblyException("the file has no catalog", "Err_SignDamaged");
         Info = InfoRx().Match(dict) is { Success: true } i ? i.Groups[1].Value : null;
         Id = IdRx().Match(dict) is { Success: true } d ? d.Value : null;
@@ -83,6 +91,7 @@ internal sealed partial class IncrementalUpdate
         var extra = new StringBuilder($"/Root {Root}");
         if (Info is not null) extra.Append($"/Info {Info}");
         if (Id is not null) extra.Append(Id);
+        if (Encrypt is not null) extra.Append($"/Encrypt {Encrypt}");
         extra.Append(CultureInfo.InvariantCulture, $"/Prev {PreviousXref}");
         long xref = o.Position;
         if (!XrefStream)
@@ -145,6 +154,8 @@ internal sealed partial class IncrementalUpdate
     private static partial Regex InfoRx();
     [GeneratedRegex(@"/ID\s*\[[^\]]*\]")]
     private static partial Regex IdRx();
+    [GeneratedRegex(@"/Encrypt\s+(\d+\s+\d+\s+R)")]
+    private static partial Regex EncryptRx();
     [GeneratedRegex(@"/Size\s+(\d+)")]
     private static partial Regex SizeRx();
 }

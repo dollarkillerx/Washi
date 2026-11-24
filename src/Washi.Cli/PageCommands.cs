@@ -10,6 +10,11 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|flatten|pdfa|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
+    private static string Beside(string input, string suffix) =>
+        Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + suffix);
+
+    private static List<string> List(string value) => [.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+
     /// <summary>The certificates given with --trust (comma-separated .cer / .pem files) to trust besides the system's.</summary>
     private static List<System.Security.Cryptography.X509Certificates.X509Certificate2>? Trust(Dictionary<string, string> opt) =>
         opt.TryGetValue("--trust", out var files)
@@ -17,7 +22,7 @@ internal static class PageCommands
                        .Select(System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadCertificateFromFile)]
             : null;
 
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing", "--fields-only", "--comments-only", "--check", "--flatten", "--ltv"];
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing", "--fields-only", "--comments-only", "--check", "--flatten", "--ltv", "--clear"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -62,6 +67,83 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Pdf_Erased", output, report.TextRemoved, report.ImagesRemoved, report.DrawingsRemoved,
                         report.RemainingChars, report.ChangedPixelsOutside));
                     foreach (var k in report.Kept) Console.WriteLine(L.F("Pdf_EraseKept", k.Page + 1, L.Get("Erase_Kept" + k.Why)));
+                    return 0;
+                }
+                case ["protect", var input] when opt.TryGetValue("--to", out var to):
+                {
+                    var certs = to.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                  .Select(System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadCertificateFromFile).ToList();
+                    var output = opt.GetValueOrDefault("-o", Beside(input, "_sealed.pdf"));
+                    var current = PdfSecurity.Inspect(input).Encrypted ? Password("WASHI_PASSWORD", L.F("Pdf_AskPassword", Path.GetFileName(input))) : null;
+                    PdfCertificateSecurity.Encrypt(input, output, certs, current);
+                    Console.WriteLine(L.F("Ui_CertSealed", output, certs.Count));
+                    return 0;
+                }
+                case ["unlock", var input] when opt.TryGetValue("--id", out var idFile):
+                {
+                    var id = Washi.Core.Signatures.DigitalIds.FromFile(idFile, Password("WASHI_ID_PASSWORD", L.Get("Pdf_AskIdPassword")));
+                    var output = opt.GetValueOrDefault("-o", Beside(input, "_opened.pdf"));
+                    PdfCertificateSecurity.Decrypt(input, output, id);
+                    Console.WriteLine(L.F("Ui_CertOpened", output, id.Name));
+                    return 0;
+                }
+                case ["labels", var input] when opt.ContainsKey("--set") || opt.ContainsKey("--clear"):
+                {
+                    var ranges = opt.ContainsKey("--clear") ? [] : PdfPageLabels.Parse(opt["--set"]);
+                    var output = opt.GetValueOrDefault("-o", Beside(input, "_labels.pdf"));
+                    PdfPageLabels.Write(input, output, ranges);
+                    Console.WriteLine(ranges.Count == 0 ? L.F("Ui_LabelsRemoved", output) : L.F("Ui_LabelsSaved", output, ranges.Count));
+                    return 0;
+                }
+                case ["labels", var input]:
+                {
+                    var ranges = PdfPageLabels.Read(input);
+                    Console.WriteLine(ranges.Count == 0 ? L.Get("Ui_LabelsNone") : PdfPageLabels.Format(ranges));
+                    var labels = PdfPageLabels.Labels(input);
+                    for (int i = 0; i < labels.Count; i++) Console.WriteLine($"{i + 1}\t{labels[i]}");
+                    return 0;
+                }
+                case ["attachments", var input] when opt.TryGetValue("--extract", out var dir):
+                {
+                    var names = opt.TryGetValue("--name", out var n) ? List(n) : [];
+                    var written = PdfAttachments.Extract(input, dir, names);
+                    foreach (var w in written) Console.WriteLine(w);
+                    Console.WriteLine(L.F("Ui_AttachmentsSaved", written.Count, dir));
+                    return 0;
+                }
+                case ["attachments", var input] when opt.ContainsKey("--add") || opt.ContainsKey("--remove"):
+                {
+                    var add = opt.TryGetValue("--add", out var a) ? List(a) : [];
+                    var remove = opt.TryGetValue("--remove", out var r) ? List(r) : [];
+                    var output = opt.GetValueOrDefault("-o", Beside(input, add.Count > 0 ? "_attached.pdf" : "_detached.pdf"));
+                    var added = PdfAttachments.Edit(input, output, add, remove, opt.GetValueOrDefault("--description", ""));
+                    Console.WriteLine(add.Count > 0 ? L.F("Ui_Attached", output, added.Count) : L.F("Ui_Detached", output, remove.Count));
+                    return 0;
+                }
+                case ["attachments", var input]:
+                {
+                    var list = PdfAttachments.List(input);
+                    if (list.Count == 0) Console.WriteLine(L.Get("Ui_AttachNone"));
+                    foreach (var x in list)
+                        Console.WriteLine(x.Name + "\t" + (x.Size >= 0 ? CompressFormat.Size(x.Size) : "?") + (x.Page >= 0 ? "\t" + L.F("Ui_AttachOnPage", x.Page + 1) : "")
+                                          + (x.Description.Length > 0 ? "\t" + x.Description : ""));
+                    return 0;
+                }
+                case ["layers", var input] when opt.ContainsKey("--show") || opt.ContainsKey("--hide"):
+                {
+                    var output = opt.GetValueOrDefault("-o", Beside(input, "_layers.pdf"));
+                    var after = PdfLayers.SetVisible(input, output, opt.TryGetValue("--show", out var sh) ? List(sh) : [], opt.TryGetValue("--hide", out var hi) ? List(hi) : []);
+                    Console.WriteLine(L.F("Ui_LayersSaved", output));
+                    foreach (var l in after) Console.WriteLine($"{(l.Visible ? "[x]" : "[ ]")} {l.Name}");
+                    return 0;
+                }
+                case ["layers", var input]:
+                {
+                    var layers = PdfLayers.List(input);
+                    if (layers.Count == 0) Console.WriteLine(L.Get("Ui_LayersNone"));
+                    foreach (var l in layers)
+                        Console.WriteLine($"{(l.Visible ? "[x]" : "[ ]")} {l.Name}\t{l.Id}" + (l.Locked ? "\tlocked" : "")
+                                          + (l.Pages.Count > 0 ? "\t" + L.F("Ui_LayerPages", string.Join(",", l.Pages.Select(p => p + 1))) : ""));
                     return 0;
                 }
                 case ["protect", var input] when opt.TryGetValue("-o", out var output) && (opt.ContainsKey("--open") || opt.ContainsKey("--allow")):

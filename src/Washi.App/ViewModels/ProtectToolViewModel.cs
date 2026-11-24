@@ -2,6 +2,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Security.Cryptography.X509Certificates;
+using Washi.App.Services;
 using Washi.Core.Localization;
 using Washi.Core.Pages;
 using Washi.Core.Pdfium;
@@ -57,6 +59,77 @@ public sealed partial class ProtectToolViewModel(MainViewModel main) : Observabl
         await main.LoadAsync(path);
     }
 
+    // ------------------------------------------------------------------ a file encrypted for certificates
+    /// <summary>The file waiting for a digital ID (it is encrypted for certificates).</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsCertLocked), nameof(CertLockedText))] private string? _certLockedPath;
+    public ObservableCollection<string> CertRecipients { get; } = [];
+
+    public bool IsCertLocked => CertLockedPath is not null;
+    public string CertLockedText => CertLockedPath is null ? "" : L.F("Ui_CertLocked", Path.GetFileName(CertLockedPath));
+
+    /// <summary>Called when a file is encrypted for certificates: it opens with a digital ID, into a copy.</summary>
+    public async Task AskCertificateAsync(string path)
+    {
+        CertLockedPath = path;
+        CertRecipients.Clear();
+        foreach (var r in await Task.Run(() => PdfCertificateSecurity.RecipientsOf(path))) CertRecipients.Add(L.F("Ui_CertRecipient", r.Issuer, r.Serial));
+        await main.Sign.Digital.EnsureIdsAsync();
+        main.Status = CertLockedText;
+    }
+
+    /// <summary>Writes a copy without the protection, opened with the chosen digital ID, and opens it.</summary>
+    [RelayCommand]
+    private async Task OpenWithIdAsync()
+    {
+        if (CertLockedPath is not { } path || main.Sign.Digital.Id is not { } id) { main.Status = L.Get("Ui_CertChooseId"); return; }
+        if (await main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(path) + "_opened.pdf") is not { } output) return;
+        if (Path.GetFullPath(output) == Path.GetFullPath(path)) { main.Status = L.Get("Ui_BookmarksNotOriginal"); return; }
+        if (await Write(output, tmp => PdfCertificateSecurity.Decrypt(path, tmp, id), L.F("Ui_CertOpened", Path.GetFileName(output), id.Name)))
+            CertLockedPath = null;
+    }
+
+    // ------------------------------------------------------------------ encrypting for certificates
+    public ObservableCollection<X509Certificate2> Recipients { get; } = [];
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanEncryptForCertificates))] private bool _includeMe = true;
+    public bool HasRecipients => Recipients.Count > 0;
+    public bool CanEncryptForCertificates => CanAdd && (Recipients.Count > 0 || IncludeMe && main.Sign.Digital.Id is not null);
+
+    [RelayCommand]
+    private async Task AddRecipientAsync()
+    {
+        if (await main.Dialogs.OpenCertificateAsync() is not { } file) return;
+        try
+        {
+            var cert = X509CertificateLoader.LoadCertificateFromFile(file);
+            if (!Recipients.Any(r => r.Thumbprint == cert.Thumbprint)) Recipients.Add(cert);
+        }
+        catch (System.Security.Cryptography.CryptographicException) { main.Status = L.F("Ui_CertUnreadable", Path.GetFileName(file)); }
+        OnPropertyChanged(nameof(HasRecipients));
+        OnPropertyChanged(nameof(CanEncryptForCertificates));
+    }
+
+    [RelayCommand]
+    private void RemoveRecipient(X509Certificate2 cert)
+    {
+        Recipients.Remove(cert);
+        OnPropertyChanged(nameof(HasRecipients));
+        OnPropertyChanged(nameof(CanEncryptForCertificates));
+    }
+
+    [RelayCommand]
+    private async Task EncryptForCertificatesAsync()
+    {
+        if (main.PdfPath is not { } pdf) return;
+        var list = Recipients.ToList();
+        if (IncludeMe && main.Sign.Digital.Id is { } me && !list.Any(r => r.Thumbprint == me.Certificate.Thumbprint))
+            list.Add(X509CertificateLoader.LoadCertificate(me.Certificate.RawData));
+        if (list.Count == 0) return;
+        if (await main.Dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_sealed.pdf") is not { } output) return;
+        var current = CurrentPassword.Length > 0 ? CurrentPassword : PdfPasswords.For(pdf);
+        await Write(output, tmp => PdfCertificateSecurity.Encrypt(pdf, tmp, list, current), null);
+        main.Status = L.F("Ui_CertSealed", Path.GetFileName(output), list.Count);
+    }
+
     // ------------------------------------------------------------------ the open document's protection
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsEncrypted), nameof(StateText), nameof(PermissionsText), nameof(CanAdd),
                                                  nameof(CanRemoveProtection), nameof(CanClean), nameof(CleanBlockedText), nameof(CanProtect), nameof(NothingHidden))]
@@ -90,6 +163,8 @@ public sealed partial class ProtectToolViewModel(MainViewModel main) : Observabl
     /// <summary>When the tool opens or a document loads.</summary>
     public async Task PrepareAsync()
     {
+        await main.Sign.Digital.EnsureIdsAsync();
+        OnPropertyChanged(nameof(CanEncryptForCertificates));
         if (main.PdfPath is not { } path) { Current = null; Hidden.Clear(); return; }
         var known = PdfPasswords.For(path);
         var (protection, needsOpen, hidden) = await Task.Run(() =>
@@ -203,6 +278,13 @@ public sealed partial class ProtectToolViewModel(MainViewModel main) : Observabl
             finally { if (File.Exists(tmp)) File.Delete(tmp); }
         });
         if (written is null) return false;
+        if (PdfCertificateSecurity.IsEncryptedForCertificates(written))
+        {
+            // it cannot be shown without a recipient's key: it waits for one, like a file that needs a password
+            await AskCertificateAsync(written);
+            if (status is not null) main.Status = status;
+            return true;
+        }
         if (openPassword is not null) PdfPasswords.Remember(written, openPassword);
         else PdfPasswords.Forget(written);
         await main.LoadAsync(written);

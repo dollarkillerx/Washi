@@ -153,6 +153,10 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
             certify: --certify no-changes|forms|comments; --ltv adds long-term validation data after signing
   washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   check the signatures in a file
   washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   add long-term validation data (and a document time-stamp) to the signatures
+  washi pdf labels &lt;in.pdf&gt; [--set 1:i,5:1 | --clear] [-o out.pdf]   page labels (as the viewer numbers pages)
+  washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dir [--name a]
+  washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   list layers, or set which show
+  washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   encrypt for certificates;  washi pdf unlock &lt;in.pdf&gt; --id id.p12   open it
   washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
@@ -1051,4 +1055,67 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_LtvInvalid" xml:space="preserve"><value>The signature “{0}” does not hold, so no validation data is added for it.</value></data>
   <data name="Err_LtvNothing" xml:space="preserve"><value>The file already holds all the validation data that could be found.</value></data>
   <data name="Err_LtvCheck" xml:space="preserve"><value>The signatures did not hold after adding validation data; nothing was kept.</value></data>
+  <data name="Err_LabelPage" xml:space="preserve"><value>Page labels start on page {0}, but the PDF has {1} pages.</value></data>
+  <data name="Err_LabelStyle" xml:space="preserve"><value>“{0}” is not a numbering style (1, I, i, A, a, or - for none).</value></data>
+  <data name="Err_LabelFirst" xml:space="preserve"><value>Page labels count from 1 or more.</value></data>
+  <data name="Err_LabelTwice" xml:space="preserve"><value>Two runs of page labels start on the same page.</value></data>
+  <data name="Err_LabelSpec" xml:space="preserve"><value>“{0}” is not page:style[:prefix[:first number]] (for example 1:i,5:1).</value></data>
+  <data name="Err_LabelCheck" xml:space="preserve"><value>The page labels did not read back as written; the copy was not kept.</value></data>
+  <data name="Err_AttachmentNone" xml:space="preserve"><value>There is no attachment “{0}”.</value></data>
+  <data name="Err_AttachmentsNone" xml:space="preserve"><value>The file has no attachments.</value></data>
+  <data name="Err_AttachmentUnreadable" xml:space="preserve"><value>The attachment “{0}” cannot be read.</value></data>
+  <data name="Err_AttachmentNothing" xml:space="preserve"><value>Nothing to attach or remove.</value></data>
+  <data name="Err_AttachmentCheck" xml:space="preserve"><value>The attachments did not read back as written; the copy was not kept.</value></data>
+  <data name="Err_LayerNothing" xml:space="preserve"><value>Name the layers to show or hide.</value></data>
+  <data name="Err_LayerBoth" xml:space="preserve"><value>“{0}” cannot be both shown and hidden.</value></data>
+  <data name="Err_LayersNone" xml:space="preserve"><value>The file has no layers.</value></data>
+  <data name="Err_LayerNone" xml:space="preserve"><value>There is no layer “{0}”.</value></data>
+  <data name="Err_LayerCheck" xml:space="preserve"><value>The layers did not read back as set; the copy was not kept.</value></data>
+  <data name="Err_CertNoRecipients" xml:space="preserve"><value>Name at least one certificate that may open the file.</value></data>
+  <data name="Err_CertNotRsa" xml:space="preserve"><value>The certificate of {0} is not an RSA certificate, which certificate security needs.</value></data>
+  <data name="Err_CertAlready" xml:space="preserve"><value>{0} is already encrypted for certificates.</value></data>
+  <data name="Err_CertSigned" xml:space="preserve"><value>The file is signed: encrypting it would break its signatures.</value></data>
+  <data name="Err_CertNotEncrypted" xml:space="preserve"><value>{0} is not encrypted for certificates.</value></data>
+  <data name="Err_CertNotRecipient" xml:space="preserve"><value>{0} was not encrypted for the certificate of {1}.</value></data>
+  <data name="Err_CertUnsupported" xml:space="preserve"><value>This certificate encryption is not one Washi opens: only AES-256.</value></data>
+  <data name="Err_CertCheck" xml:space="preserve"><value>The encrypted copy did not read back as the original; it was not kept.</value></data>
+  <data name="Ui_ToolDocument" xml:space="preserve"><value>Document</value></data>
+  <data name="Ui_DocTitle" xml:space="preserve"><value>Document</value></data>
+  <data name="Ui_DocLead" xml:space="preserve"><value>Page numbers as the viewer shows them, attached files and layers. Each change saves a copy.</value></data>
+  <data name="Ui_LabelsTitle" xml:space="preserve"><value>Page labels</value></data>
+  <data name="Ui_LabelsLead" xml:space="preserve"><value>page:style[:prefix[:first]], comma-separated. Styles: 1, I, i, A, a, or - for none. 1:i,5:1 numbers four pages i–iv, then 1, 2, 3 …</value></data>
+  <data name="Ui_LabelsNone" xml:space="preserve"><value>No labels: pages show their plain numbers.</value></data>
+  <data name="Ui_LabelsRun" xml:space="preserve"><value>Save copy with these labels…</value></data>
+  <data name="Ui_LabelsSaved" xml:space="preserve"><value>Saved {0} with {1} run(s) of page labels.</value></data>
+  <data name="Ui_LabelsRemoved" xml:space="preserve"><value>Saved {0} without page labels.</value></data>
+  <data name="Ui_AttachTitle" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Ui_AttachNone" xml:space="preserve"><value>No attachments.</value></data>
+  <data name="Ui_AttachOnPage" xml:space="preserve"><value>on page {0}</value></data>
+  <data name="Ui_AttachSave" xml:space="preserve"><value>Save to folder…</value></data>
+  <data name="Ui_AttachRemove" xml:space="preserve"><value>Remove ticked</value></data>
+  <data name="Ui_AttachDescription" xml:space="preserve"><value>Description of new attachments (optional)</value></data>
+  <data name="Ui_AttachRun" xml:space="preserve"><value>Attach files…</value></data>
+  <data name="Ui_Attached" xml:space="preserve"><value>Saved {0} with {1} file(s) attached.</value></data>
+  <data name="Ui_Detached" xml:space="preserve"><value>Saved {0} with {1} attachment(s) removed.</value></data>
+  <data name="Ui_AttachmentsSaved" xml:space="preserve"><value>Saved {0} file(s) in {1}.</value></data>
+  <data name="Ui_LayersTitle" xml:space="preserve"><value>Layers</value></data>
+  <data name="Ui_LayersNone" xml:space="preserve"><value>No layers.</value></data>
+  <data name="Ui_LayersLead" xml:space="preserve"><value>Ticked layers show (and print) when the file opens.</value></data>
+  <data name="Ui_LayersRun" xml:space="preserve"><value>Save copy with these layers…</value></data>
+  <data name="Ui_LayersSaved" xml:space="preserve"><value>Saved {0} with the layers set.</value></data>
+  <data name="Ui_LayerPages" xml:space="preserve"><value>page {0}</value></data>
+  <data name="Ui_CertFiles" xml:space="preserve"><value>Certificates</value></data>
+  <data name="Ui_CertLocked" xml:space="preserve"><value>{0} is encrypted for certificates: it opens with the digital ID of a recipient.</value></data>
+  <data name="Ui_CertRecipient" xml:space="preserve"><value>For a certificate from {0} (serial {1})</value></data>
+  <data name="Ui_CertChooseId" xml:space="preserve"><value>Choose the digital ID to open it with.</value></data>
+  <data name="Ui_CertOpenRun" xml:space="preserve"><value>Open with this digital ID…</value></data>
+  <data name="Ui_CertOpenNote" xml:space="preserve"><value>Saves a copy without the protection, and opens it.</value></data>
+  <data name="Ui_CertOpened" xml:space="preserve"><value>Saved {0}, opened with the digital ID of {1}.</value></data>
+  <data name="Ui_CertTitle" xml:space="preserve"><value>Encrypt for certificates</value></data>
+  <data name="Ui_CertLead" xml:space="preserve"><value>Only the people whose certificates you add can open the copy, with their digital ID: no password to share. AES-256, as Acrobat's certificate security.</value></data>
+  <data name="Ui_CertAdd" xml:space="preserve"><value>Add certificate…</value></data>
+  <data name="Ui_CertIncludeMe" xml:space="preserve"><value>Let me open it too, with this digital ID:</value></data>
+  <data name="Ui_CertRun" xml:space="preserve"><value>Encrypt and save copy…</value></data>
+  <data name="Ui_CertSealed" xml:space="preserve"><value>Saved {0}, encrypted for {1} certificate(s).</value></data>
+  <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} is not a certificate Washi can read.</value></data>
 </root>

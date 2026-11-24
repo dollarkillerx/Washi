@@ -77,16 +77,20 @@ public sealed partial class DigitalSignViewModel(MainViewModel main) : Observabl
     /// <summary>The names of the fields that already hold a digital signature.</summary>
     public IReadOnlySet<string> SignedFields => Signatures.Select(s => s.Check.Field).ToHashSet(StringComparer.Ordinal);
 
+    /// <summary>The digital IDs of this computer's certificate store, read once.</summary>
+    public async Task EnsureIdsAsync()
+    {
+        if (_storeRead) return;
+        _storeRead = true;
+        foreach (var id in await Task.Run(DigitalIds.FromStore)) Ids.Add(id);
+        Id ??= Ids.FirstOrDefault();
+        OnPropertyChanged(nameof(NoIds));
+    }
+
     /// <summary>When the Sign tool opens or a document loads: the file's signatures, the places to sign, the IDs.</summary>
     public async Task PrepareAsync()
     {
-        if (!_storeRead)
-        {
-            _storeRead = true;
-            foreach (var id in await Task.Run(DigitalIds.FromStore)) Ids.Add(id);
-            Id ??= Ids.FirstOrDefault();
-            OnPropertyChanged(nameof(NoIds));
-        }
+        await EnsureIdsAsync();
         int version = ++_prepared;
         IReadOnlyList<SignatureCheck> found = [];
         if (main.PdfPath is { } pdf)

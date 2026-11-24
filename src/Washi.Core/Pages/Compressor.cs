@@ -285,7 +285,7 @@ public static class PdfCompressor
         return data.ToArray();
     }
 
-    private static byte[] Flate(byte[] data) => new PdfSharp.Pdf.Filters.FlateDecode().Encode(data, PdfFlateEncodeMode.BestCompression);
+    private static byte[] Flate(byte[] data) => Zlib.Compress(data);
 
     // ------------------------------------------------------------------ streams
 

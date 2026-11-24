@@ -194,7 +194,11 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   limits (printing, copying, changes, comments, filling in, page changes) guarded by a separate permissions password,
   with AES-256; remove protection with the password that allows it; and **remove hidden information** before sending
   a file (see below). A file that needs a password asks for it when it is opened; the password is kept in memory
-  until Washi closes and never written anywhere.
+  until Washi closes and never written anywhere. **Encrypt for certificates** instead of a password: only the people
+  whose certificates you add (and you, with your digital ID) can open the copy; a file encrypted that way opens with a
+  recipient's digital ID into a copy without the protection.
+- **Document**: page labels (the numbers the viewer shows: i, ii, 1, 2, A-1 …), attached files (attach, save out,
+  remove) and layers (which show and print when the file opens). Each change saves a copy (see below).
 - **Redact**: find words, phrases, e-mail addresses, phone numbers and long ID numbers (or drag over any area: a
   photo, a signature, a stamp), untick what should stay, then save a copy where what lies under each black box is
   removed from the file for real (see below).
@@ -378,6 +382,8 @@ washi pdf protect form.pdf -o limited.pdf --allow print,fill       # opens freel
 washi pdf unlock locked.pdf -o open.pdf                            # asks for the password
 washi pdf clean report.pdf --list                                  # what the file carries besides its pages
 washi pdf clean report.pdf                                         # report_cleaned.pdf without it
+washi pdf protect report.pdf --to sato.cer,me.cer                  # report_sealed.pdf: opens only with their digital IDs
+washi pdf unlock report_sealed.pdf --id me.p12                     # report_sealed_opened.pdf, opened with mine
 ```
 
 - **Passwords**: AES-256 (PDF 2.0; Acrobat X and every current viewer open it). Limits need their own permissions
@@ -393,7 +399,40 @@ washi pdf clean report.pdf                                         # report_clea
   (`/PieceInfo`, which can hold a whole editable copy) and thumbnails, and earlier versions that incremental saves
   leave in the file. The cleaned copy is checked again for every kind removed. Form fields, links and the pages
   themselves stay. Protection and hidden information are deliberately separate steps: clean first, then protect.
-- Setting passwords is not offered to the AI assistant or MCP clients. `remove_hidden_info` is.
+- **Certificate security** (Adobe.PubSec, adbe.pkcs7.s5, AES-256, PDF 32000-2 7.6.5): a random file key is wrapped
+  for each recipient in a CMS envelope (RSA, AES-256), so no password is shared; this is what Acrobat's *certificate
+  security* writes and reads. Recipients are given by their certificate alone (`.cer`, `.pem`); digital IDs that
+  Washi makes are RSA 2048 for this (ECDSA keys cannot receive a key this way). Every string and stream of the copy is
+  encrypted by Washi itself, and the copy is read back through the same key and compared object by object with the
+  original before it is kept. To open one, Washi unwraps the key with the recipient's private key and writes a copy
+  without the protection. Signed files are refused (encrypting would break the signatures). The copy is packed into
+  object streams like Washi's other copies, so it is about the size of the original. Checked both ways with pyHanko
+  (it opens what Washi encrypts, Washi opens what it encrypts) on the IRS W-9, Pub 15-T, the USCIS I-9 and a court
+  form; all 21 unprotected public test documents encrypt and open again with the same text.
+- Setting passwords and opening certificate-encrypted files are not offered to the AI assistant or MCP clients.
+  `remove_hidden_info` and `encrypt_for_certificates` (which needs only the recipients' certificates) are.
+
+## Page labels, attachments and layers
+
+```bash
+washi pdf labels book.pdf --set 1:i,5:1,120:A:付録-      # i–iv, then 1, 2, 3 …, then 付録-A, 付録-B …
+washi pdf labels book.pdf                                # the labels, page by page
+washi pdf attachments invoice.pdf --add 明細.csv,receipt.jpg --description 明細
+washi pdf attachments invoice_attached.pdf --extract out/
+washi pdf layers plan.pdf --show 電気 --hide 下書き
+```
+
+In the editor: **Document** in the tool rail. Agents use `list_page_labels`, `set_page_labels`, `list_attachments`,
+`edit_attachments`, `extract_attachments`, `list_layers` and `set_layers`.
+
+- **Page labels** are written as runs `page:style[:prefix[:first]]`: styles `1`, `I`, `i`, `A`, `a`, or `-` for a
+  prefix alone (letters go on AA, BB … as PDF counts them). Pages before the first run keep their plain numbers.
+- **Attachments**: files in the document's list of attachments and on file-attachment comments are listed and saved
+  out; added files are compressed and carry their size, date and MD5 checksum, and each is read back byte for byte. A
+  name from a PDF is reduced to a plain file name before it is saved (no folders, no `..`), and a file already there
+  is never replaced. Removed files are gone from the copy, not only from the list.
+- **Layers** (optional content): name, whether it shows, whether it is locked, and the pages that draw on it. A copy
+  sets which show when the file opens; viewers, Washi's included, draw and print what that says.
 
 ## Redaction
 
@@ -833,6 +872,14 @@ There are two ways to run it:
 | `flatten_pdf` | new PDF with form fields and/or comments drawn into the page (no longer editable), pages compared before it is kept | writes a **new** file |
 | `convert_to_pdfa` | what stands between a PDF and PDF/A-2b (`check_only`), or a new PDF/A-2b copy: fonts embedded with every character in place, sRGB/CMYK output intent, no scripts or attachments, XMP; checked again before it is kept | writes a **new** file |
 | `verify_signatures` | the digital signatures in a PDF: kind (approval, certification, time-stamp), signer, time, intact, trusted, LTV, revoked, what changed afterwards and whether it is allowed, status | no |
+| `list_attachments` | the files attached to a PDF: name, size, description, date, page of a file-attachment comment | no |
+| `edit_attachments` | new PDF with files attached and/or attachments removed | writes a **new** file |
+| `extract_attachments` | the attached files saved into a folder (never over a file that is there) | writes files |
+| `list_page_labels` | the page labels (runs and every page's label) | no |
+| `set_page_labels` | new PDF with page labels set, or removed | writes a **new** file |
+| `list_layers` | the layers: name, shown or not, locked, pages | no |
+| `set_layers` | new PDF with chosen layers shown or hidden when it opens | writes a **new** file |
+| `encrypt_for_certificates` | new PDF that only the holders of the given certificates can open (AES-256) | writes a **new** file |
 | `add_ltv` | new PDF with long-term validation data for its signatures (fetched online from the certificates' OCSP and CRL services) and optionally a document time-stamp | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
@@ -929,7 +976,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfPageImages`; `PdfLinks`; `PdfPageImageEdit`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 35 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 43 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -999,6 +1046,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 27. ~~Flattening form fields and comments.~~ Done (`washi pdf flatten`, the Finalize tool, `flatten_pdf`).
 28. ~~PDF/A-2b: checking and converting, with fonts that are only named replaced in place.~~ Done (`washi pdf pdfa`, the Finalize tool, `convert_to_pdfa`).
 29. ~~Long-term validation (PAdES B-LT, B-LTA) and certification signatures.~~ Done (`washi pdf ltv`, `sign --certify --ltv`, the Sign tool, `add_ltv`).
+30. ~~Page labels, attachments, layers, certificate security.~~ Done (`washi pdf labels|attachments|layers`, `protect --to`, `unlock --id`, the Document and Protect tools, eight MCP tools).
 
 ## License
 

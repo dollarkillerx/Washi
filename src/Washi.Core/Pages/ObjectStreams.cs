@@ -15,7 +15,10 @@ internal static partial class ObjectStreams
     private const int PerStream = 200;
 
     /// <summary>The packed file, or null when <paramref name="pdf"/> is not laid out as expected (it is then kept as it is).</summary>
-    public static byte[]? Pack(byte[] pdf)
+    /// <param name="encrypt">Encrypts as it packs (certificate security): each object stream and each stream object
+    /// (its strings and data) through it, the cross-reference stream left plain, and <paramref name="encryptDict"/>
+    /// added as the file's /Encrypt.</param>
+    public static byte[]? Pack(byte[] pdf, Func<byte[], byte[]>? encrypt = null, string? encryptDict = null)
     {
         var latin = Encoding.Latin1;
         var text = latin.GetString(pdf);
@@ -78,7 +81,8 @@ internal static partial class ObjectStreams
             }
             var first = index.ToString();
             var data = latin.GetBytes(first + bodies);
-            var packed = new PdfSharp.Pdf.Filters.FlateDecode().Encode(data, PdfSharp.Pdf.PdfFlateEncodeMode.BestCompression);
+            var packed = Zlib.Compress(data);
+            if (encrypt is not null) packed = encrypt(packed);
             int number2 = objStm++;
             where[number2] = (1, o.Position, 0);
             Write(o, $"{number2} 0 obj\n<</Type/ObjStm/N {group.Count}/First {latin.GetByteCount(first)}/Filter/FlateDecode/Length {packed.Length}>>\nstream\n");
@@ -90,8 +94,16 @@ internal static partial class ObjectStreams
         foreach (var (number, start, end) in streams)
         {
             where[number] = (1, o.Position, 0);
-            o.Write(pdf, start, end - start);
+            if (encrypt is null) o.Write(pdf, start, end - start);
+            else if (!PdfCertificateSecurity.EncryptStreamObject(pdf, start, encrypt, o)) return null;
             Write(o, "\n");
+        }
+        if (encrypt is not null)
+        {
+            int enc = objStm++;
+            where[enc] = (1, o.Position, 0);
+            Write(o, $"{enc} 0 obj\n{encryptDict}\nendobj\n");
+            trailer += $"/Encrypt {enc} 0 R";
         }
 
         // the cross-reference stream
@@ -106,7 +118,7 @@ internal static partial class ObjectStreams
             rows.WriteByte((byte)(a >> 24)); rows.WriteByte((byte)(a >> 16)); rows.WriteByte((byte)(a >> 8)); rows.WriteByte((byte)a);
             rows.WriteByte((byte)(b >> 8)); rows.WriteByte((byte)b);
         }
-        var xdata = new PdfSharp.Pdf.Filters.FlateDecode().Encode(rows.ToArray(), PdfSharp.Pdf.PdfFlateEncodeMode.BestCompression);
+        var xdata = Zlib.Compress(rows.ToArray());
         // the trailer's entries (Root, Info, ID) go into the stream's dictionary
         var keep = new StringBuilder();
         foreach (Match m in TrailerEntryRx().Matches(trailer)) keep.Append(m.Value);
@@ -126,6 +138,6 @@ internal static partial class ObjectStreams
     private static partial Regex SizeRx();
     [GeneratedRegex(@"%PDF-(\d\.\d)")]
     private static partial Regex VersionRx();
-    [GeneratedRegex(@"/(Root|Info)\s+\d+\s+\d+\s+R|/ID\s*\[[^\]]*\]")]
+    [GeneratedRegex(@"/(Root|Info|Encrypt)\s+\d+\s+\d+\s+R|/ID\s*\[[^\]]*\]")]
     private static partial Regex TrailerEntryRx();
 }

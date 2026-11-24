@@ -153,6 +153,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             zertifizieren: --certify no-changes|forms|comments; --ltv fügt nach dem Signieren Langzeitvalidierung hinzu
   washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   Signaturen einer Datei prüfen
   washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   Langzeitvalidierung (und Dokumentzeitstempel) zu den Signaturen hinzufügen
+  washi pdf labels &lt;in.pdf&gt; [--set 1:i,5:1 | --clear] [-o out.pdf]   Seitenbeschriftung (angezeigte Seitenzahlen)
+  washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract Ordner [--name a]
+  washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   Ebenen auflisten oder einstellen, welche sichtbar sind
+  washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   für Zertifikate verschlüsseln; washi pdf unlock &lt;in.pdf&gt; --id id.p12   öffnen
   washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
@@ -1051,4 +1055,67 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_LtvInvalid" xml:space="preserve"><value>Die Signatur „{0}“ hält nicht; es werden keine Validierungsdaten hinzugefügt.</value></data>
   <data name="Err_LtvNothing" xml:space="preserve"><value>Die Datei enthält bereits alle auffindbaren Validierungsdaten.</value></data>
   <data name="Err_LtvCheck" xml:space="preserve"><value>Die Signaturen hielten nach dem Hinzufügen nicht mehr; nichts wurde behalten.</value></data>
+  <data name="Err_LabelPage" xml:space="preserve"><value>Die Seitenbeschriftung beginnt auf Seite {0}, das PDF hat aber {1} Seiten.</value></data>
+  <data name="Err_LabelStyle" xml:space="preserve"><value>„{0}“ ist kein Nummernstil (1, I, i, A, a oder - für keinen).</value></data>
+  <data name="Err_LabelFirst" xml:space="preserve"><value>Die Zählung beginnt bei 1 oder höher.</value></data>
+  <data name="Err_LabelTwice" xml:space="preserve"><value>Zwei Beschriftungsbereiche beginnen auf derselben Seite.</value></data>
+  <data name="Err_LabelSpec" xml:space="preserve"><value>„{0}“ ist nicht Seite:Stil[:Präfix[:erste Nummer]] (zum Beispiel 1:i,5:1).</value></data>
+  <data name="Err_LabelCheck" xml:space="preserve"><value>Die Beschriftung ließ sich nicht wie geschrieben zurücklesen; die Kopie wurde nicht behalten.</value></data>
+  <data name="Err_AttachmentNone" xml:space="preserve"><value>Es gibt keinen Anhang „{0}“.</value></data>
+  <data name="Err_AttachmentsNone" xml:space="preserve"><value>Die Datei hat keine Anhänge.</value></data>
+  <data name="Err_AttachmentUnreadable" xml:space="preserve"><value>Der Anhang „{0}“ ist nicht lesbar.</value></data>
+  <data name="Err_AttachmentNothing" xml:space="preserve"><value>Nichts anzuhängen oder zu entfernen.</value></data>
+  <data name="Err_AttachmentCheck" xml:space="preserve"><value>Die Anhänge ließen sich nicht wie geschrieben zurücklesen; die Kopie wurde nicht behalten.</value></data>
+  <data name="Err_LayerNothing" xml:space="preserve"><value>Geben Sie die Ebenen an, die gezeigt oder ausgeblendet werden sollen.</value></data>
+  <data name="Err_LayerBoth" xml:space="preserve"><value>„{0}“ kann nicht zugleich gezeigt und ausgeblendet werden.</value></data>
+  <data name="Err_LayersNone" xml:space="preserve"><value>Die Datei hat keine Ebenen.</value></data>
+  <data name="Err_LayerNone" xml:space="preserve"><value>Es gibt keine Ebene „{0}“.</value></data>
+  <data name="Err_LayerCheck" xml:space="preserve"><value>Die Ebenen ließen sich nicht wie eingestellt zurücklesen; die Kopie wurde nicht behalten.</value></data>
+  <data name="Err_CertNoRecipients" xml:space="preserve"><value>Geben Sie mindestens ein Zertifikat an, das die Datei öffnen darf.</value></data>
+  <data name="Err_CertNotRsa" xml:space="preserve"><value>Das Zertifikat von {0} ist kein RSA-Zertifikat, das die Zertifikatsicherheit braucht.</value></data>
+  <data name="Err_CertAlready" xml:space="preserve"><value>{0} ist bereits für Zertifikate verschlüsselt.</value></data>
+  <data name="Err_CertSigned" xml:space="preserve"><value>Die Datei ist signiert: Verschlüsseln würde die Signaturen brechen.</value></data>
+  <data name="Err_CertNotEncrypted" xml:space="preserve"><value>{0} ist nicht für Zertifikate verschlüsselt.</value></data>
+  <data name="Err_CertNotRecipient" xml:space="preserve"><value>{0} wurde nicht für das Zertifikat von {1} verschlüsselt.</value></data>
+  <data name="Err_CertUnsupported" xml:space="preserve"><value>Diese Zertifikatsverschlüsselung öffnet Washi nicht: nur AES-256.</value></data>
+  <data name="Err_CertCheck" xml:space="preserve"><value>Die verschlüsselte Kopie ließ sich nicht wie das Original zurücklesen; sie wurde nicht behalten.</value></data>
+  <data name="Ui_ToolDocument" xml:space="preserve"><value>Dokument</value></data>
+  <data name="Ui_DocTitle" xml:space="preserve"><value>Dokument</value></data>
+  <data name="Ui_DocLead" xml:space="preserve"><value>Angezeigte Seitenzahlen, Anhänge und Ebenen. Jede Änderung speichert eine Kopie.</value></data>
+  <data name="Ui_LabelsTitle" xml:space="preserve"><value>Seitenbeschriftung</value></data>
+  <data name="Ui_LabelsLead" xml:space="preserve"><value>Seite:Stil[:Präfix[:erste]], durch Kommas getrennt. Stile: 1, I, i, A, a oder - für keinen. 1:i,5:1 nummeriert vier Seiten i–iv, dann 1, 2, 3 …</value></data>
+  <data name="Ui_LabelsNone" xml:space="preserve"><value>Keine Beschriftung: Seiten zeigen ihre Nummer.</value></data>
+  <data name="Ui_LabelsRun" xml:space="preserve"><value>Kopie mit dieser Beschriftung speichern…</value></data>
+  <data name="Ui_LabelsSaved" xml:space="preserve"><value>{0} mit {1} Beschriftungsbereich(en) gespeichert.</value></data>
+  <data name="Ui_LabelsRemoved" xml:space="preserve"><value>{0} ohne Seitenbeschriftung gespeichert.</value></data>
+  <data name="Ui_AttachTitle" xml:space="preserve"><value>Anhänge</value></data>
+  <data name="Ui_AttachNone" xml:space="preserve"><value>Keine Anhänge.</value></data>
+  <data name="Ui_AttachOnPage" xml:space="preserve"><value>auf Seite {0}</value></data>
+  <data name="Ui_AttachSave" xml:space="preserve"><value>In Ordner speichern…</value></data>
+  <data name="Ui_AttachRemove" xml:space="preserve"><value>Markierte entfernen</value></data>
+  <data name="Ui_AttachDescription" xml:space="preserve"><value>Beschreibung neuer Anhänge (optional)</value></data>
+  <data name="Ui_AttachRun" xml:space="preserve"><value>Dateien anhängen…</value></data>
+  <data name="Ui_Attached" xml:space="preserve"><value>{0} mit {1} angehängten Datei(en) gespeichert.</value></data>
+  <data name="Ui_Detached" xml:space="preserve"><value>{0} gespeichert, {1} Anhang/Anhänge entfernt.</value></data>
+  <data name="Ui_AttachmentsSaved" xml:space="preserve"><value>{0} Datei(en) in {1} gespeichert.</value></data>
+  <data name="Ui_LayersTitle" xml:space="preserve"><value>Ebenen</value></data>
+  <data name="Ui_LayersNone" xml:space="preserve"><value>Keine Ebenen.</value></data>
+  <data name="Ui_LayersLead" xml:space="preserve"><value>Markierte Ebenen werden beim Öffnen gezeigt (und gedruckt).</value></data>
+  <data name="Ui_LayersRun" xml:space="preserve"><value>Kopie mit diesen Ebenen speichern…</value></data>
+  <data name="Ui_LayersSaved" xml:space="preserve"><value>{0} mit eingestellten Ebenen gespeichert.</value></data>
+  <data name="Ui_LayerPages" xml:space="preserve"><value>Seite {0}</value></data>
+  <data name="Ui_CertFiles" xml:space="preserve"><value>Zertifikate</value></data>
+  <data name="Ui_CertLocked" xml:space="preserve"><value>{0} ist für Zertifikate verschlüsselt: es öffnet sich mit der digitalen ID eines Empfängers.</value></data>
+  <data name="Ui_CertRecipient" xml:space="preserve"><value>Für ein Zertifikat von {0} (Seriennummer {1})</value></data>
+  <data name="Ui_CertChooseId" xml:space="preserve"><value>Wählen Sie die digitale ID zum Öffnen.</value></data>
+  <data name="Ui_CertOpenRun" xml:space="preserve"><value>Mit dieser ID öffnen…</value></data>
+  <data name="Ui_CertOpenNote" xml:space="preserve"><value>Speichert eine Kopie ohne Schutz und öffnet sie.</value></data>
+  <data name="Ui_CertOpened" xml:space="preserve"><value>{0} gespeichert, mit der digitalen ID von {1} geöffnet.</value></data>
+  <data name="Ui_CertTitle" xml:space="preserve"><value>Für Zertifikate verschlüsseln</value></data>
+  <data name="Ui_CertLead" xml:space="preserve"><value>Nur die Personen, deren Zertifikate Sie hinzufügen, öffnen die Kopie mit ihrer digitalen ID: kein Passwort zum Weitergeben. AES-256 wie Acrobats Zertifikatsicherheit.</value></data>
+  <data name="Ui_CertAdd" xml:space="preserve"><value>Zertifikat hinzufügen…</value></data>
+  <data name="Ui_CertIncludeMe" xml:space="preserve"><value>Auch ich darf öffnen, mit dieser ID:</value></data>
+  <data name="Ui_CertRun" xml:space="preserve"><value>Verschlüsseln und Kopie speichern…</value></data>
+  <data name="Ui_CertSealed" xml:space="preserve"><value>{0} gespeichert, für {1} Zertifikat(e) verschlüsselt.</value></data>
+  <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} ist kein lesbares Zertifikat.</value></data>
 </root>

@@ -7,6 +7,7 @@
         xmlns:svc="using:Washi.App.Services"
         xmlns:print="using:Washi.Core.Printing"
         xmlns:sig="using:Washi.Core.Signatures"
+        xmlns:x509="using:System.Security.Cryptography.X509Certificates"
         x:Class="Washi.App.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="{Binding Title}"
@@ -280,6 +281,9 @@
                 </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsArchiveTool}" x:Name="ArchiveToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Archive}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolArchive}" /></StackPanel>
+                </RadioButton>
+                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsDocumentTool}" x:Name="DocumentToolButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Document}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolDocument}" /></StackPanel>
                 </RadioButton>
                 <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCommentTool}" x:Name="CommentToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Comment}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolComment}" /></StackPanel>
@@ -920,6 +924,29 @@
                             <TextBlock Classes="note" Text="{l:Tr Ui_ProtectOpenNote}" />
                         </StackPanel>
 
+                        <!-- a file encrypted for certificates: it opens with a recipient's digital ID -->
+                        <StackPanel IsVisible="{Binding Protect.IsCertLocked}" Spacing="6" Margin="0,16,0,0">
+                            <TextBlock Text="{Binding Protect.CertLockedText}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                            <ItemsControl ItemsSource="{Binding Protect.CertRecipients}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate><TextBlock Classes="note" Text="{Binding}" TextWrapping="Wrap" /></DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigId}" />
+                            <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch" IsVisible="{Binding !Sign.Digital.NoIds}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
+                            <DockPanel IsVisible="{Binding Sign.Digital.HasIdFile}">
+                                <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
+                                <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" />
+                            </DockPanel>
+                            <Button Classes="accent" Content="{l:Tr Ui_CertOpenRun}" Command="{Binding Protect.OpenWithIdCommand}" x:Name="OpenWithIdButton" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CertOpenNote}" TextWrapping="Wrap" />
+                        </StackPanel>
+
                         <StackPanel IsVisible="{Binding HasDocument}">
                             <!-- current protection -->
                             <TextBlock Classes="section" Text="{l:Tr Ui_ProtectStateTitle}" />
@@ -959,6 +986,43 @@
                                     </StackPanel>
                                 </Button>
                                 <TextBlock Classes="note" Text="{l:Tr Ui_ProtectRunNote}" />
+                            </StackPanel>
+
+                            <!-- encrypt for certificates -->
+                            <TextBlock Classes="section" Text="{l:Tr Ui_CertTitle}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_CertLead}" TextWrapping="Wrap" />
+                            <StackPanel Spacing="6" IsEnabled="{Binding Protect.CanAdd}" Margin="0,6,0,0">
+                                <ItemsControl ItemsSource="{Binding Protect.Recipients}" x:Name="CertRecipientList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x509:X509Certificate2">
+                                            <DockPanel Margin="0,1">
+                                                <Button DockPanel.Dock="Left" Classes="icon" Margin="0,0,6,0" Padding="2"
+                                                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).Protect.RemoveRecipientCommand}" CommandParameter="{Binding}">
+                                                    <c:Icon Data="{StaticResource I.Delete}" Size="14" />
+                                                </Button>
+                                                <TextBlock Text="{Binding Subject}" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="{l:Tr Ui_CertAdd}" Command="{Binding Protect.AddRecipientCommand}" Padding="8,3" FontSize="12" x:Name="AddRecipientButton" />
+                                <CheckBox IsChecked="{Binding Protect.IncludeMe}" Content="{l:Tr Ui_CertIncludeMe}" FontSize="12" x:Name="IncludeMeBox" />
+                                <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch" IsVisible="{Binding !Sign.Digital.NoIds}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
+                                <DockPanel IsVisible="{Binding Sign.Digital.HasIdFile}">
+                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
+                                    <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" />
+                                </DockPanel>
+                                <Button Classes="accent" Command="{Binding Protect.EncryptForCertificatesCommand}" IsEnabled="{Binding Protect.CanEncryptForCertificates}" x:Name="EncryptForCertificatesButton">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <c:Icon Data="{StaticResource I.Lock}" Size="16" />
+                                        <TextBlock Text="{l:Tr Ui_CertRun}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
 
                             <!-- hidden information -->
@@ -1054,6 +1118,58 @@
                                 IsVisible="{Binding Archive.Result, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                             <TextBlock Text="{Binding Archive.Result}" TextWrapping="Wrap" FontSize="12" x:Name="ArchiveResult" />
                         </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Document: page labels, attachments, layers -->
+                <ScrollViewer IsVisible="{Binding IsDocumentTool}">
+                    <StackPanel Margin="20,18,20,18" Spacing="4">
+                        <TextBlock Classes="title" Text="{l:Tr Ui_DocTitle}" />
+                        <TextBlock Classes="lead" Text="{l:Tr Ui_DocLead}" />
+
+                        <TextBlock Text="{l:Tr Ui_LabelsTitle}" FontWeight="SemiBold" Margin="0,12,0,2" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_LabelsLead}" TextWrapping="Wrap" />
+                        <TextBox Text="{Binding Document.Labels}" PlaceholderText="1:i,5:1" x:Name="PageLabelsBox" />
+                        <TextBlock Classes="note" Text="{Binding Document.LabelPreview}" TextWrapping="Wrap" x:Name="PageLabelsPreview" />
+                        <Button Command="{Binding Document.SaveLabelsCommand}" IsEnabled="{Binding Document.CanRun}" Margin="0,4,0,0" x:Name="SaveLabelsButton">
+                            <TextBlock Text="{l:Tr Ui_LabelsRun}" />
+                        </Button>
+
+                        <TextBlock Text="{l:Tr Ui_AttachTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_AttachNone}" IsVisible="{Binding !Document.HasAttachments}" />
+                        <ItemsControl ItemsSource="{Binding Document.Attachments}" x:Name="AttachmentList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AttachmentRow">
+                                    <StackPanel Margin="0,2">
+                                        <CheckBox IsChecked="{Binding Selected}"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" /></CheckBox>
+                                        <TextBlock Classes="note" Text="{Binding Details}" IsVisible="{Binding HasDetails}" Margin="28,0,0,0" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Document.HasAttachments}">
+                            <Button Content="{l:Tr Ui_AttachSave}" Command="{Binding Document.SaveAttachmentsCommand}" Padding="8,3" FontSize="12" />
+                            <Button Content="{l:Tr Ui_AttachRemove}" Command="{Binding Document.RemoveAttachmentsCommand}" IsEnabled="{Binding Document.CanRemoveAttachments}" Padding="8,3" FontSize="12" />
+                        </StackPanel>
+                        <TextBlock Classes="caption" Text="{l:Tr Ui_AttachDescription}" Margin="0,6,0,0" />
+                        <TextBox Text="{Binding Document.AttachDescription}" />
+                        <Button Command="{Binding Document.AttachCommand}" IsEnabled="{Binding Document.CanRun}" Margin="0,4,0,0" x:Name="AttachButton">
+                            <TextBlock Text="{l:Tr Ui_AttachRun}" />
+                        </Button>
+
+                        <TextBlock Text="{l:Tr Ui_LayersTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_LayersNone}" IsVisible="{Binding !Document.HasLayers}" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_LayersLead}" TextWrapping="Wrap" IsVisible="{Binding Document.HasLayers}" />
+                        <ItemsControl ItemsSource="{Binding Document.Layers}" x:Name="LayerList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LayerRow">
+                                    <CheckBox IsChecked="{Binding Visible}" Margin="0,2"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" /></CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Command="{Binding Document.SaveLayersCommand}" IsEnabled="{Binding Document.LayersChanged}" IsVisible="{Binding Document.HasLayers}" Margin="0,4,0,0" x:Name="SaveLayersButton">
+                            <TextBlock Text="{l:Tr Ui_LayersRun}" />
+                        </Button>
                     </StackPanel>
                 </ScrollViewer>
 
