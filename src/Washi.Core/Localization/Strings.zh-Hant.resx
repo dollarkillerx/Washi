@@ -1167,4 +1167,14 @@
   <data name="Ui_HomeLead" xml:space="preserve"><value>把 PDF 拖到此視窗中，或開啟一個。也可以從工具開始：Washi 會詢問需要的檔案。</value></data>
   <data name="Ui_MoreOptions" xml:space="preserve"><value>更多選項</value></data>
   <data name="Ui_Shortcuts" xml:space="preserve"><value>鍵盤操作</value></data>
+  <data name="Ui_UpdTitle" xml:space="preserve"><value>更新</value></data>
+  <data name="Ui_UpdCheck" xml:space="preserve"><value>檢查更新</value></data>
+  <data name="Ui_UpdChecking" xml:space="preserve"><value>正在檢查更新…</value></data>
+  <data name="Ui_UpdUpToDate" xml:space="preserve"><value>Washi 已是最新版本。</value></data>
+  <data name="Ui_UpdDownloading" xml:space="preserve"><value>正在下載 Washi {0}… {1}%</value></data>
+  <data name="Ui_UpdReady" xml:space="preserve"><value>Washi {0} 已準備好，重新啟動即可使用。</value></data>
+  <data name="Ui_UpdFailed" xml:space="preserve"><value>無法檢查更新：{0}</value></data>
+  <data name="Ui_UpdNotInstalled" xml:space="preserve"><value>更新功能只在安裝版中可用；目前這份是從原始碼建置的。</value></data>
+  <data name="Ui_UpdRestart" xml:space="preserve"><value>重新啟動以更新</value></data>
+  <data name="Ui_UpdAuto" xml:space="preserve"><value>自動檢查更新</value></data>
 </root>

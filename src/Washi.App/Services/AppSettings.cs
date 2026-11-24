@@ -26,6 +26,9 @@ public sealed record AppSettings(string? Language = null)
     /// <summary>Also allow the folder of the PDF open in the editor.</summary>
     public bool AiOpenDocumentFolder { get; init; } = true;
 
+    /// <summary>Look for a new version once after start-up (installed builds only).</summary>
+    public bool CheckForUpdates { get; init; } = true;
+
     /// <summary>The in-app MCP server (off by default).</summary>
     public bool McpEnabled { get; init; }
 

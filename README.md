@@ -12,7 +12,15 @@ fields, fills them, and can OCR, redact and merge PDFs. It has built-in AI
 (Claude, GPT, DeepSeek or a local model) and an MCP server. Written in C# /
 Avalonia.
 
-> **Status: pre-alpha.** Working today:
+**Website:** [washi-pdf.pages.dev](https://washi-pdf.pages.dev) ·
+**Download:** [macOS (Apple silicon)](https://github.com/dollarkillerx/Washi/releases/latest/download/Washi-osx-Portable.zip) ·
+[Windows (x64)](https://github.com/dollarkillerx/Washi/releases/latest/download/Washi-win-Setup.exe) ·
+[all releases](https://github.com/dollarkillerx/Washi/releases)
+
+The apps update themselves. The macOS app is signed and notarized. The Windows installer is not code-signed yet, so on
+the first run SmartScreen asks: choose *More info → Run anyway*.
+
+> **Status: pre-alpha** (0.1.0). Working today:
 >
 > - `washi form make` turns a flat PDF into a fillable one
 > - `washi-mcp` lets AI agents (Claude Desktop, Claude Code and other MCP clients)
@@ -1064,6 +1072,18 @@ dotnet run --project src/Washi.Cli -- ocr scan.pdf                    # searchab
 dotnet run --project src/Washi.App -- form.pdf
 build/macos/bundle.sh && open build/out/Washi.app                     # the macOS app
 ```
+
+### Releases and updates
+
+`tools/release/release-macos.sh <version>` and `tools/release/release-windows.sh <version>` build the packaged apps with
+[Velopack](https://velopack.io), as MySSH does:
+- **macOS:** Apple silicon, self-contained, signed with a Developer ID and notarized.
+- **Windows:** x64, self-contained, not code-signed yet. It is packed on the Mac.
+
+Upload everything in `build/out/release/` to a GitHub release. The installed app checks those releases once after
+start-up (Settings → About → *Check for updates automatically*), downloads a newer version in the background, and
+installs it when you click **Restart to update**. Builds run from source never update. Release notes go in
+`docs/releases/<version>.md`.
 
 ## Roadmap
 

@@ -2174,6 +2174,16 @@ _UI = {
     "Ui_HomeLead": ["Drop a PDF anywhere in this window, or open one. Or start with a tool: Washi asks for the file it needs.", "PDF をこのウィンドウにドロップするか、開いてください。ツールから始めることもできます（必要なファイルは Washi が尋ねます）。", "把 PDF 拖到此窗口中，或打开一个。也可以从工具开始：Washi 会询问需要的文件。", "把 PDF 拖到此視窗中，或開啟一個。也可以從工具開始：Washi 會詢問需要的檔案。", "PDF를 이 창에 끌어 놓거나 여세요. 도구에서 시작해도 됩니다. 필요한 파일은 Washi가 묻습니다.", "Déposez un PDF dans cette fenêtre ou ouvrez-en un. Ou commencez par un outil : Washi demande le fichier nécessaire.", "Ein PDF in dieses Fenster ziehen oder eines öffnen. Oder mit einem Werkzeug beginnen: Washi fragt nach der Datei."],
     "Ui_MoreOptions": ["More options", "その他の設定", "更多选项", "更多選項", "추가 옵션", "Plus d’options", "Weitere Optionen"],
     "Ui_Shortcuts": ["Keyboard shortcuts", "キーボード操作", "键盘操作", "鍵盤操作", "키보드 단축키", "Raccourcis clavier", "Tastenkürzel"],
+    "Ui_UpdTitle": ["Updates", "アップデート", "更新", "更新", "업데이트", "Mises à jour", "Updates"],
+    "Ui_UpdCheck": ["Check for updates", "アップデートを確認", "检查更新", "檢查更新", "업데이트 확인", "Rechercher des mises à jour", "Nach Updates suchen"],
+    "Ui_UpdChecking": ["Checking for updates…", "アップデートを確認しています…", "正在检查更新…", "正在檢查更新…", "업데이트를 확인하는 중…", "Recherche de mises à jour…", "Suche nach Updates …"],
+    "Ui_UpdUpToDate": ["Washi is up to date.", "Washi は最新です。", "Washi 已是最新版本。", "Washi 已是最新版本。", "Washi가 최신 버전입니다.", "Washi est à jour.", "Washi ist auf dem neuesten Stand."],
+    "Ui_UpdDownloading": ["Downloading Washi {0}… {1}%", "Washi {0} をダウンロードしています… {1}%", "正在下载 Washi {0}… {1}%", "正在下載 Washi {0}… {1}%", "Washi {0} 다운로드 중… {1}%", "Téléchargement de Washi {0}… {1} %", "Washi {0} wird geladen … {1} %"],
+    "Ui_UpdReady": ["Washi {0} is ready. Restart Washi to start using it.", "Washi {0} の準備ができました。再起動すると使えます。", "Washi {0} 已准备好，重新启动即可使用。", "Washi {0} 已準備好，重新啟動即可使用。", "Washi {0} 준비가 끝났습니다. 다시 시작하면 사용할 수 있습니다.", "Washi {0} est prêt. Redémarrez Washi pour l’utiliser.", "Washi {0} ist bereit. Starten Sie Washi neu, um es zu verwenden."],
+    "Ui_UpdFailed": ["Could not check for updates: {0}", "アップデートを確認できませんでした: {0}", "无法检查更新：{0}", "無法檢查更新：{0}", "업데이트를 확인하지 못했습니다: {0}", "Impossible de rechercher des mises à jour : {0}", "Updates konnten nicht geprüft werden: {0}"],
+    "Ui_UpdNotInstalled": ["Updates work in the installed app; this copy was built from source.", "アップデートはインストールしたアプリで使えます。このコピーはソースからビルドされています。", "更新功能只在安装版中可用；当前这份是从源码构建的。", "更新功能只在安裝版中可用；目前這份是從原始碼建置的。", "업데이트는 설치한 앱에서 사용할 수 있습니다. 이 사본은 소스에서 빌드되었습니다.", "Les mises à jour fonctionnent dans l’app installée ; cette copie a été compilée depuis les sources.", "Updates gibt es in der installierten App; diese Kopie wurde aus dem Quellcode gebaut."],
+    "Ui_UpdRestart": ["Restart to update", "再起動してアップデート", "重新启动以更新", "重新啟動以更新", "다시 시작하여 업데이트", "Redémarrer pour mettre à jour", "Neu starten und aktualisieren"],
+    "Ui_UpdAuto": ["Check for updates automatically", "アップデートを自動で確認する", "自动检查更新", "自動檢查更新", "자동으로 업데이트 확인", "Rechercher automatiquement les mises à jour", "Automatisch nach Updates suchen"],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

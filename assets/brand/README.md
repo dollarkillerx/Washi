@@ -61,6 +61,7 @@ not part of this repository.
 | `icon.svg`, `icon-dark.svg` | square app icon with a background |
 | `png/icon-{16…1024}.png` | app icon rasters. Sizes 16–64 are drawn on whole pixels |
 | `favicon.ico` | 16, 24, 32, 48, 64 |
+| `washi.ico` | the Windows app and installer icon: the PNGs above, 16–256, as PNG entries |
 | `wordmark.svg` / `wordmark-on-dark.svg` | mark + Washi + 和紙, for README and website headers |
 | `wordmark-latin.svg` | mark + Washi, for places where Japanese text would be too small |
 | `social-preview.png` (+ `.svg`) | GitHub social preview, 1280 × 640 |

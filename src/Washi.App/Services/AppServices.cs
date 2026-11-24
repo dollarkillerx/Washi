@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using System.Net;
+using Washi.App.ViewModels;
 using Washi.Tools;
 
 namespace Washi.App.Services;
@@ -32,6 +33,12 @@ public sealed class AppServices
     public ApprovalService Approvals { get; }
     public ToolInvoker Invoker { get; }
     public McpController Mcp { get; }
+
+    /// <summary>Updates from the GitHub releases. Tests and source builds keep the do-nothing updater; the app sets the
+    /// real one at start-up (<see cref="UseUpdater"/>).</summary>
+    public UpdatesViewModel Updates { get; private set; } = new(NullAppUpdater.Instance, () => { });
+
+    public void UseUpdater(IAppUpdater updater, Action quit) => Updates = new UpdatesViewModel(updater, quit);
 
     /// <summary>The main window's editor (set by the window; replaced when it is rebuilt).</summary>
     public IEditorHost? Editor { get; set; }

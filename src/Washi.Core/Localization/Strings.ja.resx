@@ -1167,4 +1167,14 @@
   <data name="Ui_HomeLead" xml:space="preserve"><value>PDF をこのウィンドウにドロップするか、開いてください。ツールから始めることもできます（必要なファイルは Washi が尋ねます）。</value></data>
   <data name="Ui_MoreOptions" xml:space="preserve"><value>その他の設定</value></data>
   <data name="Ui_Shortcuts" xml:space="preserve"><value>キーボード操作</value></data>
+  <data name="Ui_UpdTitle" xml:space="preserve"><value>アップデート</value></data>
+  <data name="Ui_UpdCheck" xml:space="preserve"><value>アップデートを確認</value></data>
+  <data name="Ui_UpdChecking" xml:space="preserve"><value>アップデートを確認しています…</value></data>
+  <data name="Ui_UpdUpToDate" xml:space="preserve"><value>Washi は最新です。</value></data>
+  <data name="Ui_UpdDownloading" xml:space="preserve"><value>Washi {0} をダウンロードしています… {1}%</value></data>
+  <data name="Ui_UpdReady" xml:space="preserve"><value>Washi {0} の準備ができました。再起動すると使えます。</value></data>
+  <data name="Ui_UpdFailed" xml:space="preserve"><value>アップデートを確認できませんでした: {0}</value></data>
+  <data name="Ui_UpdNotInstalled" xml:space="preserve"><value>アップデートはインストールしたアプリで使えます。このコピーはソースからビルドされています。</value></data>
+  <data name="Ui_UpdRestart" xml:space="preserve"><value>再起動してアップデート</value></data>
+  <data name="Ui_UpdAuto" xml:space="preserve"><value>アップデートを自動で確認する</value></data>
 </root>

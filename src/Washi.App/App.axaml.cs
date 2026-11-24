@@ -24,9 +24,14 @@ public partial class App : Application
                 png.CopyTo(ms);
                 Platform.MacDock.SetIcon(ms.ToArray());
             }
+            // updates come from the GitHub releases; a source build is not "installed" and never updates
+            var services = Services.AppServices.Instance;
+            services.UseUpdater(new Services.VelopackUpdater(), () => desktop.Shutdown());
             var window = new MainWindow();
             window.ViewModel.LanguageChanged = () => Avalonia.Threading.Dispatcher.UIThread.Post(async () => await ReloadAsync(desktop));
             desktop.MainWindow = window;
+            if (Services.AppSettings.Load(services.SettingsPath).CheckForUpdates)
+                window.Opened += (_, _) => _ = services.Updates.CheckInBackgroundAsync();
             // the MCP server, when the user left it on (never blocks start-up)
             _ = Services.AppServices.Instance.Mcp.InitializeAsync();
             desktop.ShutdownRequested += (_, _) => Services.AppServices.Instance.Mcp.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(3));

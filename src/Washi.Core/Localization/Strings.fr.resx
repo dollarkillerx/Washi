@@ -1167,4 +1167,14 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_HomeLead" xml:space="preserve"><value>Déposez un PDF dans cette fenêtre ou ouvrez-en un. Ou commencez par un outil : Washi demande le fichier nécessaire.</value></data>
   <data name="Ui_MoreOptions" xml:space="preserve"><value>Plus d’options</value></data>
   <data name="Ui_Shortcuts" xml:space="preserve"><value>Raccourcis clavier</value></data>
+  <data name="Ui_UpdTitle" xml:space="preserve"><value>Mises à jour</value></data>
+  <data name="Ui_UpdCheck" xml:space="preserve"><value>Rechercher des mises à jour</value></data>
+  <data name="Ui_UpdChecking" xml:space="preserve"><value>Recherche de mises à jour…</value></data>
+  <data name="Ui_UpdUpToDate" xml:space="preserve"><value>Washi est à jour.</value></data>
+  <data name="Ui_UpdDownloading" xml:space="preserve"><value>Téléchargement de Washi {0}… {1} %</value></data>
+  <data name="Ui_UpdReady" xml:space="preserve"><value>Washi {0} est prêt. Redémarrez Washi pour l’utiliser.</value></data>
+  <data name="Ui_UpdFailed" xml:space="preserve"><value>Impossible de rechercher des mises à jour : {0}</value></data>
+  <data name="Ui_UpdNotInstalled" xml:space="preserve"><value>Les mises à jour fonctionnent dans l’app installée ; cette copie a été compilée depuis les sources.</value></data>
+  <data name="Ui_UpdRestart" xml:space="preserve"><value>Redémarrer pour mettre à jour</value></data>
+  <data name="Ui_UpdAuto" xml:space="preserve"><value>Rechercher automatiquement les mises à jour</value></data>
 </root>

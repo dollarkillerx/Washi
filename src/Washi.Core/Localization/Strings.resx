@@ -1167,4 +1167,14 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_HomeLead" xml:space="preserve"><value>Drop a PDF anywhere in this window, or open one. Or start with a tool: Washi asks for the file it needs.</value></data>
   <data name="Ui_MoreOptions" xml:space="preserve"><value>More options</value></data>
   <data name="Ui_Shortcuts" xml:space="preserve"><value>Keyboard shortcuts</value></data>
+  <data name="Ui_UpdTitle" xml:space="preserve"><value>Updates</value></data>
+  <data name="Ui_UpdCheck" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="Ui_UpdChecking" xml:space="preserve"><value>Checking for updates…</value></data>
+  <data name="Ui_UpdUpToDate" xml:space="preserve"><value>Washi is up to date.</value></data>
+  <data name="Ui_UpdDownloading" xml:space="preserve"><value>Downloading Washi {0}… {1}%</value></data>
+  <data name="Ui_UpdReady" xml:space="preserve"><value>Washi {0} is ready. Restart Washi to start using it.</value></data>
+  <data name="Ui_UpdFailed" xml:space="preserve"><value>Could not check for updates: {0}</value></data>
+  <data name="Ui_UpdNotInstalled" xml:space="preserve"><value>Updates work in the installed app; this copy was built from source.</value></data>
+  <data name="Ui_UpdRestart" xml:space="preserve"><value>Restart to update</value></data>
+  <data name="Ui_UpdAuto" xml:space="preserve"><value>Check for updates automatically</value></data>
 </root>
