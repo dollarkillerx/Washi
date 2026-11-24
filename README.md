@@ -12,7 +12,15 @@ fields, fills them, and can OCR, redact and merge PDFs. It has built-in AI
 (Claude, GPT, DeepSeek or a local model) and an MCP server. Written in C# /
 Avalonia.
 
-> **Status: pre-alpha.** Working today:
+**Website:** [washi-pdf.pages.dev](https://washi-pdf.pages.dev) ·
+**Download:** [macOS (Apple silicon)](https://github.com/dollarkillerx/Washi/releases/latest/download/Washi-osx-Portable.zip) ·
+[Windows (x64)](https://github.com/dollarkillerx/Washi/releases/latest/download/Washi-win-Setup.exe) ·
+[all releases](https://github.com/dollarkillerx/Washi/releases)
+
+The apps update themselves. The macOS app is signed and notarized. The Windows installer is not code-signed yet, so on
+the first run SmartScreen asks: choose *More info → Run anyway*.
+
+> **Status: pre-alpha** (0.1.0). Working today:
 >
 > - `washi form make` turns a flat PDF into a fillable one
 > - `washi-mcp` lets AI agents (Claude Desktop, Claude Code and other MCP clients)
