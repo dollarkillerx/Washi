@@ -1145,4 +1145,7 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_FormDataUnknown" xml:space="preserve"><value>“{0}” is no field of this form.</value></data>
   <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>Filled {0} copies in {1}.</value></data>
   <data name="Ui_FormDataCollected" xml:space="preserve"><value>Saved {0} with {1} form(s).</value></data>
+  <data name="Err_FormLocked" xml:space="preserve"><value>{0} does not allow filling in its form.</value></data>
+  <data name="Err_FormFillCheck" xml:space="preserve"><value>The filled copy did not read back as filled; it was not kept.</value></data>
+  <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>Nothing in the form changed.</value></data>
 </root>

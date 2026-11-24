@@ -396,6 +396,10 @@ washi pdf unlock report_sealed.pdf --id me.p12                     # report_seal
 - **Removing protection** needs the password that allows it: the permissions password, or the password to open when
   there is no separate one. Washi never removes protection without it, so files whose permissions forbid changes
   (as the 国税庁 PDFs do) are still refused by the other tools.
+- **Filling in protected forms**: a form whose permissions allow filling in (the 国税庁 input forms, the CRA TD1, the
+  USCIS G-1145) is filled without its permissions password, as Acrobat does it: the values are appended as an update
+  encrypted with the file's own key (RC4, AES-128 or AES-256), everything before stays byte for byte, and the copy keeps
+  the same protection and restrictions. A form that does not allow filling in is refused.
 - **Hidden information**: document properties and XMP metadata, attached files, scripts and actions (JavaScript,
   actions that run on opening, launching programs, sending form data, XFA), comments, private program data
   (`/PieceInfo`, which can hold a whole editable copy) and thumbnails, and earlier versions that incremental saves
@@ -431,7 +435,8 @@ In the editor: **Document** in the tool rail, *Form data*. Agents use `export_fo
   mark, so spreadsheets read Japanese; Shift_JIS from Japanese spreadsheets is read too); JSON as `fill_fields` takes it.
   Each file is read back before it is kept.
 - **Importing** fills as Washi always fills: the form's formats, ranges and calculations apply and Washi draws each
-  value. Names that are no field of the form are listed.
+  value. Names that are no field of the form are listed. Forms protected with a permissions password that allow
+  filling in are filled too, keeping their protection (see *Passwords and hidden information*).
 - **One copy per row**: empty cells leave their field as the form has it; a column can name each copy; existing files
   are never replaced.
 - **Collecting**: a row per PDF, the file name first, a column per field in the order the fields first appear.

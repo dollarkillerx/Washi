@@ -2158,6 +2158,9 @@ _UI = {
     "Ui_FormDataUnknown": ["“{0}” is no field of this form.", "「{0}」はこのフォームの記入欄ではありません。", "“{0}”不是此表单的栏位。", "「{0}」不是此表單的欄位。", "“{0}” 은(는) 이 양식의 입력란이 아닙니다.", "« {0} » n’est pas un champ de ce formulaire.", "„{0}“ ist kein Feld dieses Formulars."],
     "Ui_FormDataFilledMany": ["Filled {0} copies in {1}.", "{1} に {0} 部のコピーを作成しました。", "已在 {1} 生成 {0} 份副本。", "已在 {1} 產生 {0} 份副本。", "{1} 에 사본 {0}개를 만들었습니다.", "{0} copie(s) remplie(s) dans {1}.", "{0} Kopie(n) in {1} ausgefüllt."],
     "Ui_FormDataCollected": ["Saved {0} with {1} form(s).", "{0} を保存しました（フォーム {1} 件）。", "已保存 {0}（{1} 份表单）。", "已儲存 {0}（{1} 份表單）。", "{0} 저장 (양식 {1}개).", "{0} enregistré avec {1} formulaire(s).", "{0} mit {1} Formular(en) gespeichert."],
+    "Err_FormLocked": ["{0} does not allow filling in its form.", "{0} はフォームへの入力を許可していません。", "{0} 不允许填写表单。", "{0} 不允許填寫表單。", "{0} 은(는) 양식 입력을 허용하지 않습니다.", "{0} n’autorise pas à remplir son formulaire.", "{0} erlaubt das Ausfüllen des Formulars nicht."],
+    "Err_FormFillCheck": ["The filled copy did not read back as filled; it was not kept.", "入力したコピーが入力した通りに読み戻せなかったため、保存しませんでした。", "填写后的副本未能按填写内容读回，未保存。", "填寫後的副本未能按填寫內容讀回，未儲存。", "채운 사본이 채운 대로 읽히지 않아 저장하지 않았습니다.", "La copie remplie ne se relit pas comme remplie ; elle n’a pas été conservée.", "Die ausgefüllte Kopie ließ sich nicht wie ausgefüllt zurücklesen; sie wurde nicht behalten."],
+    "Err_FormDataNothingFilled": ["Nothing in the form changed.", "フォームは何も変わりませんでした。", "表单没有任何变化。", "表單沒有任何變化。", "양식이 바뀌지 않았습니다.", "Rien n’a changé dans le formulaire.", "Im Formular hat sich nichts geändert."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

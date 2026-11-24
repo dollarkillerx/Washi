@@ -1145,4 +1145,7 @@
   <data name="Ui_FormDataUnknown" xml:space="preserve"><value>「{0}」はこのフォームの記入欄ではありません。</value></data>
   <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{1} に {0} 部のコピーを作成しました。</value></data>
   <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} を保存しました（フォーム {1} 件）。</value></data>
+  <data name="Err_FormLocked" xml:space="preserve"><value>{0} はフォームへの入力を許可していません。</value></data>
+  <data name="Err_FormFillCheck" xml:space="preserve"><value>入力したコピーが入力した通りに読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>フォームは何も変わりませんでした。</value></data>
 </root>
