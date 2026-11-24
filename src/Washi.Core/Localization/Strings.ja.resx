@@ -224,8 +224,6 @@
   <data name="Ui_DeleteTip" xml:space="preserve"><value>選択した記入欄を削除（Delete）</value></data>
   <data name="Ui_FieldsPanel" xml:space="preserve"><value>記入欄</value></data>
   <data name="Ui_PagesPanel" xml:space="preserve"><value>ページ</value></data>
-  <data name="Ui_DropTitle" xml:space="preserve"><value>PDF を開く</value></data>
-  <data name="Ui_DropLead" xml:space="preserve"><value>ここに PDF をドロップするか、選んでください。次に左のツールを選びます。</value></data>
   <data name="Ui_OcrTitle" xml:space="preserve"><value>スキャンを検索可能に</value></data>
   <data name="Ui_OcrLead" xml:space="preserve"><value>スキャンしたページの文字を認識し、見えない文字層として加えます。見た目は変わりません。</value></data>
   <data name="Ui_OcrPlan" xml:space="preserve"><value>{1} ページ中 {0} ページに OCR が必要です。</value></data>
@@ -1159,4 +1157,14 @@
   <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>新しいフォームを作る場合</value></data>
   <data name="Ui_FillNewFormNote" xml:space="preserve"><value>このページに自分で記入欄を作る場合は、枠を検出してください。作った記入欄は、今ある記入欄に追加されます。</value></data>
   <data name="Ui_FillNewForm" xml:space="preserve"><value>枠を検出して新しいフォームを作る</value></data>
+  <data name="Ui_GroupFill" xml:space="preserve"><value>記入・署名</value></data>
+  <data name="Ui_GroupEdit" xml:space="preserve"><value>編集</value></data>
+  <data name="Ui_GroupPages" xml:space="preserve"><value>ページ</value></data>
+  <data name="Ui_GroupReview" xml:space="preserve"><value>レビュー</value></data>
+  <data name="Ui_GroupProtect" xml:space="preserve"><value>保護</value></data>
+  <data name="Ui_GroupOutput" xml:space="preserve"><value>仕上げ</value></data>
+  <data name="Ui_HomeTitle" xml:space="preserve"><value>何をしますか？</value></data>
+  <data name="Ui_HomeLead" xml:space="preserve"><value>PDF をこのウィンドウにドロップするか、開いてください。ツールから始めることもできます（必要なファイルは Washi が尋ねます）。</value></data>
+  <data name="Ui_MoreOptions" xml:space="preserve"><value>その他の設定</value></data>
+  <data name="Ui_Shortcuts" xml:space="preserve"><value>キーボード操作</value></data>
 </root>

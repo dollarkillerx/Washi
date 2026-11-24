@@ -224,8 +224,6 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_DeleteTip" xml:space="preserve"><value>Ausgewähltes Feld löschen (Entf)</value></data>
   <data name="Ui_FieldsPanel" xml:space="preserve"><value>Felder</value></data>
   <data name="Ui_PagesPanel" xml:space="preserve"><value>Seiten</value></data>
-  <data name="Ui_DropTitle" xml:space="preserve"><value>PDF öffnen</value></data>
-  <data name="Ui_DropLead" xml:space="preserve"><value>PDF hier ablegen oder auswählen. Dann links ein Werkzeug wählen.</value></data>
   <data name="Ui_OcrTitle" xml:space="preserve"><value>Scan durchsuchbar machen</value></data>
   <data name="Ui_OcrLead" xml:space="preserve"><value>Erkennt den Text gescannter Seiten und fügt ihn als unsichtbare Ebene hinzu. Die Seiten bleiben gleich.</value></data>
   <data name="Ui_OcrPlan" xml:space="preserve"><value>{0} von {1} Seite(n) brauchen OCR.</value></data>
@@ -1159,4 +1157,14 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>Stattdessen ein neues Formular</value></data>
   <data name="Ui_FillNewFormNote" xml:space="preserve"><value>Um stattdessen eigene Felder zu machen, die Kästchen erkennen lassen. Die neuen Felder kommen zu den vorhandenen hinzu.</value></data>
   <data name="Ui_FillNewForm" xml:space="preserve"><value>Kästchen für ein neues Formular erkennen</value></data>
+  <data name="Ui_GroupFill" xml:space="preserve"><value>Ausfüllen</value></data>
+  <data name="Ui_GroupEdit" xml:space="preserve"><value>Bearbeiten</value></data>
+  <data name="Ui_GroupPages" xml:space="preserve"><value>Seiten</value></data>
+  <data name="Ui_GroupReview" xml:space="preserve"><value>Prüfen</value></data>
+  <data name="Ui_GroupProtect" xml:space="preserve"><value>Schützen</value></data>
+  <data name="Ui_GroupOutput" xml:space="preserve"><value>Ausgabe</value></data>
+  <data name="Ui_HomeTitle" xml:space="preserve"><value>Was möchten Sie tun?</value></data>
+  <data name="Ui_HomeLead" xml:space="preserve"><value>Ein PDF in dieses Fenster ziehen oder eines öffnen. Oder mit einem Werkzeug beginnen: Washi fragt nach der Datei.</value></data>
+  <data name="Ui_MoreOptions" xml:space="preserve"><value>Weitere Optionen</value></data>
+  <data name="Ui_Shortcuts" xml:space="preserve"><value>Tastenkürzel</value></data>
 </root>

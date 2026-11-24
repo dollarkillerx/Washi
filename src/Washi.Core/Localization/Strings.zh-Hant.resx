@@ -224,8 +224,6 @@
   <data name="Ui_DeleteTip" xml:space="preserve"><value>刪除選取的欄位（Delete）</value></data>
   <data name="Ui_FieldsPanel" xml:space="preserve"><value>欄位</value></data>
   <data name="Ui_PagesPanel" xml:space="preserve"><value>頁面</value></data>
-  <data name="Ui_DropTitle" xml:space="preserve"><value>開啟 PDF</value></data>
-  <data name="Ui_DropLead" xml:space="preserve"><value>把 PDF 拖到這裡，或選擇一個檔案。然後在左側選擇工具。</value></data>
   <data name="Ui_OcrTitle" xml:space="preserve"><value>讓掃描檔可搜尋</value></data>
   <data name="Ui_OcrLead" xml:space="preserve"><value>辨識掃描頁上的文字，並作為看不見的文字層加入。頁面外觀不變。</value></data>
   <data name="Ui_OcrPlan" xml:space="preserve"><value>{1} 頁中有 {0} 頁需要 OCR。</value></data>
@@ -1159,4 +1157,14 @@
   <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>改為製作新表單</value></data>
   <data name="Ui_FillNewFormNote" xml:space="preserve"><value>如果要在此頁面上自己製作欄位，請偵測方框。製作的欄位會加入到既有的欄位中。</value></data>
   <data name="Ui_FillNewForm" xml:space="preserve"><value>偵測方框以製作新表單</value></data>
+  <data name="Ui_GroupFill" xml:space="preserve"><value>填寫與簽名</value></data>
+  <data name="Ui_GroupEdit" xml:space="preserve"><value>編輯</value></data>
+  <data name="Ui_GroupPages" xml:space="preserve"><value>頁面</value></data>
+  <data name="Ui_GroupReview" xml:space="preserve"><value>審閱</value></data>
+  <data name="Ui_GroupProtect" xml:space="preserve"><value>保護</value></data>
+  <data name="Ui_GroupOutput" xml:space="preserve"><value>輸出</value></data>
+  <data name="Ui_HomeTitle" xml:space="preserve"><value>你想做什麼？</value></data>
+  <data name="Ui_HomeLead" xml:space="preserve"><value>把 PDF 拖到此視窗中，或開啟一個。也可以從工具開始：Washi 會詢問需要的檔案。</value></data>
+  <data name="Ui_MoreOptions" xml:space="preserve"><value>更多選項</value></data>
+  <data name="Ui_Shortcuts" xml:space="preserve"><value>鍵盤操作</value></data>
 </root>

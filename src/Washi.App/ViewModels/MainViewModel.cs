@@ -25,6 +25,9 @@ public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Archive, Docum
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields, Bookmarks }
 
+/// <summary>The rail's groups: each holds a few tools, shown as tabs at the top of the tool panel.</summary>
+public enum ToolGroup { None, Fill, Edit, Pages, Review, Protect, Output }
+
 /// <summary>A page thumbnail in the Pages panel.</summary>
 public sealed partial class PageThumb(int index) : ObservableObject
 {
@@ -62,6 +65,11 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Sign = new SignToolViewModel(this);
         Comment = new CommentToolViewModel(this);
         Protect = new ProtectToolViewModel(this);
+        Protect.PropertyChanged += (_, e) =>
+        {
+            // a file that opens only with a password has no document yet, but the Protect panel asks for it
+            if (e.PropertyName is nameof(ProtectToolViewModel.IsLocked) or nameof(ProtectToolViewModel.IsCertLocked)) OnPropertyChanged(nameof(ShowToolPanel));
+        };
         Redact = new RedactToolViewModel(this);
         EditText = new EditTextViewModel(this);
         Stamp = new StampToolViewModel(this);
@@ -218,14 +226,72 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     // ------------------------------------------------------------------ tools and panels
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsImagesTool), nameof(IsLinksTool), nameof(IsCompareTool), nameof(IsCompressTool), nameof(IsArchiveTool), nameof(IsDocumentTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
-                                                  nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
+                                                  nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail),
+                                                  nameof(ActiveGroup), nameof(IsFillGroup), nameof(IsEditGroup), nameof(IsPagesGroup), nameof(IsReviewGroup),
+                                                  nameof(IsProtectGroup), nameof(IsOutputGroup), nameof(ShowRail), nameof(ShowHome))]
     private Tool _activeTool = Tool.Form;
+
+    /// <summary>The tools in each group of the rail, in the order of their tabs.</summary>
+    public static readonly IReadOnlyDictionary<ToolGroup, Tool[]> Groups = new Dictionary<ToolGroup, Tool[]>
+    {
+        [ToolGroup.Fill] = [Tool.Form, Tool.Sign],
+        [ToolGroup.Edit] = [Tool.EditText, Tool.Images, Tool.Links, Tool.Stamp, Tool.Erase],
+        [ToolGroup.Pages] = [Tool.Organize, Tool.Combine, Tool.Split],
+        [ToolGroup.Review] = [Tool.Comment, Tool.Compare],
+        [ToolGroup.Protect] = [Tool.Protect, Tool.Redact],
+        [ToolGroup.Output] = [Tool.Compress, Tool.Ocr, Tool.Archive, Tool.Document],
+    };
+
+    public static ToolGroup GroupOf(Tool tool) => Groups.FirstOrDefault(g => g.Value.Contains(tool)).Key;
+
+    /// <summary>The tool each group last showed, so going back to a group returns to it.</summary>
+    private readonly Dictionary<ToolGroup, Tool> _lastInGroup = [];
+
+    public ToolGroup ActiveGroup => GroupOf(ActiveTool);
+
+    private void ShowGroup(ToolGroup group) => ActiveTool = _lastInGroup.TryGetValue(group, out var t) ? t : Groups[group][0];
+
+    public bool IsFillGroup { get => ActiveGroup == ToolGroup.Fill; set { if (value) ShowGroup(ToolGroup.Fill); } }
+    public bool IsEditGroup { get => ActiveGroup == ToolGroup.Edit; set { if (value) ShowGroup(ToolGroup.Edit); } }
+    public bool IsPagesGroup { get => ActiveGroup == ToolGroup.Pages; set { if (value) ShowGroup(ToolGroup.Pages); } }
+    public bool IsReviewGroup { get => ActiveGroup == ToolGroup.Review; set { if (value) ShowGroup(ToolGroup.Review); } }
+    public bool IsProtectGroup { get => ActiveGroup == ToolGroup.Protect; set { if (value) ShowGroup(ToolGroup.Protect); } }
+    public bool IsOutputGroup { get => ActiveGroup == ToolGroup.Output; set { if (value) ShowGroup(ToolGroup.Output); } }
+
+    /// <summary>Tools that are useful before any document is open.</summary>
+    private bool WorksWithoutDocument => ActiveTool is Tool.Combine or Tool.Ask
+        || ActiveTool == Tool.Protect && (Protect.IsLocked || Protect.IsCertLocked);
+
+    /// <summary>With nothing open the window is a start page: no rail, no panels, just what Washi can do.</summary>
+    public bool ShowHome => !HasDocument && !IsSettingsTool;
+    public bool ShowRail => HasDocument || IsSettingsTool || ShowToolPanel;
+
+    /// <summary>The AI assistant is opened from the header and sits beside whatever tool was in use.</summary>
+    private Tool _beforeAsk = Tool.Form;
+
+    [RelayCommand]
+    private void ToggleAsk()
+    {
+        if (IsAskTool) { ActiveTool = _beforeAsk; return; }
+        _beforeAsk = IsSettingsTool ? Tool.Form : ActiveTool;
+        ActiveTool = Tool.Ask;
+        ToolPanelOpen = true;
+    }
+
+    /// <summary>A tool picked on the start page: tools that need a document ask for one first.</summary>
+    [RelayCommand]
+    private async Task StartWithAsync(Tool tool)
+    {
+        ActiveTool = tool;
+        ToolPanelOpen = true;
+        if (!HasDocument && !WorksWithoutDocument) await OpenAsync();
+    }
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowPagesPanel), nameof(ShowFieldsPanel), nameof(ShowBookmarksPanel), nameof(ShowSidePanel))]
     private SidePanel _sidePanel = SidePanel.Fields;
 
     /// <summary>Clicking the active tool in the rail again hides its panel (more room for the page).</summary>
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowToolPanel))] private bool _toolPanelOpen = true;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowToolPanel), nameof(ShowRail))] private bool _toolPanelOpen = true;
 
     public bool IsFormTool { get => ActiveTool == Tool.Form; set { if (value) ActiveTool = Tool.Form; } }
     public bool IsOcrTool { get => ActiveTool == Tool.Ocr; set { if (value) ActiveTool = Tool.Ocr; } }
@@ -250,7 +316,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     /// <summary>Settings is a page of its own: it takes the document's place (no tool panel, no side rails).</summary>
     public bool IsDocumentView => !IsSettingsTool;
-    public bool ShowToolPanel => ToolPanelOpen && !IsSettingsTool;
+    public bool ShowToolPanel => ToolPanelOpen && !IsSettingsTool && (HasDocument || WorksWithoutDocument);
     public bool ShowRightRail => HasDocument && !IsSettingsTool;
 
     /// <summary>The chat needs more room than the other tools' panels.</summary>
@@ -290,6 +356,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     partial void OnActiveToolChanged(Tool value)
     {
+        if (GroupOf(value) is var g and not ToolGroup.None) _lastInGroup[g] = value;
         if (value != Tool.Form) { DrawMode = false; PreviewMode = false; }
         if (value == Tool.Form && PdfPath is { } p && _detectedFor != p) _ = PrepareFormAsync();
         if (FillingForm) _ = RenderPageAsync();   // the form's fields are drawn by the editor only in the Form tool
@@ -319,7 +386,8 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     /// <summary>After "fit width" the page follows the window and panels until the user zooms by hand.</summary>
     private bool _fitWidthMode = true;
     private const double PageMargin = 56;   // the page's margin on both sides, in the view
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasDocument), nameof(Title), nameof(FileName), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(HasDocument), nameof(Title), nameof(FileName), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail),
+                                                  nameof(ShowToolPanel), nameof(ShowHome), nameof(ShowRail))]
     private string? _pdfPath;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PageText))] private int _pageCount;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PageText))] private int _pageIndex;
