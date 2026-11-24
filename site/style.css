@@ -93,6 +93,10 @@ html[lang="ja"] .hero h1, html[lang="zh-Hans"] .hero h1 { letter-spacing: 0; lin
 .btn.ghost { color: #f4f4f4; border-color: #6f6f6f; }
 .btn.ghost:hover { background: #262626; border-color: #a8a8a8; }
 .btn svg { width: 18px; height: 18px; fill: currentColor; }
+.hero .fine { margin: 14px 0 0; font-size: 13px; color: #a8a8a8; }
+.hero .fine a { color: #c6c6c6; }
+.tile .btn { margin-top: 8px; }
+.btn svg.dl { fill: none; stroke: currentColor; }
 .shot { margin: 64px auto 0; max-width: 1120px; border: 1px solid #393939; border-bottom: 0; background: #262626;
   box-shadow: 0 -8px 48px rgba(0,0,0,.35); }
 .shot img { width: 100%; height: auto; }

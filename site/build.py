@@ -14,6 +14,8 @@ import html, os, re, shutil, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "dist")
 REPO = "https://github.com/dollarkillerx/Washi"
+DOWNLOAD_MAC = REPO + "/releases/latest/download/Washi-osx-Portable.zip"
+DOWNLOAD_WIN = REPO + "/releases/latest/download/Washi-win-Setup.exe"
 SITE = "https://washi-pdf.pages.dev"  # the Cloudflare Pages project "washi-pdf"
 LANGS = {"en": ("en", "", "English"), "ja": ("ja", "ja/", "日本語"), "zh": ("zh-Hans", "zh/", "中文")}
 
@@ -32,7 +34,7 @@ T = {
     "nav_ai": {"en": "AI & MCP", "ja": "AI と MCP", "zh": "AI 与 MCP"},
     "nav_privacy": {"en": "Privacy", "ja": "プライバシー", "zh": "隐私"},
     "nav_language": {"en": "Language", "ja": "言語", "zh": "语言"},
-    "nav_get": {"en": "Get Washi", "ja": "入手する", "zh": "获取"},
+    "nav_get": {"en": "Download", "ja": "ダウンロード", "zh": "下载"},
     "eyebrow": {"en": "Open source · AGPL-3.0 · pre-alpha", "ja": "オープンソース · AGPL-3.0 · プレアルファ", "zh": "开源 · AGPL-3.0 · 预览阶段"},
     "h1": {"en": "Flat PDF forms,<br>made fillable.", "ja": "紙の様式を、<br>記入できる PDF に。", "zh": "扁平的 PDF 表格，<br>变成可填写的表单。"},
     "lead": {
@@ -42,6 +44,10 @@ T = {
     },
     "cta_github": {"en": "View on GitHub", "ja": "GitHub で見る", "zh": "在 GitHub 上查看"},
     "cta_build": {"en": "Build from source", "ja": "ソースからビルド", "zh": "从源码构建"},
+    "cta_mac": {"en": "Download for macOS", "ja": "macOS 版をダウンロード", "zh": "下载 macOS 版"},
+    "cta_win": {"en": "Download for Windows", "ja": "Windows 版をダウンロード", "zh": "下载 Windows 版"},
+    "cta_fine_mac": {"en": "Apple silicon · free · updates itself", "ja": "Apple シリコン · 無料 · 自動アップデート", "zh": "Apple 芯片 · 免费 · 自动更新"},
+    "cta_fine_win": {"en": "Windows 10/11, x64 · free · updates itself", "ja": "Windows 10/11 x64 · 無料 · 自動アップデート", "zh": "Windows 10/11 x64 · 免费 · 自动更新"},
     "shot_alt": {
         "en": "The Washi editor on a sample form: the detected fields are outlined in blue, the selected comb field in red, with its settings in the Field panel",
         "ja": "見本の様式を開いた Washi のエディタ。検出された記入欄が青、選択中のマス目が赤で示され、右の記入欄パネルに設定が表示されている",
@@ -163,10 +169,18 @@ T = {
     "g_kicker": {"en": "Get Washi", "ja": "入手する", "zh": "获取 Washi"},
     "g_h2": {"en": "Free and open source.", "ja": "無料、そしてオープンソース。", "zh": "免费，并且开源。"},
     "g_intro": {
-        "en": "Washi is pre-alpha: there are no installers yet. It builds from source with the .NET 10 SDK.",
-        "ja": "Washi はプレアルファ版で、まだインストーラーはありません。.NET 10 SDK でソースからビルドできます。",
-        "zh": "Washi 目前处于预览阶段，还没有安装包。可以用 .NET 10 SDK 从源码构建。",
+        "en": "Washi is pre-alpha: expect rough edges. The apps check for new versions themselves and install them when you restart.",
+        "ja": "Washi はプレアルファ版です。荒削りなところもあります。アプリは新しい版を自分で確認し、再起動したときに入れ替えます。",
+        "zh": "Washi 目前处于预览阶段，难免有粗糙之处。应用会自己检查新版本，并在重新启动时完成更新。",
     },
+    "d_mac_h": {"en": "macOS", "ja": "macOS", "zh": "macOS"},
+    "d_mac_p": {"en": "Apple silicon (M1 or later), macOS 12 or later. Signed and notarized by Apple. Unzip it and drag Washi to Applications.", "ja": "Apple シリコン（M1 以降）、macOS 12 以降。Apple の公証済み。展開して Washi を「アプリケーション」に入れてください。", "zh": "Apple 芯片（M1 及以上），macOS 12 及以上。已通过 Apple 公证。解压后把 Washi 拖进“应用程序”。"},
+    "d_win_h": {"en": "Windows", "ja": "Windows", "zh": "Windows"},
+    "d_win_p": {"en": "Windows 10 or 11, x64. Not code-signed yet: on the first run SmartScreen asks, choose <i>More info → Run anyway</i>.", "ja": "Windows 10 / 11（x64）。まだコード署名がないため、初回は SmartScreen が表示されます。「詳細情報 → 実行」を選んでください。", "zh": "Windows 10 / 11（x64）。暂未进行代码签名：首次运行时 SmartScreen 会提示，请选择“更多信息 → 仍要运行”。"},
+    "d_mac_btn": {"en": "Download .zip", "ja": ".zip をダウンロード", "zh": "下载 .zip"},
+    "d_win_btn": {"en": "Download installer", "ja": "インストーラーをダウンロード", "zh": "下载安装程序"},
+    "d_all": {"en": "All releases and notes", "ja": "すべてのリリースと変更点", "zh": "所有版本与更新说明"},
+    "d_source": {"en": "Or build it from source", "ja": "ソースからビルドする場合", "zh": "或者从源码构建"},
     "g1": {"en": "Install the <a href=\"https://dotnet.microsoft.com/download\">.NET 10 SDK</a>.", "ja": "<a href=\"https://dotnet.microsoft.com/download\">.NET 10 SDK</a> をインストールします。", "zh": "安装 <a href=\"https://dotnet.microsoft.com/download\">.NET 10 SDK</a>。"},
     "g2": {"en": "Clone the repository and run the desktop app, or the command line.", "ja": "リポジトリをクローンし、デスクトップアプリかコマンドラインを起動します。", "zh": "克隆仓库，然后运行桌面应用或命令行。"},
     "g3": {"en": "On a Mac, <code>build/macos/bundle.sh</code> makes <code>Washi.app</code>.", "ja": "Mac では <code>build/macos/bundle.sh</code> で <code>Washi.app</code> を作れます。", "zh": "在 Mac 上，<code>build/macos/bundle.sh</code> 会生成 <code>Washi.app</code>。"},
@@ -243,6 +257,7 @@ GITHUB = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.
           '1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>')
 
 
+DOWNLOAD_ICON = '<svg class="dl" viewBox="0 0 20 20" aria-hidden="true"><path d="M10,3 L10,13 M6,9 L10,13 L14,9 M3,14 L3,17 L17,17 L17,14" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>'
 GLOBE = ('<svg class="globe" viewBox="0 0 32 32" aria-hidden="true"><path d="M27.85 29H30l-6-15h-2.35l-6 15h2.15l1.6-4h6.85zm-7.65-6 '
          '2.62-6.56L25.45 23zM18 7V5h-7V2H9v3H2v2h10.74a14.7 14.7 0 0 1-3.19 6.18A13.5 13.5 0 0 1 7.26 9h-2.1a16.5 16.5 0 0 0 3 5.58A16.8 '
          '16.8 0 0 1 3 18l.75 1.86A18.5 18.5 0 0 0 9.53 16a16.9 16.9 0 0 0 5.76 3.84L16 18a14.5 14.5 0 0 1-5.12-3.37A17.6 17.6 0 0 0 14.8 7z"/></svg>')
@@ -269,6 +284,14 @@ MENU_SCRIPT = """<script>
   document.querySelectorAll('[data-lang]').forEach(function (a) {
     a.addEventListener('click', function () { try { localStorage.setItem('washi-lang', a.dataset.lang); } catch (e) {} });
   });
+  // Windows visitors get the Windows installer in the hero
+  var hero = document.getElementById('hero-download');
+  if (hero && /Windows/i.test(navigator.userAgent)) {
+    hero.href = hero.dataset.winHref;
+    hero.querySelector('span').textContent = hero.dataset.winText;
+    var fine = document.getElementById('hero-fine');
+    if (fine) fine.firstChild.textContent = hero.dataset.winFine + ' · ';
+  }
   // close the language menu on a click outside it or Escape
   var menu = document.querySelector('.lang');
   document.addEventListener('click', function (e) { if (menu && !menu.contains(e.target)) menu.open = false; });
@@ -354,9 +377,11 @@ def page(lang, base_url):
     <h1>{t("h1")}</h1>
     <p class="lead">{t("lead")}</p>
     <div class="cta">
-      <a class="btn primary" href="{REPO}">{GITHUB}{t("cta_github")}</a>
-      <a class="btn ghost" href="#get">{t("cta_build")}</a>
+      <a class="btn primary" id="hero-download" href="{DOWNLOAD_MAC}" data-win-href="{DOWNLOAD_WIN}"
+         data-win-text="{esc(t("cta_win"))}" data-win-fine="{esc(t("cta_fine_win"))}">{DOWNLOAD_ICON}<span>{t("cta_mac")}</span></a>
+      <a class="btn ghost" href="{REPO}">{GITHUB}{t("cta_github")}</a>
     </div>
+    <p class="fine" id="hero-fine">{t("cta_fine_mac")} · <a href="#get">{t("d_all")}</a></p>
     <figure class="shot" style="margin-bottom:0">
       <img src="{root}img/editor-{lang}.png" width="1440" height="900" alt="{esc(t("shot_alt"))}" fetchpriority="high">
     </figure>
@@ -475,7 +500,15 @@ def page(lang, base_url):
     <p class="kicker">{t("g_kicker")}</p>
     <h2>{t("g_h2")}</h2>
     <p class="intro">{t("g_intro")}</p>
-    <div class="split" style="align-items:start">
+    <div class="tiles two">
+      <div class="tile"><h3>{t("d_mac_h")}</h3><p>{t("d_mac_p")}</p>
+        <a class="btn primary" href="{DOWNLOAD_MAC}">{DOWNLOAD_ICON}{t("d_mac_btn")}</a></div>
+      <div class="tile"><h3>{t("d_win_h")}</h3><p>{t("d_win_p")}</p>
+        <a class="btn primary" href="{DOWNLOAD_WIN}">{DOWNLOAD_ICON}{t("d_win_btn")}</a></div>
+    </div>
+    <p style="margin-top:16px"><a href="{REPO}/releases">{t("d_all")} →</a></p>
+    <h3 style="margin-top:56px">{t("d_source")}</h3>
+    <div class="split" style="align-items:start;margin-top:24px">
       <div>
         <ol class="steps">
           <li>{t("g1")}</li>
