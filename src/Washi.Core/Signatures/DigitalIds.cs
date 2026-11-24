@@ -7,6 +7,10 @@ namespace Washi.Core.Signatures;
 /// <summary>A certificate with its private key that can sign: from the system's store or a .p12 / .pfx file.</summary>
 public sealed record DigitalId(X509Certificate2 Certificate, string Source)
 {
+    /// <summary>The other certificates that came with it (a .p12 file usually holds the issuing CA's chain); they go
+    /// into the signature so that readers can build the chain.</summary>
+    public IReadOnlyList<X509Certificate2> Chain { get; init; } = [];
+
     public string Name => Certificate.GetNameInfo(X509NameType.SimpleName, false) is { Length: > 0 } n ? n : Certificate.Subject;
     public string Issuer => Certificate.GetNameInfo(X509NameType.SimpleName, true);
     public bool SelfSigned => Certificate.SubjectName.RawData.AsSpan().SequenceEqual(Certificate.IssuerName.RawData);
@@ -56,7 +60,7 @@ public static class DigitalIds
         }
         var cert = all.FirstOrDefault(c => c.HasPrivateKey)
             ?? throw new Pages.PageAssemblyException($"{Path.GetFileName(path)} holds no private key", "Err_IdNoKey", Path.GetFileName(path));
-        return new DigitalId(cert, path);
+        return new DigitalId(cert, path) { Chain = [.. all.Where(c => !ReferenceEquals(c, cert))] };
     }
 
     /// <summary>

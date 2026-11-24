@@ -618,13 +618,17 @@ actions are JavaScript: *Remove hidden information* lists them under scripts.
 ```bash
 washi pdf make-id --name "山田 太郎" --email taro@example.com -o taro.p12     # a self-signed digital ID
 washi pdf sign contract.pdf --id taro.p12 --page 2 --box 380,640,560,700 --reason 承認
-washi pdf verify contract_signed.pdf                                          # exit code 3 when a signature is broken
+washi pdf sign form.pdf --id taro.p12 --certify forms --tsa http://timestamp.example --ltv   # certify, time-stamp, LTV
+washi pdf ltv contract_signed.pdf --tsa http://timestamp.example              # validation data and a document time-stamp
+washi pdf verify contract_signed.pdf [--trust company-ca.cer]                 # exit code 3 when a signature is broken
 ```
 
 In the editor, the **Sign** tool checks the signatures a file already has and signs with a digital ID: one from this
 computer's certificate store (the login keychain on macOS, the personal store on Windows), a `.p12` / `.pfx` file, or
 one made there. Choose where it goes (invisible, an empty signature field, or a box drawn on the page), add a reason
-and place, and the hand-drawn signature if you like. Agents can check signatures (`verify_signatures`) but not sign.
+and place, and the hand-drawn signature if you like, whether it certifies the document, and whether to add long-term
+validation. **Add long-term validation** does the same for the signatures a file already has. Agents can check
+signatures (`verify_signatures`) and add long-term validation (`add_ltv`), but not sign.
 
 - **PAdES**: a CAdES detached signature (SHA-256) with the signing certificate bound into it (ESS
   signing-certificate-v2), the form Acrobat and EU validators expect. Optional RFC 3161 time-stamp from a service you
@@ -632,10 +636,33 @@ and place, and the hand-drawn signature if you like. Agents can check signatures
 - **Added, not rewritten**: the signature is an incremental update after the file's last byte (a cross-reference
   table or stream, like the file's own), so everything before it is untouched and earlier signatures stay valid.
   Every signed copy is verified before it is kept.
-- **Checking**: the bytes each signature covers, its value, the signer's certificate chain against this computer's
-  trusted roots (offline, nothing is sent), the time (from a time-stamp when there is one), and whether the file was
-  revised afterwards. Each signature is *valid*, *unverified* (intact, but the identity is not trusted, as with a
-  self-signed ID), *changed* (intact, revised later) or *invalid* (the signed bytes were altered).
+- **Certification** (DocMDP): the first signature can certify the document as its author's and say what may follow:
+  no changes, filling in forms and signing, or also comments. Washi refuses to sign a document certified with no
+  changes allowed, and only the first signature certifies.
+- **Long-term validation** (PAdES B-LT and B-LTA): a Document Security Store added after the signatures, with every
+  certificate of each signer's chain (and of the time-stamping authority's) and, for each, an OCSP answer or a
+  revocation list from the services the certificates name (only certificate identifiers are sent). The signature can
+  then be checked offline after the certificates expire or the services close. With a time-stamping service, a
+  document time-stamp (ETSI.RFC3161) follows; adding one again every few years renews it. Missing intermediate
+  certificates are fetched from the addresses the certificates give; the chain a `.p12` file carries goes into the
+  signature.
+- **Checking**: the bytes each signature covers, its value (CMS, or the time-stamp token of a document time-stamp),
+  the signer's certificate chain against this computer's trusted roots and any you add with `--trust` (offline,
+  nothing is sent, not even to fetch certificates), the time (from a time-stamp when there is one), the validation
+  data in the file, and what each later revision changed. Each answer must be signed by the certificate's issuer (or
+  its OCSP responder) and current at the signing time. A certificate revoked before the signature is shown to exist
+  (by its time-stamp or a later document time-stamp) makes it invalid; revoked later, it stands.
+- **What changed afterwards**: the objects of the signed revision that the file now holds differently, by kind:
+  validation data, document time-stamps, signatures, form filling, document properties, comments, or other changes
+  (page content, fields added, …). Validation data and time-stamps are always allowed, further signatures unless a
+  certification forbids all changes, form filling and comments as a certification allows. Each signature is
+  *valid*, *unverified* (intact, but the identity is not trusted, as with a self-signed ID), *changed* (intact, but
+  revised in a way it does not allow) or *invalid* (the signed bytes were altered, or a certificate was revoked), and
+  says whether it is *LTV* (the file holds all it needs to be checked long-term).
+- Checked with pyHanko 0.38 (AdES validation, offline, with only what the file holds): long-term validation with and
+  without a document time-stamp, a certification followed by a second signature and form filling (valid), and a
+  comment added under a certification that allows only form filling (rejected), as Washi judges them. A document
+  time-stamp from a public time-stamping service, with its real OCSP answers, validates the same way.
 - A self-signed ID proves the document did not change; for signatures that carry legal weight, use an ID from a
   certification authority. Password-protected files cannot be signed by Washi (remove the password first).
 
@@ -805,7 +832,8 @@ There are two ways to run it:
 | `compress_pdf` | new, smaller PDF (light / standard / strong): images scaled to where they are shown, streams compressed, duplicates kept once, object streams; pages compared before it is kept | writes a **new** file |
 | `flatten_pdf` | new PDF with form fields and/or comments drawn into the page (no longer editable), pages compared before it is kept | writes a **new** file |
 | `convert_to_pdfa` | what stands between a PDF and PDF/A-2b (`check_only`), or a new PDF/A-2b copy: fonts embedded with every character in place, sRGB/CMYK output intent, no scripts or attachments, XMP; checked again before it is kept | writes a **new** file |
-| `verify_signatures` | the digital signatures in a PDF: signer, time, intact, trusted, changed afterwards, status | no |
+| `verify_signatures` | the digital signatures in a PDF: kind (approval, certification, time-stamp), signer, time, intact, trusted, LTV, revoked, what changed afterwards and whether it is allowed, status | no |
+| `add_ltv` | new PDF with long-term validation data for its signatures (fetched online from the certificates' OCSP and CRL services) and optionally a document time-stamp | writes a **new** file |
 | `ocr_pdf` | on-device OCR (Vision or Tesseract): new searchable PDF plus the recognised text. The `ai` engine is not offered here, because the agent already is a model | writes a **new** file |
 | `erase_content` | new PDF with the printed text, images and drawings inside boxes removed for real, checked afterwards | writes a **new** file |
 
@@ -901,7 +929,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfPageImages`; `PdfLinks`; `PdfPageImageEdit`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 34 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 35 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -970,6 +998,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 26. ~~Editing a paragraph that reflows over several lines.~~ Done (Paragraphs in the Edit text tool, `--paragraph`, `paragraph_containing`).
 27. ~~Flattening form fields and comments.~~ Done (`washi pdf flatten`, the Finalize tool, `flatten_pdf`).
 28. ~~PDF/A-2b: checking and converting, with fonts that are only named replaced in place.~~ Done (`washi pdf pdfa`, the Finalize tool, `convert_to_pdfa`).
+29. ~~Long-term validation (PAdES B-LT, B-LTA) and certification signatures.~~ Done (`washi pdf ltv`, `sign --certify --ltv`, the Sign tool, `add_ltv`).
 
 ## License
 

@@ -148,9 +148,11 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)
   washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   draw fields and comments into the page (checked before it is kept)
   washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   a PDF/A-2b copy for archiving (--check only lists what stands in the way)
-  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]
                                           sign with a digital ID (password from WASHI_ID_PASSWORD or asked for)
-  washi pdf verify &lt;in.pdf&gt;               check the signatures in a file
+            certify: --certify no-changes|forms|comments; --ltv adds long-term validation data after signing
+  washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   check the signatures in a file
+  washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   add long-term validation data (and a document time-stamp) to the signatures
   washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
@@ -712,10 +714,10 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_IdFiles" xml:space="preserve"><value>Digital IDs (.p12, .pfx)</value></data>
   <data name="Ui_SigInFile" xml:space="preserve"><value>Signatures in this file</value></data>
   <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
-  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Valid: unchanged since signing, signer verified.</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Valid: signer verified, and nothing changed since signing that the signature does not allow.</value></data>
   <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>Unchanged since signing, but the signer's identity is not verified (no trusted certificate).</value></data>
-  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signature intact; the document was changed after it was signed.</value></data>
-  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Invalid: the document was altered or the signature is damaged.</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signature intact, but the document was changed after it in a way it does not allow.</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Invalid: the document was altered, the signature is damaged, or the certificate was revoked.</value></data>
   <data name="Ui_SigTimestamped" xml:space="preserve"><value>time-stamped</value></data>
   <data name="Ui_SigTitle" xml:space="preserve"><value>Sign with a digital ID</value></data>
   <data name="Ui_SigLead" xml:space="preserve"><value>A certificate-based signature that readers can check: it shows who signed and that nothing changed since. It is added after everything in the file, so earlier signatures stay valid.</value></data>
@@ -1016,4 +1018,37 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Pdfa_Lzw" xml:space="preserve"><value>LZW compression</value></data>
   <data name="Pdfa_Layers" xml:space="preserve"><value>Layer settings</value></data>
   <data name="Pdfa_Other" xml:space="preserve"><value>Other entries PDF/A does not allow</value></data>
+  <data name="Ui_SigLtv" xml:space="preserve"><value>long-term validation (LTV)</value></data>
+  <data name="Ui_SigDocTimestamp" xml:space="preserve"><value>Document time-stamp</value></data>
+  <data name="Ui_SigCertified" xml:space="preserve"><value>Certifies the document: {0}.</value></data>
+  <data name="Ui_SigPerm_1" xml:space="preserve"><value>no changes allowed</value></data>
+  <data name="Ui_SigPerm_2" xml:space="preserve"><value>form filling and signing allowed</value></data>
+  <data name="Ui_SigPerm_3" xml:space="preserve"><value>form filling, signing and comments allowed</value></data>
+  <data name="Ui_SigChanges" xml:space="preserve"><value>Changed since: {0}.</value></data>
+  <data name="Ui_SigChange_validation" xml:space="preserve"><value>validation data</value></data>
+  <data name="Ui_SigChange_timestamp" xml:space="preserve"><value>document time-stamp</value></data>
+  <data name="Ui_SigChange_signature" xml:space="preserve"><value>signatures</value></data>
+  <data name="Ui_SigChange_form" xml:space="preserve"><value>form filling</value></data>
+  <data name="Ui_SigChange_metadata" xml:space="preserve"><value>document properties</value></data>
+  <data name="Ui_SigChange_comments" xml:space="preserve"><value>comments</value></data>
+  <data name="Ui_SigChange_other" xml:space="preserve"><value>other changes (content and more)</value></data>
+  <data name="Ui_SigCertify" xml:space="preserve"><value>Certify the document (as its author)</value></data>
+  <data name="Ui_SigCertifyNone" xml:space="preserve"><value>No: an ordinary signature</value></data>
+  <data name="Ui_SigCertifyNote" xml:space="preserve"><value>Only the first signature can certify. Readers are told which changes the document still allows; anything else marks the signature as broken.</value></data>
+  <data name="Ui_SigLtvOption" xml:space="preserve"><value>Add long-term validation (LTV)</value></data>
+  <data name="Ui_SigLtvNote" xml:space="preserve"><value>Fetches the certificates' revocation status from the services they name (only certificate identifiers are sent) and keeps it in the file, so the signature can still be checked offline after the certificates expire.</value></data>
+  <data name="Ui_SigAddLtv" xml:space="preserve"><value>Add long-term validation…</value></data>
+  <data name="Ui_SigAddLtvNote" xml:space="preserve"><value>For signatures already in the file. With a time-stamping service below, a document time-stamp is added too; adding one again every few years keeps the file provable.</value></data>
+  <data name="Ui_SigAddingLtv" xml:space="preserve"><value>Fetching validation data…</value></data>
+  <data name="Ui_SigLtvAdded" xml:space="preserve"><value>Saved {0}: {1} certificate(s), {2} OCSP answer(s) and {3} revocation list(s) added.</value></data>
+  <data name="Ui_SigLtvStamped" xml:space="preserve"><value>A document time-stamp was added.</value></data>
+  <data name="Ui_SigLtvDone" xml:space="preserve"><value>Long-term validation added.</value></data>
+  <data name="Ui_SigLtvMissing" xml:space="preserve"><value>Not yet verifiable long-term: {0} (some validation data could not be fetched).</value></data>
+  <data name="Err_CertifyLevel" xml:space="preserve"><value>Certification allows 1 (no changes), 2 (form filling and signing) or 3 (also comments).</value></data>
+  <data name="Err_SignCertifiedLocked" xml:space="preserve"><value>The document is certified with no changes allowed, so it cannot be signed again.</value></data>
+  <data name="Err_CertifyNotFirst" xml:space="preserve"><value>Only the first signature can certify a document, and this one is already signed.</value></data>
+  <data name="Err_LtvNone" xml:space="preserve"><value>The file has no digital signatures.</value></data>
+  <data name="Err_LtvInvalid" xml:space="preserve"><value>The signature “{0}” does not hold, so no validation data is added for it.</value></data>
+  <data name="Err_LtvNothing" xml:space="preserve"><value>The file already holds all the validation data that could be found.</value></data>
+  <data name="Err_LtvCheck" xml:space="preserve"><value>The signatures did not hold after adding validation data; nothing was kept.</value></data>
 </root>

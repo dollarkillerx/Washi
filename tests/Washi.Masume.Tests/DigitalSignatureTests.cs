@@ -98,7 +98,9 @@ public sealed class DigitalSignatureTests : IDisposable
         Assert.True(checks["Applicant"].Intact);                   // the first signature still holds
         Assert.False(checks["Applicant"].CoversDocument);          // and says a revision came after it
         Assert.Equal(1, checks["Applicant"].ChangedAfter);
-        Assert.Contains(checks["Applicant"].Problems, p => p.Contains("changed after this signature"));
+        Assert.Equal(["signature"], checks["Applicant"].LaterChanges);   // only a signature, which it allows
+        Assert.True(checks["Applicant"].ChangesAllowed);
+        Assert.DoesNotContain(checks["Applicant"].Problems, p => p.Contains("changed after this signature"));
         Assert.True(checks["Manager"].Intact && checks["Manager"].CoversDocument);
         Assert.Equal("Sato Hanako", checks["Manager"].Signer);
         Assert.Equal("Err_SignFieldSigned", Assert.Throws<PageAssemblyException>(() =>

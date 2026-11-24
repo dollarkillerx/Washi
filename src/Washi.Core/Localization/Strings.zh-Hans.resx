@@ -148,9 +148,11 @@
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）
   washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   把栏位和注释画进页面（保存前检查）
   washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   用于长期保存的 PDF/A-2b 副本（--check 只列出需处理的地方）
-  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名称 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名称 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]
                                           用数字标识签名（密码取自 WASHI_ID_PASSWORD 或提示输入）
-  washi pdf verify &lt;in.pdf&gt;               核实文件中的签名
+            认证签名：--certify no-changes|forms|comments；--ltv 在签名后添加长期验证信息
+  washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   核实文件中的签名
+  washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   为签名添加长期验证信息（及文档时间戳）
   washi pdf make-id --name "…" [--email …] -o id.p12   创建自签名数字标识</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已保存 {0}：删除了文字 {1} 段、图像 {2} 个、图形 {3} 个。检查：删除处剩余文字 {4} 个，其他地方变化的像素 {5} 个。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 页保留：{1}</value></data>
@@ -712,10 +714,10 @@
   <data name="Ui_IdFiles" xml:space="preserve"><value>数字标识（.p12, .pfx）</value></data>
   <data name="Ui_SigInFile" xml:space="preserve"><value>此文件中的签名</value></data>
   <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
-  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>有效：签名后未被修改，签名人已验证。</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>有效：签名人已验证，签名后没有签名不允许的修改。</value></data>
   <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>签名后未被修改，但无法验证签名人身份（证书不受信任）。</value></data>
-  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>签名完好，但文档在签名后被修改过。</value></data>
-  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>无效：文档被篡改或签名已损坏。</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>签名完好，但文档在签名后被做了签名不允许的修改。</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>无效：文档被篡改、签名已损坏，或证书已被吊销。</value></data>
   <data name="Ui_SigTimestamped" xml:space="preserve"><value>带时间戳</value></data>
   <data name="Ui_SigTitle" xml:space="preserve"><value>用数字标识签名</value></data>
   <data name="Ui_SigLead" xml:space="preserve"><value>基于证书的签名，阅读者可以核实谁签的、签名后是否被改动。签名追加在文件末尾，之前的签名仍然有效。</value></data>
@@ -1016,4 +1018,37 @@
   <data name="Pdfa_Lzw" xml:space="preserve"><value>LZW 压缩</value></data>
   <data name="Pdfa_Layers" xml:space="preserve"><value>图层设置</value></data>
   <data name="Pdfa_Other" xml:space="preserve"><value>PDF/A 不允许的其他项目</value></data>
+  <data name="Ui_SigLtv" xml:space="preserve"><value>长期验证（LTV）</value></data>
+  <data name="Ui_SigDocTimestamp" xml:space="preserve"><value>文档时间戳</value></data>
+  <data name="Ui_SigCertified" xml:space="preserve"><value>认证文档的签名：{0}。</value></data>
+  <data name="Ui_SigPerm_1" xml:space="preserve"><value>不允许任何修改</value></data>
+  <data name="Ui_SigPerm_2" xml:space="preserve"><value>仅允许填写表单和签名</value></data>
+  <data name="Ui_SigPerm_3" xml:space="preserve"><value>允许填写表单、签名和注释</value></data>
+  <data name="Ui_SigChanges" xml:space="preserve"><value>签名后的修改：{0}。</value></data>
+  <data name="Ui_SigChange_validation" xml:space="preserve"><value>验证信息</value></data>
+  <data name="Ui_SigChange_timestamp" xml:space="preserve"><value>文档时间戳</value></data>
+  <data name="Ui_SigChange_signature" xml:space="preserve"><value>签名</value></data>
+  <data name="Ui_SigChange_form" xml:space="preserve"><value>表单填写</value></data>
+  <data name="Ui_SigChange_metadata" xml:space="preserve"><value>文档属性</value></data>
+  <data name="Ui_SigChange_comments" xml:space="preserve"><value>注释</value></data>
+  <data name="Ui_SigChange_other" xml:space="preserve"><value>其他修改（内容等）</value></data>
+  <data name="Ui_SigCertify" xml:space="preserve"><value>认证文档（作为作者）</value></data>
+  <data name="Ui_SigCertifyNone" xml:space="preserve"><value>不认证（普通签名）</value></data>
+  <data name="Ui_SigCertifyNote" xml:space="preserve"><value>只有第一个签名可以认证。阅读者会看到文档之后允许的修改，其他修改会使签名显示为无效。</value></data>
+  <data name="Ui_SigLtvOption" xml:space="preserve"><value>添加长期验证（LTV）信息</value></data>
+  <data name="Ui_SigLtvNote" xml:space="preserve"><value>从证书指定的服务获取吊销状态并保存在文件中（只发送证书的识别信息），证书过期后仍可离线核实签名。</value></data>
+  <data name="Ui_SigAddLtv" xml:space="preserve"><value>添加长期验证信息…</value></data>
+  <data name="Ui_SigAddLtvNote" xml:space="preserve"><value>针对文件中已有的签名。若在下方填写时间戳服务，还会加上文档时间戳；每隔几年重新添加，可保持文件的证明力。</value></data>
+  <data name="Ui_SigAddingLtv" xml:space="preserve"><value>正在获取验证信息…</value></data>
+  <data name="Ui_SigLtvAdded" xml:space="preserve"><value>已保存 {0}（添加了 {1} 个证书、{2} 个 OCSP 响应和 {3} 个吊销列表）。</value></data>
+  <data name="Ui_SigLtvStamped" xml:space="preserve"><value>已添加文档时间戳。</value></data>
+  <data name="Ui_SigLtvDone" xml:space="preserve"><value>已添加长期验证信息。</value></data>
+  <data name="Ui_SigLtvMissing" xml:space="preserve"><value>尚不能长期验证：{0}（有些验证信息无法获取）。</value></data>
+  <data name="Err_CertifyLevel" xml:space="preserve"><value>认证级别为 1（不允许修改）、2（填写表单和签名）或 3（还允许注释）。</value></data>
+  <data name="Err_SignCertifiedLocked" xml:space="preserve"><value>此文档已认证为“不允许修改”，不能再签名。</value></data>
+  <data name="Err_CertifyNotFirst" xml:space="preserve"><value>只有第一个签名可以认证文档，而此文档已有签名。</value></data>
+  <data name="Err_LtvNone" xml:space="preserve"><value>此文件没有数字签名。</value></data>
+  <data name="Err_LtvInvalid" xml:space="preserve"><value>签名“{0}”无效，因此不为其添加验证信息。</value></data>
+  <data name="Err_LtvNothing" xml:space="preserve"><value>文件中已包含可以获取的全部验证信息。</value></data>
+  <data name="Err_LtvCheck" xml:space="preserve"><value>添加验证信息后签名无法保持有效，因此没有保存。</value></data>
 </root>

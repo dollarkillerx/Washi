@@ -20,16 +20,28 @@ namespace Washi.Core.Signatures;
 /// <param name="Rect">Where a new visible signature goes (upright top-down points); null for an invisible signature.</param>
 /// <param name="Ink">A hand-drawn signature shown in the signature's box, next to the signer's name.</param>
 /// <param name="TimestampServer">An RFC 3161 time-stamping service. The signature's hash is sent to it (nothing else).</param>
+/// <param name="Certify">0 for an ordinary (approval) signature; 1-3 to certify the document as its author, allowing
+/// afterwards 1 no changes, 2 filling in forms and signing, 3 also comments. Only the first signature can certify.</param>
+/// <param name="Ltv">Add long-term validation data after signing: the certificates and revocation answers (OCSP, CRL)
+/// fetched from the services the certificates name, so the signature can be checked offline for years.</param>
 public sealed record SignRequest(DigitalId Id, string? Field = null, int Page = 0, PdfRect? Rect = null, string Reason = "",
-                                 string Location = "", Ink? Ink = null, Uri? TimestampServer = null);
+                                 string Location = "", Ink? Ink = null, Uri? TimestampServer = null, int Certify = 0, bool Ltv = false);
 
-public sealed record SignResult(string Field, string Signer, DateTimeOffset At, bool Timestamped);
+public sealed record SignResult(string Field, string Signer, DateTimeOffset At, bool Timestamped)
+{
+    /// <summary>The file holds what it takes to check this signature long-term (when <see cref="SignRequest.Ltv"/> was asked).</summary>
+    public bool Ltv { get; init; }
+
+    /// <summary>What could not be fetched for long-term validation.</summary>
+    public IReadOnlyList<string> Notes { get; init; } = [];
+}
 
 /// <summary>
 /// Signs a PDF with a digital ID: a PAdES signature (CAdES, detached, SHA-256, with the signing certificate bound
 /// into it), written as an incremental update so that everything before it, earlier signatures included, stays as it
 /// was. The signature covers the whole file except its own value. A visible signature shows the signer's name, the
-/// date, the reason and place, and the hand-drawn signature if one is given.
+/// date, the reason and place, and the hand-drawn signature if one is given. The first signature can certify the
+/// document (DocMDP), and validation data can follow it (PAdES B-LT).
 /// </summary>
 public static class PdfDigitalSigner
 {
@@ -41,9 +53,67 @@ public static class PdfDigitalSigner
     {
         if (File.Exists(output)) throw new PageAssemblyException($"{Path.GetFileName(output)} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(output));
         if (!r.Id.Certificate.HasPrivateKey) throw new PageAssemblyException("the digital ID has no private key", "Err_IdNoKey", r.Id.Name);
+        if (r.Certify is < 0 or > 3) throw new PageAssemblyException("certification allows 1 (no changes), 2 (forms and signing) or 3 (also comments)", "Err_CertifyLevel");
         var original = File.ReadAllBytes(input);
-        var update = new IncrementalUpdate(original);
         var now = DateTimeOffset.Now;
+
+        _ = new IncrementalUpdate(original);   // refuses protected and damaged files
+        using (var doc = PdfReader.Open(new MemoryStream(original), PdfDocumentOpenMode.Import))
+        {
+            if (PdfSignatureVerifier.Certification(doc, out _) == 1)
+                throw new PageAssemblyException("the document is certified with no changes allowed, so it cannot be signed again", "Err_SignCertifiedLocked");
+            if (r.Certify > 0 && PdfSignatureVerifier.SignatureFields(doc).Any(f => Deref(f.Field.Elements["/V"]) is PdfDictionary))
+                throw new PageAssemblyException("only the first signature can certify a document, and this one is already signed", "Err_CertifyNotFirst");
+        }
+
+        bool stamped = false;
+        var (bytes, fieldName) = Place(original, r.Field, r.Page, r.Rect, "Signature", SignatureDictionary(r, now),
+                                       (w, h, rotate) => Appearance(r, w, h, rotate, now), r.Certify,
+                                       signed => { var (der, s) = Cms(signed, r.Id, r.TimestampServer); stamped = s; return der; });
+
+        // proof: the copy's signature checks out
+        var check = PdfSignatureVerifier.Verify(bytes).LastOrDefault(s => s.Field == fieldName);
+        if (check is not { Intact: true, CoversDocument: true })
+            throw new PageAssemblyException("the signed copy did not verify; it was not kept", "Err_SignCheck");
+
+        bool ltv = false;
+        IReadOnlyList<string> notes = [];
+        if (r.Ltv)
+        {
+            var (extended, result) = PdfLtv.Extend(bytes, null, null);
+            bytes = extended;
+            ltv = result.Ltv.Contains(fieldName);
+            notes = result.Notes;
+        }
+        File.WriteAllBytes(output, bytes);
+        return new SignResult(fieldName, r.Id.Name, now, stamped) { Ltv = ltv, Notes = notes };
+    }
+
+    /// <summary>
+    /// Adds a document time-stamp (PAdES, ETSI.RFC3161): the time-stamping service signs the hash of the whole file as
+    /// it is, in an invisible signature field of its own.
+    /// </summary>
+    internal static byte[] TimestampDocument(byte[] original, Uri tsa)
+    {
+        var dict = new StringBuilder("<</Type/DocTimeStamp/Filter/Adobe.PPKLite/SubFilter/ETSI.RFC3161 ");
+        dict.Append(ByteRangeHole).Append("/Contents <").Append('0', Reserve * 2).Append(">>>");
+        return Place(original, null, 0, null, "Timestamp", dict.ToString(), null, 0, signed =>
+        {
+            var request = Rfc3161TimestampRequest.CreateFromData(signed, HashAlgorithmName.SHA256, requestSignerCertificates: true,
+                                                                 nonce: RandomNumberGenerator.GetBytes(8));
+            return Stamp(request, tsa).AsSignedCms().Encode();
+        }).Bytes;
+    }
+
+    /// <summary>
+    /// Adds a signature field (or fills an empty one) whose value is <paramref name="value"/> of the bytes it covers:
+    /// the update is built with a hole for the value, the byte range around the hole is filled in, and the value
+    /// computed over everything else is written into the hole.
+    /// </summary>
+    private static (byte[] Bytes, string Field) Place(byte[] original, string? wanted, int page, PdfRect? box, string prefix, string sigDict,
+                                                      Func<double, double, int, string>? appearance, int certify, Func<byte[], byte[]> value)
+    {
+        var update = new IncrementalUpdate(original);
         string fieldName;
 
         using (var doc = PdfReader.Open(new MemoryStream(original), PdfDocumentOpenMode.Import))
@@ -51,13 +121,14 @@ public static class PdfDigitalSigner
             int highest = doc.Internals.GetAllObjects().Select(o => o.Reference?.ObjectNumber ?? 0).DefaultIfEmpty(0).Max();
             int New() => update.NewNumber(highest);
             int sig = New();
-            update.Put(sig, 0, SignatureDictionary(r, now));
+            update.Put(sig, 0, sigDict);
+            var catalog = doc.Internals.Catalog;
+            bool catalogChanged = false;
 
             // where it goes: an empty field, or a new one
             PdfDictionary? field = null, widget = null;
-            int page = r.Page;
-            var form = Deref(doc.Internals.Catalog.Elements["/AcroForm"]) as PdfDictionary;
-            if (r.Field is { Length: > 0 } wanted)
+            var form = Deref(catalog.Elements["/AcroForm"]) as PdfDictionary;
+            if (wanted is { Length: > 0 })
             {
                 (field, widget) = FindField(doc, wanted) ?? throw new PageAssemblyException($"there is no empty signature field '{wanted}'", "Err_SignNoField", wanted);
                 if (Deref(field.Elements["/V"]) is not null) throw new PageAssemblyException($"the field '{wanted}' is already signed", "Err_SignFieldSigned", wanted);
@@ -69,8 +140,8 @@ public static class PdfDigitalSigner
                 if (page < 0 || page >= doc.PageCount) throw new PageAssemblyException($"page {page + 1} is outside 1-{doc.PageCount}", "Err_RangeOutside", (page + 1).ToString(CultureInfo.InvariantCulture), doc.PageCount);
                 var names = new HashSet<string>(AcroFormFields.List(doc).Select(f => f.Name), StringComparer.Ordinal);
                 int n = 1;
-                while (names.Contains("Signature" + n)) n++;
-                fieldName = "Signature" + n;
+                while (names.Contains(prefix + n)) n++;
+                fieldName = prefix + n;
             }
 
             // the appearance
@@ -81,17 +152,17 @@ public static class PdfDigitalSigner
             if (rectItem is { Elements.Count: >= 4 })
                 pdfRect = new PdfRect(Math.Min(FontMetricsNum(rectItem, 0), FontMetricsNum(rectItem, 2)), Math.Min(FontMetricsNum(rectItem, 1), FontMetricsNum(rectItem, 3)),
                                       Math.Max(FontMetricsNum(rectItem, 0), FontMetricsNum(rectItem, 2)), Math.Max(FontMetricsNum(rectItem, 1), FontMetricsNum(rectItem, 3)));
-            else if (r.Rect is { } up)
+            else if (box is { } up)
             {
                 var b = PdfRedactor.Upright(pageDict).Bounds(new Box(up.X0, up.Y0, up.X1, up.Y1));
                 pdfRect = new PdfRect(b.X0, b.Y0, b.X1, b.Y1);
             }
-            if (pdfRect.Width >= 4 && pdfRect.Height >= 4)
+            if (appearance is not null && pdfRect.Width >= 4 && pdfRect.Height >= 4)
             {
                 ap = New();
                 int rotate = ((pageDict.Rotate % 360) + 360) % 360;
                 double w = rotate is 90 or 270 ? pdfRect.Height : pdfRect.Width, h = rotate is 90 or 270 ? pdfRect.Width : pdfRect.Height;
-                update.Put(ap.Value, 0, Appearance(r, w, h, rotate, now));
+                update.Put(ap.Value, 0, appearance(w, h, rotate));
             }
 
             string rectText = $"[{PdfSyntax.Num(pdfRect.X0)} {PdfSyntax.Num(pdfRect.Y0)} {PdfSyntax.Num(pdfRect.X1)} {PdfSyntax.Num(pdfRect.Y1)}]";
@@ -134,34 +205,39 @@ public static class PdfDigitalSigner
                 {
                     int f = New();
                     update.Put(f, 0, $"<</Fields[{w} 0 R]/SigFlags 3>>");
-                    doc.Internals.Catalog.Elements["/AcroForm"] = new PdfLiteral($"{f} 0 R");
-                    Rewrite(update, doc.Internals.Catalog);
+                    catalog.Elements["/AcroForm"] = new PdfLiteral($"{f} 0 R");
+                    catalogChanged = true;
+                }
+                else if (form.Elements["/Fields"] is PdfReference fr && fr.Value is PdfArray fieldsArr)
+                {
+                    fieldsArr.Elements.Add(new PdfLiteral($"{w} 0 R"));
+                    update.Put(fr.ObjectNumber, fr.GenerationNumber, PdfSyntax.Write(fieldsArr));
                 }
                 else
                 {
-                    if (form.Elements["/Fields"] is PdfReference fr && fr.Value is PdfArray fieldsArr)
-                    {
-                        fieldsArr.Elements.Add(new PdfLiteral($"{w} 0 R"));
-                        update.Put(fr.ObjectNumber, fr.GenerationNumber, PdfSyntax.Write(fieldsArr));
-                    }
-                    else
-                    {
-                        var fields = form.Elements["/Fields"] as PdfArray ?? new PdfArray(doc);
-                        fields.Elements.Add(new PdfLiteral($"{w} 0 R"));
-                        form.Elements["/Fields"] = fields;
-                    }
-                    form.Elements["/SigFlags"] = new PdfInteger(3);
-                    Rewrite(update, form.Reference is not null ? form : doc.Internals.Catalog);
+                    var fields = form.Elements["/Fields"] as PdfArray ?? new PdfArray(doc);
+                    fields.Elements.Add(new PdfLiteral($"{w} 0 R"));
+                    form.Elements["/Fields"] = fields;
                 }
             }
-            if (field is not null && form is not null)
+            if (form is not null)
             {
                 form.Elements["/SigFlags"] = new PdfInteger(3);
-                Rewrite(update, form.Reference is not null ? form : doc.Internals.Catalog);
+                if (form.Reference is not null) Rewrite(update, form);
+                else catalogChanged = true;
             }
+            if (certify > 0)
+            {
+                // the document's permissions point at this signature
+                var perms = Deref(catalog.Elements["/Perms"]) as PdfDictionary;
+                var keep = perms is null ? "" : string.Concat(perms.Elements.Keys.Where(k => k != "/DocMDP").Select(k => PdfSyntax.Name(k) + " " + PdfSyntax.Write(perms.Elements[k]) + " "));
+                catalog.Elements["/Perms"] = new PdfLiteral($"<<{keep}/DocMDP {sig} 0 R>>");
+                catalogChanged = true;
+            }
+            if (catalogChanged) Rewrite(update, catalog);
         }
 
-        // the file with the hole for the signature, then the signature over everything else
+        // the file with the hole for the value, then the value over everything else
         var bytes = update.Build();
         var text = Encoding.Latin1.GetString(bytes);
         int br = text.LastIndexOf(ByteRangeHole, StringComparison.Ordinal);
@@ -176,20 +252,10 @@ public static class PdfDigitalSigner
         Buffer.BlockCopy(bytes, 0, signed, 0, start);
         Buffer.BlockCopy(bytes, end, signed, start, bytes.Length - end);
 
-        var (cms, stamped) = Cms(signed, r.Id.Certificate, r.TimestampServer);
-        var hex = Convert.ToHexString(cms);
+        var hex = Convert.ToHexString(value(signed));
         if (hex.Length > end - start - 2) throw new PageAssemblyException("the signature is larger than the room kept for it", "Err_SignDamaged");
         Encoding.ASCII.GetBytes(hex).CopyTo(bytes, start + 1);
-        File.WriteAllBytes(output, bytes);
-
-        // proof: the copy's signature checks out
-        var check = PdfSignatureVerifier.Verify(output).LastOrDefault(s => s.Field == fieldName);
-        if (check is not { Intact: true, CoversDocument: true })
-        {
-            File.Delete(output);
-            throw new PageAssemblyException("the signed copy did not verify; it was not kept", "Err_SignCheck");
-        }
-        return new SignResult(fieldName, r.Id.Name, now, stamped);
+        return (bytes, fieldName);
     }
 
     // ------------------------------------------------------------------ pieces
@@ -203,6 +269,8 @@ public static class PdfDigitalSigner
         sb.Append("/Name ").Append(PdfSyntax.Text(r.Id.Name));
         if (r.Reason.Trim().Length > 0) sb.Append("/Reason ").Append(PdfSyntax.Text(r.Reason.Trim()));
         if (r.Location.Trim().Length > 0) sb.Append("/Location ").Append(PdfSyntax.Text(r.Location.Trim()));
+        if (r.Certify > 0)
+            sb.Append(CultureInfo.InvariantCulture, $"/Reference[<</Type/SigRef/TransformMethod/DocMDP/TransformParams<</Type/TransformParams/P {r.Certify}/V/1.2>>>>]");
         sb.Append("/Prop_Build<</App<</Name/Washi>>>>>>");
         return sb.ToString();
     }
@@ -216,14 +284,17 @@ public static class PdfDigitalSigner
 
     /// <summary>The signature value: CMS SignedData over <paramref name="data"/>, detached, SHA-256, with the
     /// ESS signing-certificate-v2 attribute (PAdES), optionally time-stamped.</summary>
-    private static (byte[] Der, bool Stamped) Cms(byte[] data, X509Certificate2 cert, Uri? tsa)
+    private static (byte[] Der, bool Stamped) Cms(byte[] data, DigitalId id, Uri? tsa)
     {
+        var cert = id.Certificate;
         var cms = new SignedCms(new ContentInfo(data), detached: true);
         var signer = new CmsSigner(SubjectIdentifierType.IssuerAndSerialNumber, cert)
         {
             DigestAlgorithm = new Oid("2.16.840.1.101.3.4.2.1"),   // SHA-256
             IncludeOption = X509IncludeOption.WholeChain,
         };
+        foreach (var c in id.Chain)
+            if (!signer.Certificates.Contains(c) && !c.RawData.AsSpan().SequenceEqual(cert.RawData)) signer.Certificates.Add(c);
         signer.SignedAttributes.Add(new AsnEncodedData(new Oid("1.2.840.113549.1.9.16.2.47"), SigningCertificateV2(cert)));
         cms.ComputeSignature(signer, silent: true);
         bool stamped = false;
@@ -232,23 +303,30 @@ public static class PdfDigitalSigner
             var info = cms.SignerInfos[0];
             var request = Rfc3161TimestampRequest.CreateFromSignerInfo(info, HashAlgorithmName.SHA256, requestSignerCertificates: true,
                                                                        nonce: RandomNumberGenerator.GetBytes(8));
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-            using var content = new ByteArrayContent(request.Encode());
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/timestamp-query");
-            HttpResponseMessage response;
-            try { response = http.Send(new HttpRequestMessage(HttpMethod.Post, tsa) { Content = content }); }
-            catch (Exception e) when (e is HttpRequestException or TaskCanceledException)
-            {
-                throw new PageAssemblyException($"the time-stamping service could not be reached: {e.Message}", "Err_SignTimestamp", tsa.Host);
-            }
-            var body = response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
-            Rfc3161TimestampToken token;
-            try { token = request.ProcessResponse(body, out _); }
-            catch (CryptographicException e) { throw new PageAssemblyException($"the time-stamping service gave no valid time-stamp: {e.Message}", "Err_SignTimestamp", tsa.Host); }
-            info.AddUnsignedAttribute(new AsnEncodedData(new Oid("1.2.840.113549.1.9.16.2.14"), token.AsSignedCms().Encode()));
+            info.AddUnsignedAttribute(new AsnEncodedData(new Oid("1.2.840.113549.1.9.16.2.14"), Stamp(request, tsa).AsSignedCms().Encode()));
             stamped = true;
         }
         return (cms.Encode(), stamped);
+    }
+
+    /// <summary>Asks the time-stamping service for a token (RFC 3161 over HTTP); only the hash in the request is sent.</summary>
+    private static Rfc3161TimestampToken Stamp(Rfc3161TimestampRequest request, Uri tsa)
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        using var content = new ByteArrayContent(request.Encode());
+        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/timestamp-query");
+        byte[] body;
+        try
+        {
+            using var response = http.Send(new HttpRequestMessage(HttpMethod.Post, tsa) { Content = content });
+            body = response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException)
+        {
+            throw new PageAssemblyException($"the time-stamping service could not be reached: {e.Message}", "Err_SignTimestamp", tsa.Host);
+        }
+        try { return request.ProcessResponse(body, out _); }
+        catch (CryptographicException e) { throw new PageAssemblyException($"the time-stamping service gave no valid time-stamp: {e.Message}", "Err_SignTimestamp", tsa.Host); }
     }
 
     /// <summary>SigningCertificateV2 ::= SEQUENCE { certs SEQUENCE OF ESSCertIDv2 { certHash (SHA-256) } } (RFC 5035).</summary>

@@ -148,9 +148,11 @@
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   더 작은 사본 (저장 전 페이지 비교)
   washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   입력란과 주석을 페이지에 그려 넣어 확정(저장 전 확인)
   washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   장기 보존용 PDF/A-2b 사본(--check는 고칠 점만 표시)
-  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 이름 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 이름 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]
                                           디지털 ID 로 서명 (암호는 WASHI_ID_PASSWORD 또는 입력)
-  washi pdf verify &lt;in.pdf&gt;               파일의 서명 확인
+            인증 서명: --certify no-changes|forms|comments, --ltv는 서명 후 장기 검증 정보 추가
+  washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   파일의 서명 확인
+  washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   서명에 장기 검증 정보(와 문서 타임스탬프) 추가
   washi pdf make-id --name "…" [--email …] -o id.p12   자체 서명 디지털 ID 만들기</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
@@ -712,10 +714,10 @@
   <data name="Ui_IdFiles" xml:space="preserve"><value>디지털 ID (.p12, .pfx)</value></data>
   <data name="Ui_SigInFile" xml:space="preserve"><value>이 파일의 서명</value></data>
   <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
-  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>유효: 서명 후 변경 없음, 서명자 확인됨.</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>유효: 서명자가 확인되었고, 서명 후 서명이 허용하지 않는 변경은 없습니다.</value></data>
   <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>서명 후 변경은 없지만 서명자 신원은 확인되지 않았습니다 (신뢰할 수 있는 인증서가 아님).</value></data>
-  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>서명은 유효하지만 서명 후 문서가 변경되었습니다.</value></data>
-  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>무효: 문서가 변조되었거나 서명이 손상되었습니다.</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>서명 자체는 유효하지만, 서명 후 서명이 허용하지 않는 방식으로 문서가 변경되었습니다.</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>무효: 문서가 변조되었거나 서명이 손상되었거나 인증서가 폐기되었습니다.</value></data>
   <data name="Ui_SigTimestamped" xml:space="preserve"><value>타임스탬프 있음</value></data>
   <data name="Ui_SigTitle" xml:space="preserve"><value>디지털 ID 로 서명</value></data>
   <data name="Ui_SigLead" xml:space="preserve"><value>인증서 기반 서명으로, 누가 서명했고 이후 변경이 없는지 읽는 사람이 확인할 수 있습니다. 파일 끝에 추가되므로 이전 서명도 유효합니다.</value></data>
@@ -1016,4 +1018,37 @@
   <data name="Pdfa_Lzw" xml:space="preserve"><value>LZW 압축</value></data>
   <data name="Pdfa_Layers" xml:space="preserve"><value>레이어 설정</value></data>
   <data name="Pdfa_Other" xml:space="preserve"><value>PDF/A에서 허용되지 않는 기타 항목</value></data>
+  <data name="Ui_SigLtv" xml:space="preserve"><value>장기 검증(LTV)</value></data>
+  <data name="Ui_SigDocTimestamp" xml:space="preserve"><value>문서 타임스탬프</value></data>
+  <data name="Ui_SigCertified" xml:space="preserve"><value>문서를 인증하는 서명: {0}.</value></data>
+  <data name="Ui_SigPerm_1" xml:space="preserve"><value>변경 불가</value></data>
+  <data name="Ui_SigPerm_2" xml:space="preserve"><value>양식 입력과 서명만 허용</value></data>
+  <data name="Ui_SigPerm_3" xml:space="preserve"><value>양식 입력·서명·주석 허용</value></data>
+  <data name="Ui_SigChanges" xml:space="preserve"><value>서명 후 변경: {0}.</value></data>
+  <data name="Ui_SigChange_validation" xml:space="preserve"><value>검증 정보</value></data>
+  <data name="Ui_SigChange_timestamp" xml:space="preserve"><value>문서 타임스탬프</value></data>
+  <data name="Ui_SigChange_signature" xml:space="preserve"><value>서명</value></data>
+  <data name="Ui_SigChange_form" xml:space="preserve"><value>양식 입력</value></data>
+  <data name="Ui_SigChange_metadata" xml:space="preserve"><value>문서 속성</value></data>
+  <data name="Ui_SigChange_comments" xml:space="preserve"><value>주석</value></data>
+  <data name="Ui_SigChange_other" xml:space="preserve"><value>기타 변경(내용 등)</value></data>
+  <data name="Ui_SigCertify" xml:space="preserve"><value>문서 인증(작성자로서)</value></data>
+  <data name="Ui_SigCertifyNone" xml:space="preserve"><value>안 함(일반 서명)</value></data>
+  <data name="Ui_SigCertifyNote" xml:space="preserve"><value>첫 서명만 인증할 수 있습니다. 읽는 사람에게 이후 허용되는 변경이 표시되며, 그 밖의 변경은 서명을 무효로 표시합니다.</value></data>
+  <data name="Ui_SigLtvOption" xml:space="preserve"><value>장기 검증(LTV) 정보 추가</value></data>
+  <data name="Ui_SigLtvNote" xml:space="preserve"><value>인증서에 적힌 서비스에서 폐기 상태를 받아 파일에 저장합니다(인증서 식별 정보만 보냄). 인증서가 만료된 뒤에도 오프라인으로 서명을 확인할 수 있습니다.</value></data>
+  <data name="Ui_SigAddLtv" xml:space="preserve"><value>장기 검증 정보 추가…</value></data>
+  <data name="Ui_SigAddLtvNote" xml:space="preserve"><value>파일에 이미 있는 서명에 추가합니다. 아래에 타임스탬프 서비스를 지정하면 문서 타임스탬프도 붙고, 몇 년마다 다시 붙이면 증명력이 유지됩니다.</value></data>
+  <data name="Ui_SigAddingLtv" xml:space="preserve"><value>검증 정보를 받는 중…</value></data>
+  <data name="Ui_SigLtvAdded" xml:space="preserve"><value>{0} 저장(인증서 {1}개, OCSP 응답 {2}개, 폐기 목록 {3}개 추가).</value></data>
+  <data name="Ui_SigLtvStamped" xml:space="preserve"><value>문서 타임스탬프를 붙였습니다.</value></data>
+  <data name="Ui_SigLtvDone" xml:space="preserve"><value>장기 검증 정보를 추가했습니다.</value></data>
+  <data name="Ui_SigLtvMissing" xml:space="preserve"><value>아직 장기 검증할 수 없는 서명: {0}(받지 못한 검증 정보가 있음).</value></data>
+  <data name="Err_CertifyLevel" xml:space="preserve"><value>인증 수준은 1(변경 불가), 2(양식 입력과 서명), 3(주석도 허용) 중 하나입니다.</value></data>
+  <data name="Err_SignCertifiedLocked" xml:space="preserve"><value>이 문서는 '변경 불가'로 인증되어 더 이상 서명할 수 없습니다.</value></data>
+  <data name="Err_CertifyNotFirst" xml:space="preserve"><value>문서는 첫 서명만 인증할 수 있는데, 이 문서는 이미 서명되어 있습니다.</value></data>
+  <data name="Err_LtvNone" xml:space="preserve"><value>이 파일에는 디지털 서명이 없습니다.</value></data>
+  <data name="Err_LtvInvalid" xml:space="preserve"><value>서명 “{0}” 이(가) 유효하지 않아 검증 정보를 추가하지 않습니다.</value></data>
+  <data name="Err_LtvNothing" xml:space="preserve"><value>받을 수 있는 검증 정보가 이미 모두 파일에 있습니다.</value></data>
+  <data name="Err_LtvCheck" xml:space="preserve"><value>검증 정보를 추가한 뒤 서명이 유지되지 않아 저장하지 않았습니다.</value></data>
 </root>

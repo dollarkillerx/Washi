@@ -148,9 +148,11 @@
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）
   washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   記入欄とコメントをページに描き込んで確定（保存前に確認）
   washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   長期保存用の PDF/A-2b のコピー（--check は直す点の一覧だけ）
-  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]
                                           デジタル ID で署名（パスワードは WASHI_ID_PASSWORD か入力）
-  washi pdf verify &lt;in.pdf&gt;               ファイルの署名を確認
+            証明署名: --certify no-changes|forms|comments、--ltv で署名後に長期検証情報を追加
+  washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   ファイルの署名を確認
+  washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   署名に長期検証情報（と文書タイムスタンプ）を追加
   washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
@@ -712,10 +714,10 @@
   <data name="Ui_IdFiles" xml:space="preserve"><value>デジタル ID（.p12, .pfx）</value></data>
   <data name="Ui_SigInFile" xml:space="preserve"><value>このファイルの署名</value></data>
   <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
-  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>有効: 署名後に変更なし、署名者を確認済み。</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>有効: 署名者を確認済みで、署名後に署名が認めない変更はありません。</value></data>
   <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>署名後に変更はありませんが、署名者の身元は確認できません（信頼された証明書ではありません）。</value></data>
-  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>署名は有効ですが、署名後に文書が変更されています。</value></data>
-  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>無効: 文書が改ざんされたか、署名が壊れています。</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>署名自体は有効ですが、署名後に署名が認めていない変更が文書に加えられています。</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>無効: 文書が改ざんされたか、署名が壊れているか、証明書が失効しています。</value></data>
   <data name="Ui_SigTimestamped" xml:space="preserve"><value>タイムスタンプ付き</value></data>
   <data name="Ui_SigTitle" xml:space="preserve"><value>デジタル ID で署名</value></data>
   <data name="Ui_SigLead" xml:space="preserve"><value>証明書による署名で、誰が署名したか、署名後に変更がないかを閲覧者が確認できます。ファイルの末尾に追加されるため、それまでの署名も有効なままです。</value></data>
@@ -1016,4 +1018,37 @@
   <data name="Pdfa_Lzw" xml:space="preserve"><value>LZW 圧縮</value></data>
   <data name="Pdfa_Layers" xml:space="preserve"><value>レイヤーの設定</value></data>
   <data name="Pdfa_Other" xml:space="preserve"><value>PDF/A で使えないその他の項目</value></data>
+  <data name="Ui_SigLtv" xml:space="preserve"><value>長期検証（LTV）対応</value></data>
+  <data name="Ui_SigDocTimestamp" xml:space="preserve"><value>文書タイムスタンプ</value></data>
+  <data name="Ui_SigCertified" xml:space="preserve"><value>文書を証明する署名: {0}。</value></data>
+  <data name="Ui_SigPerm_1" xml:space="preserve"><value>変更は不可</value></data>
+  <data name="Ui_SigPerm_2" xml:space="preserve"><value>フォーム入力と署名のみ可</value></data>
+  <data name="Ui_SigPerm_3" xml:space="preserve"><value>フォーム入力・署名・コメントのみ可</value></data>
+  <data name="Ui_SigChanges" xml:space="preserve"><value>署名後の変更: {0}。</value></data>
+  <data name="Ui_SigChange_validation" xml:space="preserve"><value>検証情報</value></data>
+  <data name="Ui_SigChange_timestamp" xml:space="preserve"><value>文書タイムスタンプ</value></data>
+  <data name="Ui_SigChange_signature" xml:space="preserve"><value>署名</value></data>
+  <data name="Ui_SigChange_form" xml:space="preserve"><value>フォーム入力</value></data>
+  <data name="Ui_SigChange_metadata" xml:space="preserve"><value>文書のプロパティ</value></data>
+  <data name="Ui_SigChange_comments" xml:space="preserve"><value>コメント</value></data>
+  <data name="Ui_SigChange_other" xml:space="preserve"><value>その他の変更（内容など）</value></data>
+  <data name="Ui_SigCertify" xml:space="preserve"><value>文書の証明（作成者として）</value></data>
+  <data name="Ui_SigCertifyNone" xml:space="preserve"><value>しない（通常の署名）</value></data>
+  <data name="Ui_SigCertifyNote" xml:space="preserve"><value>証明できるのは最初の署名だけです。閲覧者には、その後に認められる変更が示され、それ以外の変更があると署名が無効と表示されます。</value></data>
+  <data name="Ui_SigLtvOption" xml:space="preserve"><value>長期検証（LTV）情報を追加する</value></data>
+  <data name="Ui_SigLtvNote" xml:space="preserve"><value>証明書に記載された失効確認サービスから状態を取得してファイルに保存します（送るのは証明書の識別情報だけです）。証明書の期限が切れた後も、オフラインで署名を確認できます。</value></data>
+  <data name="Ui_SigAddLtv" xml:space="preserve"><value>長期検証情報を追加…</value></data>
+  <data name="Ui_SigAddLtvNote" xml:space="preserve"><value>ファイル内の既存の署名に対して追加します。下のタイムスタンプサービスを指定すると文書タイムスタンプも付きます。数年ごとに付け直すと、ファイルの証明力が保たれます。</value></data>
+  <data name="Ui_SigAddingLtv" xml:space="preserve"><value>検証情報を取得しています…</value></data>
+  <data name="Ui_SigLtvAdded" xml:space="preserve"><value>{0} を保存しました（証明書 {1} 件、OCSP 応答 {2} 件、失効リスト {3} 件を追加）。</value></data>
+  <data name="Ui_SigLtvStamped" xml:space="preserve"><value>文書タイムスタンプを付けました。</value></data>
+  <data name="Ui_SigLtvDone" xml:space="preserve"><value>長期検証情報を追加しました。</value></data>
+  <data name="Ui_SigLtvMissing" xml:space="preserve"><value>まだ長期検証できない署名: {0}（取得できなかった検証情報があります）。</value></data>
+  <data name="Err_CertifyLevel" xml:space="preserve"><value>証明のレベルは 1（変更不可）、2（フォーム入力と署名）、3（コメントも可）のいずれかです。</value></data>
+  <data name="Err_SignCertifiedLocked" xml:space="preserve"><value>この文書は「変更不可」で証明されているため、これ以上署名できません。</value></data>
+  <data name="Err_CertifyNotFirst" xml:space="preserve"><value>文書を証明できるのは最初の署名だけです。この文書はすでに署名されています。</value></data>
+  <data name="Err_LtvNone" xml:space="preserve"><value>このファイルにはデジタル署名がありません。</value></data>
+  <data name="Err_LtvInvalid" xml:space="preserve"><value>署名「{0}」が有効でないため、検証情報は追加しません。</value></data>
+  <data name="Err_LtvNothing" xml:space="preserve"><value>取得できる検証情報はすべてファイルに入っています。</value></data>
+  <data name="Err_LtvCheck" xml:space="preserve"><value>検証情報を追加すると署名が保てなかったため、保存しませんでした。</value></data>
 </root>

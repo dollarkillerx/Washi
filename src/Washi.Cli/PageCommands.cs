@@ -10,7 +10,14 @@ using Washi.Core.Printing;
 /// <summary>washi pdf merge|split|organize|erase|protect|unlock|clean|redact|find|bookmarks|print|printers|compress|flatten|pdfa|sign|verify|make-id and washi ocr.</summary>
 internal static class PageCommands
 {
-    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing", "--fields-only", "--comments-only", "--check", "--flatten"];
+    /// <summary>The certificates given with --trust (comma-separated .cer / .pem files) to trust besides the system's.</summary>
+    private static List<System.Security.Cryptography.X509Certificates.X509Certificate2>? Trust(Dictionary<string, string> opt) =>
+        opt.TryGetValue("--trust", out var files)
+            ? [.. files.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                       .Select(System.Security.Cryptography.X509Certificates.X509CertificateLoader.LoadCertificateFromFile)]
+            : null;
+
+    private static readonly HashSet<string> Flags = ["--force", "--yes", "--all-ink", "--rules", "--open", "--list", "--case", "--whole-words", "--clear", "--two-sided", "--gray", "--actual-size", "--ignore-case", "--behind", "--trim", "--find-addresses", "--replace-existing", "--fields-only", "--comments-only", "--check", "--flatten", "--ltv"];
     private const char Many = '\u001f';   // between repeated --find / --regex values
 
     public static int Pdf(string[] args)
@@ -110,15 +117,35 @@ internal static class PageCommands
                 }
                 case ["verify", var input]:
                 {
-                    var checks = Washi.Core.Signatures.PdfSignatureVerifier.Verify(input);
+                    var checks = Washi.Core.Signatures.PdfSignatureVerifier.Verify(input, Trust(opt));
                     if (checks.Count == 0) Console.WriteLine(L.Get("Pdf_SigNone"));
                     foreach (var c in checks)
                     {
-                        Console.WriteLine(L.F("Pdf_SigLine", c.Field, c.Signer, L.Get("Ui_SigStatus_" + c.Status))
-                                          + (c.SignedAt is { } t ? $" ({t:yyyy-MM-dd HH:mm:ss zzz}{(c.Timestamped ? ", " + L.Get("Ui_SigTimestamped") : "")})" : ""));
+                        var tags = new List<string>();
+                        if (c.SignedAt is { } t) tags.Add($"{t:yyyy-MM-dd HH:mm:ss zzz}");
+                        if (c.Timestamped && c.Kind != "timestamp") tags.Add(L.Get("Ui_SigTimestamped"));
+                        if (c.Ltv && c.Trusted) tags.Add(L.Get("Ui_SigLtv"));
+                        var who = c.Kind == "timestamp" ? $"{L.Get("Ui_SigDocTimestamp")} ({c.Signer})" : c.Signer;
+                        Console.WriteLine(L.F("Pdf_SigLine", c.Field, who, L.Get("Ui_SigStatus_" + c.Status)) + (tags.Count > 0 ? $" ({string.Join(", ", tags)})" : ""));
+                        if (c.Kind == "certification") Console.WriteLine("    " + L.F("Ui_SigCertified", L.Get("Ui_SigPerm_" + c.Permissions)));
+                        if (c.LaterChanges.Count > 0)
+                            Console.WriteLine("    " + L.F("Ui_SigChanges", string.Join(", ", c.LaterChanges.Select(k => L.Get("Ui_SigChange_" + k)))));
                         foreach (var p in c.Problems) Console.WriteLine("    " + p);
                     }
-                    return checks.Any(c => !c.Intact) ? 3 : 0;
+                    return checks.Any(c => !c.Intact || c.Revoked) ? 3 : 0;
+                }
+                case ["ltv", var input]:
+                {
+                    Uri? tsa = opt.TryGetValue("--tsa", out var t) ? new Uri(t) : null;
+                    var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
+                        Path.GetFileNameWithoutExtension(input) + "_ltv.pdf"));
+                    var r = Washi.Core.Signatures.PdfLtv.AddValidation(input, output, tsa, Trust(opt));
+                    Console.WriteLine(L.F("Ui_SigLtvAdded", output, r.Certificates, r.Ocsps, r.Crls));
+                    if (r.Timestamped) Console.WriteLine(L.Get("Ui_SigLtvStamped"));
+                    if (r.NotLtv.Count == 0) return 0;
+                    Console.WriteLine(L.F("Ui_SigLtvMissing", string.Join(", ", r.NotLtv)));
+                    foreach (var n in r.Notes) Console.WriteLine("    " + n);
+                    return 4;
                 }
                 case ["make-id"] when opt.TryGetValue("--name", out var name) && opt.TryGetValue("-o", out var output):
                 {
@@ -141,10 +168,23 @@ internal static class PageCommands
                     Uri? tsa = opt.TryGetValue("--tsa", out var t) ? new Uri(t) : null;
                     var output = opt.GetValueOrDefault("-o", Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!,
                         Path.GetFileNameWithoutExtension(input) + "_signed.pdf"));
+                    int certify = opt.GetValueOrDefault("--certify", "") switch
+                    {
+                        "" => 0,
+                        "no-changes" or "1" => 1,
+                        "forms" or "2" => 2,
+                        "comments" or "3" => 3,
+                        _ => throw new PageAssemblyException("--certify takes no-changes, forms or comments", "Err_CertifyLevel"),
+                    };
                     var r = Washi.Core.Signatures.PdfDigitalSigner.Sign(input, output, new Washi.Core.Signatures.SignRequest(
-                        id, opt.GetValueOrDefault("--field"), page, box, opt.GetValueOrDefault("--reason", ""), opt.GetValueOrDefault("--location", ""), null, tsa));
+                        id, opt.GetValueOrDefault("--field"), page, box, opt.GetValueOrDefault("--reason", ""), opt.GetValueOrDefault("--location", ""), null, tsa,
+                        certify, opt.ContainsKey("--ltv")));
                     Console.WriteLine(L.F("Ui_SigSigned", output, r.Signer));
-                    return 0;
+                    if (!opt.ContainsKey("--ltv")) return 0;
+                    if (r.Ltv) { Console.WriteLine(L.Get("Ui_SigLtvDone")); return 0; }
+                    Console.WriteLine(L.F("Ui_SigLtvMissing", r.Field));
+                    foreach (var n in r.Notes) Console.WriteLine("    " + n);
+                    return 4;
                 }
                 case ["compress", var input]:
                 {

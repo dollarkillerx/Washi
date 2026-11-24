@@ -822,6 +822,10 @@
                                     <Style Selector="TextBlock.bad"><Setter Property="Foreground" Value="#DA1E28" /></Style>
                                 </ItemsControl.Styles>
                             </ItemsControl>
+                            <StackPanel IsVisible="{Binding Sign.Digital.HasSignatures}" Spacing="4" Margin="0,4,0,0">
+                                <Button Content="{l:Tr Ui_SigAddLtv}" Command="{Binding Sign.Digital.AddLtvCommand}" Padding="10,4" x:Name="AddLtvButton" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SigAddLtvNote}" TextWrapping="Wrap" />
+                            </StackPanel>
 
                             <!-- signing with a digital ID -->
                             <TextBlock Classes="section" Text="{l:Tr Ui_SigTitle}" />
@@ -877,6 +881,16 @@
                             <TextBlock Classes="caption" Text="{l:Tr Ui_SigTimestamp}" />
                             <TextBox Text="{Binding Sign.Digital.TimestampServer}" PlaceholderText="https://…" />
                             <TextBlock Classes="note" Text="{l:Tr Ui_SigTimestampNote}" TextWrapping="Wrap" />
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigCertify}" />
+                            <ComboBox SelectedIndex="{Binding Sign.Digital.CertifyLevel}" HorizontalAlignment="Stretch" x:Name="CertifyBox">
+                                <ComboBoxItem Content="{l:Tr Ui_SigCertifyNone}" />
+                                <ComboBoxItem Content="{l:Tr Ui_SigPerm_1}" />
+                                <ComboBoxItem Content="{l:Tr Ui_SigPerm_2}" />
+                                <ComboBoxItem Content="{l:Tr Ui_SigPerm_3}" />
+                            </ComboBox>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_SigCertifyNote}" TextWrapping="Wrap" />
+                            <CheckBox IsChecked="{Binding Sign.Digital.AddLtv}" Content="{l:Tr Ui_SigLtvOption}" x:Name="AddLtvBox" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_SigLtvNote}" TextWrapping="Wrap" />
                             <Button Classes="accent" Command="{Binding Sign.Digital.SignCommand}" IsEnabled="{Binding Sign.Digital.CanSign}" Margin="0,10,0,0"
                                     HorizontalAlignment="Stretch" x:Name="DigitalSignButton">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
