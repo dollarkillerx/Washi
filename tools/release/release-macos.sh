@@ -19,6 +19,9 @@
 # The app is self-contained (no .NET to install) and runs on the JIT with ReadyToRun code, so the hardened runtime
 # allows JIT (Washi.entitlements). washi-mcp sits in Contents/MacOS/mcp/, where the MCP settings page points.
 #
+# No delta packages: Washi.App as one file is ~370 MB, more than Velopack's delta decoder takes ("Frame requires too
+# much memory for decoding"), so a delta would only be downloaded, fail and be followed by the full package.
+#
 # Both are single-file: Contents/MacOS must hold only Mach-O binaries. codesign keeps the signature of any other file
 # there (a .NET .dll, a .json) in extended attributes, which the portable zip keeps (ditto) but an update package
 # (.nupkg, a plain zip) drops, so every auto-update would leave the app with a broken signature.
@@ -95,7 +98,7 @@ echo "==> pack, sign, notarize (${PROFILE/#-/skipped})"
   --packTitle Washi --packAuthors "Washi contributors" \
   --icon "$ROOT/assets/brand/washi.icns" --plist "$WORK/Info.plist" \
   --signAppIdentity "$IDENTITY" --signEntitlements "$ROOT/tools/release/Washi.entitlements" \
-  "${NOTARY[@]}" --noInst "${NOTES[@]}"
+  "${NOTARY[@]}" --noInst --delta None "${NOTES[@]}"
 
 echo "==> verify"
 CHECK="$WORK/check"
