@@ -1145,4 +1145,7 @@
   <data name="Ui_FormDataUnknown" xml:space="preserve"><value>“{0}” 은(는) 이 양식의 입력란이 아닙니다.</value></data>
   <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{1} 에 사본 {0}개를 만들었습니다.</value></data>
   <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} 저장 (양식 {1}개).</value></data>
+  <data name="Err_FormLocked" xml:space="preserve"><value>{0} 은(는) 양식 입력을 허용하지 않습니다.</value></data>
+  <data name="Err_FormFillCheck" xml:space="preserve"><value>채운 사본이 채운 대로 읽히지 않아 저장하지 않았습니다.</value></data>
+  <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>양식이 바뀌지 않았습니다.</value></data>
 </root>

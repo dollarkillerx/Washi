@@ -93,7 +93,16 @@ public static class AcroFormFields
     /// <param name="embedFont">Optional font embedded and used for every filled text field.</param>
     public static FillResult Fill(string input, string output, IReadOnlyDictionary<string, string> values, OpenTypeFont? embedFont = null)
     {
-        using var doc = Pages.PdfSecurity.OpenForChanges(input, Pages.PdfPasswords.For(input));   // a clear error for a locked form
+        PdfDocument doc;
+        try { doc = Pages.PdfSecurity.OpenForChanges(input, Pages.PdfPasswords.For(input)); }
+        catch (Pages.PageAssemblyException e) when (e.Key == "Err_NeedsPermissionsPassword")
+        {
+            // protected against changes but open to filling in (as the 国税庁 forms are): filled as Acrobat does it,
+            // in an update encrypted like the rest, the protection left as it is
+            if (File.Exists(output)) throw new Pages.PageAssemblyException($"{Path.GetFileName(output)} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(output));
+            return RestrictedFill.Fill(input, output, values, embedFont);
+        }
+        using var _ = doc;
         var result = Fill(doc, values, embedFont);
         doc.Options.CompressContentStreams = true;
         doc.Save(output);

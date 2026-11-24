@@ -1145,4 +1145,7 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_FormDataUnknown" xml:space="preserve"><value>« {0} » n’est pas un champ de ce formulaire.</value></data>
   <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{0} copie(s) remplie(s) dans {1}.</value></data>
   <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} enregistré avec {1} formulaire(s).</value></data>
+  <data name="Err_FormLocked" xml:space="preserve"><value>{0} n’autorise pas à remplir son formulaire.</value></data>
+  <data name="Err_FormFillCheck" xml:space="preserve"><value>La copie remplie ne se relit pas comme remplie ; elle n’a pas été conservée.</value></data>
+  <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>Rien n’a changé dans le formulaire.</value></data>
 </root>

@@ -1145,4 +1145,7 @@
   <data name="Ui_FormDataUnknown" xml:space="preserve"><value>“{0}”不是此表单的栏位。</value></data>
   <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>已在 {1} 生成 {0} 份副本。</value></data>
   <data name="Ui_FormDataCollected" xml:space="preserve"><value>已保存 {0}（{1} 份表单）。</value></data>
+  <data name="Err_FormLocked" xml:space="preserve"><value>{0} 不允许填写表单。</value></data>
+  <data name="Err_FormFillCheck" xml:space="preserve"><value>填写后的副本未能按填写内容读回，未保存。</value></data>
+  <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>表单没有任何变化。</value></data>
 </root>

@@ -1145,4 +1145,7 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_FormDataUnknown" xml:space="preserve"><value>„{0}“ ist kein Feld dieses Formulars.</value></data>
   <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{0} Kopie(n) in {1} ausgefüllt.</value></data>
   <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} mit {1} Formular(en) gespeichert.</value></data>
+  <data name="Err_FormLocked" xml:space="preserve"><value>{0} erlaubt das Ausfüllen des Formulars nicht.</value></data>
+  <data name="Err_FormFillCheck" xml:space="preserve"><value>Die ausgefüllte Kopie ließ sich nicht wie ausgefüllt zurücklesen; sie wurde nicht behalten.</value></data>
+  <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>Im Formular hat sich nichts geändert.</value></data>
 </root>

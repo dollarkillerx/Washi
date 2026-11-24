@@ -432,7 +432,9 @@ public sealed class FillFieldsTool(PathPolicy p) : PdfTool(p)
         "checkboxes as true/false, radio groups and choices as one of their options. Washi draws each value itself, so it looks the " +
         "same in every viewer. The form's own rules apply: a value that is not a number, a date or within range is not filled (the note " +
         "says why), numbers are stored plainly and shown formatted (1234 shows as 1,234), and calculated fields (totals) are worked " +
-        "out from the values. Set embed_font to embed a font for characters the form's font lacks. " +
+        "out from the values. Set embed_font to embed a font for characters the form's font lacks. A form protected with a " +
+        "permissions password that allows filling in (as Japanese tax forms are) is filled without that password, keeping its " +
+        "protection. " +
         "Never overwrites: output defaults to <name>_filled.pdf and must not exist. Check the result with render_page.";
     protected override string Schema => """
         {"type":"object","properties":{
