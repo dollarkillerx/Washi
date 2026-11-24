@@ -114,6 +114,8 @@ ls "$APP/Contents/Resources" | grep -qxF "$icon" || { echo "icon $icon missing f
 UPD="$WORK/update"
 mkdir -p "$UPD"
 unzip -q "$OUT/Washi-$VERSION-osx-full.nupkg" -d "$UPD"
+# Velopack stores a symlink as <name>.__symlink holding its target and makes the link again when it installs
+find "$UPD/lib/app" -name '*.__symlink' | while read -r f; do ln -s "$(cat "$f")" "${f%.__symlink}" && rm "$f"; done
 codesign --verify --deep --strict "$UPD/lib/app" || { echo "the update package's app is not validly signed" >&2; exit 1; }
 echo "done: $OUT"
 ls -lh "$OUT" | grep -i -E "osx|\.nupkg"
