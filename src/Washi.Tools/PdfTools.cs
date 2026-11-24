@@ -49,6 +49,7 @@ public static class WashiTools
         .Add(new FlattenPdfTool(policy))
         .Add(new ConvertToPdfaTool(policy))
         .Add(new VerifySignaturesTool(policy))
+        .Add(new AddLtvTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -715,10 +716,13 @@ public sealed class VerifySignaturesTool(PathPolicy p) : PdfTool(p)
     public override ToolRisk Risk => ToolRisk.ReadOnly;
     protected override bool HoldsPdfiumLock => false;
     public override string Description =>
-        "Checks the digital signatures in a PDF: for each, the field, signer and issuer, when it was signed (from a time-stamp when " +
-        "there is one), reason and location, whether the signed bytes are intact, whether the certificate leads to one this " +
-        "computer trusts (checked offline), whether the document was changed after it, and a status: valid, unverified (intact, " +
-        "identity not trusted), changed (intact, revised later) or invalid. Signing itself is not offered to agents.";
+        "Checks the digital signatures in a PDF, offline: for each, the field, kind (approval, certification or a document " +
+        "time-stamp), signer and issuer, when it was signed (from a time-stamp when there is one), reason and location, whether " +
+        "the signed bytes are intact, whether the certificate leads to one this computer trusts, whether the file holds what " +
+        "long-term validation needs (ltv: the chain and revocation answers), whether a certificate was revoked, a " +
+        "certification's permissions, and what later revisions changed (validation, timestamp, signature, form, metadata, " +
+        "comments, other) and whether the signature allows that. status: valid, unverified (intact, identity not trusted), " +
+        "changed (revised in a way it does not allow) or invalid (altered, damaged or revoked). Signing itself is not offered to agents.";
     protected override string Schema => """
         {"type":"object","properties":{"path":{"type":"string","description":"PDF file"}},"required":["path"],"additionalProperties":false}
         """;
@@ -731,12 +735,50 @@ public sealed class VerifySignaturesTool(PathPolicy p) : PdfTool(p)
             count = checks.Count,
             signatures = checks.Select(c => new
             {
-                field = c.Field, status = c.Status, signer = c.Signer, issuer = c.Issuer,
+                field = c.Field, kind = c.Kind, status = c.Status, signer = c.Signer, issuer = c.Issuer,
                 signed_at = c.SignedAt?.ToString("o", CultureInfo.InvariantCulture), timestamped = c.Timestamped,
                 reason = c.Reason.Length > 0 ? c.Reason : null, location = c.Location.Length > 0 ? c.Location : null,
-                intact = c.Intact, trusted = c.Trusted, covers_document = c.CoversDocument, revisions_after = c.ChangedAfter,
-                kind = c.SubFilter, page = c.Page >= 0 ? c.Page + 1 : (int?)null, problems = c.Problems,
+                intact = c.Intact, trusted = c.Trusted, ltv = c.Ltv, revoked = c.Revoked,
+                certification_allows = c.Kind == "certification" ? c.Permissions switch { 1 => "no changes", 2 => "form filling and signing", _ => "form filling, signing and comments" } : null,
+                covers_document = c.CoversDocument, revisions_after = c.ChangedAfter, changes_after = c.LaterChanges, changes_allowed = c.ChangesAllowed,
+                sub_filter = c.SubFilter, page = c.Page >= 0 ? c.Page + 1 : (int?)null, problems = c.Problems,
             }),
+        }));
+    }
+}
+
+public sealed class AddLtvTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "add_ltv";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Long-term validation for the signatures already in a PDF (PAdES B-LT): writes a NEW copy with, after everything in " +
+        "the file (the signatures stay intact), the certificates of each signer's chain and an OCSP answer or revocation list " +
+        "for each. These are fetched ONLINE from the services the certificates name; only certificate identifiers are sent. " +
+        "timestamp_server (an RFC 3161 URL): also add a document time-stamp (B-LTA), which keeps it all provable and can be " +
+        "renewed later; only the file's hash is sent to it. Reports what was added and which signatures can now be checked " +
+        "long-term. No private key is involved. Never overwrites: output defaults to <name>_ltv.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"Signed PDF file"},
+          "timestamp_server":{"type":"string","description":"RFC 3161 time-stamping service URL for a document time-stamp (optional)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_ltv.pdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        Uri? tsa = null;
+        if (OptStr(a, "timestamp_server") is { Length: > 0 } t && (!Uri.TryCreate(t, UriKind.Absolute, out tsa) || tsa.Scheme is not ("http" or "https")))
+            throw new ToolException("'timestamp_server' must be an http(s) URL");
+        var output = Policy.Output(OptStr(a, "output"), path, "_ltv");
+        var r = Washi.Core.Signatures.PdfLtv.AddValidation(path, output, tsa);
+        return new ToolResult(ToJson(new
+        {
+            output, certificates_added = r.Certificates, ocsp_responses_added = r.Ocsps, revocation_lists_added = r.Crls,
+            document_timestamp = r.Timestamped, ltv = r.Ltv, not_ltv = r.NotLtv, notes = r.Notes,
         }));
     }
 }

@@ -148,9 +148,11 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf compress &lt;in.pdf&gt; [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)
   washi pdf flatten &lt;in.pdf&gt; [--fields-only | --comments-only] [-o out.pdf]   dessiner champs et commentaires dans la page (vérifié avant d’être conservé)
   washi pdf pdfa &lt;in.pdf&gt; [--check] [--flatten] [-o out.pdf]   une copie PDF/A-2b pour l’archivage (--check liste seulement ce qui fait obstacle)
-  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]
+  washi pdf sign &lt;in.pdf&gt; --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]
                                           signe avec une identité numérique (mot de passe : WASHI_ID_PASSWORD ou demandé)
-  washi pdf verify &lt;in.pdf&gt;               vérifie les signatures d’un fichier
+            certifier : --certify no-changes|forms|comments ; --ltv ajoute la validation à long terme après la signature
+  washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   vérifie les signatures d’un fichier
+  washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   ajoute la validation à long terme (et un horodatage du document) aux signatures
   washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
@@ -712,10 +714,10 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_IdFiles" xml:space="preserve"><value>Identités numériques (.p12, .pfx)</value></data>
   <data name="Ui_SigInFile" xml:space="preserve"><value>Signatures de ce fichier</value></data>
   <data name="Ui_SigRow" xml:space="preserve"><value>{0} · {1}</value></data>
-  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Valide : inchangé depuis la signature, signataire vérifié.</value></data>
+  <data name="Ui_SigStatus_valid" xml:space="preserve"><value>Valide : signataire vérifié, et rien n’a changé depuis la signature que celle-ci n’autorise.</value></data>
   <data name="Ui_SigStatus_unverified" xml:space="preserve"><value>Inchangé depuis la signature, mais l’identité du signataire n’est pas vérifiée (certificat non approuvé).</value></data>
-  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signature intacte ; le document a été modifié après la signature.</value></data>
-  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Non valide : le document a été altéré ou la signature est endommagée.</value></data>
+  <data name="Ui_SigStatus_changed" xml:space="preserve"><value>Signature intacte, mais le document a été modifié ensuite d’une façon qu’elle n’autorise pas.</value></data>
+  <data name="Ui_SigStatus_invalid" xml:space="preserve"><value>Non valide : document altéré, signature endommagée ou certificat révoqué.</value></data>
   <data name="Ui_SigTimestamped" xml:space="preserve"><value>horodaté</value></data>
   <data name="Ui_SigTitle" xml:space="preserve"><value>Signer avec une identité numérique</value></data>
   <data name="Ui_SigLead" xml:space="preserve"><value>Une signature à certificat que les lecteurs peuvent vérifier : qui a signé, et que rien n’a changé depuis. Elle s’ajoute après le contenu du fichier : les signatures antérieures restent valides.</value></data>
@@ -1016,4 +1018,37 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Pdfa_Lzw" xml:space="preserve"><value>Compression LZW</value></data>
   <data name="Pdfa_Layers" xml:space="preserve"><value>Réglages des calques</value></data>
   <data name="Pdfa_Other" xml:space="preserve"><value>Autres entrées interdites en PDF/A</value></data>
+  <data name="Ui_SigLtv" xml:space="preserve"><value>validation à long terme (LTV)</value></data>
+  <data name="Ui_SigDocTimestamp" xml:space="preserve"><value>Horodatage du document</value></data>
+  <data name="Ui_SigCertified" xml:space="preserve"><value>Certifie le document : {0}.</value></data>
+  <data name="Ui_SigPerm_1" xml:space="preserve"><value>aucune modification permise</value></data>
+  <data name="Ui_SigPerm_2" xml:space="preserve"><value>remplissage et signature permis</value></data>
+  <data name="Ui_SigPerm_3" xml:space="preserve"><value>remplissage, signature et commentaires permis</value></data>
+  <data name="Ui_SigChanges" xml:space="preserve"><value>Modifié depuis : {0}.</value></data>
+  <data name="Ui_SigChange_validation" xml:space="preserve"><value>données de validation</value></data>
+  <data name="Ui_SigChange_timestamp" xml:space="preserve"><value>horodatage du document</value></data>
+  <data name="Ui_SigChange_signature" xml:space="preserve"><value>signatures</value></data>
+  <data name="Ui_SigChange_form" xml:space="preserve"><value>remplissage du formulaire</value></data>
+  <data name="Ui_SigChange_metadata" xml:space="preserve"><value>propriétés du document</value></data>
+  <data name="Ui_SigChange_comments" xml:space="preserve"><value>commentaires</value></data>
+  <data name="Ui_SigChange_other" xml:space="preserve"><value>autres modifications (contenu, etc.)</value></data>
+  <data name="Ui_SigCertify" xml:space="preserve"><value>Certifier le document (en tant qu’auteur)</value></data>
+  <data name="Ui_SigCertifyNone" xml:space="preserve"><value>Non : signature ordinaire</value></data>
+  <data name="Ui_SigCertifyNote" xml:space="preserve"><value>Seule la première signature peut certifier. Les lecteurs voient quelles modifications restent permises ; toute autre rend la signature non valide.</value></data>
+  <data name="Ui_SigLtvOption" xml:space="preserve"><value>Ajouter la validation à long terme (LTV)</value></data>
+  <data name="Ui_SigLtvNote" xml:space="preserve"><value>Récupère l’état de révocation des certificats auprès des services qu’ils indiquent (seuls leurs identifiants sont envoyés) et le garde dans le fichier : la signature reste vérifiable hors ligne après l’expiration des certificats.</value></data>
+  <data name="Ui_SigAddLtv" xml:space="preserve"><value>Ajouter la validation à long terme…</value></data>
+  <data name="Ui_SigAddLtvNote" xml:space="preserve"><value>Pour les signatures déjà présentes. Avec un service d’horodatage ci-dessous, un horodatage du document est ajouté ; le renouveler tous les quelques ans garde le fichier probant.</value></data>
+  <data name="Ui_SigAddingLtv" xml:space="preserve"><value>Récupération des données de validation…</value></data>
+  <data name="Ui_SigLtvAdded" xml:space="preserve"><value>{0} enregistré : {1} certificat(s), {2} réponse(s) OCSP et {3} liste(s) de révocation ajoutés.</value></data>
+  <data name="Ui_SigLtvStamped" xml:space="preserve"><value>Un horodatage du document a été ajouté.</value></data>
+  <data name="Ui_SigLtvDone" xml:space="preserve"><value>Validation à long terme ajoutée.</value></data>
+  <data name="Ui_SigLtvMissing" xml:space="preserve"><value>Pas encore vérifiable à long terme : {0} (certaines données n’ont pas pu être récupérées).</value></data>
+  <data name="Err_CertifyLevel" xml:space="preserve"><value>La certification permet 1 (aucune modification), 2 (remplissage et signature) ou 3 (aussi les commentaires).</value></data>
+  <data name="Err_SignCertifiedLocked" xml:space="preserve"><value>Le document est certifié sans modification permise : il ne peut plus être signé.</value></data>
+  <data name="Err_CertifyNotFirst" xml:space="preserve"><value>Seule la première signature peut certifier un document, et celui-ci est déjà signé.</value></data>
+  <data name="Err_LtvNone" xml:space="preserve"><value>Le fichier n’a pas de signature numérique.</value></data>
+  <data name="Err_LtvInvalid" xml:space="preserve"><value>La signature « {0} » ne tient pas : aucune donnée de validation n’est ajoutée.</value></data>
+  <data name="Err_LtvNothing" xml:space="preserve"><value>Le fichier contient déjà toutes les données de validation trouvables.</value></data>
+  <data name="Err_LtvCheck" xml:space="preserve"><value>Les signatures ne tenaient plus après l’ajout ; rien n’a été conservé.</value></data>
 </root>

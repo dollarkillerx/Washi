@@ -538,9 +538,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   a smaller copy (pages compared before it is kept)\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   draw fields and comments into the page (checked before it is kept)\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   a PDF/A-2b copy for archiving (--check only lists what stands in the way)\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          sign with a digital ID (password from WASHI_ID_PASSWORD or asked for)\n'
-            '  washi pdf verify <in.pdf>               check the signatures in a file\n'
+            '            certify: --certify no-changes|forms|comments; --ltv adds long-term validation data after signing\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   check the signatures in a file\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   add long-term validation data (and a document time-stamp) to the signatures\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID'
         ),
         "ja": (
@@ -582,9 +584,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   小さなコピーを作成（保存前にページを比較）\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   記入欄とコメントをページに描き込んで確定（保存前に確認）\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   長期保存用の PDF/A-2b のコピー（--check は直す点の一覧だけ）\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 名前 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          デジタル ID で署名（パスワードは WASHI_ID_PASSWORD か入力）\n'
-            '  washi pdf verify <in.pdf>               ファイルの署名を確認\n'
+            '            証明署名: --certify no-changes|forms|comments、--ltv で署名後に長期検証情報を追加\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   ファイルの署名を確認\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   署名に長期検証情報（と文書タイムスタンプ）を追加\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成'
         ),
         "zh-Hans": (
@@ -626,9 +630,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   生成更小的副本（保存前逐页比对）\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   把栏位和注释画进页面（保存前检查）\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   用于长期保存的 PDF/A-2b 副本（--check 只列出需处理的地方）\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field 名称 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 名称 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          用数字标识签名（密码取自 WASHI_ID_PASSWORD 或提示输入）\n'
-            '  washi pdf verify <in.pdf>               核实文件中的签名\n'
+            '            认证签名：--certify no-changes|forms|comments；--ltv 在签名后添加长期验证信息\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   核实文件中的签名\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   为签名添加长期验证信息（及文档时间戳）\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   创建自签名数字标识'
         ),
         "zh-Hant": (
@@ -670,9 +676,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   產生更小的副本（儲存前逐頁比對）\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   把欄位和註解畫進頁面（儲存前檢查）\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   用於長期保存的 PDF/A-2b 副本（--check 只列出需處理的地方）\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field 名稱 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 名稱 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          以數位識別碼簽署（密碼取自 WASHI_ID_PASSWORD 或提示輸入）\n'
-            '  washi pdf verify <in.pdf>               核實檔案中的簽章\n'
+            '            認證簽章：--certify no-changes|forms|comments；--ltv 在簽署後加入長期驗證資訊\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   核實檔案中的簽章\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   為簽章加入長期驗證資訊（及文件時間戳記）\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   建立自簽署數位識別碼'
         ),
         "ko": (
@@ -714,9 +722,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   더 작은 사본 (저장 전 페이지 비교)\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   입력란과 주석을 페이지에 그려 넣어 확정(저장 전 확인)\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   장기 보존용 PDF/A-2b 사본(--check는 고칠 점만 표시)\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field 이름 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field 이름 | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          디지털 ID 로 서명 (암호는 WASHI_ID_PASSWORD 또는 입력)\n'
-            '  washi pdf verify <in.pdf>               파일의 서명 확인\n'
+            '            인증 서명: --certify no-changes|forms|comments, --ltv는 서명 후 장기 검증 정보 추가\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   파일의 서명 확인\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   서명에 장기 검증 정보(와 문서 타임스탬프) 추가\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   자체 서명 디지털 ID 만들기'
         ),
         "fr": (
@@ -758,9 +768,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   une copie plus légère (pages comparées avant d’être gardée)\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   dessiner champs et commentaires dans la page (vérifié avant d’être conservé)\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   une copie PDF/A-2b pour l’archivage (--check liste seulement ce qui fait obstacle)\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field nom | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          signe avec une identité numérique (mot de passe : WASHI_ID_PASSWORD ou demandé)\n'
-            '  washi pdf verify <in.pdf>               vérifie les signatures d’un fichier\n'
+            '            certifier : --certify no-changes|forms|comments ; --ltv ajoute la validation à long terme après la signature\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   vérifie les signatures d’un fichier\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   ajoute la validation à long terme (et un horodatage du document) aux signatures\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée'
         ),
         "de": (
@@ -802,9 +814,11 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf compress <in.pdf> [--level light|standard|strong] [-o out.pdf]   eine kleinere Kopie (Seiten vor dem Speichern verglichen)\n'
             '  washi pdf flatten <in.pdf> [--fields-only | --comments-only] [-o out.pdf]   Felder und Kommentare in die Seite zeichnen (vor dem Speichern geprüft)\n'
             '  washi pdf pdfa <in.pdf> [--check] [--flatten] [-o out.pdf]   eine PDF/A-2b-Kopie zum Archivieren (--check listet nur, was im Weg steht)\n'
-            '  washi pdf sign <in.pdf> --id id.p12 [--field Name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [-o out.pdf]\n'
+            '  washi pdf sign <in.pdf> --id id.p12 [--field Name | --page n --box x0,y0,x1,y1] [--reason …] [--location …] [--tsa URL] [--certify …] [--ltv] [-o out.pdf]\n'
             '                                          mit digitaler ID signieren (Passwort aus WASHI_ID_PASSWORD oder abgefragt)\n'
-            '  washi pdf verify <in.pdf>               Signaturen einer Datei prüfen\n'
+            '            zertifizieren: --certify no-changes|forms|comments; --ltv fügt nach dem Signieren Langzeitvalidierung hinzu\n'
+            '  washi pdf verify <in.pdf> [--trust ca.cer]   Signaturen einer Datei prüfen\n'
+            '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   Langzeitvalidierung (und Dokumentzeitstempel) zu den Signaturen hinzufügen\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen'
         ),
     },
@@ -1671,10 +1685,10 @@ _UI = {
     "Ui_IdFiles": ["Digital IDs (.p12, .pfx)", "デジタル ID（.p12, .pfx）", "数字标识（.p12, .pfx）", "數位識別碼（.p12, .pfx）", "디지털 ID (.p12, .pfx)", "Identités numériques (.p12, .pfx)", "Digitale IDs (.p12, .pfx)"],
     "Ui_SigInFile": ["Signatures in this file", "このファイルの署名", "此文件中的签名", "此檔案中的簽章", "이 파일의 서명", "Signatures de ce fichier", "Signaturen in dieser Datei"],
     "Ui_SigRow": ["{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}", "{0} · {1}"],
-    "Ui_SigStatus_valid": ["Valid: unchanged since signing, signer verified.", "有効: 署名後に変更なし、署名者を確認済み。", "有效：签名后未被修改，签名人已验证。", "有效：簽署後未被修改，簽署人已驗證。", "유효: 서명 후 변경 없음, 서명자 확인됨.", "Valide : inchangé depuis la signature, signataire vérifié.", "Gültig: seit der Signatur unverändert, Unterzeichner bestätigt."],
+    "Ui_SigStatus_valid": ["Valid: signer verified, and nothing changed since signing that the signature does not allow.", "有効: 署名者を確認済みで、署名後に署名が認めない変更はありません。", "有效：签名人已验证，签名后没有签名不允许的修改。", "有效：簽署人已驗證，簽署後沒有簽章不允許的修改。", "유효: 서명자가 확인되었고, 서명 후 서명이 허용하지 않는 변경은 없습니다.", "Valide : signataire vérifié, et rien n’a changé depuis la signature que celle-ci n’autorise.", "Gültig: Unterzeichner bestätigt, seit der Signatur keine Änderung, die sie nicht erlaubt."],
     "Ui_SigStatus_unverified": ["Unchanged since signing, but the signer's identity is not verified (no trusted certificate).", "署名後に変更はありませんが、署名者の身元は確認できません（信頼された証明書ではありません）。", "签名后未被修改，但无法验证签名人身份（证书不受信任）。", "簽署後未被修改，但無法驗證簽署人身分（憑證不受信任）。", "서명 후 변경은 없지만 서명자 신원은 확인되지 않았습니다 (신뢰할 수 있는 인증서가 아님).", "Inchangé depuis la signature, mais l’identité du signataire n’est pas vérifiée (certificat non approuvé).", "Seit der Signatur unverändert, aber die Identität des Unterzeichners ist nicht bestätigt (kein vertrauenswürdiges Zertifikat)."],
-    "Ui_SigStatus_changed": ["Signature intact; the document was changed after it was signed.", "署名は有効ですが、署名後に文書が変更されています。", "签名完好，但文档在签名后被修改过。", "簽章完好，但文件在簽署後被修改過。", "서명은 유효하지만 서명 후 문서가 변경되었습니다.", "Signature intacte ; le document a été modifié après la signature.", "Signatur intakt; das Dokument wurde nach der Signatur geändert."],
-    "Ui_SigStatus_invalid": ["Invalid: the document was altered or the signature is damaged.", "無効: 文書が改ざんされたか、署名が壊れています。", "无效：文档被篡改或签名已损坏。", "無效：文件被竄改或簽章已損壞。", "무효: 문서가 변조되었거나 서명이 손상되었습니다.", "Non valide : le document a été altéré ou la signature est endommagée.", "Ungültig: das Dokument wurde verändert oder die Signatur ist beschädigt."],
+    "Ui_SigStatus_changed": ["Signature intact, but the document was changed after it in a way it does not allow.", "署名自体は有効ですが、署名後に署名が認めていない変更が文書に加えられています。", "签名完好，但文档在签名后被做了签名不允许的修改。", "簽章完好，但文件在簽署後被做了簽章不允許的修改。", "서명 자체는 유효하지만, 서명 후 서명이 허용하지 않는 방식으로 문서가 변경되었습니다.", "Signature intacte, mais le document a été modifié ensuite d’une façon qu’elle n’autorise pas.", "Signatur intakt, aber das Dokument wurde danach auf eine Weise geändert, die sie nicht erlaubt."],
+    "Ui_SigStatus_invalid": ["Invalid: the document was altered, the signature is damaged, or the certificate was revoked.", "無効: 文書が改ざんされたか、署名が壊れているか、証明書が失効しています。", "无效：文档被篡改、签名已损坏，或证书已被吊销。", "無效：文件被竄改、簽章已損壞，或憑證已被撤銷。", "무효: 문서가 변조되었거나 서명이 손상되었거나 인증서가 폐기되었습니다.", "Non valide : document altéré, signature endommagée ou certificat révoqué.", "Ungültig: Dokument verändert, Signatur beschädigt oder Zertifikat widerrufen."],
     "Ui_SigTimestamped": ["time-stamped", "タイムスタンプ付き", "带时间戳", "附時間戳記", "타임스탬프 있음", "horodaté", "mit Zeitstempel"],
     "Ui_SigTitle": ["Sign with a digital ID", "デジタル ID で署名", "用数字标识签名", "以數位識別碼簽署", "디지털 ID 로 서명", "Signer avec une identité numérique", "Mit digitaler ID signieren"],
     "Ui_SigLead": ["A certificate-based signature that readers can check: it shows who signed and that nothing changed since. It is added after everything in the file, so earlier signatures stay valid.", "証明書による署名で、誰が署名したか、署名後に変更がないかを閲覧者が確認できます。ファイルの末尾に追加されるため、それまでの署名も有効なままです。", "基于证书的签名，阅读者可以核实谁签的、签名后是否被改动。签名追加在文件末尾，之前的签名仍然有效。", "以憑證為基礎的簽章，閱讀者可以核實誰簽署、簽署後是否被改動。簽章附加在檔案末尾，先前的簽章仍然有效。", "인증서 기반 서명으로, 누가 서명했고 이후 변경이 없는지 읽는 사람이 확인할 수 있습니다. 파일 끝에 추가되므로 이전 서명도 유효합니다.", "Une signature à certificat que les lecteurs peuvent vérifier : qui a signé, et que rien n’a changé depuis. Elle s’ajoute après le contenu du fichier : les signatures antérieures restent valides.", "Eine zertifikatbasierte Signatur, die Leser prüfen können: wer unterschrieben hat und dass seither nichts geändert wurde. Sie wird hinten angefügt, frühere Signaturen bleiben gültig."],
@@ -1975,6 +1989,39 @@ _UI = {
     "Pdfa_Lzw": ["LZW compression", "LZW 圧縮", "LZW 压缩", "LZW 壓縮", "LZW 압축", "Compression LZW", "LZW-Komprimierung"],
     "Pdfa_Layers": ["Layer settings", "レイヤーの設定", "图层设置", "圖層設定", "레이어 설정", "Réglages des calques", "Ebeneneinstellungen"],
     "Pdfa_Other": ["Other entries PDF/A does not allow", "PDF/A で使えないその他の項目", "PDF/A 不允许的其他项目", "PDF/A 不允許的其他項目", "PDF/A에서 허용되지 않는 기타 항목", "Autres entrées interdites en PDF/A", "Sonstige in PDF/A nicht erlaubte Einträge"],
+    "Ui_SigLtv": ["long-term validation (LTV)", "長期検証（LTV）対応", "长期验证（LTV）", "長期驗證（LTV）", "장기 검증(LTV)", "validation à long terme (LTV)", "Langzeitvalidierung (LTV)"],
+    "Ui_SigDocTimestamp": ["Document time-stamp", "文書タイムスタンプ", "文档时间戳", "文件時間戳記", "문서 타임스탬프", "Horodatage du document", "Dokumentzeitstempel"],
+    "Ui_SigCertified": ["Certifies the document: {0}.", "文書を証明する署名: {0}。", "认证文档的签名：{0}。", "認證文件的簽章：{0}。", "문서를 인증하는 서명: {0}.", "Certifie le document : {0}.", "Zertifiziert das Dokument: {0}."],
+    "Ui_SigPerm_1": ["no changes allowed", "変更は不可", "不允许任何修改", "不允許任何修改", "변경 불가", "aucune modification permise", "keine Änderungen erlaubt"],
+    "Ui_SigPerm_2": ["form filling and signing allowed", "フォーム入力と署名のみ可", "仅允许填写表单和签名", "僅允許填寫表單和簽署", "양식 입력과 서명만 허용", "remplissage et signature permis", "Ausfüllen und Signieren erlaubt"],
+    "Ui_SigPerm_3": ["form filling, signing and comments allowed", "フォーム入力・署名・コメントのみ可", "允许填写表单、签名和注释", "允許填寫表單、簽署和註解", "양식 입력·서명·주석 허용", "remplissage, signature et commentaires permis", "Ausfüllen, Signieren und Kommentare erlaubt"],
+    "Ui_SigChanges": ["Changed since: {0}.", "署名後の変更: {0}。", "签名后的修改：{0}。", "簽署後的修改：{0}。", "서명 후 변경: {0}.", "Modifié depuis : {0}.", "Seitdem geändert: {0}."],
+    "Ui_SigChange_validation": ["validation data", "検証情報", "验证信息", "驗證資訊", "검증 정보", "données de validation", "Validierungsdaten"],
+    "Ui_SigChange_timestamp": ["document time-stamp", "文書タイムスタンプ", "文档时间戳", "文件時間戳記", "문서 타임스탬프", "horodatage du document", "Dokumentzeitstempel"],
+    "Ui_SigChange_signature": ["signatures", "署名", "签名", "簽章", "서명", "signatures", "Signaturen"],
+    "Ui_SigChange_form": ["form filling", "フォーム入力", "表单填写", "表單填寫", "양식 입력", "remplissage du formulaire", "Ausfüllen des Formulars"],
+    "Ui_SigChange_metadata": ["document properties", "文書のプロパティ", "文档属性", "文件屬性", "문서 속성", "propriétés du document", "Dokumenteigenschaften"],
+    "Ui_SigChange_comments": ["comments", "コメント", "注释", "註解", "주석", "commentaires", "Kommentare"],
+    "Ui_SigChange_other": ["other changes (content and more)", "その他の変更（内容など）", "其他修改（内容等）", "其他修改（內容等）", "기타 변경(내용 등)", "autres modifications (contenu, etc.)", "andere Änderungen (Inhalt usw.)"],
+    "Ui_SigCertify": ["Certify the document (as its author)", "文書の証明（作成者として）", "认证文档（作为作者）", "認證文件（作為作者）", "문서 인증(작성자로서)", "Certifier le document (en tant qu’auteur)", "Dokument zertifizieren (als Verfasser)"],
+    "Ui_SigCertifyNone": ["No: an ordinary signature", "しない（通常の署名）", "不认证（普通签名）", "不認證（一般簽章）", "안 함(일반 서명)", "Non : signature ordinaire", "Nein: gewöhnliche Signatur"],
+    "Ui_SigCertifyNote": ["Only the first signature can certify. Readers are told which changes the document still allows; anything else marks the signature as broken.", "証明できるのは最初の署名だけです。閲覧者には、その後に認められる変更が示され、それ以外の変更があると署名が無効と表示されます。", "只有第一个签名可以认证。阅读者会看到文档之后允许的修改，其他修改会使签名显示为无效。", "只有第一個簽章可以認證。閱讀者會看到文件之後允許的修改，其他修改會使簽章顯示為無效。", "첫 서명만 인증할 수 있습니다. 읽는 사람에게 이후 허용되는 변경이 표시되며, 그 밖의 변경은 서명을 무효로 표시합니다.", "Seule la première signature peut certifier. Les lecteurs voient quelles modifications restent permises ; toute autre rend la signature non valide.", "Nur die erste Signatur kann zertifizieren. Leser sehen, welche Änderungen noch erlaubt sind; alles andere macht die Signatur ungültig."],
+    "Ui_SigLtvOption": ["Add long-term validation (LTV)", "長期検証（LTV）情報を追加する", "添加长期验证（LTV）信息", "加入長期驗證（LTV）資訊", "장기 검증(LTV) 정보 추가", "Ajouter la validation à long terme (LTV)", "Langzeitvalidierung (LTV) hinzufügen"],
+    "Ui_SigLtvNote": ["Fetches the certificates' revocation status from the services they name (only certificate identifiers are sent) and keeps it in the file, so the signature can still be checked offline after the certificates expire.", "証明書に記載された失効確認サービスから状態を取得してファイルに保存します（送るのは証明書の識別情報だけです）。証明書の期限が切れた後も、オフラインで署名を確認できます。", "从证书指定的服务获取吊销状态并保存在文件中（只发送证书的识别信息），证书过期后仍可离线核实签名。", "從憑證指定的服務取得撤銷狀態並儲存在檔案中（只傳送憑證的識別資訊），憑證過期後仍可離線核實簽章。", "인증서에 적힌 서비스에서 폐기 상태를 받아 파일에 저장합니다(인증서 식별 정보만 보냄). 인증서가 만료된 뒤에도 오프라인으로 서명을 확인할 수 있습니다.", "Récupère l’état de révocation des certificats auprès des services qu’ils indiquent (seuls leurs identifiants sont envoyés) et le garde dans le fichier : la signature reste vérifiable hors ligne après l’expiration des certificats.", "Holt den Sperrstatus der Zertifikate bei den darin genannten Diensten (nur Zertifikatskennungen werden gesendet) und speichert ihn in der Datei, damit die Signatur auch nach Ablauf der Zertifikate offline prüfbar bleibt."],
+    "Ui_SigAddLtv": ["Add long-term validation…", "長期検証情報を追加…", "添加长期验证信息…", "加入長期驗證資訊…", "장기 검증 정보 추가…", "Ajouter la validation à long terme…", "Langzeitvalidierung hinzufügen…"],
+    "Ui_SigAddLtvNote": ["For signatures already in the file. With a time-stamping service below, a document time-stamp is added too; adding one again every few years keeps the file provable.", "ファイル内の既存の署名に対して追加します。下のタイムスタンプサービスを指定すると文書タイムスタンプも付きます。数年ごとに付け直すと、ファイルの証明力が保たれます。", "针对文件中已有的签名。若在下方填写时间戳服务，还会加上文档时间戳；每隔几年重新添加，可保持文件的证明力。", "針對檔案中已有的簽章。若在下方填寫時間戳記服務，還會加上文件時間戳記；每隔幾年重新加入，可保持檔案的證明力。", "파일에 이미 있는 서명에 추가합니다. 아래에 타임스탬프 서비스를 지정하면 문서 타임스탬프도 붙고, 몇 년마다 다시 붙이면 증명력이 유지됩니다.", "Pour les signatures déjà présentes. Avec un service d’horodatage ci-dessous, un horodatage du document est ajouté ; le renouveler tous les quelques ans garde le fichier probant.", "Für Signaturen, die schon in der Datei sind. Mit einem Zeitstempeldienst unten kommt ein Dokumentzeitstempel hinzu; ihn alle paar Jahre zu erneuern, hält die Datei beweiskräftig."],
+    "Ui_SigAddingLtv": ["Fetching validation data…", "検証情報を取得しています…", "正在获取验证信息…", "正在取得驗證資訊…", "검증 정보를 받는 중…", "Récupération des données de validation…", "Validierungsdaten werden geholt…"],
+    "Ui_SigLtvAdded": ["Saved {0}: {1} certificate(s), {2} OCSP answer(s) and {3} revocation list(s) added.", "{0} を保存しました（証明書 {1} 件、OCSP 応答 {2} 件、失効リスト {3} 件を追加）。", "已保存 {0}（添加了 {1} 个证书、{2} 个 OCSP 响应和 {3} 个吊销列表）。", "已儲存 {0}（加入了 {1} 個憑證、{2} 個 OCSP 回應和 {3} 個撤銷清單）。", "{0} 저장(인증서 {1}개, OCSP 응답 {2}개, 폐기 목록 {3}개 추가).", "{0} enregistré : {1} certificat(s), {2} réponse(s) OCSP et {3} liste(s) de révocation ajoutés.", "{0} gespeichert: {1} Zertifikat(e), {2} OCSP-Antwort(en) und {3} Sperrliste(n) hinzugefügt."],
+    "Ui_SigLtvStamped": ["A document time-stamp was added.", "文書タイムスタンプを付けました。", "已添加文档时间戳。", "已加入文件時間戳記。", "문서 타임스탬프를 붙였습니다.", "Un horodatage du document a été ajouté.", "Ein Dokumentzeitstempel wurde hinzugefügt."],
+    "Ui_SigLtvDone": ["Long-term validation added.", "長期検証情報を追加しました。", "已添加长期验证信息。", "已加入長期驗證資訊。", "장기 검증 정보를 추가했습니다.", "Validation à long terme ajoutée.", "Langzeitvalidierung hinzugefügt."],
+    "Ui_SigLtvMissing": ["Not yet verifiable long-term: {0} (some validation data could not be fetched).", "まだ長期検証できない署名: {0}（取得できなかった検証情報があります）。", "尚不能长期验证：{0}（有些验证信息无法获取）。", "尚不能長期驗證：{0}（有些驗證資訊無法取得）。", "아직 장기 검증할 수 없는 서명: {0}(받지 못한 검증 정보가 있음).", "Pas encore vérifiable à long terme : {0} (certaines données n’ont pas pu être récupérées).", "Noch nicht langfristig prüfbar: {0} (einige Validierungsdaten waren nicht abrufbar)."],
+    "Err_CertifyLevel": ["Certification allows 1 (no changes), 2 (form filling and signing) or 3 (also comments).", "証明のレベルは 1（変更不可）、2（フォーム入力と署名）、3（コメントも可）のいずれかです。", "认证级别为 1（不允许修改）、2（填写表单和签名）或 3（还允许注释）。", "認證等級為 1（不允許修改）、2（填寫表單和簽署）或 3（還允許註解）。", "인증 수준은 1(변경 불가), 2(양식 입력과 서명), 3(주석도 허용) 중 하나입니다.", "La certification permet 1 (aucune modification), 2 (remplissage et signature) ou 3 (aussi les commentaires).", "Die Zertifizierung erlaubt 1 (keine Änderungen), 2 (Ausfüllen und Signieren) oder 3 (auch Kommentare)."],
+    "Err_SignCertifiedLocked": ["The document is certified with no changes allowed, so it cannot be signed again.", "この文書は「変更不可」で証明されているため、これ以上署名できません。", "此文档已认证为“不允许修改”，不能再签名。", "此文件已認證為「不允許修改」，不能再簽署。", "이 문서는 '변경 불가'로 인증되어 더 이상 서명할 수 없습니다.", "Le document est certifié sans modification permise : il ne peut plus être signé.", "Das Dokument ist ohne erlaubte Änderungen zertifiziert und kann nicht erneut signiert werden."],
+    "Err_CertifyNotFirst": ["Only the first signature can certify a document, and this one is already signed.", "文書を証明できるのは最初の署名だけです。この文書はすでに署名されています。", "只有第一个签名可以认证文档，而此文档已有签名。", "只有第一個簽章可以認證文件，而此文件已有簽章。", "문서는 첫 서명만 인증할 수 있는데, 이 문서는 이미 서명되어 있습니다.", "Seule la première signature peut certifier un document, et celui-ci est déjà signé.", "Nur die erste Signatur kann ein Dokument zertifizieren, und dieses ist bereits signiert."],
+    "Err_LtvNone": ["The file has no digital signatures.", "このファイルにはデジタル署名がありません。", "此文件没有数字签名。", "此檔案沒有數位簽章。", "이 파일에는 디지털 서명이 없습니다.", "Le fichier n’a pas de signature numérique.", "Die Datei hat keine digitalen Signaturen."],
+    "Err_LtvInvalid": ["The signature “{0}” does not hold, so no validation data is added for it.", "署名「{0}」が有効でないため、検証情報は追加しません。", "签名“{0}”无效，因此不为其添加验证信息。", "簽章「{0}」無效，因此不為其加入驗證資訊。", "서명 “{0}” 이(가) 유효하지 않아 검증 정보를 추가하지 않습니다.", "La signature « {0} » ne tient pas : aucune donnée de validation n’est ajoutée.", "Die Signatur „{0}“ hält nicht; es werden keine Validierungsdaten hinzugefügt."],
+    "Err_LtvNothing": ["The file already holds all the validation data that could be found.", "取得できる検証情報はすべてファイルに入っています。", "文件中已包含可以获取的全部验证信息。", "檔案中已包含可以取得的全部驗證資訊。", "받을 수 있는 검증 정보가 이미 모두 파일에 있습니다.", "Le fichier contient déjà toutes les données de validation trouvables.", "Die Datei enthält bereits alle auffindbaren Validierungsdaten."],
+    "Err_LtvCheck": ["The signatures did not hold after adding validation data; nothing was kept.", "検証情報を追加すると署名が保てなかったため、保存しませんでした。", "添加验证信息后签名无法保持有效，因此没有保存。", "加入驗證資訊後簽章無法保持有效，因此沒有儲存。", "검증 정보를 추가한 뒤 서명이 유지되지 않아 저장하지 않았습니다.", "Les signatures ne tenaient plus après l’ajout ; rien n’a été conservé.", "Die Signaturen hielten nach dem Hinzufügen nicht mehr; nichts wurde behalten."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

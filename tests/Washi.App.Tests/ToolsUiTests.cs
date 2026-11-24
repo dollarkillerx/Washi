@@ -1085,6 +1085,8 @@ public sealed class ToolsUiTests : IDisposable
         vm.Sign.Place(new Washi.Core.PdfRect(500, 300, 700, 360));
         Assert.Equal("box", d.Place!.Kind);
         d.Reason = "Approved";
+        d.CertifyLevel = 2;                                         // certify: form filling and signing allowed
+        Assert.True(w.FindControl<ComboBox>("CertifyBox")!.IsEffectivelyVisible);
         Assert.True(d.CanSign);
         await d.SignCommand.ExecuteAsync(null);
         Assert.Equal(dialogs.SavePdf, vm.PdfPath);
@@ -1093,7 +1095,22 @@ public sealed class ToolsUiTests : IDisposable
         Assert.True(row.Check.Intact);
         Assert.Equal("unverified", row.Check.Status);               // a self-signed ID
         Assert.Equal("Approved", row.Check.Reason);
+        Assert.Equal(("certification", 2), (row.Check.Kind, row.Check.Permissions));
+        Assert.Contains(L.F("Ui_SigCertified", L.Get("Ui_SigPerm_2")), row.Details);
         Assert.True(w.FindControl<ItemsControl>("SignatureChecks")!.IsEffectivelyVisible);
+
+        // long-term validation for the signature now in the file (a self-signed ID: its certificate is all it needs)
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("AddLtvButton")!.IsEffectivelyVisible);
+        dialogs.SavePdf = Path.Combine(_dir, "d_ltv.pdf");
+        await d.AddLtvCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.Contains("d_ltv.pdf", vm.Status);
+        await vm.Sign.PrepareAsync();
+        row = Assert.Single(d.Signatures);
+        Assert.Equal(["validation"], row.Check.LaterChanges);
+        Assert.True(row.Check.Ltv && row.Check.ChangesAllowed);
+        Assert.Contains(L.Get("Ui_SigChange_validation"), row.Details);
     }
 
     [Fact]

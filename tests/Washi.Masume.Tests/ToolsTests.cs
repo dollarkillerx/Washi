@@ -103,6 +103,19 @@ public sealed class ToolsTests : IDisposable
         Assert.False(pdfa.IsError, pdfa.Text);
         Assert.Equal("PDF/A-2b", Json(pdfa).GetProperty("standard").GetString());
         Assert.True(Json(await Call("convert_to_pdfa", new { path = "form_fillable_filled_flattened_pdfa.pdf", check_only = true })).GetProperty("conforms").GetBoolean());
+
+        // signed (agents cannot sign: done here), then long-term validation added by the agent and checked
+        var id = Washi.Core.Signatures.DigitalIds.Create("Washi Tester", "", Path.Combine(_root, "id.p12"), "secret-1");
+        Washi.Core.Signatures.PdfDigitalSigner.Sign(Path.Combine(_root, "form_fillable_filled_flattened_pdfa.pdf"), Path.Combine(_root, "signed.pdf"),
+                                                    new Washi.Core.Signatures.SignRequest(id, Certify: 1));
+        var ltv = await Call("add_ltv", new { path = "signed.pdf" });
+        Assert.False(ltv.IsError, ltv.Text);
+        Assert.Equal("Signature1", Json(ltv).GetProperty("ltv")[0].GetString());
+        var sig = Json(await Call("verify_signatures", new { path = "signed_ltv.pdf" })).GetProperty("signatures")[0];
+        Assert.Equal(("certification", "no changes", "unverified"), (sig.GetProperty("kind").GetString(), sig.GetProperty("certification_allows").GetString(), sig.GetProperty("status").GetString()));
+        Assert.True(sig.GetProperty("ltv").GetBoolean() && sig.GetProperty("changes_allowed").GetBoolean());
+        Assert.Equal("validation", sig.GetProperty("changes_after")[0].GetString());
+        Assert.True((await Call("add_ltv", new { path = "signed.pdf", timestamp_server = "ftp://x" })).IsError);
     }
 
     [Fact]
@@ -160,7 +173,7 @@ public sealed class McpServerTests : IDisposable
         }));
 
         var tools = await client.ListToolsAsync();
-        Assert.Equal(["add_comments", "compare_pdfs", "compress_pdf", "convert_to_pdfa", "crop_pages", "detect_fields", "edit_comments", "edit_links", "edit_page_images", "edit_text", "erase_content", "export_page_images", "extract_text", "fill_fields", "flatten_pdf", "images_to_pdf", "list_bookmarks", "list_comments", "list_fields", "list_links", "list_page_images", "make_fillable", "merge_pdfs", "ocr_pdf", "organize_pages", "pdf_info", "redact", "remove_hidden_info", "render_page", "search_text", "set_bookmarks", "split_pdf", "stamp_pages", "verify_signatures"],
+        Assert.Equal(["add_comments", "add_ltv", "compare_pdfs", "compress_pdf", "convert_to_pdfa", "crop_pages", "detect_fields", "edit_comments", "edit_links", "edit_page_images", "edit_text", "erase_content", "export_page_images", "extract_text", "fill_fields", "flatten_pdf", "images_to_pdf", "list_bookmarks", "list_comments", "list_fields", "list_links", "list_page_images", "make_fillable", "merge_pdfs", "ocr_pdf", "organize_pages", "pdf_info", "redact", "remove_hidden_info", "render_page", "search_text", "set_bookmarks", "split_pdf", "stamp_pages", "verify_signatures"],
                      tools.Select(t => t.Name).Order());
         Assert.True(tools.Single(t => t.Name == "pdf_info").ProtocolTool.Annotations!.ReadOnlyHint);
         Assert.False(tools.Single(t => t.Name == "fill_fields").ProtocolTool.Annotations!.ReadOnlyHint);

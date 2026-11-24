@@ -198,7 +198,7 @@ public sealed class ToolInvoker : IToolInvoker
             {
                 "make_fillable" => "_fillable.pdf", "fill_fields" => "_filled.pdf", "merge_pdfs" => "_merged.pdf",
                 "split_pdf" => "_split/", "organize_pages" => "_organized.pdf", "add_comments" or "edit_comments" => "_commented.pdf", "remove_hidden_info" => "_cleaned.pdf",
-                "redact" => "_redacted.pdf", "compress_pdf" => "_compressed.pdf", "flatten_pdf" => "_flattened.pdf", "convert_to_pdfa" => "_pdfa.pdf", "set_bookmarks" => "_bookmarks.pdf", "ocr_pdf" => "_ocr.pdf", "erase_content" => "_erased.pdf", "edit_text" => "_edited.pdf", "stamp_pages" => "_stamped.pdf", "images_to_pdf" => ".pdf", "crop_pages" => "_cropped.pdf", "export_page_images" => "_images/", "edit_links" => "_links.pdf", "edit_page_images" => "_images.pdf", _ => null,
+                "redact" => "_redacted.pdf", "compress_pdf" => "_compressed.pdf", "flatten_pdf" => "_flattened.pdf", "convert_to_pdfa" => "_pdfa.pdf", "add_ltv" => "_ltv.pdf", "set_bookmarks" => "_bookmarks.pdf", "ocr_pdf" => "_ocr.pdf", "erase_content" => "_erased.pdf", "edit_text" => "_edited.pdf", "stamp_pages" => "_stamped.pdf", "images_to_pdf" => ".pdf", "crop_pages" => "_cropped.pdf", "export_page_images" => "_images/", "edit_links" => "_links.pdf", "edit_page_images" => "_images.pdf", _ => null,
             };
             if (suffix is not null) output = Path.GetFileNameWithoutExtension(inputs[0]) + suffix;
         }
