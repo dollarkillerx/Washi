@@ -131,10 +131,19 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 ## Desktop editor
 
 `Washi.App` is the desktop app. Its layout follows Acrobat:
-- a **tool rail** on the left: Form, OCR, Combine, Split, Organize, Compress, Comment, Sign, Protect, Redact, Edit text, Images, Headers, Links, Compare, Erase, AI assistant, and **Settings** at the
-  bottom. Settings opens as a page in place of the document, not as a separate window
-- the **tool's panel** next to the rail, with its main action always at the bottom.
-  Click the active tool again to fold the panel away.
+- with nothing open, a **start page**: open or drop a PDF, or pick a tool (Washi asks for the file it needs)
+- a **rail** on the left with six groups, and **Settings** at the bottom (it opens as a page in place of the document,
+  not as a separate window):
+  - *Fill & sign*: Form, Sign
+  - *Edit*: Edit text, Images, Links, Headers, Erase
+  - *Pages*: Organize, Combine, Split
+  - *Review*: Comment, Compare
+  - *Protect*: Protect, Redact
+  - *Output*: Compress, OCR, Finalize, Document
+- the **group's panel** next to the rail: its tools are tabs at the top, the tool's main action is always at the bottom,
+  and less used options are folded away. A group comes back to the tool it last showed; click the active group again
+  to fold the panel away.
+- the **AI assistant** in the header, beside whatever tool is in use
 - the **page** in the middle, with floating edit tools and page and zoom controls
 - **Fields**, **Pages** (thumbnails) and **Bookmarks** panels on the right
 
@@ -433,7 +442,7 @@ washi pdf data form.pdf --rows staff.csv --name-column 社員番号   # form_fil
 washi pdf collect form_filled/ -o summary.csv                  # many filled forms into one table
 ```
 
-In the editor: **Document** in the tool rail, *Form data*. Agents use `export_form_data`, `import_form_data`,
+In the editor: *Output* › **Document**, *Form data*. Agents use `export_form_data`, `import_form_data`,
 `fill_form_from_table` and `collect_form_data`.
 
 - **Formats**: FDF (PDF 32000 12.7.8) and XFDF (ISO 19444-1) with the fields as a tree of partial names and buttons by
@@ -459,7 +468,7 @@ washi pdf attachments invoice_attached.pdf --extract out/
 washi pdf layers plan.pdf --show 電気 --hide 下書き
 ```
 
-In the editor: **Document** in the tool rail. Agents use `list_page_labels`, `set_page_labels`, `list_attachments`,
+In the editor: *Output* › **Document**. Agents use `list_page_labels`, `set_page_labels`, `list_attachments`,
 `edit_attachments`, `extract_attachments`, `list_layers` and `set_layers`.
 
 - **Page labels** are written as runs `page:style[:prefix[:first]]`: styles `1`, `I`, `i`, `A`, `a`, or `-` for a
@@ -648,7 +657,7 @@ washi pdf stamp report_stamped.pdf --remove all                           # repo
 ```
 
 A header or footer is `left|centre|right` (one part is centred, two are left and right). The texts may hold
-`{page}`, `{pages}`, `{date}` (yyyy-MM-dd), `{file}` and `{bates}`. In the editor: **Headers** in the tool rail,
+`{page}`, `{pages}`, `{date}` (yyyy-MM-dd), `{file}` and `{bates}`. In the editor: *Edit* › **Headers**,
 *Page numbers* and *Bates numbers* fill in the usual places, and the page shows what will be added. Agents use
 `stamp_pages`.
 
@@ -749,7 +758,7 @@ washi pdf compress scan.pdf                    # scan_compressed.pdf, standard l
 washi pdf compress report.pdf --level strong   # for e-mail size limits
 ```
 
-In the editor: **Compress** in the tool rail, pick a level, *Compress and save copy*. Agents use `compress_pdf`.
+In the editor: *Output* › **Compress**, pick a level, *Compress and save copy*. Agents use `compress_pdf`.
 
 - **Light** cleans up without losing anything and only scales down images far more detailed than needed (above
   300 dpi, to 200). **Standard** scales images above 225 dpi to 150 and stores photos as JPEG (quality 75): sharp on
@@ -776,7 +785,7 @@ washi pdf pdfa report.pdf --check                  # what stands between the fil
 washi pdf pdfa filled.pdf --flatten                # a PDF/A-2b copy, flattened first → filled_pdfa.pdf
 ```
 
-In the editor: **Finalize** in the tool rail. Agents use `flatten_pdf` and `convert_to_pdfa` (`check_only` lists).
+In the editor: *Output* › **Finalize**. Agents use `flatten_pdf` and `convert_to_pdfa` (`check_only` lists).
 
 **Flattening** draws each field's and comment's own appearance (what a viewer shows for it now) into the page where it
 was, then takes the field or comment away: the page looks the same in every viewer and can no longer be changed in a

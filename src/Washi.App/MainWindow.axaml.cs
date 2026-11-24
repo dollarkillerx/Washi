@@ -34,10 +34,10 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
 
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
-        foreach (var rail in new[] { FormToolButton, OcrToolButton, CombineToolButton, SplitToolButton, OrganizeToolButton, CompressToolButton, ArchiveToolButton, DocumentToolButton, CommentToolButton, SignToolButton, ProtectToolButton, RedactToolButton, EditTextToolButton, ImagesToolButton, StampToolButton, LinksToolButton, CompareToolButton, EraseToolButton, AskToolButton })
+        foreach (var rail in new[] { FillGroupButton, EditGroupButton, PagesGroupButton, ReviewGroupButton, ProtectGroupButton, OutputGroupButton })
             rail.AddHandler(PointerPressedEvent, (_, _) =>
             {
-                // a second click on the active tool folds its panel away; any tool click opens it
+                // a second click on the active group folds its panel away; any group click opens it
                 ViewModel.ToolPanelOpen = rail.IsChecked != true || !ViewModel.ToolPanelOpen;
             }, RoutingStrategies.Tunnel);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);

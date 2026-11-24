@@ -41,7 +41,7 @@
                 <c:Icon Data="{StaticResource I.Add}" Size="16" />
             </Button>
             <StackPanel>
-                <TextBlock Classes="title" Text="{l:Tr Ui_AssistantTitle}" />
+                <TextBlock Classes="title keep" Text="{l:Tr Ui_AssistantTitle}" />
                 <TextBlock Classes="note" Text="{Binding ModelText}" Margin="0,2,0,0" />
             </StackPanel>
         </DockPanel>

@@ -63,6 +63,12 @@
             <Setter Property="Background" Value="#333333" />
             <Setter Property="Foreground" Value="#ffffff" />
         </Style>
+        <Style Selector="Border.header Button.on /template/ ContentPresenter">
+            <Setter Property="Background" Value="#393939" />
+            <Setter Property="Foreground" Value="#ffffff" />
+            <Setter Property="BorderBrush" Value="{StaticResource BlueBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+        </Style>
         <Style Selector="Border.header Button:pressed /template/ ContentPresenter">
             <Setter Property="Background" Value="#525252" />
         </Style>
@@ -100,6 +106,61 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="MaxWidth" Value="68" />
+        </Style>
+
+        <!-- the tab names the tool, so its panel starts with what the tool does -->
+        <Style Selector="Border.toolpanel TextBlock.title">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Border.toolpanel TextBlock.title.keep">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="Border.toolpanel Expander">
+            <Setter Property="Padding" Value="14,4,14,14" />
+        </Style>
+
+        <!-- the tools of a group, as tabs at the top of the tool panel -->
+        <Style Selector="RadioButton.tab">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="bg" Background="Transparent" CornerRadius="4" Padding="10,5" Margin="0,0,4,6">
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Setter Property="Foreground" Value="#525252" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="RadioButton.tab:pointerover /template/ Border#bg">
+            <Setter Property="Background" Value="#f0f0f0" />
+        </Style>
+        <Style Selector="RadioButton.tab:checked /template/ Border#bg">
+            <Setter Property="Background" Value="{StaticResource SelectedRailBrush}" />
+        </Style>
+        <Style Selector="RadioButton.tab:checked">
+            <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!-- start page -->
+        <Style Selector="StackPanel.toolgroup">
+            <Setter Property="Width" Value="272" />
+            <Setter Property="Margin" Value="0,0,20,24" />
+        </Style>
+        <Style Selector="Button.toolcard">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource RuleBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14,11" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="Button.toolcard:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SelectedRailBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BlueBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
         </Style>
 
         <!-- right rail -->
@@ -215,6 +276,13 @@
                         ToolTip.Tip="{l:Tr Ui_PrintMenu}" Padding="14,0" x:Name="PrintButton">
                     <c:Icon Data="{StaticResource I.Print}" Size="18" />
                 </Button>
+                <Button DockPanel.Dock="Right" Classes.on="{Binding IsAskTool}" Command="{Binding ToggleAskCommand}"
+                        ToolTip.Tip="{l:Tr Ui_ToolAsk}" x:Name="AskToolButton">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <c:Icon Data="{StaticResource I.Spark}" Size="16" />
+                        <TextBlock Text="AI" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <Button DockPanel.Dock="Right" Command="{Binding OpenCommand}" ToolTip.Tip="⌘O">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <c:Icon Data="{StaticResource I.Open}" Size="18" />
@@ -251,81 +319,76 @@
         </Border>
 
         <!-- ============================================================ tool rail -->
-        <Border DockPanel.Dock="Left" Width="76" Background="{StaticResource MistBrush}"
+        <!-- six groups; the tools of the chosen group are tabs at the top of the tool panel -->
+        <Border DockPanel.Dock="Left" Width="76" Background="{StaticResource MistBrush}" IsVisible="{Binding ShowRail}"
                 BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,1,0">
             <DockPanel>
                 <!-- Settings sits at the bottom of the rail and opens as a page, not a window -->
-                <RadioButton DockPanel.Dock="Bottom" Classes="rail" GroupName="tools" IsChecked="{Binding IsSettingsTool}" x:Name="SettingsToolButton">
+                <RadioButton DockPanel.Dock="Bottom" Classes="rail" GroupName="groups" IsChecked="{Binding IsSettingsTool}" x:Name="SettingsToolButton">
                     <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Settings}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_Settings}" /></StackPanel>
                 </RadioButton>
-                <!-- the tools scroll when the window is too short for all of them -->
-                <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" x:Name="RailScroller">
-                <StackPanel>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsFormTool}" x:Name="FormToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Form}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolForm}" /></StackPanel>
+                <StackPanel Margin="0,4,0,0">
+                <RadioButton Classes="rail" GroupName="groups" IsChecked="{Binding IsFillGroup}" x:Name="FillGroupButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Form}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_GroupFill}" /></StackPanel>
                 </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsOcrTool}" x:Name="OcrToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Ocr}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolOcr}" /></StackPanel>
+                <RadioButton Classes="rail" GroupName="groups" IsChecked="{Binding IsEditGroup}" x:Name="EditGroupButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.EditText}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_GroupEdit}" /></StackPanel>
                 </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCombineTool}" x:Name="CombineToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Combine}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCombine}" /></StackPanel>
+                <RadioButton Classes="rail" GroupName="groups" IsChecked="{Binding IsPagesGroup}" x:Name="PagesGroupButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Pages}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_GroupPages}" /></StackPanel>
                 </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSplitTool}" x:Name="SplitToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Split}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSplit}" /></StackPanel>
+                <RadioButton Classes="rail" GroupName="groups" IsChecked="{Binding IsReviewGroup}" x:Name="ReviewGroupButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Comment}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_GroupReview}" /></StackPanel>
                 </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsOrganizeTool}" x:Name="OrganizeToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Organize}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolOrganize}" /></StackPanel>
+                <RadioButton Classes="rail" GroupName="groups" IsChecked="{Binding IsProtectGroup}" x:Name="ProtectGroupButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Lock}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_GroupProtect}" /></StackPanel>
                 </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCompressTool}" x:Name="CompressToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Compress}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCompress}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsArchiveTool}" x:Name="ArchiveToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Archive}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolArchive}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsDocumentTool}" x:Name="DocumentToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Document}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolDocument}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCommentTool}" x:Name="CommentToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Comment}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolComment}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsSignTool}" x:Name="SignToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Sign}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolSign}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsProtectTool}" x:Name="ProtectToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Lock}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolProtect}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsRedactTool}" x:Name="RedactToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Redact}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolRedact}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEditTextTool}" x:Name="EditTextToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.EditText}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolEditText}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsImagesTool}" x:Name="ImagesToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Image}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolImages}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsStampTool}" x:Name="StampToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Stamp}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolStamp}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsLinksTool}" x:Name="LinksToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Link}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolLinks}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsCompareTool}" x:Name="CompareToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Compare}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolCompare}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsEraseTool}" x:Name="EraseToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Erase}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolErase}" /></StackPanel>
-                </RadioButton>
-                <RadioButton Classes="rail" GroupName="tools" IsChecked="{Binding IsAskTool}" x:Name="AskToolButton">
-                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Ask}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_ToolAsk}" /></StackPanel>
+                <RadioButton Classes="rail" GroupName="groups" IsChecked="{Binding IsOutputGroup}" x:Name="OutputGroupButton">
+                    <StackPanel Spacing="4"><c:Icon Data="{StaticResource I.Archive}" HorizontalAlignment="Center" /><TextBlock Text="{l:Tr Ui_GroupOutput}" /></StackPanel>
                 </RadioButton>
                 </StackPanel>
-                </ScrollViewer>
             </DockPanel>
         </Border>
 
         <!-- ============================================================ tool panel -->
-        <Border DockPanel.Dock="Left" Width="{Binding ToolPanelWidth}" Background="White" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,1,0"
+        <Border DockPanel.Dock="Left" Classes="toolpanel" Width="{Binding ToolPanelWidth}" Background="White" BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,0,1,0"
                 IsVisible="{Binding ShowToolPanel}">
+            <DockPanel>
+                <!-- the group's tools, as tabs -->
+                <Border DockPanel.Dock="Top" Padding="16,12,16,0" IsVisible="{Binding !IsAskTool}">
+                    <Panel>
+                    <WrapPanel IsVisible="{Binding IsFillGroup}">
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsFormTool}" Content="{l:Tr Ui_ToolForm}" x:Name="FormToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsSignTool}" Content="{l:Tr Ui_ToolSign}" x:Name="SignToolButton" />
+                    </WrapPanel>
+                    <WrapPanel IsVisible="{Binding IsEditGroup}">
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsEditTextTool}" Content="{l:Tr Ui_ToolEditText}" x:Name="EditTextToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsImagesTool}" Content="{l:Tr Ui_ToolImages}" x:Name="ImagesToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsLinksTool}" Content="{l:Tr Ui_ToolLinks}" x:Name="LinksToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsStampTool}" Content="{l:Tr Ui_ToolStamp}" x:Name="StampToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsEraseTool}" Content="{l:Tr Ui_ToolErase}" x:Name="EraseToolButton" />
+                    </WrapPanel>
+                    <WrapPanel IsVisible="{Binding IsPagesGroup}">
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsOrganizeTool}" Content="{l:Tr Ui_ToolOrganize}" x:Name="OrganizeToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsCombineTool}" Content="{l:Tr Ui_ToolCombine}" x:Name="CombineToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsSplitTool}" Content="{l:Tr Ui_ToolSplit}" x:Name="SplitToolButton" />
+                    </WrapPanel>
+                    <WrapPanel IsVisible="{Binding IsReviewGroup}">
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsCommentTool}" Content="{l:Tr Ui_ToolComment}" x:Name="CommentToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsCompareTool}" Content="{l:Tr Ui_ToolCompare}" x:Name="CompareToolButton" />
+                    </WrapPanel>
+                    <WrapPanel IsVisible="{Binding IsProtectGroup}">
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsProtectTool}" Content="{l:Tr Ui_ToolProtect}" x:Name="ProtectToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsRedactTool}" Content="{l:Tr Ui_ToolRedact}" x:Name="RedactToolButton" />
+                    </WrapPanel>
+                    <WrapPanel IsVisible="{Binding IsOutputGroup}">
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsCompressTool}" Content="{l:Tr Ui_ToolCompress}" x:Name="CompressToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsOcrTool}" Content="{l:Tr Ui_ToolOcr}" x:Name="OcrToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsArchiveTool}" Content="{l:Tr Ui_ToolArchive}" x:Name="ArchiveToolButton" />
+                        <RadioButton Classes="tab" GroupName="tabs" IsChecked="{Binding IsDocumentTool}" Content="{l:Tr Ui_ToolDocument}" x:Name="DocumentToolButton" />
+                    </WrapPanel>
+                    </Panel>
+                </Border>
             <Panel>
                 <!-- Prepare form -->
                 <DockPanel IsVisible="{Binding IsFormTool}">
@@ -384,36 +447,40 @@
                             </Button>
                             <TextBlock Classes="note" Text="{l:Tr Ui_MovePrintedNote}" Margin="0,0,0,6" />
 
-                            <TextBlock Classes="section" Text="{l:Tr Ui_SectionEdit}" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_EditKeys}" />
+                            <Expander Header="{l:Tr Ui_MoreOptions}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,16,0,0" x:Name="FormMoreOptions">
+                                <StackPanel>
+                                <TextBlock Classes="section" Text="{l:Tr Ui_SectionEdit}" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_EditKeys}" />
 
-                            <TextBlock Classes="section" Text="{l:Tr Ui_SectionOutput}" />
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_FormLanguage}" Margin="0,0,0,4" />
-                            <ComboBox ItemsSource="{x:Static vm:MainViewModel.Languages}" SelectedItem="{Binding FormLanguage}"
-                                      HorizontalAlignment="Stretch" />
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_EmbedFontCaption}" />
-                            <DockPanel>
-                                <Button DockPanel.Dock="Right" Command="{Binding ClearFontCommand}"
-                                        IsVisible="{Binding EmbedFontPath, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                        Padding="6" Margin="6,0,0,0" ToolTip.Tip="{l:Tr Ui_Remove}">
-                                    <c:Icon Data="{StaticResource I.Close}" Size="14" />
-                                </Button>
-                                <Button Command="{Binding ChooseFontCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <c:Icon Data="{StaticResource I.Font}" Size="18" />
-                                        <TextBlock Text="{Binding FontText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="190" />
-                                    </StackPanel>
-                                </Button>
-                            </DockPanel>
-                            <TextBlock Classes="note" Text="{l:Tr Ui_EmbedFontNote}" Margin="0,6,0,0" />
+                                <TextBlock Classes="section" Text="{l:Tr Ui_SectionOutput}" />
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_FormLanguage}" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{x:Static vm:MainViewModel.Languages}" SelectedItem="{Binding FormLanguage}"
+                                          HorizontalAlignment="Stretch" />
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_EmbedFontCaption}" />
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Command="{Binding ClearFontCommand}"
+                                            IsVisible="{Binding EmbedFontPath, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                            Padding="6" Margin="6,0,0,0" ToolTip.Tip="{l:Tr Ui_Remove}">
+                                        <c:Icon Data="{StaticResource I.Close}" Size="14" />
+                                    </Button>
+                                    <Button Command="{Binding ChooseFontCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <c:Icon Data="{StaticResource I.Font}" Size="18" />
+                                            <TextBlock Text="{Binding FontText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="190" />
+                                        </StackPanel>
+                                    </Button>
+                                </DockPanel>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_EmbedFontNote}" Margin="0,6,0,0" />
 
-                            <TextBlock Classes="section" Text="fields.json" />
-                            <Grid ColumnDefinitions="*,8,*">
-                                <Button Grid.Column="0" Command="{Binding LoadFieldsCommand}" IsEnabled="{Binding HasDocument}" HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Center" Content="{l:Tr Ui_LoadShort}" ToolTip.Tip="{l:Tr Ui_LoadFields}" />
-                                <Button Grid.Column="2" Command="{Binding SaveFieldsCommand}" IsEnabled="{Binding HasDocument}" HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Center" Content="{l:Tr Ui_SaveShort}" ToolTip.Tip="{l:Tr Ui_SaveFields}" />
-                            </Grid>
+                                <TextBlock Classes="section" Text="fields.json" />
+                                <Grid ColumnDefinitions="*,8,*">
+                                    <Button Grid.Column="0" Command="{Binding LoadFieldsCommand}" IsEnabled="{Binding HasDocument}" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center" Content="{l:Tr Ui_LoadShort}" ToolTip.Tip="{l:Tr Ui_LoadFields}" />
+                                    <Button Grid.Column="2" Command="{Binding SaveFieldsCommand}" IsEnabled="{Binding HasDocument}" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center" Content="{l:Tr Ui_SaveShort}" ToolTip.Tip="{l:Tr Ui_SaveFields}" />
+                                </Grid>
+                                </StackPanel>
+                            </Expander>
                           </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
@@ -847,77 +914,81 @@
                                 <TextBlock Classes="note" Text="{l:Tr Ui_SigAddLtvNote}" TextWrapping="Wrap" />
                             </StackPanel>
 
-                            <!-- signing with a digital ID -->
-                            <TextBlock Classes="section" Text="{l:Tr Ui_SigTitle}" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_SigLead}" TextWrapping="Wrap" />
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigId}" />
-                            <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch"
-                                      IsVisible="{Binding !Sign.Digital.NoIds}" x:Name="DigitalIdBox">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <TextBlock Classes="note" Text="{l:Tr Ui_SigNoIds}" TextWrapping="Wrap" IsVisible="{Binding Sign.Digital.NoIds}" />
-                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
-                                <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
-                                <ToggleButton Content="{l:Tr Ui_SigCreateId}" IsChecked="{Binding Sign.Digital.Creating}" Padding="8,3" FontSize="12" x:Name="CreateIdToggle" />
-                            </StackPanel>
-                            <StackPanel IsVisible="{Binding Sign.Digital.HasIdFile}" Spacing="4" Margin="0,6,0,0">
-                                <TextBlock Classes="caption" Text="{Binding Sign.Digital.IdFile}" TextTrimming="CharacterEllipsis" />
-                                <DockPanel>
-                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
-                                    <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" x:Name="IdPasswordBox" />
-                                </DockPanel>
-                            </StackPanel>
-                            <Border IsVisible="{Binding Sign.Digital.Creating}" Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,6,0,0">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewName}" />
-                                    <TextBox Text="{Binding Sign.Digital.NewName}" x:Name="NewIdName" />
-                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewEmail}" />
-                                    <TextBox Text="{Binding Sign.Digital.NewEmail}" />
-                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewPassword}" />
-                                    <TextBox PasswordChar="•" Text="{Binding Sign.Digital.NewPassword}" />
-                                    <TextBlock Classes="note" Text="{l:Tr Ui_SigNewNote}" TextWrapping="Wrap" />
-                                    <Button Content="{l:Tr Ui_SigCreateSave}" Command="{Binding Sign.Digital.CreateIdCommand}" Padding="10,4" />
+                            <Expander Header="{l:Tr Ui_SigTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,16,0,0" IsExpanded="{Binding !Sign.Digital.NoIds, Mode=OneWay}" x:Name="DigitalSignExpander">
+                                <StackPanel>
+                                <!-- signing with a digital ID -->
+                            
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SigLead}" TextWrapping="Wrap" />
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_SigId}" />
+                                <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch"
+                                          IsVisible="{Binding !Sign.Digital.NoIds}" x:Name="DigitalIdBox">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SigNoIds}" TextWrapping="Wrap" IsVisible="{Binding Sign.Digital.NoIds}" />
+                                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+                                    <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
+                                    <ToggleButton Content="{l:Tr Ui_SigCreateId}" IsChecked="{Binding Sign.Digital.Creating}" Padding="8,3" FontSize="12" x:Name="CreateIdToggle" />
                                 </StackPanel>
-                            </Border>
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigPlace}" />
-                            <ComboBox ItemsSource="{Binding Sign.Digital.Places}" SelectedItem="{Binding Sign.Digital.Place}" HorizontalAlignment="Stretch" x:Name="SignPlaceBox">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:SignPlace"><TextBlock Text="{Binding Text}" /></DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <CheckBox IsChecked="{Binding Sign.Digital.IncludeInk}" Content="{l:Tr Ui_SigIncludeInk}" IsVisible="{Binding Sign.HasInk}" />
-                            <Grid ColumnDefinitions="*,8,*">
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigReason}" />
-                                    <TextBox Text="{Binding Sign.Digital.Reason}" x:Name="SignReasonBox" />
+                                <StackPanel IsVisible="{Binding Sign.Digital.HasIdFile}" Spacing="4" Margin="0,6,0,0">
+                                    <TextBlock Classes="caption" Text="{Binding Sign.Digital.IdFile}" TextTrimming="CharacterEllipsis" />
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
+                                        <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" x:Name="IdPasswordBox" />
+                                    </DockPanel>
                                 </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Classes="caption" Text="{l:Tr Ui_SigLocation}" />
-                                    <TextBox Text="{Binding Sign.Digital.Location}" />
+                                <Border IsVisible="{Binding Sign.Digital.Creating}" Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,6,0,0">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewName}" />
+                                        <TextBox Text="{Binding Sign.Digital.NewName}" x:Name="NewIdName" />
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewEmail}" />
+                                        <TextBox Text="{Binding Sign.Digital.NewEmail}" />
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_SigNewPassword}" />
+                                        <TextBox PasswordChar="•" Text="{Binding Sign.Digital.NewPassword}" />
+                                        <TextBlock Classes="note" Text="{l:Tr Ui_SigNewNote}" TextWrapping="Wrap" />
+                                        <Button Content="{l:Tr Ui_SigCreateSave}" Command="{Binding Sign.Digital.CreateIdCommand}" Padding="10,4" />
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_SigPlace}" />
+                                <ComboBox ItemsSource="{Binding Sign.Digital.Places}" SelectedItem="{Binding Sign.Digital.Place}" HorizontalAlignment="Stretch" x:Name="SignPlaceBox">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:SignPlace"><TextBlock Text="{Binding Text}" /></DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <CheckBox IsChecked="{Binding Sign.Digital.IncludeInk}" Content="{l:Tr Ui_SigIncludeInk}" IsVisible="{Binding Sign.HasInk}" />
+                                <Grid ColumnDefinitions="*,8,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_SigReason}" />
+                                        <TextBox Text="{Binding Sign.Digital.Reason}" x:Name="SignReasonBox" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="caption" Text="{l:Tr Ui_SigLocation}" />
+                                        <TextBox Text="{Binding Sign.Digital.Location}" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_SigTimestamp}" />
+                                <TextBox Text="{Binding Sign.Digital.TimestampServer}" PlaceholderText="https://…" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SigTimestampNote}" TextWrapping="Wrap" />
+                                <TextBlock Classes="caption" Text="{l:Tr Ui_SigCertify}" />
+                                <ComboBox SelectedIndex="{Binding Sign.Digital.CertifyLevel}" HorizontalAlignment="Stretch" x:Name="CertifyBox">
+                                    <ComboBoxItem Content="{l:Tr Ui_SigCertifyNone}" />
+                                    <ComboBoxItem Content="{l:Tr Ui_SigPerm_1}" />
+                                    <ComboBoxItem Content="{l:Tr Ui_SigPerm_2}" />
+                                    <ComboBoxItem Content="{l:Tr Ui_SigPerm_3}" />
+                                </ComboBox>
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SigCertifyNote}" TextWrapping="Wrap" />
+                                <CheckBox IsChecked="{Binding Sign.Digital.AddLtv}" Content="{l:Tr Ui_SigLtvOption}" x:Name="AddLtvBox" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_SigLtvNote}" TextWrapping="Wrap" />
+                                <Button Classes="accent" Command="{Binding Sign.Digital.SignCommand}" IsEnabled="{Binding Sign.Digital.CanSign}" Margin="0,10,0,0"
+                                        HorizontalAlignment="Stretch" x:Name="DigitalSignButton">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <c:Icon Data="{StaticResource I.Lock}" Size="16" />
+                                        <TextBlock Text="{l:Tr Ui_SigSign}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                                 </StackPanel>
-                            </Grid>
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigTimestamp}" />
-                            <TextBox Text="{Binding Sign.Digital.TimestampServer}" PlaceholderText="https://…" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_SigTimestampNote}" TextWrapping="Wrap" />
-                            <TextBlock Classes="caption" Text="{l:Tr Ui_SigCertify}" />
-                            <ComboBox SelectedIndex="{Binding Sign.Digital.CertifyLevel}" HorizontalAlignment="Stretch" x:Name="CertifyBox">
-                                <ComboBoxItem Content="{l:Tr Ui_SigCertifyNone}" />
-                                <ComboBoxItem Content="{l:Tr Ui_SigPerm_1}" />
-                                <ComboBoxItem Content="{l:Tr Ui_SigPerm_2}" />
-                                <ComboBoxItem Content="{l:Tr Ui_SigPerm_3}" />
-                            </ComboBox>
-                            <TextBlock Classes="note" Text="{l:Tr Ui_SigCertifyNote}" TextWrapping="Wrap" />
-                            <CheckBox IsChecked="{Binding Sign.Digital.AddLtv}" Content="{l:Tr Ui_SigLtvOption}" x:Name="AddLtvBox" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_SigLtvNote}" TextWrapping="Wrap" />
-                            <Button Classes="accent" Command="{Binding Sign.Digital.SignCommand}" IsEnabled="{Binding Sign.Digital.CanSign}" Margin="0,10,0,0"
-                                    HorizontalAlignment="Stretch" x:Name="DigitalSignButton">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <c:Icon Data="{StaticResource I.Lock}" Size="16" />
-                                    <TextBlock Text="{l:Tr Ui_SigSign}" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
+                            </Expander>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
@@ -1004,66 +1075,74 @@
                                 <TextBlock Classes="note" Text="{l:Tr Ui_ProtectRunNote}" />
                             </StackPanel>
 
-                            <!-- encrypt for certificates -->
-                            <TextBlock Classes="section" Text="{l:Tr Ui_CertTitle}" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_CertLead}" TextWrapping="Wrap" />
-                            <StackPanel Spacing="6" IsEnabled="{Binding Protect.CanAdd}" Margin="0,6,0,0">
-                                <ItemsControl ItemsSource="{Binding Protect.Recipients}" x:Name="CertRecipientList">
+                            <Expander Header="{l:Tr Ui_CertTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,20,0,0" x:Name="CertExpander">
+                                <StackPanel>
+                                <!-- encrypt for certificates -->
+                            
+                                <TextBlock Classes="note" Text="{l:Tr Ui_CertLead}" TextWrapping="Wrap" />
+                                <StackPanel Spacing="6" IsEnabled="{Binding Protect.CanAdd}" Margin="0,6,0,0">
+                                    <ItemsControl ItemsSource="{Binding Protect.Recipients}" x:Name="CertRecipientList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="x509:X509Certificate2">
+                                                <DockPanel Margin="0,1">
+                                                    <Button DockPanel.Dock="Left" Classes="icon" Margin="0,0,6,0" Padding="2"
+                                                            Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).Protect.RemoveRecipientCommand}" CommandParameter="{Binding}">
+                                                        <c:Icon Data="{StaticResource I.Delete}" Size="14" />
+                                                    </Button>
+                                                    <TextBlock Text="{Binding Subject}" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="{l:Tr Ui_CertAdd}" Command="{Binding Protect.AddRecipientCommand}" Padding="8,3" FontSize="12" x:Name="AddRecipientButton" />
+                                    <CheckBox IsChecked="{Binding Protect.IncludeMe}" Content="{l:Tr Ui_CertIncludeMe}" FontSize="12" x:Name="IncludeMeBox" />
+                                    <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch" IsVisible="{Binding !Sign.Digital.NoIds}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
+                                    <DockPanel IsVisible="{Binding Sign.Digital.HasIdFile}">
+                                        <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
+                                        <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" />
+                                    </DockPanel>
+                                    <Button Classes="accent" Command="{Binding Protect.EncryptForCertificatesCommand}" IsEnabled="{Binding Protect.CanEncryptForCertificates}" x:Name="EncryptForCertificatesButton">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <c:Icon Data="{StaticResource I.Lock}" Size="16" />
+                                            <TextBlock Text="{l:Tr Ui_CertRun}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                </StackPanel>
+                            </Expander>
+
+                            <Expander Header="{l:Tr Ui_HiddenTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,6,0,0" x:Name="HiddenExpander">
+                                <StackPanel>
+                                <!-- hidden information -->
+                            
+                                <TextBlock Classes="note" Text="{l:Tr Ui_HiddenLead}" />
+                                <TextBlock Classes="note" Text="{l:Tr Ui_HiddenNothing}" IsVisible="{Binding Protect.NothingHidden}" Margin="0,6,0,0" />
+                                <TextBlock Classes="note" Text="{Binding Protect.CleanBlockedText}" IsVisible="{Binding Protect.IsEncrypted}" Margin="0,6,0,0" />
+                                <ItemsControl ItemsSource="{Binding Protect.Hidden}" Margin="0,6,0,0" x:Name="HiddenList">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="x509:X509Certificate2">
-                                            <DockPanel Margin="0,1">
-                                                <Button DockPanel.Dock="Left" Classes="icon" Margin="0,0,6,0" Padding="2"
-                                                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).Protect.RemoveRecipientCommand}" CommandParameter="{Binding}">
-                                                    <c:Icon Data="{StaticResource I.Delete}" Size="14" />
-                                                </Button>
-                                                <TextBlock Text="{Binding Subject}" VerticalAlignment="Center" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                            </DockPanel>
+                                        <DataTemplate x:DataType="vm:HiddenChoice">
+                                            <CheckBox IsChecked="{Binding Remove}" IsEnabled="{Binding CanChoose}" Margin="0,1">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" />
+                                                    <TextBlock Classes="note" Text="{Binding Details}" IsVisible="{Binding HasDetails}" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </CheckBox>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <Button Content="{l:Tr Ui_CertAdd}" Command="{Binding Protect.AddRecipientCommand}" Padding="8,3" FontSize="12" x:Name="AddRecipientButton" />
-                                <CheckBox IsChecked="{Binding Protect.IncludeMe}" Content="{l:Tr Ui_CertIncludeMe}" FontSize="12" x:Name="IncludeMeBox" />
-                                <ComboBox ItemsSource="{Binding Sign.Digital.Ids}" SelectedItem="{Binding Sign.Digital.Id}" HorizontalAlignment="Stretch" IsVisible="{Binding !Sign.Digital.NoIds}">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate x:DataType="sig:DigitalId"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                                <Button Content="{l:Tr Ui_SigOpenId}" Command="{Binding Sign.Digital.OpenIdFileCommand}" Padding="8,3" FontSize="12" />
-                                <DockPanel IsVisible="{Binding Sign.Digital.HasIdFile}">
-                                    <Button DockPanel.Dock="Right" Content="{l:Tr Ui_ProtectOpen}" Command="{Binding Sign.Digital.UnlockIdFileCommand}" Padding="10,4" Margin="6,0,0,0" />
-                                    <TextBox PasswordChar="•" Text="{Binding Sign.Digital.IdPassword}" PlaceholderText="{l:Tr Ui_ProtectPassword}" />
-                                </DockPanel>
-                                <Button Classes="accent" Command="{Binding Protect.EncryptForCertificatesCommand}" IsEnabled="{Binding Protect.CanEncryptForCertificates}" x:Name="EncryptForCertificatesButton">
+                                <Button Command="{Binding Protect.CleanCommand}" IsEnabled="{Binding Protect.CanClean}" Margin="0,8,0,0" x:Name="CleanButton">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <c:Icon Data="{StaticResource I.Lock}" Size="16" />
-                                        <TextBlock Text="{l:Tr Ui_CertRun}" VerticalAlignment="Center" />
+                                        <c:Icon Data="{StaticResource I.Erase}" Size="16" />
+                                        <TextBlock Text="{l:Tr Ui_HiddenRun}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                            </StackPanel>
-
-                            <!-- hidden information -->
-                            <TextBlock Classes="section" Text="{l:Tr Ui_HiddenTitle}" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_HiddenLead}" />
-                            <TextBlock Classes="note" Text="{l:Tr Ui_HiddenNothing}" IsVisible="{Binding Protect.NothingHidden}" Margin="0,6,0,0" />
-                            <TextBlock Classes="note" Text="{Binding Protect.CleanBlockedText}" IsVisible="{Binding Protect.IsEncrypted}" Margin="0,6,0,0" />
-                            <ItemsControl ItemsSource="{Binding Protect.Hidden}" Margin="0,6,0,0" x:Name="HiddenList">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:HiddenChoice">
-                                        <CheckBox IsChecked="{Binding Remove}" IsEnabled="{Binding CanChoose}" Margin="0,1">
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Text}" FontSize="12" TextWrapping="Wrap" />
-                                                <TextBlock Classes="note" Text="{Binding Details}" IsVisible="{Binding HasDetails}" TextTrimming="CharacterEllipsis" />
-                                            </StackPanel>
-                                        </CheckBox>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Button Command="{Binding Protect.CleanCommand}" IsEnabled="{Binding Protect.CanClean}" Margin="0,8,0,0" x:Name="CleanButton">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <c:Icon Data="{StaticResource I.Erase}" Size="16" />
-                                    <TextBlock Text="{l:Tr Ui_HiddenRun}" VerticalAlignment="Center" />
                                 </StackPanel>
-                            </Button>
+                            </Expander>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
@@ -1143,67 +1222,83 @@
                         <TextBlock Classes="title" Text="{l:Tr Ui_DocTitle}" />
                         <TextBlock Classes="lead" Text="{l:Tr Ui_DocLead}" />
 
-                        <TextBlock Text="{l:Tr Ui_LabelsTitle}" FontWeight="SemiBold" Margin="0,12,0,2" />
-                        <TextBlock Classes="note" Text="{l:Tr Ui_LabelsLead}" TextWrapping="Wrap" />
-                        <TextBox Text="{Binding Document.Labels}" PlaceholderText="1:i,5:1" x:Name="PageLabelsBox" />
-                        <TextBlock Classes="note" Text="{Binding Document.LabelPreview}" TextWrapping="Wrap" x:Name="PageLabelsPreview" />
-                        <Button Command="{Binding Document.SaveLabelsCommand}" IsEnabled="{Binding Document.CanRun}" Margin="0,4,0,0" x:Name="SaveLabelsButton">
-                            <TextBlock Text="{l:Tr Ui_LabelsRun}" />
-                        </Button>
+                        <Expander Header="{l:Tr Ui_LabelsTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,16,0,0" x:Name="LabelsExpander">
+                            <StackPanel>
+                        
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LabelsLead}" TextWrapping="Wrap" />
+                            <TextBox Text="{Binding Document.Labels}" PlaceholderText="1:i,5:1" x:Name="PageLabelsBox" />
+                            <TextBlock Classes="note" Text="{Binding Document.LabelPreview}" TextWrapping="Wrap" x:Name="PageLabelsPreview" />
+                            <Button Command="{Binding Document.SaveLabelsCommand}" IsEnabled="{Binding Document.CanRun}" Margin="0,4,0,0" x:Name="SaveLabelsButton">
+                                <TextBlock Text="{l:Tr Ui_LabelsRun}" />
+                            </Button>
+                            </StackPanel>
+                        </Expander>
 
-                        <TextBlock Text="{l:Tr Ui_AttachTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
-                        <TextBlock Classes="note" Text="{l:Tr Ui_AttachNone}" IsVisible="{Binding !Document.HasAttachments}" />
-                        <ItemsControl ItemsSource="{Binding Document.Attachments}" x:Name="AttachmentList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:AttachmentRow">
-                                    <StackPanel Margin="0,2">
-                                        <CheckBox IsChecked="{Binding Selected}"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" /></CheckBox>
-                                        <TextBlock Classes="note" Text="{Binding Details}" IsVisible="{Binding HasDetails}" Margin="28,0,0,0" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Document.HasAttachments}">
-                            <Button Content="{l:Tr Ui_AttachSave}" Command="{Binding Document.SaveAttachmentsCommand}" Padding="8,3" FontSize="12" />
-                            <Button Content="{l:Tr Ui_AttachRemove}" Command="{Binding Document.RemoveAttachmentsCommand}" IsEnabled="{Binding Document.CanRemoveAttachments}" Padding="8,3" FontSize="12" />
-                        </StackPanel>
-                        <TextBlock Classes="caption" Text="{l:Tr Ui_AttachDescription}" Margin="0,6,0,0" />
-                        <TextBox Text="{Binding Document.AttachDescription}" />
-                        <Button Command="{Binding Document.AttachCommand}" IsEnabled="{Binding Document.CanRun}" Margin="0,4,0,0" x:Name="AttachButton">
-                            <TextBlock Text="{l:Tr Ui_AttachRun}" />
-                        </Button>
+                        <Expander Header="{l:Tr Ui_AttachTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,6,0,0" x:Name="AttachExpander">
+                            <StackPanel>
+                        
+                            <TextBlock Classes="note" Text="{l:Tr Ui_AttachNone}" IsVisible="{Binding !Document.HasAttachments}" />
+                            <ItemsControl ItemsSource="{Binding Document.Attachments}" x:Name="AttachmentList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AttachmentRow">
+                                        <StackPanel Margin="0,2">
+                                            <CheckBox IsChecked="{Binding Selected}"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" /></CheckBox>
+                                            <TextBlock Classes="note" Text="{Binding Details}" IsVisible="{Binding HasDetails}" Margin="28,0,0,0" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Document.HasAttachments}">
+                                <Button Content="{l:Tr Ui_AttachSave}" Command="{Binding Document.SaveAttachmentsCommand}" Padding="8,3" FontSize="12" />
+                                <Button Content="{l:Tr Ui_AttachRemove}" Command="{Binding Document.RemoveAttachmentsCommand}" IsEnabled="{Binding Document.CanRemoveAttachments}" Padding="8,3" FontSize="12" />
+                            </StackPanel>
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_AttachDescription}" Margin="0,6,0,0" />
+                            <TextBox Text="{Binding Document.AttachDescription}" />
+                            <Button Command="{Binding Document.AttachCommand}" IsEnabled="{Binding Document.CanRun}" Margin="0,4,0,0" x:Name="AttachButton">
+                                <TextBlock Text="{l:Tr Ui_AttachRun}" />
+                            </Button>
+                            </StackPanel>
+                        </Expander>
 
-                        <TextBlock Text="{l:Tr Ui_LayersTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
-                        <TextBlock Classes="note" Text="{l:Tr Ui_LayersNone}" IsVisible="{Binding !Document.HasLayers}" />
-                        <TextBlock Classes="note" Text="{l:Tr Ui_LayersLead}" TextWrapping="Wrap" IsVisible="{Binding Document.HasLayers}" />
-                        <ItemsControl ItemsSource="{Binding Document.Layers}" x:Name="LayerList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:LayerRow">
-                                    <CheckBox IsChecked="{Binding Visible}" Margin="0,2"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" /></CheckBox>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <Button Command="{Binding Document.SaveLayersCommand}" IsEnabled="{Binding Document.LayersChanged}" IsVisible="{Binding Document.HasLayers}" Margin="0,4,0,0" x:Name="SaveLayersButton">
-                            <TextBlock Text="{l:Tr Ui_LayersRun}" />
-                        </Button>
+                        <Expander Header="{l:Tr Ui_LayersTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,6,0,0" x:Name="LayersExpander">
+                            <StackPanel>
+                        
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LayersNone}" IsVisible="{Binding !Document.HasLayers}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_LayersLead}" TextWrapping="Wrap" IsVisible="{Binding Document.HasLayers}" />
+                            <ItemsControl ItemsSource="{Binding Document.Layers}" x:Name="LayerList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:LayerRow">
+                                        <CheckBox IsChecked="{Binding Visible}" Margin="0,2"><TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" /></CheckBox>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Command="{Binding Document.SaveLayersCommand}" IsEnabled="{Binding Document.LayersChanged}" IsVisible="{Binding Document.HasLayers}" Margin="0,4,0,0" x:Name="SaveLayersButton">
+                                <TextBlock Text="{l:Tr Ui_LayersRun}" />
+                            </Button>
+                            </StackPanel>
+                        </Expander>
 
-                        <TextBlock Text="{l:Tr Ui_FormDataTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
-                        <TextBlock Classes="note" Text="{l:Tr Ui_FormDataLead}" TextWrapping="Wrap" />
-                        <WrapPanel Margin="0,4,0,0">
-                            <Button Content="{l:Tr Ui_FormDataExport}" Command="{Binding Document.ExportDataCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="ExportDataButton" />
-                            <Button Content="{l:Tr Ui_FormDataImport}" Command="{Binding Document.ImportDataCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="ImportDataButton" />
-                        </WrapPanel>
-                        <TextBlock Classes="note" Text="{l:Tr Ui_FormDataRowsLead}" TextWrapping="Wrap" Margin="0,6,0,0" />
-                        <TextBlock Classes="caption" Text="{l:Tr Ui_FormDataNameColumn}" />
-                        <TextBox Text="{Binding Document.NameColumn}" PlaceholderText="{l:Tr Ui_FormDataNameColumnHint}" />
-                        <WrapPanel Margin="0,4,0,0">
-                            <Button Content="{l:Tr Ui_FormDataRows}" Command="{Binding Document.FillFromTableCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="FillFromTableButton" />
-                            <Button Content="{l:Tr Ui_FormDataCollect}" Command="{Binding Document.CollectCommand}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="CollectButton" />
-                        </WrapPanel>
-                        <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,4,0,0"
-                                IsVisible="{Binding Document.FormDataResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                            <TextBlock Text="{Binding Document.FormDataResult}" TextWrapping="Wrap" FontSize="12" x:Name="FormDataResultText" />
-                        </Border>
+                        <Expander Header="{l:Tr Ui_FormDataTitle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,6,0,0" x:Name="FormDataExpander">
+                            <StackPanel>
+                        
+                            <TextBlock Classes="note" Text="{l:Tr Ui_FormDataLead}" TextWrapping="Wrap" />
+                            <WrapPanel Margin="0,4,0,0">
+                                <Button Content="{l:Tr Ui_FormDataExport}" Command="{Binding Document.ExportDataCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="ExportDataButton" />
+                                <Button Content="{l:Tr Ui_FormDataImport}" Command="{Binding Document.ImportDataCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="ImportDataButton" />
+                            </WrapPanel>
+                            <TextBlock Classes="note" Text="{l:Tr Ui_FormDataRowsLead}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock Classes="caption" Text="{l:Tr Ui_FormDataNameColumn}" />
+                            <TextBox Text="{Binding Document.NameColumn}" PlaceholderText="{l:Tr Ui_FormDataNameColumnHint}" />
+                            <WrapPanel Margin="0,4,0,0">
+                                <Button Content="{l:Tr Ui_FormDataRows}" Command="{Binding Document.FillFromTableCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="FillFromTableButton" />
+                                <Button Content="{l:Tr Ui_FormDataCollect}" Command="{Binding Document.CollectCommand}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="CollectButton" />
+                            </WrapPanel>
+                            <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,4,0,0"
+                                    IsVisible="{Binding Document.FormDataResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                <TextBlock Text="{Binding Document.FormDataResult}" TextWrapping="Wrap" FontSize="12" x:Name="FormDataResultText" />
+                            </Border>
+                            </StackPanel>
+                        </Expander>
                     </StackPanel>
                 </ScrollViewer>
 
@@ -1710,6 +1805,7 @@
                     <v:AssistantPanel DataContext="{Binding Assistant}" x:Name="AssistantView" />
                 </Panel>
             </Panel>
+            </DockPanel>
         </Border>
 
         <!-- ============================================================ right rail -->
@@ -2012,29 +2108,100 @@
                 </Border>
             </ScrollViewer>
 
-            <!-- empty state: open or drop -->
-            <Border IsVisible="{Binding !HasDocument}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="White"
-                    BorderBrush="#c6c6c6" BorderThickness="1" Padding="56,44" x:Name="DropZone">
-                <StackPanel Spacing="14" HorizontalAlignment="Center">
-                    <Viewbox Width="64" Height="64" HorizontalAlignment="Center">
-                        <Canvas Width="512" Height="512">
-                            <Path Data="M0,0 H512 V512 H0 Z" Fill="{StaticResource WashiBlue}" />
-                            <Path Data="M96,64 H320 L416,160 V448 H96 Z" Fill="White" />
-                            <Path Data="M320,64 V160 H416 Z" Fill="#b1bff4" />
-                            <Path Data="M144,224 h96 v80 h-96 Z M272,224 h96 v80 h-96 Z M144,336 h96 v80 h-96 Z" Fill="{StaticResource WashiBlue}" />
-                            <Path Data="M272,336 h96 v80 h-96 Z" Fill="{StaticResource Vermilion}" />
-                        </Canvas>
-                    </Viewbox>
-                    <TextBlock Text="{l:Tr Ui_DropTitle}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                    <TextBlock Classes="note" Text="{l:Tr Ui_DropLead}" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="380" />
-                    <Button Classes="accent" Command="{Binding OpenCommand}" HorizontalAlignment="Center" Padding="20,9" Margin="0,6,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <c:Icon Data="{StaticResource I.Open}" Size="18" />
-                            <TextBlock Text="{l:Tr Ui_Open}" VerticalAlignment="Center" />
+            <!-- start page: open or drop a PDF, or start from a tool -->
+            <ScrollViewer IsVisible="{Binding ShowHome}" x:Name="DropZone">
+                <StackPanel HorizontalAlignment="Center" Margin="40,56,40,40" MaxWidth="880">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Classes="accent" Command="{Binding OpenCommand}" VerticalAlignment="Center" Padding="20,9">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <c:Icon Data="{StaticResource I.Open}" Size="18" />
+                                <TextBlock Text="{l:Tr Ui_Open}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Spacing="6" Margin="0,0,24,0">
+                            <TextBlock Text="{l:Tr Ui_HomeTitle}" FontSize="24" FontWeight="SemiBold" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_HomeLead}" FontSize="13" />
                         </StackPanel>
-                    </Button>
+                    </DockPanel>
+                    <WrapPanel Margin="0,28,0,0">
+                        <StackPanel Classes="toolgroup">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_GroupFill}" Margin="0,0,0,8" />
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Form}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Form}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolForm}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Sign}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Sign}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolSign}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                        </StackPanel>
+                        <StackPanel Classes="toolgroup">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_GroupEdit}" Margin="0,0,0,8" />
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.EditText}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.EditText}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolEditText}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Images}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Image}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolImages}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Links}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Link}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolLinks}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Stamp}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Stamp}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolStamp}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Erase}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Erase}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolErase}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                        </StackPanel>
+                        <StackPanel Classes="toolgroup">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_GroupPages}" Margin="0,0,0,8" />
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Organize}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Organize}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolOrganize}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Combine}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Combine}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolCombine}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Split}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Split}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolSplit}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                        </StackPanel>
+                        <StackPanel Classes="toolgroup">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_GroupReview}" Margin="0,0,0,8" />
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Comment}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Comment}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolComment}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Compare}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Compare}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolCompare}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Ask}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Spark}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolAsk}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                        </StackPanel>
+                        <StackPanel Classes="toolgroup">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_GroupProtect}" Margin="0,0,0,8" />
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Protect}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Lock}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolProtect}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Redact}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Redact}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolRedact}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                        </StackPanel>
+                        <StackPanel Classes="toolgroup">
+                            <TextBlock Classes="section" Text="{l:Tr Ui_GroupOutput}" Margin="0,0,0,8" />
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Compress}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Compress}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolCompress}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Ocr}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Ocr}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolOcr}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Archive}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Archive}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolArchive}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                                <Button Classes="toolcard" Command="{Binding StartWithCommand}" CommandParameter="{x:Static vm:Tool.Document}">
+                                    <StackPanel Orientation="Horizontal" Spacing="10"><c:Icon Data="{StaticResource I.Document}" Size="18" /><TextBlock Text="{l:Tr Ui_ToolDocument}" VerticalAlignment="Center" /></StackPanel>
+                                </Button>
+                        </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
-            </Border>
+            </ScrollViewer>
 
             <!-- floating edit tools (form tool) -->
             <Border Classes="float" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14" IsVisible="{Binding ShowEditTools}">

@@ -1744,4 +1744,58 @@ public sealed class ToolsUiTests : IDisposable
         f.Kind = Washi.Masume.FieldKind.Checkbox;
         Assert.Equal("", f.Value);
     }
+
+    [AvaloniaFact]
+    public async Task Tools_are_grouped_in_the_rail_and_the_start_page_opens_a_file_for_the_tool_picked()
+    {
+        var dialogs = new FakeDialogs { Pdf = Form("a.pdf") };
+        var w = new MainWindow(dialogs) { Width = 1440, Height = 900 };
+        w.Show();
+        Dispatcher.UIThread.RunJobs();
+        var vm = w.ViewModel;
+
+        // nothing open: a start page, no rail and no panel
+        Assert.True(vm.ShowHome);
+        Assert.False(vm.ShowRail);
+        Assert.False(vm.ShowToolPanel);
+        Assert.True(w.FindControl<Control>("DropZone")!.IsEffectivelyVisible);
+        Assert.False(w.FindControl<Control>("ProtectGroupButton")!.IsEffectivelyVisible);
+
+        // every tool is in exactly one group (the assistant and Settings sit apart)
+        var grouped = MainViewModel.Groups.Values.SelectMany(t => t).ToList();
+        Assert.Equal(grouped.Count, grouped.Distinct().Count());
+        Assert.Equal(Enum.GetValues<Tool>().Except([Tool.Ask, Tool.Settings]).Order(), grouped.Order());
+
+        // a tool that needs a document asks for one, then shows its group with the tool's tab
+        await vm.StartWithCommand.ExecuteAsync(Tool.Protect);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(vm.HasDocument);
+        Assert.Equal((Tool.Protect, ToolGroup.Protect), (vm.ActiveTool, vm.ActiveGroup));
+        Assert.True(vm.ShowRail && vm.ShowToolPanel && !vm.ShowHome);
+        Assert.True(w.FindControl<RadioButton>("ProtectGroupButton")!.IsChecked);
+        Assert.True(w.FindControl<RadioButton>("RedactToolButton")!.IsEffectivelyVisible);
+        Assert.False(w.FindControl<RadioButton>("CompressToolButton")!.IsEffectivelyVisible);   // another group's tab
+
+        // a group comes back to the tool it last showed
+        vm.IsRedactTool = true;
+        vm.IsOutputGroup = true;
+        Assert.Equal(Tool.Compress, vm.ActiveTool);                 // first visit: its first tool
+        vm.IsProtectGroup = true;
+        Assert.Equal(Tool.Redact, vm.ActiveTool);
+
+        // the assistant opens from the header and closes back to the tool in use
+        vm.ToggleAskCommand.Execute(null);
+        Assert.Equal((Tool.Ask, ToolGroup.None), (vm.ActiveTool, vm.ActiveGroup));
+        vm.ToggleAskCommand.Execute(null);
+        Assert.Equal(Tool.Redact, vm.ActiveTool);
+
+        // Combine works before anything is open
+        vm.CloseDocumentCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        dialogs.Pdf = null;
+        await vm.StartWithCommand.ExecuteAsync(Tool.Combine);
+        Assert.True(vm.ShowToolPanel && vm.ShowRail);
+        Assert.False(vm.HasDocument);
+        w.Close();
+    }
 }

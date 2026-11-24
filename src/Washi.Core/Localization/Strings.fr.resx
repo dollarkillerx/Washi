@@ -224,8 +224,6 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_DeleteTip" xml:space="preserve"><value>Supprimer le champ sélectionné (Suppr)</value></data>
   <data name="Ui_FieldsPanel" xml:space="preserve"><value>Champs</value></data>
   <data name="Ui_PagesPanel" xml:space="preserve"><value>Pages</value></data>
-  <data name="Ui_DropTitle" xml:space="preserve"><value>Ouvrir un PDF</value></data>
-  <data name="Ui_DropLead" xml:space="preserve"><value>Déposez un PDF ici ou choisissez-en un. Puis choisissez un outil à gauche.</value></data>
   <data name="Ui_OcrTitle" xml:space="preserve"><value>Rendre un scan cherchable</value></data>
   <data name="Ui_OcrLead" xml:space="preserve"><value>Reconnaît le texte des pages numérisées et l’ajoute en couche invisible. Les pages ne changent pas.</value></data>
   <data name="Ui_OcrPlan" xml:space="preserve"><value>{0} page(s) sur {1} à reconnaître.</value></data>
@@ -1159,4 +1157,14 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>Un nouveau formulaire à la place</value></data>
   <data name="Ui_FillNewFormNote" xml:space="preserve"><value>Pour créer vos propres champs sur cette page, détectez ses cases. Les champs créés s’ajoutent à ceux qu’il a déjà.</value></data>
   <data name="Ui_FillNewForm" xml:space="preserve"><value>Détecter les cases pour un nouveau formulaire</value></data>
+  <data name="Ui_GroupFill" xml:space="preserve"><value>Remplir, signer</value></data>
+  <data name="Ui_GroupEdit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="Ui_GroupPages" xml:space="preserve"><value>Pages</value></data>
+  <data name="Ui_GroupReview" xml:space="preserve"><value>Réviser</value></data>
+  <data name="Ui_GroupProtect" xml:space="preserve"><value>Protéger</value></data>
+  <data name="Ui_GroupOutput" xml:space="preserve"><value>Sortie</value></data>
+  <data name="Ui_HomeTitle" xml:space="preserve"><value>Que voulez-vous faire ?</value></data>
+  <data name="Ui_HomeLead" xml:space="preserve"><value>Déposez un PDF dans cette fenêtre ou ouvrez-en un. Ou commencez par un outil : Washi demande le fichier nécessaire.</value></data>
+  <data name="Ui_MoreOptions" xml:space="preserve"><value>Plus d’options</value></data>
+  <data name="Ui_Shortcuts" xml:space="preserve"><value>Raccourcis clavier</value></data>
 </root>
