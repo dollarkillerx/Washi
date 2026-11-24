@@ -153,6 +153,10 @@
             証明署名: --certify no-changes|forms|comments、--ltv で署名後に長期検証情報を追加
   washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   ファイルの署名を確認
   washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   署名に長期検証情報（と文書タイムスタンプ）を追加
+  washi pdf labels &lt;in.pdf&gt; [--set 1:i,5:1 | --clear] [-o out.pdf]   ページ番号の表示（ビューアでの番号）
+  washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract フォルダ [--name a]
+  washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   レイヤーの一覧、表示の設定
+  washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   証明書で暗号化；washi pdf unlock &lt;in.pdf&gt; --id id.p12   開く
   washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
@@ -1051,4 +1055,67 @@
   <data name="Err_LtvInvalid" xml:space="preserve"><value>署名「{0}」が有効でないため、検証情報は追加しません。</value></data>
   <data name="Err_LtvNothing" xml:space="preserve"><value>取得できる検証情報はすべてファイルに入っています。</value></data>
   <data name="Err_LtvCheck" xml:space="preserve"><value>検証情報を追加すると署名が保てなかったため、保存しませんでした。</value></data>
+  <data name="Err_LabelPage" xml:space="preserve"><value>ページ番号の表示が {0} ページから始まっていますが、この PDF は {1} ページです。</value></data>
+  <data name="Err_LabelStyle" xml:space="preserve"><value>「{0}」は番号の形式ではありません（1、I、i、A、a、番号なしは -）。</value></data>
+  <data name="Err_LabelFirst" xml:space="preserve"><value>番号は 1 以上から数えます。</value></data>
+  <data name="Err_LabelTwice" xml:space="preserve"><value>同じページから始まる番号の区切りが 2 つあります。</value></data>
+  <data name="Err_LabelSpec" xml:space="preserve"><value>「{0}」は ページ:形式[:接頭辞[:開始番号]] の形ではありません（例: 1:i,5:1）。</value></data>
+  <data name="Err_LabelCheck" xml:space="preserve"><value>ページ番号の表示が書いた通りに読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Err_AttachmentNone" xml:space="preserve"><value>添付ファイル「{0}」はありません。</value></data>
+  <data name="Err_AttachmentsNone" xml:space="preserve"><value>このファイルには添付ファイルがありません。</value></data>
+  <data name="Err_AttachmentUnreadable" xml:space="preserve"><value>添付ファイル「{0}」を読み取れません。</value></data>
+  <data name="Err_AttachmentNothing" xml:space="preserve"><value>添付・削除するファイルがありません。</value></data>
+  <data name="Err_AttachmentCheck" xml:space="preserve"><value>添付ファイルが書いた通りに読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Err_LayerNothing" xml:space="preserve"><value>表示・非表示にするレイヤーを指定してください。</value></data>
+  <data name="Err_LayerBoth" xml:space="preserve"><value>「{0}」を表示と非表示の両方にはできません。</value></data>
+  <data name="Err_LayersNone" xml:space="preserve"><value>このファイルにはレイヤーがありません。</value></data>
+  <data name="Err_LayerNone" xml:space="preserve"><value>レイヤー「{0}」はありません。</value></data>
+  <data name="Err_LayerCheck" xml:space="preserve"><value>レイヤーが設定通りに読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Err_CertNoRecipients" xml:space="preserve"><value>ファイルを開ける証明書を 1 つ以上指定してください。</value></data>
+  <data name="Err_CertNotRsa" xml:space="preserve"><value>{0} の証明書は RSA ではないため、証明書による暗号化には使えません。</value></data>
+  <data name="Err_CertAlready" xml:space="preserve"><value>{0} はすでに証明書で暗号化されています。</value></data>
+  <data name="Err_CertSigned" xml:space="preserve"><value>このファイルには署名があります。暗号化すると署名が無効になります。</value></data>
+  <data name="Err_CertNotEncrypted" xml:space="preserve"><value>{0} は証明書で暗号化されていません。</value></data>
+  <data name="Err_CertNotRecipient" xml:space="preserve"><value>{0} は {1} の証明書あてに暗号化されていません。</value></data>
+  <data name="Err_CertUnsupported" xml:space="preserve"><value>この方式の証明書暗号化は開けません（AES-256 のみ対応）。</value></data>
+  <data name="Err_CertCheck" xml:space="preserve"><value>暗号化したコピーが元と同じに読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Ui_ToolDocument" xml:space="preserve"><value>文書</value></data>
+  <data name="Ui_DocTitle" xml:space="preserve"><value>文書の設定</value></data>
+  <data name="Ui_DocLead" xml:space="preserve"><value>ビューアに表示するページ番号、添付ファイル、レイヤーを扱います。変更するたびにコピーを保存します。</value></data>
+  <data name="Ui_LabelsTitle" xml:space="preserve"><value>ページ番号の表示</value></data>
+  <data name="Ui_LabelsLead" xml:space="preserve"><value>ページ:形式[:接頭辞[:開始番号]] をカンマで区切って書きます。形式は 1、I、i、A、a、番号なしは -。1:i,5:1 なら最初の 4 ページが i〜iv、その後 1、2、3…</value></data>
+  <data name="Ui_LabelsNone" xml:space="preserve"><value>表示の設定なし: ページはそのままの番号で表示されます。</value></data>
+  <data name="Ui_LabelsRun" xml:space="preserve"><value>この表示でコピーを保存…</value></data>
+  <data name="Ui_LabelsSaved" xml:space="preserve"><value>{0} を保存しました（番号の区切り {1} 件）。</value></data>
+  <data name="Ui_LabelsRemoved" xml:space="preserve"><value>{0} をページ番号の表示なしで保存しました。</value></data>
+  <data name="Ui_AttachTitle" xml:space="preserve"><value>添付ファイル</value></data>
+  <data name="Ui_AttachNone" xml:space="preserve"><value>添付ファイルはありません。</value></data>
+  <data name="Ui_AttachOnPage" xml:space="preserve"><value>{0} ページのコメント</value></data>
+  <data name="Ui_AttachSave" xml:space="preserve"><value>フォルダに保存…</value></data>
+  <data name="Ui_AttachRemove" xml:space="preserve"><value>チェックしたものを削除</value></data>
+  <data name="Ui_AttachDescription" xml:space="preserve"><value>追加するファイルの説明（任意）</value></data>
+  <data name="Ui_AttachRun" xml:space="preserve"><value>ファイルを添付…</value></data>
+  <data name="Ui_Attached" xml:space="preserve"><value>{0} を保存しました（{1} 件のファイルを添付）。</value></data>
+  <data name="Ui_Detached" xml:space="preserve"><value>{0} を保存しました（添付ファイル {1} 件を削除）。</value></data>
+  <data name="Ui_AttachmentsSaved" xml:space="preserve"><value>{1} に {0} 件のファイルを保存しました。</value></data>
+  <data name="Ui_LayersTitle" xml:space="preserve"><value>レイヤー</value></data>
+  <data name="Ui_LayersNone" xml:space="preserve"><value>レイヤーはありません。</value></data>
+  <data name="Ui_LayersLead" xml:space="preserve"><value>チェックしたレイヤーが、ファイルを開いたときに表示・印刷されます。</value></data>
+  <data name="Ui_LayersRun" xml:space="preserve"><value>このレイヤー設定でコピーを保存…</value></data>
+  <data name="Ui_LayersSaved" xml:space="preserve"><value>{0} をレイヤー設定を変えて保存しました。</value></data>
+  <data name="Ui_LayerPages" xml:space="preserve"><value>{0} ページ</value></data>
+  <data name="Ui_CertFiles" xml:space="preserve"><value>証明書</value></data>
+  <data name="Ui_CertLocked" xml:space="preserve"><value>{0} は証明書で暗号化されています。受信者のデジタル ID で開けます。</value></data>
+  <data name="Ui_CertRecipient" xml:space="preserve"><value>{0} が発行した証明書あて（シリアル {1}）</value></data>
+  <data name="Ui_CertChooseId" xml:space="preserve"><value>開くためのデジタル ID を選んでください。</value></data>
+  <data name="Ui_CertOpenRun" xml:space="preserve"><value>このデジタル ID で開く…</value></data>
+  <data name="Ui_CertOpenNote" xml:space="preserve"><value>保護を外したコピーを保存して開きます。</value></data>
+  <data name="Ui_CertOpened" xml:space="preserve"><value>{0} を保存しました（{1} のデジタル ID で開きました）。</value></data>
+  <data name="Ui_CertTitle" xml:space="preserve"><value>証明書で暗号化</value></data>
+  <data name="Ui_CertLead" xml:space="preserve"><value>追加した証明書の持ち主だけが、自分のデジタル ID でコピーを開けます。パスワードを共有する必要はありません。Acrobat の証明書セキュリティと同じ AES-256 です。</value></data>
+  <data name="Ui_CertAdd" xml:space="preserve"><value>証明書を追加…</value></data>
+  <data name="Ui_CertIncludeMe" xml:space="preserve"><value>自分も開けるようにする（このデジタル ID）:</value></data>
+  <data name="Ui_CertRun" xml:space="preserve"><value>暗号化してコピーを保存…</value></data>
+  <data name="Ui_CertSealed" xml:space="preserve"><value>{0} を保存しました（証明書 {1} 件あてに暗号化）。</value></data>
+  <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} は読み取れる証明書ではありません。</value></data>
 </root>

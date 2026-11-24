@@ -64,20 +64,22 @@ public static class DigitalIds
     }
 
     /// <summary>
-    /// Makes a self-signed digital ID (ECDSA P-256, valid five years) for signing and saves it as a password-protected
-    /// .p12 file. Readers see the signer's name, but will say the identity is not verified until they trust it.
+    /// Makes a self-signed digital ID (RSA 2048, valid five years, as Acrobat makes them) for signing and for opening files
+    /// encrypted for it, and saves it as a password-protected .p12 file. Readers see the signer's name, but will say the
+    /// identity is not verified until they trust it.
     /// </summary>
     public static DigitalId Create(string name, string email, string path, string password)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new Pages.PageAssemblyException("a digital ID needs a name", "Err_IdName");
         if (password.Length < 6) throw new Pages.PageAssemblyException("the password must be at least 6 characters", "Err_IdPassword");
         if (File.Exists(path)) throw new Pages.PageAssemblyException($"{Path.GetFileName(path)} already exists; Washi never overwrites files", "Err_Exists", Path.GetFileName(path));
-        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var key = RSA.Create(2048);
         var dn = new X500DistinguishedNameBuilder();
         dn.AddCommonName(name.Trim());
         if (email.Trim().Length > 0) dn.AddEmailAddress(email.Trim());
-        var req = new CertificateRequest(dn.Build(), key, HashAlgorithmName.SHA256);
-        req.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation, true));
+        var req = new CertificateRequest(dn.Build(), key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        req.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation
+                                                                | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DataEncipherment, true));
         req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension([new Oid("1.3.6.1.5.5.7.3.4"), new Oid("1.2.840.113583.1.1.5")], false));   // e-mail protection, Adobe document signing
         req.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(req.PublicKey, false));
         using var cert = req.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow.AddYears(5));

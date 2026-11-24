@@ -249,7 +249,7 @@ public static class PdfFromImages
     }
 
     private static byte[] Flate(byte[] data) =>
-        new PdfSharp.Pdf.Filters.FlateDecode().Encode(data, PdfFlateEncodeMode.BestCompression);
+        Zlib.Compress(data);
 
     /// <summary>The size and colour components from a JPEG's frame header, and whether Adobe's marker is there.</summary>
     internal static (int Width, int Height, int Components, bool Adobe)? JpegInfo(byte[] b)

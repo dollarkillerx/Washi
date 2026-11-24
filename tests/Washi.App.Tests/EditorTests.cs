@@ -47,6 +47,10 @@ internal sealed class FakeDialogs : IDialogs
     public string? DigitalId, SaveDigitalId;
     public Task<string?> OpenDigitalIdAsync() => Task.FromResult(DigitalId);
     public Task<string?> SaveDigitalIdAsync(string suggestedName) => Task.FromResult(SaveDigitalId);
+    public string? Certificate;
+    public Task<string?> OpenCertificateAsync() => Task.FromResult(Certificate);
+    public List<string> Files = [];
+    public Task<IReadOnlyList<string>> OpenFilesAsync() => Task.FromResult<IReadOnlyList<string>>(Files);
     public bool ConfirmAnswer = true;
     public string? LastConfirm;
     public Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel)

@@ -153,6 +153,10 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
             certifier : --certify no-changes|forms|comments ; --ltv ajoute la validation à long terme après la signature
   washi pdf verify &lt;in.pdf&gt; [--trust ca.cer]   vérifie les signatures d’un fichier
   washi pdf ltv &lt;in.pdf&gt; [--tsa URL] [--trust ca.cer] [-o out.pdf]   ajoute la validation à long terme (et un horodatage du document) aux signatures
+  washi pdf labels &lt;in.pdf&gt; [--set 1:i,5:1 | --clear] [-o out.pdf]   étiquettes de page (numéros affichés)
+  washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dossier [--name a]
+  washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   liste les calques, ou règle ceux affichés
+  washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   chiffrer pour des certificats ; washi pdf unlock &lt;in.pdf&gt; --id id.p12   l’ouvrir
   washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
@@ -1051,4 +1055,67 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_LtvInvalid" xml:space="preserve"><value>La signature « {0} » ne tient pas : aucune donnée de validation n’est ajoutée.</value></data>
   <data name="Err_LtvNothing" xml:space="preserve"><value>Le fichier contient déjà toutes les données de validation trouvables.</value></data>
   <data name="Err_LtvCheck" xml:space="preserve"><value>Les signatures ne tenaient plus après l’ajout ; rien n’a été conservé.</value></data>
+  <data name="Err_LabelPage" xml:space="preserve"><value>Les étiquettes commencent page {0}, mais le PDF a {1} pages.</value></data>
+  <data name="Err_LabelStyle" xml:space="preserve"><value>« {0} » n’est pas un style de numérotation (1, I, i, A, a, ou - pour aucun).</value></data>
+  <data name="Err_LabelFirst" xml:space="preserve"><value>La numérotation commence à 1 ou plus.</value></data>
+  <data name="Err_LabelTwice" xml:space="preserve"><value>Deux séries d’étiquettes commencent à la même page.</value></data>
+  <data name="Err_LabelSpec" xml:space="preserve"><value>« {0} » n’est pas page:style[:préfixe[:premier numéro]] (par exemple 1:i,5:1).</value></data>
+  <data name="Err_LabelCheck" xml:space="preserve"><value>Les étiquettes ne se relisent pas comme écrites ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_AttachmentNone" xml:space="preserve"><value>Il n’y a pas de pièce jointe « {0} ».</value></data>
+  <data name="Err_AttachmentsNone" xml:space="preserve"><value>Le fichier n’a pas de pièce jointe.</value></data>
+  <data name="Err_AttachmentUnreadable" xml:space="preserve"><value>La pièce jointe « {0} » est illisible.</value></data>
+  <data name="Err_AttachmentNothing" xml:space="preserve"><value>Rien à joindre ni à retirer.</value></data>
+  <data name="Err_AttachmentCheck" xml:space="preserve"><value>Les pièces jointes ne se relisent pas comme écrites ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_LayerNothing" xml:space="preserve"><value>Indiquez les calques à afficher ou masquer.</value></data>
+  <data name="Err_LayerBoth" xml:space="preserve"><value>« {0} » ne peut pas être à la fois affiché et masqué.</value></data>
+  <data name="Err_LayersNone" xml:space="preserve"><value>Le fichier n’a pas de calques.</value></data>
+  <data name="Err_LayerNone" xml:space="preserve"><value>Il n’y a pas de calque « {0} ».</value></data>
+  <data name="Err_LayerCheck" xml:space="preserve"><value>Les calques ne se relisent pas comme réglés ; la copie n’a pas été conservée.</value></data>
+  <data name="Err_CertNoRecipients" xml:space="preserve"><value>Indiquez au moins un certificat qui pourra ouvrir le fichier.</value></data>
+  <data name="Err_CertNotRsa" xml:space="preserve"><value>Le certificat de {0} n’est pas RSA, ce que la sécurité par certificat exige.</value></data>
+  <data name="Err_CertAlready" xml:space="preserve"><value>{0} est déjà chiffré pour des certificats.</value></data>
+  <data name="Err_CertSigned" xml:space="preserve"><value>Le fichier est signé : le chiffrer casserait ses signatures.</value></data>
+  <data name="Err_CertNotEncrypted" xml:space="preserve"><value>{0} n’est pas chiffré pour des certificats.</value></data>
+  <data name="Err_CertNotRecipient" xml:space="preserve"><value>{0} n’a pas été chiffré pour le certificat de {1}.</value></data>
+  <data name="Err_CertUnsupported" xml:space="preserve"><value>Ce chiffrement par certificat n’est pas pris en charge : AES-256 seulement.</value></data>
+  <data name="Err_CertCheck" xml:space="preserve"><value>La copie chiffrée ne se relit pas comme l’original ; elle n’a pas été conservée.</value></data>
+  <data name="Ui_ToolDocument" xml:space="preserve"><value>Document</value></data>
+  <data name="Ui_DocTitle" xml:space="preserve"><value>Document</value></data>
+  <data name="Ui_DocLead" xml:space="preserve"><value>Numéros de page affichés, fichiers joints et calques. Chaque changement enregistre une copie.</value></data>
+  <data name="Ui_LabelsTitle" xml:space="preserve"><value>Étiquettes de page</value></data>
+  <data name="Ui_LabelsLead" xml:space="preserve"><value>page:style[:préfixe[:premier]], séparés par des virgules. Styles : 1, I, i, A, a, ou - pour aucun. 1:i,5:1 numérote quatre pages i–iv, puis 1, 2, 3…</value></data>
+  <data name="Ui_LabelsNone" xml:space="preserve"><value>Pas d’étiquettes : les pages montrent leur numéro.</value></data>
+  <data name="Ui_LabelsRun" xml:space="preserve"><value>Enregistrer une copie avec ces étiquettes…</value></data>
+  <data name="Ui_LabelsSaved" xml:space="preserve"><value>{0} enregistré avec {1} série(s) d’étiquettes.</value></data>
+  <data name="Ui_LabelsRemoved" xml:space="preserve"><value>{0} enregistré sans étiquettes.</value></data>
+  <data name="Ui_AttachTitle" xml:space="preserve"><value>Pièces jointes</value></data>
+  <data name="Ui_AttachNone" xml:space="preserve"><value>Aucune pièce jointe.</value></data>
+  <data name="Ui_AttachOnPage" xml:space="preserve"><value>page {0}</value></data>
+  <data name="Ui_AttachSave" xml:space="preserve"><value>Enregistrer dans un dossier…</value></data>
+  <data name="Ui_AttachRemove" xml:space="preserve"><value>Retirer les cochées</value></data>
+  <data name="Ui_AttachDescription" xml:space="preserve"><value>Description des nouvelles pièces jointes (facultatif)</value></data>
+  <data name="Ui_AttachRun" xml:space="preserve"><value>Joindre des fichiers…</value></data>
+  <data name="Ui_Attached" xml:space="preserve"><value>{0} enregistré avec {1} fichier(s) joint(s).</value></data>
+  <data name="Ui_Detached" xml:space="preserve"><value>{0} enregistré, {1} pièce(s) jointe(s) retirée(s).</value></data>
+  <data name="Ui_AttachmentsSaved" xml:space="preserve"><value>{0} fichier(s) enregistré(s) dans {1}.</value></data>
+  <data name="Ui_LayersTitle" xml:space="preserve"><value>Calques</value></data>
+  <data name="Ui_LayersNone" xml:space="preserve"><value>Aucun calque.</value></data>
+  <data name="Ui_LayersLead" xml:space="preserve"><value>Les calques cochés s’affichent (et s’impriment) à l’ouverture.</value></data>
+  <data name="Ui_LayersRun" xml:space="preserve"><value>Enregistrer une copie avec ces calques…</value></data>
+  <data name="Ui_LayersSaved" xml:space="preserve"><value>{0} enregistré avec les calques réglés.</value></data>
+  <data name="Ui_LayerPages" xml:space="preserve"><value>page {0}</value></data>
+  <data name="Ui_CertFiles" xml:space="preserve"><value>Certificats</value></data>
+  <data name="Ui_CertLocked" xml:space="preserve"><value>{0} est chiffré pour des certificats : il s’ouvre avec l’identité numérique d’un destinataire.</value></data>
+  <data name="Ui_CertRecipient" xml:space="preserve"><value>Pour un certificat de {0} (série {1})</value></data>
+  <data name="Ui_CertChooseId" xml:space="preserve"><value>Choisissez l’identité numérique pour l’ouvrir.</value></data>
+  <data name="Ui_CertOpenRun" xml:space="preserve"><value>Ouvrir avec cette identité…</value></data>
+  <data name="Ui_CertOpenNote" xml:space="preserve"><value>Enregistre une copie sans la protection, et l’ouvre.</value></data>
+  <data name="Ui_CertOpened" xml:space="preserve"><value>{0} enregistré, ouvert avec l’identité de {1}.</value></data>
+  <data name="Ui_CertTitle" xml:space="preserve"><value>Chiffrer pour des certificats</value></data>
+  <data name="Ui_CertLead" xml:space="preserve"><value>Seules les personnes dont vous ajoutez le certificat ouvrent la copie, avec leur identité numérique : aucun mot de passe à partager. AES-256, comme la sécurité par certificat d’Acrobat.</value></data>
+  <data name="Ui_CertAdd" xml:space="preserve"><value>Ajouter un certificat…</value></data>
+  <data name="Ui_CertIncludeMe" xml:space="preserve"><value>Pouvoir l’ouvrir moi aussi, avec cette identité :</value></data>
+  <data name="Ui_CertRun" xml:space="preserve"><value>Chiffrer et enregistrer une copie…</value></data>
+  <data name="Ui_CertSealed" xml:space="preserve"><value>{0} enregistré, chiffré pour {1} certificat(s).</value></data>
+  <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} n’est pas un certificat lisible.</value></data>
 </root>

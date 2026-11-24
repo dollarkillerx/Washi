@@ -20,7 +20,7 @@ public sealed record Choice<T>(T Value, string Text)
 }
 
 /// <summary>The tools in the left rail, as in Acrobat's "All tools".</summary>
-public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Archive, Comment, Sign, Protect, Redact, EditText, Images, Stamp, Links, Compare, Erase, Ask, Settings }
+public enum Tool { Form, Ocr, Combine, Split, Organize, Compress, Archive, Document, Comment, Sign, Protect, Redact, EditText, Images, Stamp, Links, Compare, Erase, Ask, Settings }
 
 /// <summary>What the right side panel shows.</summary>
 public enum SidePanel { None, Pages, Fields, Bookmarks }
@@ -73,6 +73,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Print = new PrintViewModel(this);
         Compress = new CompressToolViewModel(this);
         Archive = new ArchiveToolViewModel(this);
+        Document = new DocumentToolViewModel(this);
         Erase = new EraseToolViewModel(this);
         Assistant = new AssistantViewModel(this, services);
         services.Editor = this;
@@ -100,6 +101,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public PrintViewModel Print { get; }
     public CompressToolViewModel Compress { get; }
     public ArchiveToolViewModel Archive { get; }
+    public DocumentToolViewModel Document { get; }
     public EraseToolViewModel Erase { get; }
     public AssistantViewModel Assistant { get; }
 
@@ -213,7 +215,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public ObservableCollection<PageThumb> Thumbnails { get; } = [];
 
     // ------------------------------------------------------------------ tools and panels
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsImagesTool), nameof(IsLinksTool), nameof(IsCompareTool), nameof(IsCompressTool), nameof(IsArchiveTool),
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsFormTool), nameof(IsOcrTool), nameof(IsCombineTool), nameof(IsSplitTool), nameof(IsOrganizeTool), nameof(IsSignTool), nameof(IsCommentTool), nameof(IsProtectTool), nameof(IsRedactTool), nameof(IsEditTextTool), nameof(IsStampTool), nameof(IsImagesTool), nameof(IsLinksTool), nameof(IsCompareTool), nameof(IsCompressTool), nameof(IsArchiveTool), nameof(IsDocumentTool),
                                                   nameof(IsAskTool), nameof(IsEraseTool), nameof(IsSettingsTool), nameof(IsDocumentView), nameof(ShowToolPanel), nameof(ToolPanelWidth),
                                                   nameof(ShowFieldsPanel), nameof(ShowSidePanel), nameof(ShowEditTools), nameof(ShowRightRail))]
     private Tool _activeTool = Tool.Form;
@@ -240,6 +242,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool IsCompareTool { get => ActiveTool == Tool.Compare; set { if (value) ActiveTool = Tool.Compare; } }
     public bool IsCompressTool { get => ActiveTool == Tool.Compress; set { if (value) ActiveTool = Tool.Compress; } }
     public bool IsArchiveTool { get => ActiveTool == Tool.Archive; set { if (value) ActiveTool = Tool.Archive; } }
+    public bool IsDocumentTool { get => ActiveTool == Tool.Document; set { if (value) ActiveTool = Tool.Document; } }
     public bool IsAskTool { get => ActiveTool == Tool.Ask; set { if (value) ActiveTool = Tool.Ask; } }
     public bool IsEraseTool { get => ActiveTool == Tool.Erase; set { if (value) ActiveTool = Tool.Erase; } }
     public bool IsSettingsTool { get => ActiveTool == Tool.Settings; set { if (value) ActiveTool = Tool.Settings; } }
@@ -296,6 +299,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         if (value == Tool.Protect) _ = Protect.PrepareAsync();
         if (value == Tool.Compress) Compress.Prepare();
         if (value == Tool.Archive) Archive.Prepare();
+        if (value == Tool.Document) _ = Document.PrepareAsync();
         if (value == Tool.EditText) _ = EditText.PrepareAsync();
         if (value == Tool.Links) _ = Links.PrepareAsync();
         if (value == Tool.Images) _ = Images.PrepareAsync();
@@ -484,6 +488,13 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public async Task LoadAsync(string path)
     {
         bool opened = false, locked = false;
+        if (await Task.Run(() => Washi.Core.Pages.PdfCertificateSecurity.IsEncryptedForCertificates(path)))
+        {
+            // it opens only with a recipient's digital ID: the Protect tool asks for one
+            ActiveTool = Tool.Protect;
+            await Protect.AskCertificateAsync(path);
+            return;
+        }
         await Run(async () =>
         {
             int count = await Pdfium(() =>
@@ -514,6 +525,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         }
         if (!opened) return;
         Protect.LockedPath = null;
+        Protect.CertLockedPath = null;
         _ = RenderThumbnailsAsync(path);
         Split.Reset();
         Erase.Reset();
@@ -538,6 +550,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         else if (ActiveTool == Tool.Protect) await Protect.PrepareAsync();
         else if (ActiveTool == Tool.Compress) Compress.Prepare();
         else if (ActiveTool == Tool.Archive) Archive.Prepare();
+        else if (ActiveTool == Tool.Document) await Document.PrepareAsync();
         else if (ActiveTool == Tool.EditText) await EditText.PrepareAsync();
         else if (ActiveTool == Tool.Links) await Links.PrepareAsync();
         else if (ActiveTool == Tool.Images) await Images.PrepareAsync();

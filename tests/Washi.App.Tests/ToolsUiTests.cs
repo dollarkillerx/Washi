@@ -1113,6 +1113,65 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Contains(L.Get("Ui_SigChange_validation"), row.Details);
     }
 
+    [AvaloniaFact]
+    public async Task The_document_tool_sets_page_labels_and_attachments_and_protect_encrypts_for_a_certificate()
+    {
+        var pdf = Form("doc.pdf", pages: 3);
+        var csv = Path.Combine(_dir, "明細.csv");
+        File.WriteAllText(csv, "a,b\n1,2\n");
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "doc_labels.pdf"), Files = [csv], Folder = Directory.CreateDirectory(Path.Combine(_dir, "out")).FullName };
+        var (w, vm) = await Open(pdf, dialogs);
+        vm.ActiveTool = Tool.Document;
+        await vm.Document.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<TextBox>("PageLabelsBox")!.IsEffectivelyVisible);
+        var d = vm.Document;
+
+        // page labels: previewed as typed, then saved
+        d.Labels = "1:i,3:1";
+        Assert.Equal("i, ii, 1", d.LabelPreview);
+        await d.SaveLabelsCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.Equal("1:i,3:1", d.Labels);   // read back from the copy
+
+        // attachments: attached, saved out, removed
+        dialogs.SavePdf = Path.Combine(_dir, "doc_attached.pdf");
+        await d.AttachCommand.ExecuteAsync(null);
+        var row = Assert.Single(d.Attachments);
+        Assert.Equal("明細.csv", row.Info.Name);
+        await d.SaveAttachmentsCommand.ExecuteAsync(null);
+        Assert.True(File.Exists(Path.Combine(dialogs.Folder!, "明細.csv")), vm.Status);
+        row.Selected = true;
+        Assert.True(d.CanRemoveAttachments);
+        dialogs.SavePdf = Path.Combine(_dir, "doc_detached.pdf");
+        await d.RemoveAttachmentsCommand.ExecuteAsync(null);
+        Assert.Empty(d.Attachments);
+        Assert.False(d.HasLayers);
+
+        // Protect: encrypted for my own certificate, then opened again with my digital ID
+        var me = Washi.Core.Signatures.DigitalIds.Create("Washi Tester", "", Path.Combine(_dir, "me.p12"), "secret-1");
+        vm.ActiveTool = Tool.Protect;
+        await vm.Protect.PrepareAsync();
+        vm.Sign.Digital.Ids.Add(me);
+        vm.Sign.Digital.Id = me;
+        Assert.True(vm.Protect.IncludeMe && vm.Protect.CanEncryptForCertificates);
+        dialogs.SavePdf = Path.Combine(_dir, "doc_sealed.pdf");
+        await vm.Protect.EncryptForCertificatesCommand.ExecuteAsync(null);
+        Assert.True(vm.Protect.IsCertLocked, vm.Status);
+        Assert.Single(vm.Protect.CertRecipients);
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("OpenWithIdButton")!.IsEffectivelyVisible);
+        dialogs.SavePdf = Path.Combine(_dir, "doc_opened.pdf");
+        await vm.Protect.OpenWithIdCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.False(vm.Protect.IsCertLocked);
+        Assert.Equal(3, vm.PageCount);
+
+        // a sealed file opened from disk waits for a digital ID too
+        await vm.LoadAsync(Path.Combine(_dir, "doc_sealed.pdf"));
+        Assert.True(vm.Protect.IsCertLocked && vm.ActiveTool == Tool.Protect);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

@@ -23,7 +23,9 @@ public sealed record PdfPermissions(bool Print = true, bool Copy = true, bool Ed
 /// <param name="NeedsPassword">It cannot be opened without a password, and none that works was given.</param>
 /// <param name="FullAccess">The password given (or none) allows changing or removing the protection.</param>
 /// <param name="Permissions">What a reader may do (all true when it is not encrypted, or when it cannot be opened).</param>
-/// <param name="Method">"AES-256", "AES-128", "RC4-128" or "RC4-40"; empty when it is not encrypted.</param>
+/// <param name="Method">"AES-256", "AES-128", "RC4-128" or "RC4-40"; "Certificates" when it is encrypted for
+/// certificates (it opens with a recipient's digital ID, see <see cref="PdfCertificateSecurity"/>); empty when it is not
+/// encrypted.</param>
 public sealed record PdfProtection(bool Encrypted, bool NeedsPassword, bool FullAccess, PdfPermissions Permissions, string Method);
 
 /// <summary>
@@ -49,6 +51,7 @@ public static class PdfSecurity
     /// <summary>How <paramref name="path"/> is protected, opened with <paramref name="password"/> (or none).</summary>
     public static PdfProtection Inspect(string path, string? password = null)
     {
+        if (PdfCertificateSecurity.IsEncryptedForCertificates(path)) return new(true, true, false, PdfPermissions.All, "Certificates");
         PdfDocument d;
         try { d = PdfReader.Open(path, password ?? "", PdfDocumentOpenMode.Import); }
         catch (PdfReaderException e) when (IsPasswordProblem(e)) { return new(true, true, false, PdfPermissions.All, ""); }

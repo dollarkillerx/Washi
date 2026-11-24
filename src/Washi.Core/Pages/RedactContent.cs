@@ -511,7 +511,7 @@ internal sealed class ContentRedactor(RedactContext ctx)
     /// <summary>Replaces a stream's data with <paramref name="bytes"/>, Flate-compressed.</summary>
     internal static void SetStream(PdfDictionary d, byte[] bytes)
     {
-        var packed = new PdfSharp.Pdf.Filters.FlateDecode().Encode(bytes, PdfFlateEncodeMode.Default);
+        var packed = Zlib.Compress(bytes, best: false);
         if (d.Stream is null) d.CreateStream(packed); else d.Stream.Value = packed;
         d.Elements["/Filter"] = new PdfName("/FlateDecode");
         d.Elements.Remove("/DecodeParms");

@@ -543,6 +543,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            certify: --certify no-changes|forms|comments; --ltv adds long-term validation data after signing\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   check the signatures in a file\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   add long-term validation data (and a document time-stamp) to the signatures\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   page labels (as the viewer numbers pages)\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dir [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   list layers, or set which show\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   encrypt for certificates;  washi pdf unlock <in.pdf> --id id.p12   open it\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID'
         ),
         "ja": (
@@ -589,6 +593,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            証明署名: --certify no-changes|forms|comments、--ltv で署名後に長期検証情報を追加\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   ファイルの署名を確認\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   署名に長期検証情報（と文書タイムスタンプ）を追加\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   ページ番号の表示（ビューアでの番号）\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract フォルダ [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   レイヤーの一覧、表示の設定\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   証明書で暗号化；washi pdf unlock <in.pdf> --id id.p12   開く\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成'
         ),
         "zh-Hans": (
@@ -635,6 +643,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            认证签名：--certify no-changes|forms|comments；--ltv 在签名后添加长期验证信息\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   核实文件中的签名\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   为签名添加长期验证信息（及文档时间戳）\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   页码标签（查看器显示的页码）\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 文件夹 [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   列出图层，或设置显示\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   用证书加密；washi pdf unlock <in.pdf> --id id.p12   打开\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   创建自签名数字标识'
         ),
         "zh-Hant": (
@@ -681,6 +693,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            認證簽章：--certify no-changes|forms|comments；--ltv 在簽署後加入長期驗證資訊\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   核實檔案中的簽章\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   為簽章加入長期驗證資訊（及文件時間戳記）\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   頁碼標籤（檢視器顯示的頁碼）\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 資料夾 [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   列出圖層，或設定顯示\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   用憑證加密；washi pdf unlock <in.pdf> --id id.p12   開啟\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   建立自簽署數位識別碼'
         ),
         "ko": (
@@ -727,6 +743,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            인증 서명: --certify no-changes|forms|comments, --ltv는 서명 후 장기 검증 정보 추가\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   파일의 서명 확인\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   서명에 장기 검증 정보(와 문서 타임스탬프) 추가\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   페이지 레이블(뷰어의 쪽 번호)\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 폴더 [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   레이어 목록, 표시 설정\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   인증서로 암호화; washi pdf unlock <in.pdf> --id id.p12   열기\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   자체 서명 디지털 ID 만들기'
         ),
         "fr": (
@@ -773,6 +793,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            certifier : --certify no-changes|forms|comments ; --ltv ajoute la validation à long terme après la signature\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   vérifie les signatures d’un fichier\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   ajoute la validation à long terme (et un horodatage du document) aux signatures\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   étiquettes de page (numéros affichés)\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dossier [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   liste les calques, ou règle ceux affichés\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   chiffrer pour des certificats ; washi pdf unlock <in.pdf> --id id.p12   l’ouvrir\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée'
         ),
         "de": (
@@ -819,6 +843,10 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '            zertifizieren: --certify no-changes|forms|comments; --ltv fügt nach dem Signieren Langzeitvalidierung hinzu\n'
             '  washi pdf verify <in.pdf> [--trust ca.cer]   Signaturen einer Datei prüfen\n'
             '  washi pdf ltv <in.pdf> [--tsa URL] [--trust ca.cer] [-o out.pdf]   Langzeitvalidierung (und Dokumentzeitstempel) zu den Signaturen hinzufügen\n'
+            '  washi pdf labels <in.pdf> [--set 1:i,5:1 | --clear] [-o out.pdf]   Seitenbeschriftung (angezeigte Seitenzahlen)\n'
+            '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract Ordner [--name a]\n'
+            '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   Ebenen auflisten oder einstellen, welche sichtbar sind\n'
+            '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   für Zertifikate verschlüsseln; washi pdf unlock <in.pdf> --id id.p12   öffnen\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen'
         ),
     },
@@ -2022,6 +2050,69 @@ _UI = {
     "Err_LtvInvalid": ["The signature “{0}” does not hold, so no validation data is added for it.", "署名「{0}」が有効でないため、検証情報は追加しません。", "签名“{0}”无效，因此不为其添加验证信息。", "簽章「{0}」無效，因此不為其加入驗證資訊。", "서명 “{0}” 이(가) 유효하지 않아 검증 정보를 추가하지 않습니다.", "La signature « {0} » ne tient pas : aucune donnée de validation n’est ajoutée.", "Die Signatur „{0}“ hält nicht; es werden keine Validierungsdaten hinzugefügt."],
     "Err_LtvNothing": ["The file already holds all the validation data that could be found.", "取得できる検証情報はすべてファイルに入っています。", "文件中已包含可以获取的全部验证信息。", "檔案中已包含可以取得的全部驗證資訊。", "받을 수 있는 검증 정보가 이미 모두 파일에 있습니다.", "Le fichier contient déjà toutes les données de validation trouvables.", "Die Datei enthält bereits alle auffindbaren Validierungsdaten."],
     "Err_LtvCheck": ["The signatures did not hold after adding validation data; nothing was kept.", "検証情報を追加すると署名が保てなかったため、保存しませんでした。", "添加验证信息后签名无法保持有效，因此没有保存。", "加入驗證資訊後簽章無法保持有效，因此沒有儲存。", "검증 정보를 추가한 뒤 서명이 유지되지 않아 저장하지 않았습니다.", "Les signatures ne tenaient plus après l’ajout ; rien n’a été conservé.", "Die Signaturen hielten nach dem Hinzufügen nicht mehr; nichts wurde behalten."],
+    "Err_LabelPage": ["Page labels start on page {0}, but the PDF has {1} pages.", "ページ番号の表示が {0} ページから始まっていますが、この PDF は {1} ページです。", "页码标签从第 {0} 页开始，但该 PDF 只有 {1} 页。", "頁碼標籤從第 {0} 頁開始，但該 PDF 只有 {1} 頁。", "페이지 레이블이 {0}쪽에서 시작하지만 이 PDF는 {1}쪽입니다.", "Les étiquettes commencent page {0}, mais le PDF a {1} pages.", "Die Seitenbeschriftung beginnt auf Seite {0}, das PDF hat aber {1} Seiten."],
+    "Err_LabelStyle": ["“{0}” is not a numbering style (1, I, i, A, a, or - for none).", "「{0}」は番号の形式ではありません（1、I、i、A、a、番号なしは -）。", "“{0}”不是编号样式（1、I、i、A、a，无编号用 -）。", "「{0}」不是編號樣式（1、I、i、A、a，無編號用 -）。", "“{0}” 은(는) 번호 형식이 아닙니다(1, I, i, A, a, 번호 없음은 -).", "« {0} » n’est pas un style de numérotation (1, I, i, A, a, ou - pour aucun).", "„{0}“ ist kein Nummernstil (1, I, i, A, a oder - für keinen)."],
+    "Err_LabelFirst": ["Page labels count from 1 or more.", "番号は 1 以上から数えます。", "编号从 1 或更大的数开始。", "編號從 1 或更大的數開始。", "번호는 1 이상부터 셉니다.", "La numérotation commence à 1 ou plus.", "Die Zählung beginnt bei 1 oder höher."],
+    "Err_LabelTwice": ["Two runs of page labels start on the same page.", "同じページから始まる番号の区切りが 2 つあります。", "有两段页码标签从同一页开始。", "有兩段頁碼標籤從同一頁開始。", "같은 쪽에서 시작하는 레이블 구간이 두 개 있습니다.", "Deux séries d’étiquettes commencent à la même page.", "Zwei Beschriftungsbereiche beginnen auf derselben Seite."],
+    "Err_LabelSpec": ["“{0}” is not page:style[:prefix[:first number]] (for example 1:i,5:1).", "「{0}」は ページ:形式[:接頭辞[:開始番号]] の形ではありません（例: 1:i,5:1）。", "“{0}”不是 页:样式[:前缀[:起始数]] 的形式（例如 1:i,5:1）。", "「{0}」不是 頁:樣式[:前綴[:起始數]] 的形式（例如 1:i,5:1）。", "“{0}” 은(는) 쪽:형식[:접두어[:시작 번호]] 형태가 아닙니다(예: 1:i,5:1).", "« {0} » n’est pas page:style[:préfixe[:premier numéro]] (par exemple 1:i,5:1).", "„{0}“ ist nicht Seite:Stil[:Präfix[:erste Nummer]] (zum Beispiel 1:i,5:1)."],
+    "Err_LabelCheck": ["The page labels did not read back as written; the copy was not kept.", "ページ番号の表示が書いた通りに読み戻せなかったため、保存しませんでした。", "页码标签未能按写入内容读回，未保存副本。", "頁碼標籤未能按寫入內容讀回，未儲存副本。", "페이지 레이블이 쓴 대로 읽히지 않아 사본을 저장하지 않았습니다.", "Les étiquettes ne se relisent pas comme écrites ; la copie n’a pas été conservée.", "Die Beschriftung ließ sich nicht wie geschrieben zurücklesen; die Kopie wurde nicht behalten."],
+    "Err_AttachmentNone": ["There is no attachment “{0}”.", "添付ファイル「{0}」はありません。", "没有附件“{0}”。", "沒有附件「{0}」。", "첨부 파일 “{0}” 이(가) 없습니다.", "Il n’y a pas de pièce jointe « {0} ».", "Es gibt keinen Anhang „{0}“."],
+    "Err_AttachmentsNone": ["The file has no attachments.", "このファイルには添付ファイルがありません。", "此文件没有附件。", "此檔案沒有附件。", "이 파일에는 첨부 파일이 없습니다.", "Le fichier n’a pas de pièce jointe.", "Die Datei hat keine Anhänge."],
+    "Err_AttachmentUnreadable": ["The attachment “{0}” cannot be read.", "添付ファイル「{0}」を読み取れません。", "无法读取附件“{0}”。", "無法讀取附件「{0}」。", "첨부 파일 “{0}” 을(를) 읽을 수 없습니다.", "La pièce jointe « {0} » est illisible.", "Der Anhang „{0}“ ist nicht lesbar."],
+    "Err_AttachmentNothing": ["Nothing to attach or remove.", "添付・削除するファイルがありません。", "没有要添加或删除的附件。", "沒有要加入或刪除的附件。", "첨부하거나 지울 파일이 없습니다.", "Rien à joindre ni à retirer.", "Nichts anzuhängen oder zu entfernen."],
+    "Err_AttachmentCheck": ["The attachments did not read back as written; the copy was not kept.", "添付ファイルが書いた通りに読み戻せなかったため、保存しませんでした。", "附件未能按写入内容读回，未保存副本。", "附件未能按寫入內容讀回，未儲存副本。", "첨부 파일이 쓴 대로 읽히지 않아 사본을 저장하지 않았습니다.", "Les pièces jointes ne se relisent pas comme écrites ; la copie n’a pas été conservée.", "Die Anhänge ließen sich nicht wie geschrieben zurücklesen; die Kopie wurde nicht behalten."],
+    "Err_LayerNothing": ["Name the layers to show or hide.", "表示・非表示にするレイヤーを指定してください。", "请指定要显示或隐藏的图层。", "請指定要顯示或隱藏的圖層。", "표시하거나 숨길 레이어를 지정하세요.", "Indiquez les calques à afficher ou masquer.", "Geben Sie die Ebenen an, die gezeigt oder ausgeblendet werden sollen."],
+    "Err_LayerBoth": ["“{0}” cannot be both shown and hidden.", "「{0}」を表示と非表示の両方にはできません。", "“{0}”不能同时显示和隐藏。", "「{0}」不能同時顯示和隱藏。", "“{0}” 을(를) 표시와 숨김 둘 다로 할 수 없습니다.", "« {0} » ne peut pas être à la fois affiché et masqué.", "„{0}“ kann nicht zugleich gezeigt und ausgeblendet werden."],
+    "Err_LayersNone": ["The file has no layers.", "このファイルにはレイヤーがありません。", "此文件没有图层。", "此檔案沒有圖層。", "이 파일에는 레이어가 없습니다.", "Le fichier n’a pas de calques.", "Die Datei hat keine Ebenen."],
+    "Err_LayerNone": ["There is no layer “{0}”.", "レイヤー「{0}」はありません。", "没有图层“{0}”。", "沒有圖層「{0}」。", "레이어 “{0}” 이(가) 없습니다.", "Il n’y a pas de calque « {0} ».", "Es gibt keine Ebene „{0}“."],
+    "Err_LayerCheck": ["The layers did not read back as set; the copy was not kept.", "レイヤーが設定通りに読み戻せなかったため、保存しませんでした。", "图层未能按设置读回，未保存副本。", "圖層未能按設定讀回，未儲存副本。", "레이어가 설정대로 읽히지 않아 사본을 저장하지 않았습니다.", "Les calques ne se relisent pas comme réglés ; la copie n’a pas été conservée.", "Die Ebenen ließen sich nicht wie eingestellt zurücklesen; die Kopie wurde nicht behalten."],
+    "Err_CertNoRecipients": ["Name at least one certificate that may open the file.", "ファイルを開ける証明書を 1 つ以上指定してください。", "请至少指定一个可以打开文件的证书。", "請至少指定一個可以開啟檔案的憑證。", "파일을 열 수 있는 인증서를 하나 이상 지정하세요.", "Indiquez au moins un certificat qui pourra ouvrir le fichier.", "Geben Sie mindestens ein Zertifikat an, das die Datei öffnen darf."],
+    "Err_CertNotRsa": ["The certificate of {0} is not an RSA certificate, which certificate security needs.", "{0} の証明書は RSA ではないため、証明書による暗号化には使えません。", "{0} 的证书不是 RSA 证书，无法用于证书加密。", "{0} 的憑證不是 RSA 憑證，無法用於憑證加密。", "{0} 의 인증서는 RSA 가 아니어서 인증서 암호화에 쓸 수 없습니다.", "Le certificat de {0} n’est pas RSA, ce que la sécurité par certificat exige.", "Das Zertifikat von {0} ist kein RSA-Zertifikat, das die Zertifikatsicherheit braucht."],
+    "Err_CertAlready": ["{0} is already encrypted for certificates.", "{0} はすでに証明書で暗号化されています。", "{0} 已经用证书加密。", "{0} 已經用憑證加密。", "{0} 은(는) 이미 인증서로 암호화되어 있습니다.", "{0} est déjà chiffré pour des certificats.", "{0} ist bereits für Zertifikate verschlüsselt."],
+    "Err_CertSigned": ["The file is signed: encrypting it would break its signatures.", "このファイルには署名があります。暗号化すると署名が無効になります。", "此文件已签名：加密会使签名失效。", "此檔案已簽署：加密會使簽章失效。", "서명된 파일입니다. 암호화하면 서명이 무효가 됩니다.", "Le fichier est signé : le chiffrer casserait ses signatures.", "Die Datei ist signiert: Verschlüsseln würde die Signaturen brechen."],
+    "Err_CertNotEncrypted": ["{0} is not encrypted for certificates.", "{0} は証明書で暗号化されていません。", "{0} 没有用证书加密。", "{0} 沒有用憑證加密。", "{0} 은(는) 인증서로 암호화되어 있지 않습니다.", "{0} n’est pas chiffré pour des certificats.", "{0} ist nicht für Zertifikate verschlüsselt."],
+    "Err_CertNotRecipient": ["{0} was not encrypted for the certificate of {1}.", "{0} は {1} の証明書あてに暗号化されていません。", "{0} 不是为 {1} 的证书加密的。", "{0} 不是為 {1} 的憑證加密的。", "{0} 은(는) {1} 의 인증서로 암호화되지 않았습니다.", "{0} n’a pas été chiffré pour le certificat de {1}.", "{0} wurde nicht für das Zertifikat von {1} verschlüsselt."],
+    "Err_CertUnsupported": ["This certificate encryption is not one Washi opens: only AES-256.", "この方式の証明書暗号化は開けません（AES-256 のみ対応）。", "Washi 无法打开这种证书加密：只支持 AES-256。", "Washi 無法開啟這種憑證加密：只支援 AES-256。", "이 방식의 인증서 암호화는 열 수 없습니다(AES-256 만 지원).", "Ce chiffrement par certificat n’est pas pris en charge : AES-256 seulement.", "Diese Zertifikatsverschlüsselung öffnet Washi nicht: nur AES-256."],
+    "Err_CertCheck": ["The encrypted copy did not read back as the original; it was not kept.", "暗号化したコピーが元と同じに読み戻せなかったため、保存しませんでした。", "加密副本未能读回为原样，未保存。", "加密副本未能讀回為原樣，未儲存。", "암호화한 사본이 원본과 같게 읽히지 않아 저장하지 않았습니다.", "La copie chiffrée ne se relit pas comme l’original ; elle n’a pas été conservée.", "Die verschlüsselte Kopie ließ sich nicht wie das Original zurücklesen; sie wurde nicht behalten."],
+    "Ui_ToolDocument": ["Document", "文書", "文档", "文件", "문서", "Document", "Dokument"],
+    "Ui_DocTitle": ["Document", "文書の設定", "文档设置", "文件設定", "문서 설정", "Document", "Dokument"],
+    "Ui_DocLead": ["Page numbers as the viewer shows them, attached files and layers. Each change saves a copy.", "ビューアに表示するページ番号、添付ファイル、レイヤーを扱います。変更するたびにコピーを保存します。", "查看器显示的页码、附件和图层。每次修改都会另存副本。", "檢視器顯示的頁碼、附件和圖層。每次修改都會另存副本。", "뷰어에 표시되는 페이지 번호, 첨부 파일, 레이어. 바꿀 때마다 사본을 저장합니다.", "Numéros de page affichés, fichiers joints et calques. Chaque changement enregistre une copie.", "Angezeigte Seitenzahlen, Anhänge und Ebenen. Jede Änderung speichert eine Kopie."],
+    "Ui_LabelsTitle": ["Page labels", "ページ番号の表示", "页码标签", "頁碼標籤", "페이지 레이블", "Étiquettes de page", "Seitenbeschriftung"],
+    "Ui_LabelsLead": ["page:style[:prefix[:first]], comma-separated. Styles: 1, I, i, A, a, or - for none. 1:i,5:1 numbers four pages i–iv, then 1, 2, 3 …", "ページ:形式[:接頭辞[:開始番号]] をカンマで区切って書きます。形式は 1、I、i、A、a、番号なしは -。1:i,5:1 なら最初の 4 ページが i〜iv、その後 1、2、3…", "页:样式[:前缀[:起始数]]，用逗号分隔。样式：1、I、i、A、a，无编号用 -。1:i,5:1 表示前 4 页为 i–iv，之后为 1、2、3…", "頁:樣式[:前綴[:起始數]]，以逗號分隔。樣式：1、I、i、A、a，無編號用 -。1:i,5:1 表示前 4 頁為 i–iv，之後為 1、2、3…", "쪽:형식[:접두어[:시작 번호]] 를 쉼표로 구분합니다. 형식: 1, I, i, A, a, 번호 없음은 -. 1:i,5:1 은 처음 4쪽이 i–iv, 그다음 1, 2, 3…", "page:style[:préfixe[:premier]], séparés par des virgules. Styles : 1, I, i, A, a, ou - pour aucun. 1:i,5:1 numérote quatre pages i–iv, puis 1, 2, 3…", "Seite:Stil[:Präfix[:erste]], durch Kommas getrennt. Stile: 1, I, i, A, a oder - für keinen. 1:i,5:1 nummeriert vier Seiten i–iv, dann 1, 2, 3 …"],
+    "Ui_LabelsNone": ["No labels: pages show their plain numbers.", "表示の設定なし: ページはそのままの番号で表示されます。", "没有标签：页面显示普通页码。", "沒有標籤：頁面顯示一般頁碼。", "레이블 없음: 쪽 번호 그대로 표시됩니다.", "Pas d’étiquettes : les pages montrent leur numéro.", "Keine Beschriftung: Seiten zeigen ihre Nummer."],
+    "Ui_LabelsRun": ["Save copy with these labels…", "この表示でコピーを保存…", "按这些标签另存副本…", "依這些標籤另存副本…", "이 레이블로 사본 저장…", "Enregistrer une copie avec ces étiquettes…", "Kopie mit dieser Beschriftung speichern…"],
+    "Ui_LabelsSaved": ["Saved {0} with {1} run(s) of page labels.", "{0} を保存しました（番号の区切り {1} 件）。", "已保存 {0}（{1} 段页码标签）。", "已儲存 {0}（{1} 段頁碼標籤）。", "{0} 저장 (레이블 구간 {1}개).", "{0} enregistré avec {1} série(s) d’étiquettes.", "{0} mit {1} Beschriftungsbereich(en) gespeichert."],
+    "Ui_LabelsRemoved": ["Saved {0} without page labels.", "{0} をページ番号の表示なしで保存しました。", "已保存 {0}（无页码标签）。", "已儲存 {0}（無頁碼標籤）。", "{0} 을(를) 레이블 없이 저장했습니다.", "{0} enregistré sans étiquettes.", "{0} ohne Seitenbeschriftung gespeichert."],
+    "Ui_AttachTitle": ["Attachments", "添付ファイル", "附件", "附件", "첨부 파일", "Pièces jointes", "Anhänge"],
+    "Ui_AttachNone": ["No attachments.", "添付ファイルはありません。", "没有附件。", "沒有附件。", "첨부 파일이 없습니다.", "Aucune pièce jointe.", "Keine Anhänge."],
+    "Ui_AttachOnPage": ["on page {0}", "{0} ページのコメント", "第 {0} 页的注释", "第 {0} 頁的註解", "{0}쪽 주석", "page {0}", "auf Seite {0}"],
+    "Ui_AttachSave": ["Save to folder…", "フォルダに保存…", "保存到文件夹…", "儲存到資料夾…", "폴더에 저장…", "Enregistrer dans un dossier…", "In Ordner speichern…"],
+    "Ui_AttachRemove": ["Remove ticked", "チェックしたものを削除", "删除勾选的", "刪除勾選的", "선택한 항목 삭제", "Retirer les cochées", "Markierte entfernen"],
+    "Ui_AttachDescription": ["Description of new attachments (optional)", "追加するファイルの説明（任意）", "新附件的说明（可选）", "新附件的說明（選填）", "새 첨부 파일 설명 (선택)", "Description des nouvelles pièces jointes (facultatif)", "Beschreibung neuer Anhänge (optional)"],
+    "Ui_AttachRun": ["Attach files…", "ファイルを添付…", "添加附件…", "加入附件…", "파일 첨부…", "Joindre des fichiers…", "Dateien anhängen…"],
+    "Ui_Attached": ["Saved {0} with {1} file(s) attached.", "{0} を保存しました（{1} 件のファイルを添付）。", "已保存 {0}（添加了 {1} 个附件）。", "已儲存 {0}（加入了 {1} 個附件）。", "{0} 저장 (파일 {1}개 첨부).", "{0} enregistré avec {1} fichier(s) joint(s).", "{0} mit {1} angehängten Datei(en) gespeichert."],
+    "Ui_Detached": ["Saved {0} with {1} attachment(s) removed.", "{0} を保存しました（添付ファイル {1} 件を削除）。", "已保存 {0}（删除了 {1} 个附件）。", "已儲存 {0}（刪除了 {1} 個附件）。", "{0} 저장 (첨부 파일 {1}개 삭제).", "{0} enregistré, {1} pièce(s) jointe(s) retirée(s).", "{0} gespeichert, {1} Anhang/Anhänge entfernt."],
+    "Ui_AttachmentsSaved": ["Saved {0} file(s) in {1}.", "{1} に {0} 件のファイルを保存しました。", "已在 {1} 保存 {0} 个文件。", "已在 {1} 儲存 {0} 個檔案。", "{1} 에 파일 {0}개를 저장했습니다.", "{0} fichier(s) enregistré(s) dans {1}.", "{0} Datei(en) in {1} gespeichert."],
+    "Ui_LayersTitle": ["Layers", "レイヤー", "图层", "圖層", "레이어", "Calques", "Ebenen"],
+    "Ui_LayersNone": ["No layers.", "レイヤーはありません。", "没有图层。", "沒有圖層。", "레이어가 없습니다.", "Aucun calque.", "Keine Ebenen."],
+    "Ui_LayersLead": ["Ticked layers show (and print) when the file opens.", "チェックしたレイヤーが、ファイルを開いたときに表示・印刷されます。", "勾选的图层在打开文件时显示（并打印）。", "勾選的圖層在開啟檔案時顯示（並列印）。", "선택한 레이어가 파일을 열 때 표시(및 인쇄)됩니다.", "Les calques cochés s’affichent (et s’impriment) à l’ouverture.", "Markierte Ebenen werden beim Öffnen gezeigt (und gedruckt)."],
+    "Ui_LayersRun": ["Save copy with these layers…", "このレイヤー設定でコピーを保存…", "按此图层设置另存副本…", "依此圖層設定另存副本…", "이 레이어 설정으로 사본 저장…", "Enregistrer une copie avec ces calques…", "Kopie mit diesen Ebenen speichern…"],
+    "Ui_LayersSaved": ["Saved {0} with the layers set.", "{0} をレイヤー設定を変えて保存しました。", "已保存 {0}（已设置图层）。", "已儲存 {0}（已設定圖層）。", "{0} 을(를) 레이어 설정으로 저장했습니다.", "{0} enregistré avec les calques réglés.", "{0} mit eingestellten Ebenen gespeichert."],
+    "Ui_LayerPages": ["page {0}", "{0} ページ", "第 {0} 页", "第 {0} 頁", "{0}쪽", "page {0}", "Seite {0}"],
+    "Ui_CertFiles": ["Certificates", "証明書", "证书", "憑證", "인증서", "Certificats", "Zertifikate"],
+    "Ui_CertLocked": ["{0} is encrypted for certificates: it opens with the digital ID of a recipient.", "{0} は証明書で暗号化されています。受信者のデジタル ID で開けます。", "{0} 已用证书加密：可用收件人的数字标识打开。", "{0} 已用憑證加密：可用收件人的數位識別碼開啟。", "{0} 은(는) 인증서로 암호화되어 있습니다. 수신자의 디지털 ID 로 열 수 있습니다.", "{0} est chiffré pour des certificats : il s’ouvre avec l’identité numérique d’un destinataire.", "{0} ist für Zertifikate verschlüsselt: es öffnet sich mit der digitalen ID eines Empfängers."],
+    "Ui_CertRecipient": ["For a certificate from {0} (serial {1})", "{0} が発行した証明書あて（シリアル {1}）", "发给 {0} 签发的证书（序列号 {1}）", "發給 {0} 簽發的憑證（序號 {1}）", "{0} 발급 인증서용(일련번호 {1})", "Pour un certificat de {0} (série {1})", "Für ein Zertifikat von {0} (Seriennummer {1})"],
+    "Ui_CertChooseId": ["Choose the digital ID to open it with.", "開くためのデジタル ID を選んでください。", "请选择用来打开的数字标识。", "請選擇用來開啟的數位識別碼。", "열 때 쓸 디지털 ID 를 선택하세요.", "Choisissez l’identité numérique pour l’ouvrir.", "Wählen Sie die digitale ID zum Öffnen."],
+    "Ui_CertOpenRun": ["Open with this digital ID…", "このデジタル ID で開く…", "用此数字标识打开…", "用此數位識別碼開啟…", "이 디지털 ID 로 열기…", "Ouvrir avec cette identité…", "Mit dieser ID öffnen…"],
+    "Ui_CertOpenNote": ["Saves a copy without the protection, and opens it.", "保護を外したコピーを保存して開きます。", "另存一份去掉保护的副本并打开。", "另存一份去掉保護的副本並開啟。", "보호를 없앤 사본을 저장하고 엽니다.", "Enregistre une copie sans la protection, et l’ouvre.", "Speichert eine Kopie ohne Schutz und öffnet sie."],
+    "Ui_CertOpened": ["Saved {0}, opened with the digital ID of {1}.", "{0} を保存しました（{1} のデジタル ID で開きました）。", "已保存 {0}（用 {1} 的数字标识打开）。", "已儲存 {0}（用 {1} 的數位識別碼開啟）。", "{0} 저장 ({1} 의 디지털 ID 로 열었습니다).", "{0} enregistré, ouvert avec l’identité de {1}.", "{0} gespeichert, mit der digitalen ID von {1} geöffnet."],
+    "Ui_CertTitle": ["Encrypt for certificates", "証明書で暗号化", "用证书加密", "用憑證加密", "인증서로 암호화", "Chiffrer pour des certificats", "Für Zertifikate verschlüsseln"],
+    "Ui_CertLead": ["Only the people whose certificates you add can open the copy, with their digital ID: no password to share. AES-256, as Acrobat's certificate security.", "追加した証明書の持ち主だけが、自分のデジタル ID でコピーを開けます。パスワードを共有する必要はありません。Acrobat の証明書セキュリティと同じ AES-256 です。", "只有你添加的证书的持有人才能用自己的数字标识打开副本，无需共享密码。采用与 Acrobat 证书安全相同的 AES-256。", "只有你加入的憑證的持有人才能用自己的數位識別碼開啟副本，無需分享密碼。採用與 Acrobat 憑證安全相同的 AES-256。", "추가한 인증서의 소유자만 자신의 디지털 ID 로 사본을 열 수 있습니다. 암호를 공유할 필요가 없습니다. Acrobat 인증서 보안과 같은 AES-256.", "Seules les personnes dont vous ajoutez le certificat ouvrent la copie, avec leur identité numérique : aucun mot de passe à partager. AES-256, comme la sécurité par certificat d’Acrobat.", "Nur die Personen, deren Zertifikate Sie hinzufügen, öffnen die Kopie mit ihrer digitalen ID: kein Passwort zum Weitergeben. AES-256 wie Acrobats Zertifikatsicherheit."],
+    "Ui_CertAdd": ["Add certificate…", "証明書を追加…", "添加证书…", "加入憑證…", "인증서 추가…", "Ajouter un certificat…", "Zertifikat hinzufügen…"],
+    "Ui_CertIncludeMe": ["Let me open it too, with this digital ID:", "自分も開けるようにする（このデジタル ID）:", "我自己也可以打开（用此数字标识）：", "我自己也可以開啟（用此數位識別碼）：", "나도 열 수 있게(이 디지털 ID):", "Pouvoir l’ouvrir moi aussi, avec cette identité :", "Auch ich darf öffnen, mit dieser ID:"],
+    "Ui_CertRun": ["Encrypt and save copy…", "暗号化してコピーを保存…", "加密并另存副本…", "加密並另存副本…", "암호화하여 사본 저장…", "Chiffrer et enregistrer une copie…", "Verschlüsseln und Kopie speichern…"],
+    "Ui_CertSealed": ["Saved {0}, encrypted for {1} certificate(s).", "{0} を保存しました（証明書 {1} 件あてに暗号化）。", "已保存 {0}（为 {1} 个证书加密）。", "已儲存 {0}（為 {1} 個憑證加密）。", "{0} 저장 (인증서 {1}개용으로 암호화).", "{0} enregistré, chiffré pour {1} certificat(s).", "{0} gespeichert, für {1} Zertifikat(e) verschlüsselt."],
+    "Ui_CertUnreadable": ["{0} is not a certificate Washi can read.", "{0} は読み取れる証明書ではありません。", "{0} 不是 Washi 能读取的证书。", "{0} 不是 Washi 能讀取的憑證。", "{0} 은(는) 읽을 수 있는 인증서가 아닙니다.", "{0} n’est pas un certificat lisible.", "{0} ist kein lesbares Zertifikat."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

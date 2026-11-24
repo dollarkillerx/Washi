@@ -20,6 +20,10 @@ public interface IDialogs
     /// <summary>A digital ID file (.p12 / .pfx).</summary>
     Task<string?> OpenDigitalIdAsync();
     Task<string?> SaveDigitalIdAsync(string suggestedName);
+    /// <summary>A certificate file (.cer, .crt, .pem, .der): someone a file may be encrypted for.</summary>
+    Task<string?> OpenCertificateAsync();
+    /// <summary>Any files (to attach to a PDF).</summary>
+    Task<IReadOnlyList<string>> OpenFilesAsync();
     /// <summary>Yes / no question; true only when the user chose the confirming button.</summary>
     Task<bool> ConfirmAsync(string title, string message, string confirm, string cancel);
 }
@@ -57,6 +61,14 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     public Task<string?> OpenFieldsAsync() => Open(Json);
     public Task<string?> OpenFontAsync() => Open(Fonts);
     public Task<string?> OpenDigitalIdAsync() => Open(Ids);
+    private static FilePickerFileType Certificates => new(L.Get("Ui_CertFiles")) { Patterns = ["*.cer", "*.crt", "*.pem", "*.der"] };
+    public Task<string?> OpenCertificateAsync() => Open(Certificates);
+
+    public async Task<IReadOnlyList<string>> OpenFilesAsync()
+    {
+        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { AllowMultiple = true });
+        return [.. files.Select(f => f.TryGetLocalPath()).OfType<string>()];
+    }
     public Task<string?> SaveDigitalIdAsync(string suggestedName) => Save(Ids, suggestedName, "p12");
     public Task<string?> SaveFieldsAsync(string suggestedName) => Save(Json, suggestedName, "json");
     public Task<string?> SavePdfAsync(string suggestedName) => Save(Pdf, suggestedName, "pdf");
