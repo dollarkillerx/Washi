@@ -53,7 +53,7 @@ cat > "$WORK/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>Washi</string>
   <key>CFBundleIdentifier</key><string>io.github.dollarkillerx.washi</string>
   <key>CFBundleExecutable</key><string>Washi.App</string>
-  <key>CFBundleIconFile</key><string>Washi.icns</string>
+  <key>CFBundleIconFile</key><string>washi.icns</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$VERSION</string>
@@ -98,5 +98,9 @@ codesign --verify --deep --strict "$APP"
 [ "$PROFILE" = "-" ] || xcrun stapler validate "$APP"
 spctl --assess --type execute -vv "$APP" 2>&1 | sed 's/^/   /'
 test -x "$APP/Contents/MacOS/mcp/washi-mcp"
+# the icon Info.plist names must be in Resources, spelled the same (vpk keeps the file's own name)
+icon="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$APP/Contents/Info.plist")"
+# (compare names exactly: the disk ignores case, Finder's icon lookup does not)
+ls "$APP/Contents/Resources" | grep -qxF "$icon" || { echo "icon $icon missing from Resources" >&2; exit 1; }
 echo "done: $OUT"
 ls -lh "$OUT" | grep -i -E "osx|\.nupkg"
