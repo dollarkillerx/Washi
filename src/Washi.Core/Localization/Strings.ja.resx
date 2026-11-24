@@ -157,6 +157,9 @@
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract フォルダ [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   レイヤーの一覧、表示の設定
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   証明書で暗号化；washi pdf unlock &lt;in.pdf&gt; --id id.p12   開く
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   フォームの値（データファイルへ）
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows 表.csv [-o フォルダ] [--name-column 列]   1 行ごとにコピー
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|フォルダ&gt; ... -o 表.csv   記入済みフォームを 1 つの表に集計
   washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} を保存しました: 文字 {1}、画像 {2}、図形 {3} を削除。確認: 消去した場所に残った文字 {4}、それ以外で変わった画素 {5}。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0} ページで残したもの: {1}</value></data>
@@ -1118,4 +1121,28 @@
   <data name="Ui_CertRun" xml:space="preserve"><value>暗号化してコピーを保存…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>{0} を保存しました（証明書 {1} 件あてに暗号化）。</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} は読み取れる証明書ではありません。</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>「{0}」はフォームデータのファイルではありません（.fdf、.xfdf、.csv、.json）。</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} には記入欄がありません。</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>フォームデータが書いた通りに読み戻せなかったため、保存しませんでした。</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} には見出し行の下に値の行がありません。</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>{0} をフォームデータとして読み取れません。</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>{0} の名前はどれも {1} の記入欄と一致しません。</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} には「{1}」の列がありません。</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>集計する記入済みフォームを指定してください。</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>フォームデータ</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>フォームデータ</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>入力済みの値をファイルに保存したり（XFDF、FDF、CSV、JSON。拡張子で形式が決まります）、そのファイルからフォームに入力したりします。</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>データを保存…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>データから入力…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>表（見出しが記入欄の名前の CSV）から 1 行ごとに記入済みのコピーを作ります。複数の記入済みフォームを 1 つの表にまとめることもできます。</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>コピーの名前にする列（任意）</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>例: 社員番号</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>1 行ごとにコピーを作成…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>フォームを表に集計…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>集計</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>{0} を保存しました（記入欄 {1} 件）。</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>{0} を保存しました（データから {1} 件を入力）。</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>「{0}」はこのフォームの記入欄ではありません。</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{1} に {0} 部のコピーを作成しました。</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} を保存しました（フォーム {1} 件）。</value></data>
 </root>

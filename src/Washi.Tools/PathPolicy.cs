@@ -70,6 +70,21 @@ public sealed class PathPolicy
         return full;
     }
 
+    /// <summary>
+    /// Where to write a file that is not a PDF (form data): "&lt;input name&gt;&lt;suffix&gt;" next to the input by
+    /// default, with one of <paramref name="extensions"/>; inside the allowed folders; must not exist yet.
+    /// </summary>
+    public string OutputFile(string? path, string input, string suffix, params string[] extensions)
+    {
+        var target = string.IsNullOrWhiteSpace(path) ? Path.Combine(Path.GetDirectoryName(input)!, Path.GetFileNameWithoutExtension(input) + suffix) : path;
+        var full = Resolve(target);
+        if (!Inside(full, Roots)) throw new ToolException($"{target} is outside the folders Washi may use ({string.Join(", ", Roots)})");
+        if (!Directory.Exists(Path.GetDirectoryName(full))) throw new ToolException($"folder does not exist: {Path.GetDirectoryName(target)}");
+        if (File.Exists(full) || Directory.Exists(full)) throw new ToolException($"{target} already exists; choose another output name (Washi never overwrites files)");
+        if (!extensions.Any(e => full.EndsWith(e, StringComparison.OrdinalIgnoreCase))) throw new ToolException($"output must end in {string.Join(", ", extensions)}");
+        return full;
+    }
+
     /// <summary>A folder to write new files into: inside the allowed folders; created if missing.</summary>
     public string OutputFolder(string? path, string input, string suffix)
     {

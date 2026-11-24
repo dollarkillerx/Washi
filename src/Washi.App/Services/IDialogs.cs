@@ -22,6 +22,10 @@ public interface IDialogs
     Task<string?> SaveDigitalIdAsync(string suggestedName);
     /// <summary>A certificate file (.cer, .crt, .pem, .der): someone a file may be encrypted for.</summary>
     Task<string?> OpenCertificateAsync();
+    /// <summary>A form data file (.xfdf, .fdf, .csv, .json).</summary>
+    Task<string?> OpenFormDataAsync();
+    /// <summary>Where to save form data; the extension chosen picks the format.</summary>
+    Task<string?> SaveFormDataAsync(string suggestedName);
     /// <summary>Any files (to attach to a PDF).</summary>
     Task<IReadOnlyList<string>> OpenFilesAsync();
     /// <summary>Yes / no question; true only when the user chose the confirming button.</summary>
@@ -63,6 +67,9 @@ public sealed class AvaloniaDialogs(TopLevel owner) : IDialogs
     public Task<string?> OpenDigitalIdAsync() => Open(Ids);
     private static FilePickerFileType Certificates => new(L.Get("Ui_CertFiles")) { Patterns = ["*.cer", "*.crt", "*.pem", "*.der"] };
     public Task<string?> OpenCertificateAsync() => Open(Certificates);
+    private static FilePickerFileType FormDataFiles => new(L.Get("Ui_FormDataFiles")) { Patterns = ["*.xfdf", "*.fdf", "*.csv", "*.json"] };
+    public Task<string?> OpenFormDataAsync() => Open(FormDataFiles);
+    public Task<string?> SaveFormDataAsync(string suggestedName) => Save(FormDataFiles, suggestedName, Path.GetExtension(suggestedName).TrimStart('.'));
 
     public async Task<IReadOnlyList<string>> OpenFilesAsync()
     {

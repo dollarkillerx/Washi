@@ -157,6 +157,9 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dir [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   list layers, or set which show
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   encrypt for certificates;  washi pdf unlock &lt;in.pdf&gt; --id id.p12   open it
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   the form's values (to a data file)
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows table.csv [-o folder] [--name-column col]   one copy per row
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|folder&gt; ... -o table.csv   many filled forms into one table
   washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>Saved {0}: removed {1} text run(s), {2} image(s), {3} drawing(s). Check: {4} character(s) left in the erased areas, {5} pixel(s) changed elsewhere.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  kept on page {0}: {1}</value></data>
@@ -1118,4 +1121,28 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Ui_CertRun" xml:space="preserve"><value>Encrypt and save copy…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>Saved {0}, encrypted for {1} certificate(s).</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} is not a certificate Washi can read.</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>“{0}” is not a form data file (.fdf, .xfdf, .csv or .json).</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} has no form fields.</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>The form data did not read back as written; it was not kept.</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} has no row of values under its header.</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>{0} could not be read as form data.</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>None of the names in {0} is a field of {1}.</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} has no column “{1}”.</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>Give the filled forms to collect.</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>Form data</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>Form data</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>Save the values typed into the form (XFDF, FDF, CSV or JSON: the extension you give chooses), or fill the form from such a file.</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>Save data…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>Fill from data…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>From a table (CSV whose header names the fields), one filled copy per row; or many filled forms into one table.</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>Column that names each copy (optional)</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>for example 社員番号</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>Fill one copy per row…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>Collect forms into a table…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>collected</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>Saved {0} with {1} field value(s).</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>Saved {0} with {1} field(s) filled from the data.</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>“{0}” is no field of this form.</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>Filled {0} copies in {1}.</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>Saved {0} with {1} form(s).</value></data>
 </root>

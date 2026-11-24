@@ -198,7 +198,9 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
   whose certificates you add (and you, with your digital ID) can open the copy; a file encrypted that way opens with a
   recipient's digital ID into a copy without the protection.
 - **Document**: page labels (the numbers the viewer shows: i, ii, 1, 2, A-1 …), attached files (attach, save out,
-  remove) and layers (which show and print when the file opens). Each change saves a copy (see below).
+  remove), layers (which show and print when the file opens) and form data (save the values to XFDF, FDF, CSV or
+  JSON, fill from such a file, one filled copy per row of a table, many filled forms into one table). Each change
+  saves a copy (see below).
 - **Redact**: find words, phrases, e-mail addresses, phone numbers and long ID numbers (or drag over any area: a
   photo, a signature, a stamp), untick what should stay, then save a copy where what lies under each black box is
   removed from the file for real (see below).
@@ -411,6 +413,30 @@ washi pdf unlock report_sealed.pdf --id me.p12                     # report_seal
   form; all 21 unprotected public test documents encrypt and open again with the same text.
 - Setting passwords and opening certificate-encrypted files are not offered to the AI assistant or MCP clients.
   `remove_hidden_info` and `encrypt_for_certificates` (which needs only the recipients' certificates) are.
+
+## Form data
+
+```bash
+washi pdf data filled.pdf -o filled.xfdf                       # the values, as Acrobat imports them (.fdf, .csv, .json too)
+washi pdf data form.pdf --import filled.xfdf                   # form_filled.pdf
+washi pdf data form.pdf --rows staff.csv --name-column 社員番号   # form_filled/A001.pdf, A002.pdf … one per row
+washi pdf collect form_filled/ -o summary.csv                  # many filled forms into one table
+```
+
+In the editor: **Document** in the tool rail, *Form data*. Agents use `export_form_data`, `import_form_data`,
+`fill_form_from_table` and `collect_form_data`.
+
+- **Formats**: FDF (PDF 32000 12.7.8) and XFDF (ISO 19444-1) with the fields as a tree of partial names and buttons by
+  their state names, as Acrobat writes and reads them; CSV with a header row of field names (UTF-8 with a byte-order
+  mark, so spreadsheets read Japanese; Shift_JIS from Japanese spreadsheets is read too); JSON as `fill_fields` takes it.
+  Each file is read back before it is kept.
+- **Importing** fills as Washi always fills: the form's formats, ranges and calculations apply and Washi draws each
+  value. Names that are no field of the form are listed.
+- **One copy per row**: empty cells leave their field as the form has it; a column can name each copy; existing files
+  are never replaced.
+- **Collecting**: a row per PDF, the file name first, a column per field in the order the fields first appear.
+- Run on the public IRS 1040, W-4, W-8BEN and W-9 and the USCIS I-9: every value filled into them goes out through all
+  four formats and back into the blank form unchanged.
 
 ## Page labels, attachments and layers
 
@@ -872,6 +898,10 @@ There are two ways to run it:
 | `flatten_pdf` | new PDF with form fields and/or comments drawn into the page (no longer editable), pages compared before it is kept | writes a **new** file |
 | `convert_to_pdfa` | what stands between a PDF and PDF/A-2b (`check_only`), or a new PDF/A-2b copy: fonts embedded with every character in place, sRGB/CMYK output intent, no scripts or attachments, XMP; checked again before it is kept | writes a **new** file |
 | `verify_signatures` | the digital signatures in a PDF: kind (approval, certification, time-stamp), signer, time, intact, trusted, LTV, revoked, what changed afterwards and whether it is allowed, status | no |
+| `export_form_data` | a form's values to a new FDF, XFDF, CSV or JSON file | writes a **new** file |
+| `import_form_data` | new PDF filled from an FDF, XFDF, CSV or JSON file | writes a **new** file |
+| `fill_form_from_table` | one filled copy of a form per row of a CSV, into a folder | writes files |
+| `collect_form_data` | many filled forms into one new CSV table | writes a **new** file |
 | `list_attachments` | the files attached to a PDF: name, size, description, date, page of a file-attachment comment | no |
 | `edit_attachments` | new PDF with files attached and/or attachments removed | writes a **new** file |
 | `extract_attachments` | the attached files saved into a folder (never over a file that is there) | writes files |
@@ -976,7 +1006,7 @@ Washi.App (Avalonia) ── Washi.McpHost (in-app MCP: HTTP + local socket) ◄�
 |---|---|
 | `Washi.Core` | Reading and rendering PDFs (PDFium via PDFiumCore), writing AcroForms (PDFsharp 6.2, MIT), UI strings in 7 languages. Shared geometry (`PdfRect`, top-down points on the upright page), page snapshots, a small PNG writer. `Pages` (merge and split that keep forms; `PdfEraser` and a byte-range content-stream tokenizer; `PdfRedactor`, its content interpreter and font metrics; `PdfTextEditor`; `PdfStamper`; `PdfFromImages`; `PdfComparer`; `PdfPageImages`; `PdfLinks`; `PdfPageImageEdit`; `PdfSecurity`, `PdfCleaner`), `Ocr` (engines, the invisible text layer and its glyphless font) |
 | `Washi.Masume` | form-field detection. `fields.json` has the same shape as the prototype's output |
-| `Washi.Tools` | the 43 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
+| `Washi.Tools` | the 47 PDF tools, `ToolRegistry`, `PathPolicy` (allowed folders). Each tool has a `ToolRisk` level: `ReadOnly`, `Write` (new file) or `Destructive` (cannot be undone) |
 | `Washi.Ai` | a thin `IAiModel` (instructions + text + page images + optional JSON schema → answer), so each provider keeps its own features:<br>• **Claude** through the official Anthropic C# SDK: structured outputs, server-side refusal fallback<br>• **GPT** through the official OpenAI SDK: strict JSON schema<br>• **DeepSeek** and **local models** (e.g. Ollama) through OpenAI-compatible endpoints: JSON mode<br>Plus the AI features, `SecretMasker` and settings/keys |
 | `Washi.Mcp` | `washi-mcp`: the standalone MCP server over the tool registry (official C# MCP SDK, stdio), or with `--app` a byte pump to the desktop app's local socket |
 | `Washi.McpHost` | the desktop app's MCP server (ported from MySSH): Streamable HTTP on loopback (stateless, bearer token, Origin/Host checks) and a Unix socket / named pipe (owner-only, peer uid checked); client list and disconnect |
@@ -1047,6 +1077,7 @@ build/macos/bundle.sh && open build/out/Washi.app                     # the macO
 28. ~~PDF/A-2b: checking and converting, with fonts that are only named replaced in place.~~ Done (`washi pdf pdfa`, the Finalize tool, `convert_to_pdfa`).
 29. ~~Long-term validation (PAdES B-LT, B-LTA) and certification signatures.~~ Done (`washi pdf ltv`, `sign --certify --ltv`, the Sign tool, `add_ltv`).
 30. ~~Page labels, attachments, layers, certificate security.~~ Done (`washi pdf labels|attachments|layers`, `protect --to`, `unlock --id`, the Document and Protect tools, eight MCP tools).
+31. ~~Form data: FDF, XFDF, CSV and JSON out and in, a copy per row, many forms into one table.~~ Done (`washi pdf data|collect`, the Document tool, four MCP tools).
 
 ## License
 

@@ -157,6 +157,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract Ordner [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   Ebenen auflisten oder einstellen, welche sichtbar sind
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   für Zertifikate verschlüsseln; washi pdf unlock &lt;in.pdf&gt; --id id.p12   öffnen
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   die Werte des Formulars (in eine Datei)
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows tabelle.csv [-o Ordner] [--name-column Spalte]   eine Kopie je Zeile
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|Ordner&gt; ... -o tabelle.csv   ausgefüllte Formulare in eine Tabelle
   washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} gespeichert: {1} Text(e), {2} Bild(er), {3} Zeichnung(en) entfernt. Prüfung: {4} Zeichen in den gelöschten Bereichen übrig, {5} Pixel anderswo geändert.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  auf Seite {0} behalten: {1}</value></data>
@@ -1118,4 +1121,28 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_CertRun" xml:space="preserve"><value>Verschlüsseln und Kopie speichern…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>{0} gespeichert, für {1} Zertifikat(e) verschlüsselt.</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} ist kein lesbares Zertifikat.</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>„{0}“ ist keine Formulardaten-Datei (.fdf, .xfdf, .csv oder .json).</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} hat keine Formularfelder.</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>Die Formulardaten ließen sich nicht wie geschrieben zurücklesen; die Datei wurde nicht behalten.</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} hat unter der Kopfzeile keine Wertezeile.</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>{0} ließ sich nicht als Formulardaten lesen.</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>Keiner der Namen in {0} ist ein Feld von {1}.</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} hat keine Spalte „{1}“.</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>Geben Sie die ausgefüllten Formulare zum Sammeln an.</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>Formulardaten</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>Formulardaten</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>Die eingetragenen Werte speichern (XFDF, FDF, CSV oder JSON: die Endung entscheidet) oder das Formular aus einer solchen Datei füllen.</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>Daten speichern…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>Aus Daten füllen…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>Aus einer Tabelle (CSV, deren Kopfzeile die Felder nennt) eine ausgefüllte Kopie je Zeile; oder viele ausgefüllte Formulare in eine Tabelle.</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>Spalte, die jede Kopie benennt (optional)</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>zum Beispiel Personalnummer</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>Eine Kopie je Zeile…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>Formulare in Tabelle sammeln…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>gesammelt</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>{0} mit {1} Feldwert(en) gespeichert.</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>{0} gespeichert, {1} Feld(er) aus den Daten gefüllt.</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>„{0}“ ist kein Feld dieses Formulars.</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{0} Kopie(n) in {1} ausgefüllt.</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} mit {1} Formular(en) gespeichert.</value></data>
 </root>

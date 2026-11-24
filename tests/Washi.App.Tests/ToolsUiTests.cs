@@ -1172,6 +1172,52 @@ public sealed class ToolsUiTests : IDisposable
         Assert.True(vm.Protect.IsCertLocked && vm.ActiveTool == Tool.Protect);
     }
 
+    [AvaloniaFact]
+    public async Task Form_data_goes_out_and_back_in_one_copy_per_row_and_into_one_table()
+    {
+        var blank = Form("blank.pdf");
+        var pdf = Path.Combine(_dir, "form.pdf");
+        AcroFormWriter.Write(blank, pdf, [new FormField(0, FormFieldKind.Text, new Washi.Core.PdfRect(40, 300, 260, 324), "氏名"),
+                                          new FormField(0, FormFieldKind.Text, new Washi.Core.PdfRect(40, 340, 260, 364), "番号")], FormScript.Japanese);
+        AcroFormFields.Fill(pdf, Path.Combine(_dir, "filled.pdf"), new Dictionary<string, string> { ["氏名"] = "山田 太郎", ["番号"] = "A1" });
+        var csv = Path.Combine(_dir, "people.csv");
+        File.WriteAllText(csv, "氏名,番号\r\n佐藤 花子,B2\r\n鈴木 一郎,C3\r\n");
+        var dialogs = new FakeDialogs { SaveData = Path.Combine(_dir, "data.xfdf"), Folder = Directory.CreateDirectory(Path.Combine(_dir, "copies")).FullName };
+        var (w, vm) = await Open(Path.Combine(_dir, "filled.pdf"), dialogs);
+        vm.ActiveTool = Tool.Document;
+        await vm.Document.PrepareAsync();
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Button>("ExportDataButton")!.IsEffectivelyVisible);
+        var d = vm.Document;
+
+        await d.ExportDataCommand.ExecuteAsync(null);
+        Assert.True(File.Exists(dialogs.SaveData), vm.Status);
+
+        // into the blank form
+        await vm.LoadAsync(pdf);
+        dialogs.FormData = dialogs.SaveData;
+        dialogs.SavePdf = Path.Combine(_dir, "form_filled.pdf");
+        await d.ImportDataCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.Equal("山田 太郎", AcroFormFields.List(vm.PdfPath!).Single(f => f.Name == "氏名").Value);
+
+        // a copy per row, named by a column
+        await vm.LoadAsync(pdf);
+        dialogs.FormData = csv;
+        d.NameColumn = "番号";
+        await d.FillFromTableCommand.ExecuteAsync(null);
+        Assert.Equal(["B2.pdf", "C3.pdf"], Directory.GetFiles(dialogs.Folder!).Select(Path.GetFileName).Order());
+        Assert.Contains(L.F("Ui_FormDataFilledMany", 2, dialogs.Folder!), d.FormDataResult);
+
+        // and back into one table
+        dialogs.Pdfs = [.. Directory.GetFiles(dialogs.Folder!).Order()];
+        dialogs.SaveData = Path.Combine(_dir, "summary.csv");
+        await d.CollectCommand.ExecuteAsync(null);
+        var table = Washi.Core.Forms.PdfFormData.ReadCsv(dialogs.SaveData);
+        Assert.Equal(["file", "氏名", "番号"], table[0]);
+        Assert.Equal(["C3.pdf", "鈴木 一郎", "C3"], table[2]);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {
