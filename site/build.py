@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Builds the Washi website into site/dist: English at the root, Japanese in ja/, Chinese in zh/.
 
-    python3 site/build.py                     # site/dist, for https://washi-c0h.pages.dev
+    python3 site/build.py                     # site/dist, for https://washi-pdf.pages.dev
     python3 site/build.py --url https://…     # for another address (canonical and hreflang links)
-    npx wrangler pages deploy site/dist --project-name washi --branch main
+    npx wrangler pages deploy site/dist --project-name washi-pdf --branch main
 
 The page is one template below; every visible string is in T, in the three languages. Pictures in
 site/img are taken by the app's screenshot test (tests/Washi.App.Tests, EditorTests.Screenshot) on a
@@ -14,7 +14,7 @@ import html, os, re, shutil, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "dist")
 REPO = "https://github.com/dollarkillerx/Washi"
-SITE = "https://washi-c0h.pages.dev"  # the Cloudflare Pages project "washi"
+SITE = "https://washi-pdf.pages.dev"  # the Cloudflare Pages project "washi-pdf"
 LANGS = {"en": ("en", "", "English"), "ja": ("ja", "ja/", "日本語"), "zh": ("zh-Hans", "zh/", "中文")}
 
 T = {
