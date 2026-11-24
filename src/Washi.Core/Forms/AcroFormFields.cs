@@ -27,6 +27,18 @@ public sealed record FieldInfo(
 public sealed record FillResult(int Filled, IReadOnlyList<string> UnknownNames, IReadOnlyList<string> Notes);
 
 /// <summary>
+/// One widget of a field: where it is and what it shows, for filling the form on screen. A radio button, or each place
+/// a field shows on, is a widget of its own.
+/// </summary>
+/// <param name="Value">The field's value; for check boxes and radio buttons the state name it holds ("Off" when none).</param>
+/// <param name="OnState">Check boxes and radio buttons: the state this widget turns on ("" for other fields).</param>
+/// <param name="OnLabel">The option that state stands for (its /Opt label when the form has one).</param>
+/// <param name="FontSize">The size the field asks for (0: fitted to the box).</param>
+public sealed record WidgetInfo(string Name, string Type, int Page, PdfRect Rect, string Value, string OnState, string OnLabel, int MaxLen,
+                                bool Comb, bool Multiline, bool ReadOnly, IReadOnlyList<string> Options, int Align, double FontSize,
+                                FieldLogic? Logic, string Tooltip);
+
+/// <summary>
 /// Reads and fills the AcroForm fields of a PDF (PDFsharp).
 /// Filling writes the value and draws the field's appearance itself, so the result looks the
 /// same in every viewer and does not depend on the viewer's font substitution.
@@ -86,6 +98,54 @@ public static class AcroFormFields
                 (ff & FfReadOnly) != 0, options, field.Elements.GetString("/TU"), logic, logic?.Display(value) ?? value));
         }
         return result;
+    }
+
+    /// <summary>Every widget of the form's fields that is on a page (signature fields and push buttons left out).</summary>
+    public static IReadOnlyList<WidgetInfo> Widgets(string path)
+    {
+        using var doc = PdfReader.Open(path, Pages.PdfPasswords.For(path) ?? "", PdfDocumentOpenMode.Import);
+        var form = doc.Internals.Catalog.Elements.GetDictionary("/AcroForm");
+        var list = new List<WidgetInfo>();
+        var pages = PageLookup(doc);
+        foreach (var (field, name, widgets) in Terminals(doc))
+        {
+            string ft = Inherited(field, "/FT") is PdfName n ? n.Value : "";
+            int ff = Inherited(field, "/Ff") is PdfInteger i ? i.Value : 0;
+            string type = ft switch
+            {
+                "/Tx" => "text", "/Ch" => "choice",
+                "/Btn" when (ff & FfPushButton) != 0 => "",
+                "/Btn" when (ff & FfRadio) != 0 => "radio",
+                "/Btn" => "checkbox",
+                _ => "",
+            };
+            if (type.Length == 0) continue;
+            var states = type is "checkbox" or "radio" ? ButtonStates(field, widgets) : [];
+            string value = Inherited(field, "/V") switch
+            {
+                PdfString s => s.Value,
+                PdfStringObject so => so.Value,
+                PdfName nm => nm.Value.TrimStart('/'),
+                PdfArray a => string.Join(", ", a.Elements.Select(e => e is PdfString es ? es.Value : e.ToString())),
+                _ => type is "checkbox" or "radio" ? "Off" : "",
+            };
+            int maxLen = Inherited(field, "/MaxLen") is PdfInteger ml ? ml.Value : 0;
+            int q = Inherited(field, "/Q") is PdfInteger qi ? qi.Value : 0;
+            string da = Inherited(field, "/DA") switch { PdfString d => d.Value, PdfStringObject d => d.Value, _ => form?.Elements.GetString("/DA") ?? "" };
+            var logic = type == "text" ? FieldScripts.Read(field) : null;
+            var options = type == "choice" ? ChoiceOptions(field) : (IReadOnlyList<string>)[];
+            foreach (var w in widgets)
+            {
+                int page = PageOf(w, pages, doc);
+                if (page < 0) continue;
+                var on = type is "checkbox" or "radio" ? OnStates(w).FirstOrDefault() ?? "" : "";
+                var label = states.FirstOrDefault(st => st.State == on).Label ?? on;
+                list.Add(new WidgetInfo(name, type, page, TopDown(doc.Pages[page], w.Elements.GetArray("/Rect")), value, on, label, maxLen,
+                    type == "text" && (ff & FfComb) != 0 && maxLen > 0, type == "text" && (ff & FfMultiline) != 0, (ff & FfReadOnly) != 0,
+                    options, q, ParseDa(da).Size, logic, field.Elements.GetString("/TU")));
+            }
+        }
+        return list;
     }
 
     // ------------------------------------------------------------------ fill

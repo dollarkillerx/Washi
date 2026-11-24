@@ -1218,6 +1218,77 @@ public sealed class ToolsUiTests : IDisposable
         Assert.Equal(["C3.pdf", "鈴木 一郎", "C3"], table[2]);
     }
 
+    [AvaloniaFact]
+    public async Task A_pdf_that_is_already_a_form_is_filled_in_where_it_is_and_saved()
+    {
+        var blank = Form("blank.pdf");
+        var pdf = Path.Combine(_dir, "form.pdf");
+        AcroFormWriter.Write(blank, pdf,
+        [
+            new FormField(0, FormFieldKind.Text, new Washi.Core.PdfRect(40, 300, 260, 324), "氏名"),
+            new FormField(0, FormFieldKind.Text, new Washi.Core.PdfRect(40, 340, 260, 364), "住所"),
+            new FormField(0, FormFieldKind.Checkbox, new Washi.Core.PdfRect(40, 380, 52, 392), "同意"),
+            new FormField(0, FormFieldKind.Radio, new Washi.Core.PdfRect(40, 410, 52, 422), "有無", Export: "有"),
+            new FormField(0, FormFieldKind.Radio, new Washi.Core.PdfRect(80, 410, 92, 422), "有無", Export: "無"),
+        ], FormScript.Japanese);
+        var prefilled = Path.Combine(_dir, "prefilled.pdf");
+        AcroFormFields.Fill(pdf, prefilled, new Dictionary<string, string> { ["住所"] = "東京都" });
+        var dialogs = new FakeDialogs { SavePdf = Path.Combine(_dir, "prefilled_filled.pdf") };
+        var (w, vm) = await Open(prefilled, dialogs);
+        vm.ActiveTool = Tool.Form;
+        Dispatcher.UIThread.RunJobs();
+        for (int i = 0; i < 50 && !vm.FillingForm; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+
+        // its own fields, with what it holds, ready to fill
+        Assert.True(vm.FillingForm && vm.PreviewMode);
+        Assert.False(vm.ShowEditTools);
+        Assert.True(w.FindControl<StackPanel>("FillFormPanel")!.IsEffectivelyVisible);
+        Assert.Equal(L.Get("Ui_SaveFilled"), vm.SaveText);
+        Assert.Equal(5, vm.Fields.Count);
+        Assert.Equal("東京都", vm.Fields.Single(f => f.Name == "住所").Value);
+
+        // typed and clicked as a viewer would
+        vm.Fields.Single(f => f.Name == "氏名").Value = "山田 太郎";
+        vm.ActivateField(vm.Fields.Single(f => f.Name == "同意"));
+        vm.ActivateField(vm.Fields.Single(f => f.Kind == Washi.Masume.FieldKind.Radio && f.Export == "1"));
+        Assert.True(vm.Fields.Single(f => f.Name == "同意").IsChecked);
+        await vm.MakeFillableCommand.ExecuteAsync(null);   // ⌘S saves the filled copy
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        var saved = AcroFormFields.List(dialogs.SavePdf).ToDictionary(f => f.Name, f => f.Value);
+        Assert.Equal(("山田 太郎", "東京都", "Yes", "無"), (saved["氏名"], saved["住所"], saved["同意"], saved["有無"]));
+
+        // the copy opens in the same mode, with the values in place
+        for (int i = 0; i < 50 && !vm.FillingForm; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        Assert.True(vm.FillingForm);
+        Assert.Equal("山田 太郎", vm.Fields.Single(f => f.Name == "氏名").Value);
+        await vm.MakeFillableCommand.ExecuteAsync(null);
+        Assert.Equal(L.Get("Ui_NothingChanged"), vm.Status);
+
+        // a form protected against changes but open to filling in: filled, and still protected
+        var locked = Path.Combine(_dir, "locked.pdf");
+        using (var d = PdfSharp.Pdf.IO.PdfReader.Open(pdf, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Modify))
+        {
+            d.SecuritySettings.OwnerPassword = "owner-1";
+            d.SecuritySettings.PermitModifyDocument = d.SecuritySettings.PermitAnnotations = false;
+            d.SecuritySettings.PermitFormsFill = true;
+            d.SecurityHandler.SetEncryptionToV5();
+            d.Save(locked);
+        }
+        await vm.LoadAsync(locked);
+        for (int i = 0; i < 50 && !vm.FillingForm; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        vm.Fields.Single(f => f.Name == "氏名").Value = "佐藤 花子";
+        dialogs.SavePdf = Path.Combine(_dir, "locked_filled.pdf");
+        await vm.MakeFillableCommand.ExecuteAsync(null);
+        Assert.True(dialogs.SavePdf == vm.PdfPath, vm.Status);
+        Assert.Equal("佐藤 花子", AcroFormFields.List(dialogs.SavePdf).Single(f => f.Name == "氏名").Value);
+        Assert.True(Washi.Core.Pages.PdfSecurity.Inspect(dialogs.SavePdf) is { Encrypted: true, FullAccess: false });
+
+        // finding boxes instead turns it back into making a form
+        await vm.DetectCommand.ExecuteAsync(null);
+        Assert.False(vm.FillingForm);
+        Assert.Equal(L.Get("Ui_MakeFillable"), vm.SaveText);
+    }
+
     [Fact]
     public async Task The_pdfium_lock_is_released_even_when_the_caller_never_resumes()
     {

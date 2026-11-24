@@ -26,7 +26,7 @@
             <NativeMenuItem Header="{l:Tr Ui_MenuFile}">
                 <NativeMenu>
                     <NativeMenuItem Header="{l:Tr Ui_Open}" Command="{Binding OpenCommand}" Gesture="Cmd+O" />
-                    <NativeMenuItem Header="{l:Tr Ui_MakeFillable}" Command="{Binding MakeFillableCommand}" Gesture="Cmd+S" />
+                    <NativeMenuItem Header="{Binding SaveText}" Command="{Binding MakeFillableCommand}" Gesture="Cmd+S" />
                     <NativeMenuItem Header="{l:Tr Ui_PrintMenu}" Command="{Binding Print.OpenCommand}" Gesture="Cmd+P" />
                     <NativeMenuItemSeparator />
                     <NativeMenuItem Header="{l:Tr Ui_Close}" Command="{Binding CloseDocumentCommand}" Gesture="Cmd+W" />
@@ -335,7 +335,7 @@
                                     x:Name="MakeFillableButton">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <c:Icon Data="{StaticResource I.Save}" Size="18" />
-                                    <TextBlock Text="{l:Tr Ui_MakeFillable}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding SaveText}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <TextBlock Classes="note" Text="⌘S" HorizontalAlignment="Center" />
@@ -343,6 +343,21 @@
                     </Border>
                     <ScrollViewer>
                         <StackPanel Margin="20,18,20,18">
+                          <!-- the PDF already has a form: fill it in -->
+                          <StackPanel IsVisible="{Binding FillingForm}" x:Name="FillFormPanel">
+                            <TextBlock Classes="title" Text="{l:Tr Ui_FillTitle}" />
+                            <TextBlock Classes="lead" Text="{l:Tr Ui_FillLead}" />
+                            <TextBlock Classes="note" Text="{Binding FieldSummary}" Margin="0,10,0,0" />
+                            <TextBlock Classes="section" Text="{l:Tr Ui_FillNewFormTitle}" />
+                            <TextBlock Classes="note" Text="{l:Tr Ui_FillNewFormNote}" TextWrapping="Wrap" />
+                            <Button Classes="action" Command="{Binding DetectCommand}" Margin="0,6,0,0" x:Name="NewFormInsteadButton">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <c:Icon Data="{StaticResource I.Detect}" Size="18" />
+                                    <TextBlock Text="{l:Tr Ui_FillNewForm}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="200" />
+                                </StackPanel>
+                            </Button>
+                          </StackPanel>
+                          <StackPanel IsVisible="{Binding !FillingForm}">
                             <TextBlock Classes="title" Text="{l:Tr Ui_FormTitle}" />
                             <TextBlock Classes="lead" Text="{l:Tr Ui_FormLead}" />
                             <TextBlock Classes="note" Text="{Binding FieldSummary}" Margin="0,10,0,0" IsVisible="{Binding HasDocument}" />
@@ -399,6 +414,7 @@
                                 <Button Grid.Column="2" Command="{Binding SaveFieldsCommand}" IsEnabled="{Binding HasDocument}" HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center" Content="{l:Tr Ui_SaveShort}" ToolTip.Tip="{l:Tr Ui_SaveFields}" />
                             </Grid>
+                          </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
@@ -1826,7 +1842,8 @@
                                 <TextBlock Text="{Binding SelectedField.Label}" TextWrapping="Wrap" />
                             </StackPanel>
                             </StackPanel>
-                            <!-- how the value looks: fitted to the box unless a size is chosen -->
+                            <!-- how the value looks: fitted to the box unless a size is chosen (the form's own look when filling it) -->
+                            <StackPanel IsVisible="{Binding !FillingForm}">
                             <StackPanel IsVisible="{Binding SelectedField.HasTextStyle, FallbackValue=False}" x:Name="TextStylePanel">
                                 <Grid ColumnDefinitions="*,8,*">
                                     <StackPanel Grid.Column="0">
@@ -1845,6 +1862,7 @@
                                           SelectedValue="{Binding SelectedField.Font}" />
                                 <Button Content="{l:Tr Ui_StyleApplyAll}" Command="{Binding ApplyStyleToAllCommand}" Padding="10,4" FontSize="12"
                                         Margin="0,8,0,0" />
+                            </StackPanel>
                             </StackPanel>
                             <StackPanel IsVisible="{Binding SelectedField.HasPrefilled, FallbackValue=False}">
                                 <TextBlock Classes="caption" Text="{l:Tr Ui_Prefilled}" />

@@ -157,6 +157,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     private void OnFieldPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(FieldViewModel.Value) && sender is FieldViewModel changed) SyncSameName(changed);
         if (e.PropertyName == nameof(FieldViewModel.Value)) RefreshListFields();
         if (e.PropertyName is nameof(FieldViewModel.Value) or nameof(FieldViewModel.CalcOp) or nameof(FieldViewModel.CalcSources)
                            or nameof(FieldViewModel.Name) or nameof(FieldViewModel.Format) or nameof(FieldViewModel.Decimals))
@@ -285,12 +286,13 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool ShowSidePanel => HasDocument && !IsSettingsTool && (ShowPagesPanel || ShowFieldsPanel || ShowBookmarksPanel);
 
     /// <summary>The floating select / draw / delete toolbar belongs to the form tool.</summary>
-    public bool ShowEditTools => HasDocument && IsFormTool;
+    public bool ShowEditTools => HasDocument && IsFormTool && !FillingForm;
 
     partial void OnActiveToolChanged(Tool value)
     {
         if (value != Tool.Form) { DrawMode = false; PreviewMode = false; }
-        if (value == Tool.Form && PdfPath is { } p && _detectedFor != p) _ = DetectAsync();
+        if (value == Tool.Form && PdfPath is { } p && _detectedFor != p) _ = PrepareFormAsync();
+        if (FillingForm) _ = RenderPageAsync();   // the form's fields are drawn by the editor only in the Form tool
         if (value == Tool.Ocr) _ = Ocr.RefreshPlanAsync();
         if (value == Tool.Combine) Combine.OfferCurrentDocument();
         if (value == Tool.Organize) Organize.Prepare();
@@ -336,6 +338,98 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public bool HasFields => Fields.Count > 0;
 
     public bool IsSelectMode => !DrawMode && !PreviewMode;
+
+    /// <summary>
+    /// The PDF already has a form, and it is being filled in: its own fields (not detected boxes), clicked and typed into
+    /// as in Preview, the page drawn without them, and saving writes what changed into a copy.
+    /// </summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowEditTools), nameof(SaveText), nameof(Hint))] private bool _fillingForm;
+
+    /// <summary>The Form tool's main button: make the form fillable, or save what was filled in.</summary>
+    public string SaveText => L.Get(FillingForm ? "Ui_SaveFilled" : "Ui_MakeFillable");
+
+    partial void OnFillingFormChanged(bool value)
+    {
+        if (value) { DrawMode = false; PreviewMode = true; }
+        _ = RenderPageAsync();
+    }
+
+    /// <summary>Fills in the form the PDF already has (false when it has none): its fields become the editor's.</summary>
+    private async Task<bool> LoadFormAsync(string path)
+    {
+        IReadOnlyList<Washi.Core.Forms.WidgetInfo> widgets;
+        try { widgets = await Task.Run(() => Washi.Core.Forms.AcroFormFields.Widgets(path)); }
+        catch (Exception e) when (e is IOException or PdfSharp.Pdf.IO.PdfReaderException or InvalidOperationException) { return false; }
+        if (PdfPath != path || widgets.Count == 0) return false;
+        SelectedField = null;
+        Fields.Clear();
+        foreach (var w in widgets) Fields.Add(FieldViewModel.From(w));
+        _detectedFor = path;
+        FillingForm = true;
+        Status = L.F("Ui_FormFilling", widgets.Select(w => w.Name).Distinct().Count());
+        return true;
+    }
+
+    /// <summary>The Form tool on a document: fill in its form when it has one, else find the boxes to make one.</summary>
+    private async Task PrepareFormAsync()
+    {
+        if (PdfPath is not { } path) return;
+        if (!await LoadFormAsync(path)) await DetectAsync();
+    }
+
+    /// <summary>Saves what was changed in the form into a copy (&lt;name&gt;_filled.pdf), as Washi fills forms
+    /// (a form protected against changes but open to filling in keeps its protection), and opens it.</summary>
+    private async Task SaveFilledAsync()
+    {
+        if (PdfPath is not { } pdf) return;
+        var values = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var group in Fields.GroupBy(f => f.Name))
+        {
+            if (!group.Any(f => f.IsChanged)) continue;
+            var first = group.First();
+            values[group.Key] = first.Kind switch
+            {
+                FieldKind.Checkbox or FieldKind.Radio => group.FirstOrDefault(f => f.IsChecked) is { } on ? (on.Export.Length > 0 ? on.Export : "true") : "Off",
+                _ => group.First(f => f.IsChanged).Value,
+            };
+        }
+        if (values.Count == 0) { Status = L.Get("Ui_NothingChanged"); return; }
+        if (await _dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_filled.pdf") is not { } output) return;
+        if (Path.GetFullPath(output) == Path.GetFullPath(pdf)) { Status = L.Get("Ui_BookmarksNotOriginal"); return; }
+        var font = EmbedFontPath is { } fp ? await Task.Run(() => OpenTypeFont.Load(fp)) : null;
+        Washi.Core.Forms.FillResult? r = null;
+        await Run(async () =>
+        {
+            var tmp = output + ".tmp.pdf";
+            if (File.Exists(tmp)) File.Delete(tmp);
+            try
+            {
+                r = await Task.Run(() => Washi.Core.Forms.AcroFormFields.Fill(pdf, tmp, values, font));
+                File.Move(tmp, output, overwrite: true);   // the save dialog already asked about replacing it
+            }
+            finally { if (File.Exists(tmp)) File.Delete(tmp); }
+        });
+        if (r is null) return;
+        var known = Washi.Core.Pages.PdfPasswords.For(pdf);
+        if (known is not null) Washi.Core.Pages.PdfPasswords.Remember(output, known);
+        await LoadAsync(output);
+        Status = L.F("Ui_FilledSaved", Path.GetFileName(output), r.Filled) + (r.Notes.Count > 0 ? " " + string.Join("; ", r.Notes.Take(3)) : "");
+    }
+
+    /// <summary>A field that shows in several places, or a group of check boxes with one name: typing in one is typing in all.</summary>
+    private bool _syncing;
+
+    private void SyncSameName(FieldViewModel f)
+    {
+        if (!FillingForm || _syncing || f.Kind == FieldKind.Radio) return;
+        _syncing = true;
+        try
+        {
+            foreach (var other in Fields.Where(o => !ReferenceEquals(o, f) && o.Name == f.Name && o.Kind == f.Kind))
+                other.Value = f.Kind == FieldKind.Checkbox && other.Export != f.Export ? "" : f.Value;
+        }
+        finally { _syncing = false; }
+    }
     [ObservableProperty] private bool _busy;
     [ObservableProperty] private string _status = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(FontText))] private string? _embedFontPath;
@@ -391,7 +485,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public static IReadOnlyList<Choice<int>> Alignments =>
         [new(0, L.Get("Ui_AlignLeft")), new(1, L.Get("Ui_AlignCenter")), new(2, L.Get("Ui_AlignRight"))];
 
-    public string Hint => L.Get(PreviewMode ? "Ui_PreviewHint" : DrawMode ? "Ui_DrawHint" : "Ui_Hint");
+    public string Hint => L.Get(FillingForm ? "Ui_FillHint" : PreviewMode ? "Ui_PreviewHint" : DrawMode ? "Ui_DrawHint" : "Ui_Hint");
 
     partial void OnDrawModeChanged(bool value)
     {
@@ -402,6 +496,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     partial void OnPreviewModeChanged(bool value)
     {
+        if (!value && FillingForm) { PreviewMode = true; return; }   // a form being filled has nothing to design
         if (value) DrawMode = false;
         OnPropertyChanged(nameof(Hint));
         OnPropertyChanged(nameof(IsSelectMode));
@@ -416,6 +511,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     public void ActivateField(FieldViewModel f)
     {
         SelectedField = f;
+        if (f.ReadOnly) { Status = L.Get("Ui_FieldReadOnly"); return; }
         switch (f.Kind)
         {
             case FieldKind.Checkbox: f.Value = f.IsChecked ? "" : "true"; break;
@@ -506,6 +602,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
             if (count < 0) { locked = true; return; }
             PdfPath = path;
             _detectedFor = null;
+            FillingForm = false;
             Fields.Clear();
             FieldSummary = "";
             PageCount = count;
@@ -541,7 +638,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         Find.Reset();
         Bookmarks.Clear();
         if (ShowBookmarksPanel) await Bookmarks.LoadAsync();
-        if (ActiveTool == Tool.Form) await DetectAsync();
+        if (ActiveTool == Tool.Form) await PrepareFormAsync();
         else if (ActiveTool == Tool.Ocr) await Ocr.RefreshPlanAsync();
         else if (ActiveTool == Tool.Combine) Combine.OfferCurrentDocument();
         else if (ActiveTool == Tool.Organize) Organize.Prepare();
@@ -599,6 +696,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
         PageImage = null;
         FieldSummary = "";
         SelectedField = null;
+        FillingForm = false;
         DrawMode = false;
         PreviewMode = false;
         Status = L.Get("Ui_StartHint");
@@ -663,6 +761,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     [RelayCommand]
     private async Task MakeFillableAsync()
     {
+        if (FillingForm) { await SaveFilledAsync(); return; }
         if (PdfPath is not { } pdf) return;
         if (await _dialogs.SavePdfAsync(Path.GetFileNameWithoutExtension(pdf) + "_fillable.pdf") is not { } output) return;
         await Run(async () =>
@@ -903,6 +1002,7 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     // ------------------------------------------------------------------ helpers
     private void ReplaceFields(IEnumerable<DetectedField> fields)
     {
+        FillingForm = false;   // detected boxes: a new form is being made
         SelectedField = null;
         Fields.Clear();
         foreach (var f in fields) Fields.Add(FieldViewModel.From(f));
@@ -935,10 +1035,11 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
     {
         if (PdfPath is not { } path || PageCount == 0) return;
         int index = PageIndex;
+        bool filling = FillingForm, form = IsFormTool;
         var (img, info) = await Pdfium(() =>
         {
             using var d = PdfiumDocument.Open(path);
-            return (d.RenderPage(index, RenderScale), d.GetPageInfo(index));
+            return (d.RenderPage(index, RenderScale, fields: !(filling && form)), d.GetPageInfo(index));
         });
         if (index != PageIndex || path != PdfPath) return;   // the user moved on meanwhile
         PageWidth = info.Width;

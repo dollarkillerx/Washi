@@ -106,7 +106,9 @@ public sealed class PdfiumDocument : IDisposable
     private FpdfFormHandleT? _form;
 
     /// <summary>Renders the page as the user sees it, including form fields and other annotations.</summary>
-    public RgbImage RenderPage(int pageIndex, double scale)
+    /// <param name="fields">False leaves the form fields out (they are drawn by the editor while a form is filled in);
+    /// other annotations are still drawn.</param>
+    public RgbImage RenderPage(int pageIndex, double scale, bool fields = true)
     {
         if (_form is null)
         {
@@ -119,7 +121,7 @@ public sealed class PdfiumDocument : IDisposable
         {
             // widgets are drawn by the form layer (FFLDraw), other annotations by the page renderer
             return Render(page, fpdfview.FPDF_GetPageWidthF(page), fpdfview.FPDF_GetPageHeightF(page), scale, FlagAnnotations,
-                          (bmp, pw, ph) => fpdf_formfill.FPDF_FFLDraw(_form, bmp, page, 0, 0, pw, ph, 0, FlagAnnotations));
+                          fields ? (bmp, pw, ph) => fpdf_formfill.FPDF_FFLDraw(_form, bmp, page, 0, 0, pw, ph, 0, FlagAnnotations) : null);
         }
         finally
         {

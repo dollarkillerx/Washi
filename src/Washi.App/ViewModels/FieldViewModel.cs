@@ -41,6 +41,13 @@ public sealed partial class FieldViewModel : ObservableObject
     /// <summary>What the user typed in Preview ("true" for a ticked checkbox or the chosen radio button). Written into the saved PDF.</summary>
     [ObservableProperty] private string _value = "";
 
+    // ------------------------------------------------------------------ a field the PDF already has (filling a form)
+    /// <summary>The form protects this field from changes.</summary>
+    [ObservableProperty] private bool _readOnly;
+    /// <summary>The value the PDF holds (as <see cref="Value"/> holds it): what changed is what is saved.</summary>
+    public string Original { get; set; } = "";
+    public bool IsChanged => Value != Original;
+
     // ------------------------------------------------------------------ rules (typed fields): format, range, calculation
     /// <summary>"" (none), "number", "percent", "date" or "mask".</summary>
     [ObservableProperty, NotifyPropertyChangedFor(nameof(HasNumberFormat), nameof(IsNumberFormat), nameof(HasPattern), nameof(HasRules))] private string _format = "";
@@ -128,9 +135,11 @@ public sealed partial class FieldViewModel : ObservableObject
         OnPropertyChanged(nameof(HasValue));
         OnPropertyChanged(nameof(Display));
         OnPropertyChanged(nameof(ShowName));
+        OnPropertyChanged(nameof(IsChanged));
     }
 
-    public bool HasValue => Value.Length > 0;
+    /// <summary>Filled in: something other than blanks (forms often hold a space in an empty drop-down).</summary>
+    public bool HasValue => Value.Trim().Length > 0;
 
     /// <summary>
     /// What the field list shows: what is in the field (its value), else what the form calls it (the printed label),
@@ -237,6 +246,33 @@ public sealed partial class FieldViewModel : ObservableObject
         RangeMax = f.Range?.Max is { } mx ? Washi.Core.Forms.FieldLogic.RangeText(new(null, mx))[2..] : "",
         CalcOp = f.Calc?.Op.ToString().ToLowerInvariant() ?? "", CalcSources = f.Calc is { } c ? string.Join(", ", c.Sources) : "",
     };
+
+    /// <summary>A widget of a field the PDF already has, as the editor fills it.</summary>
+    public static FieldViewModel From(Washi.Core.Forms.WidgetInfo w)
+    {
+        var kind = w.Type switch
+        {
+            "checkbox" => FieldKind.Checkbox, "radio" => FieldKind.Radio, "choice" => FieldKind.Choice,
+            _ => w.Comb ? FieldKind.Comb : FieldKind.Text,
+        };
+        var vm = From(new DetectedField
+        {
+            Page = w.Page, Kind = kind, Rect = w.Rect, Name = w.Name, MaxLen = w.Comb ? w.MaxLen : 0, Align = w.Align,
+            Label = w.Tooltip, FontSize = w.FontSize, Group = kind == FieldKind.Radio ? w.Name : "", Export = w.OnState,
+            Options = w.Options, Format = w.Logic?.Format, Range = w.Logic?.Range, Calc = w.Logic?.Calc,
+        });
+        if (kind is FieldKind.Checkbox or FieldKind.Radio)
+        {
+            vm.Export = w.OnState;   // the state it turns on (From cleared it for check boxes)
+            if (kind == FieldKind.Radio && w.OnLabel.Length > 0) vm.Label = w.OnLabel;
+        }
+        vm.Value = kind is FieldKind.Checkbox or FieldKind.Radio
+            ? (w.Value != "Off" && w.Value.Length > 0 && (w.OnState.Length == 0 || w.Value == w.OnState) ? "true" : "")
+            : w.Value;
+        vm.Original = vm.Value;
+        vm.ReadOnly = w.ReadOnly;
+        return vm;
+    }
 
     public DetectedField ToDetected() => new()
     {
