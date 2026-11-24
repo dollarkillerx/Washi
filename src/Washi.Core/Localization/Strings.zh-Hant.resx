@@ -1148,4 +1148,15 @@
   <data name="Err_FormLocked" xml:space="preserve"><value>{0} 不允許填寫表單。</value></data>
   <data name="Err_FormFillCheck" xml:space="preserve"><value>填寫後的副本未能按填寫內容讀回，未儲存。</value></data>
   <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>表單沒有任何變化。</value></data>
+  <data name="Ui_SaveFilled" xml:space="preserve"><value>儲存已填寫的副本…</value></data>
+  <data name="Ui_FormFilling" xml:space="preserve"><value>此 PDF 是含 {0} 個欄位的表單：按一下欄位即可填寫。</value></data>
+  <data name="Ui_NothingChanged" xml:space="preserve"><value>表單沒有任何修改。</value></data>
+  <data name="Ui_FilledSaved" xml:space="preserve"><value>已儲存 {0}（填寫了 {1} 個欄位）。</value></data>
+  <data name="Ui_FieldReadOnly" xml:space="preserve"><value>此欄位在表單中為唯讀。</value></data>
+  <data name="Ui_FillHint" xml:space="preserve"><value>按一下欄位輸入，按一下核取方塊勾選。「儲存已填寫的副本」（⌘S）會寫入修改內容。</value></data>
+  <data name="Ui_FillTitle" xml:space="preserve"><value>填寫表單</value></data>
+  <data name="Ui_FillLead" xml:space="preserve"><value>此 PDF 已有欄位。按一下即可輸入，右側清單顯示已填寫的內容。數值會依表單自身的規則檢查，合計會隨輸入計算。只有修改的部分會寫入副本；禁止修改但允許填寫的表單會保留其保護。</value></data>
+  <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>改為製作新表單</value></data>
+  <data name="Ui_FillNewFormNote" xml:space="preserve"><value>如果要在此頁面上自己製作欄位，請偵測方框。製作的欄位會加入到既有的欄位中。</value></data>
+  <data name="Ui_FillNewForm" xml:space="preserve"><value>偵測方框以製作新表單</value></data>
 </root>

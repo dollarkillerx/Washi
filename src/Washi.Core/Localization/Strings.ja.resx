@@ -1148,4 +1148,15 @@
   <data name="Err_FormLocked" xml:space="preserve"><value>{0} はフォームへの入力を許可していません。</value></data>
   <data name="Err_FormFillCheck" xml:space="preserve"><value>入力したコピーが入力した通りに読み戻せなかったため、保存しませんでした。</value></data>
   <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>フォームは何も変わりませんでした。</value></data>
+  <data name="Ui_SaveFilled" xml:space="preserve"><value>入力したコピーを保存…</value></data>
+  <data name="Ui_FormFilling" xml:space="preserve"><value>この PDF は記入欄 {0} 件のフォームです。記入欄をクリックして入力してください。</value></data>
+  <data name="Ui_NothingChanged" xml:space="preserve"><value>フォームは何も変更されていません。</value></data>
+  <data name="Ui_FilledSaved" xml:space="preserve"><value>{0} を保存しました（{1} 件を入力）。</value></data>
+  <data name="Ui_FieldReadOnly" xml:space="preserve"><value>この記入欄はフォームで読み取り専用になっています。</value></data>
+  <data name="Ui_FillHint" xml:space="preserve"><value>記入欄をクリックして入力、チェック欄はクリックで切り替えます。「入力したコピーを保存」（⌘S）で変更を書き込みます。</value></data>
+  <data name="Ui_FillTitle" xml:space="preserve"><value>フォームに入力</value></data>
+  <data name="Ui_FillLead" xml:space="preserve"><value>この PDF にはすでに記入欄があります。クリックして入力してください。右の一覧に入力済みの内容が出ます。値はフォーム自身の規則で確認され、合計は入力に合わせて計算されます。変更した部分だけをコピーに書き込みます。変更は禁止でも入力は許可されているフォームは、保護をそのまま保ちます。</value></data>
+  <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>新しいフォームを作る場合</value></data>
+  <data name="Ui_FillNewFormNote" xml:space="preserve"><value>このページに自分で記入欄を作る場合は、枠を検出してください。作った記入欄は、今ある記入欄に追加されます。</value></data>
+  <data name="Ui_FillNewForm" xml:space="preserve"><value>枠を検出して新しいフォームを作る</value></data>
 </root>

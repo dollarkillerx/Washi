@@ -165,6 +165,12 @@ washi form make form.pdf --embed-font "/System/Library/Fonts/ヒラギノ角ゴ�
 4. **Save** `fields.json`, or write the **fillable PDF** (⌘S), with a form language and
    an optional embedded font. Whatever you typed in Preview is filled in.
 
+**A PDF that is already a form** (the 国税庁 input forms, IRS and USCIS forms, anything made fillable in Acrobat or
+Washi) opens in the Form tool ready to fill in, as a viewer would: its own fields, with what they hold, are clicked
+and typed into right on the page (formats, ranges and totals apply as you type; read-only fields stay as they are),
+and **Save filled copy** (⌘S) writes only what you changed into a copy. A form protected against changes but open to
+filling in keeps its protection. *Find boxes for a new form* switches back to making fields of your own.
+
 **The other tools:**
 - **OCR** makes a scan searchable. It shows how many pages need it, and you pick the
   engine (Apple Vision, Tesseract or the AI model, which asks before sending pages) and

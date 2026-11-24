@@ -1148,4 +1148,15 @@
   <data name="Err_FormLocked" xml:space="preserve"><value>{0} 은(는) 양식 입력을 허용하지 않습니다.</value></data>
   <data name="Err_FormFillCheck" xml:space="preserve"><value>채운 사본이 채운 대로 읽히지 않아 저장하지 않았습니다.</value></data>
   <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>양식이 바뀌지 않았습니다.</value></data>
+  <data name="Ui_SaveFilled" xml:space="preserve"><value>채운 사본 저장…</value></data>
+  <data name="Ui_FormFilling" xml:space="preserve"><value>이 PDF는 입력란 {0}개가 있는 양식입니다. 입력란을 클릭해 채우세요.</value></data>
+  <data name="Ui_NothingChanged" xml:space="preserve"><value>양식에서 바뀐 것이 없습니다.</value></data>
+  <data name="Ui_FilledSaved" xml:space="preserve"><value>{0} 저장 (입력란 {1}개 채움).</value></data>
+  <data name="Ui_FieldReadOnly" xml:space="preserve"><value>이 입력란은 양식에서 읽기 전용입니다.</value></data>
+  <data name="Ui_FillHint" xml:space="preserve"><value>입력란을 클릭해 입력하고 체크 상자는 클릭해 선택합니다. ‘채운 사본 저장’(⌘S)이 바꾼 내용을 씁니다.</value></data>
+  <data name="Ui_FillTitle" xml:space="preserve"><value>양식 채우기</value></data>
+  <data name="Ui_FillLead" xml:space="preserve"><value>이 PDF에는 이미 입력란이 있습니다. 클릭해 입력하세요. 오른쪽 목록에 채운 내용이 보입니다. 값은 양식 자체의 규칙으로 확인되고 합계는 입력하면서 계산됩니다. 바꾼 것만 사본에 씁니다. 변경은 막혀 있지만 입력은 허용된 양식은 보호가 그대로 유지됩니다.</value></data>
+  <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>새 양식을 만들려면</value></data>
+  <data name="Ui_FillNewFormNote" xml:space="preserve"><value>이 페이지에 직접 입력란을 만들려면 상자를 찾으세요. 만든 입력란은 기존 입력란에 더해집니다.</value></data>
+  <data name="Ui_FillNewForm" xml:space="preserve"><value>상자를 찾아 새 양식 만들기</value></data>
 </root>

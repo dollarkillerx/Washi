@@ -1148,4 +1148,15 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Err_FormLocked" xml:space="preserve"><value>{0} erlaubt das Ausfüllen des Formulars nicht.</value></data>
   <data name="Err_FormFillCheck" xml:space="preserve"><value>Die ausgefüllte Kopie ließ sich nicht wie ausgefüllt zurücklesen; sie wurde nicht behalten.</value></data>
   <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>Im Formular hat sich nichts geändert.</value></data>
+  <data name="Ui_SaveFilled" xml:space="preserve"><value>Ausgefüllte Kopie speichern…</value></data>
+  <data name="Ui_FormFilling" xml:space="preserve"><value>Dieses PDF ist ein Formular mit {0} Feld(ern): zum Ausfüllen auf ein Feld klicken.</value></data>
+  <data name="Ui_NothingChanged" xml:space="preserve"><value>Im Formular wurde nichts geändert.</value></data>
+  <data name="Ui_FilledSaved" xml:space="preserve"><value>{0} gespeichert, {1} Feld(er) ausgefüllt.</value></data>
+  <data name="Ui_FieldReadOnly" xml:space="preserve"><value>Dieses Feld ist im Formular schreibgeschützt.</value></data>
+  <data name="Ui_FillHint" xml:space="preserve"><value>Auf ein Feld klicken, um zu schreiben, auf ein Kästchen, um es anzukreuzen. „Ausgefüllte Kopie speichern“ (⌘S) schreibt die Änderungen.</value></data>
+  <data name="Ui_FillTitle" xml:space="preserve"><value>Formular ausfüllen</value></data>
+  <data name="Ui_FillLead" xml:space="preserve"><value>Dieses PDF hat bereits Felder. Zum Schreiben anklicken; die Liste rechts zeigt, was ausgefüllt ist. Werte werden nach den Regeln des Formulars geprüft, Summen beim Tippen berechnet. Nur Geändertes wird in eine Kopie geschrieben; ein gegen Änderungen geschütztes, aber ausfüllbares Formular behält seinen Schutz.</value></data>
+  <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>Stattdessen ein neues Formular</value></data>
+  <data name="Ui_FillNewFormNote" xml:space="preserve"><value>Um stattdessen eigene Felder zu machen, die Kästchen erkennen lassen. Die neuen Felder kommen zu den vorhandenen hinzu.</value></data>
+  <data name="Ui_FillNewForm" xml:space="preserve"><value>Kästchen für ein neues Formular erkennen</value></data>
 </root>

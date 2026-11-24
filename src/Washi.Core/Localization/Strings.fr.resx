@@ -1148,4 +1148,15 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Err_FormLocked" xml:space="preserve"><value>{0} n’autorise pas à remplir son formulaire.</value></data>
   <data name="Err_FormFillCheck" xml:space="preserve"><value>La copie remplie ne se relit pas comme remplie ; elle n’a pas été conservée.</value></data>
   <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>Rien n’a changé dans le formulaire.</value></data>
+  <data name="Ui_SaveFilled" xml:space="preserve"><value>Enregistrer la copie remplie…</value></data>
+  <data name="Ui_FormFilling" xml:space="preserve"><value>Ce PDF est un formulaire de {0} champ(s) : cliquez sur un champ pour le remplir.</value></data>
+  <data name="Ui_NothingChanged" xml:space="preserve"><value>Rien n’a été modifié dans le formulaire.</value></data>
+  <data name="Ui_FilledSaved" xml:space="preserve"><value>{0} enregistré, {1} champ(s) remplis.</value></data>
+  <data name="Ui_FieldReadOnly" xml:space="preserve"><value>Ce champ est en lecture seule dans le formulaire.</value></data>
+  <data name="Ui_FillHint" xml:space="preserve"><value>Cliquez sur un champ pour y écrire, sur une case pour la cocher. « Enregistrer la copie remplie » (⌘S) écrit vos changements.</value></data>
+  <data name="Ui_FillTitle" xml:space="preserve"><value>Remplir le formulaire</value></data>
+  <data name="Ui_FillLead" xml:space="preserve"><value>Ce PDF a déjà des champs. Cliquez pour y écrire ; la liste à droite montre ce qui est rempli. Les valeurs sont vérifiées selon les règles du formulaire, et les totaux calculés au fil de la saisie. Seul ce que vous changez est écrit, dans une copie ; un formulaire protégé contre les modifications mais ouvert au remplissage garde sa protection.</value></data>
+  <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>Un nouveau formulaire à la place</value></data>
+  <data name="Ui_FillNewFormNote" xml:space="preserve"><value>Pour créer vos propres champs sur cette page, détectez ses cases. Les champs créés s’ajoutent à ceux qu’il a déjà.</value></data>
+  <data name="Ui_FillNewForm" xml:space="preserve"><value>Détecter les cases pour un nouveau formulaire</value></data>
 </root>

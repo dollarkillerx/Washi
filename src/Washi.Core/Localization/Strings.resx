@@ -1148,4 +1148,15 @@ The interface follows your system language. Set WASHI_LANG (e.g. ja, ko, fr) to 
   <data name="Err_FormLocked" xml:space="preserve"><value>{0} does not allow filling in its form.</value></data>
   <data name="Err_FormFillCheck" xml:space="preserve"><value>The filled copy did not read back as filled; it was not kept.</value></data>
   <data name="Err_FormDataNothingFilled" xml:space="preserve"><value>Nothing in the form changed.</value></data>
+  <data name="Ui_SaveFilled" xml:space="preserve"><value>Save filled copy…</value></data>
+  <data name="Ui_FormFilling" xml:space="preserve"><value>This PDF is a form with {0} field(s): click a field to fill it in.</value></data>
+  <data name="Ui_NothingChanged" xml:space="preserve"><value>Nothing was changed in the form.</value></data>
+  <data name="Ui_FilledSaved" xml:space="preserve"><value>Saved {0} with {1} field(s) filled in.</value></data>
+  <data name="Ui_FieldReadOnly" xml:space="preserve"><value>This field is read-only in the form.</value></data>
+  <data name="Ui_FillHint" xml:space="preserve"><value>Click a field to type into it, a box to tick it. Save filled copy (⌘S) writes what you changed.</value></data>
+  <data name="Ui_FillTitle" xml:space="preserve"><value>Fill in the form</value></data>
+  <data name="Ui_FillLead" xml:space="preserve"><value>This PDF already has fields. Click one to type into it; the list on the right shows what is filled in. Values are checked against the form's own rules, and totals are worked out as you type. Only what you change is written, into a copy; a form protected against changes but open to filling in keeps its protection.</value></data>
+  <data name="Ui_FillNewFormTitle" xml:space="preserve"><value>A new form instead</value></data>
+  <data name="Ui_FillNewFormNote" xml:space="preserve"><value>To make your own fields on this page instead, find the boxes on it. The fields you make are added to the ones it already has.</value></data>
+  <data name="Ui_FillNewForm" xml:space="preserve"><value>Find boxes for a new form</value></data>
 </root>
