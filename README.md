@@ -1065,6 +1065,18 @@ dotnet run --project src/Washi.App -- form.pdf
 build/macos/bundle.sh && open build/out/Washi.app                     # the macOS app
 ```
 
+### Releases and updates
+
+`tools/release/release-macos.sh <version>` and `tools/release/release-windows.sh <version>` build the packaged apps with
+[Velopack](https://velopack.io), as MySSH does:
+- **macOS:** Apple silicon, self-contained, signed with a Developer ID and notarized.
+- **Windows:** x64, self-contained, not code-signed yet. It is packed on the Mac.
+
+Upload everything in `build/out/release/` to a GitHub release. The installed app checks those releases once after
+start-up (Settings → About → *Check for updates automatically*), downloads a newer version in the background, and
+installs it when you click **Restart to update**. Builds run from source never update. Release notes go in
+`docs/releases/<version>.md`.
+
 ## Roadmap
 
 1. ~~Port Masume to C# (PDFium render + text layer, managed connected components) and reach the prototype's scores.~~ Done.

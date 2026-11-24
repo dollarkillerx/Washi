@@ -89,6 +89,9 @@ public sealed partial class MainViewModel : ObservableObject, IEditorHost
 
     internal AppServices Services => _services;
 
+    /// <summary>Updates (the header shows "Restart to update" once one is downloaded).</summary>
+    public UpdatesViewModel Updates => _services.Updates;
+
     internal IDialogs Dialogs => _dialogs;
 
     public OcrToolViewModel Ocr { get; }

@@ -12,6 +12,8 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // first: Velopack's install / update hooks run here and may exit the process (a no-op when not installed)
+        Velopack.VelopackApp.Build().Run();
         Services.AppSettings.ApplyLanguage(Services.AppSettings.Load());   // before any string is read
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }

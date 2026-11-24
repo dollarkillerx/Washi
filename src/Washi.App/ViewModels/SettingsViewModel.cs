@@ -43,6 +43,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _writes = WriteChoices.First(c => c.Value == app.AiWrites);
         _openDocumentFolder = app.AiOpenDocumentFolder;
         foreach (var f in app.AiFolders) Folders.Add(new FolderRow(f, RemoveFolderCommand));
+        _checkForUpdates = app.CheckForUpdates;
         _loading = false;
         if (services is not null)
         {
@@ -412,6 +413,17 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     // ------------------------------------------------------------------ About
+    /// <summary>Updates from the GitHub releases (a do-nothing one without the app's services).</summary>
+    public UpdatesViewModel Updates => _services?.Updates ?? s_noUpdates;
+    private static readonly UpdatesViewModel s_noUpdates = new(NullAppUpdater.Instance, () => { });
+
+    [ObservableProperty] private bool _checkForUpdates = true;
+
+    partial void OnCheckForUpdatesChanged(bool value)
+    {
+        if (!_loading) AppSettings.Update(s => s with { CheckForUpdates = value }, _settingsPath);
+    }
+
     public string Version => L.F("Ui_Version",
         typeof(SettingsViewModel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0]
         ?? typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "?");

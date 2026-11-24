@@ -63,6 +63,13 @@
             <Setter Property="Background" Value="#333333" />
             <Setter Property="Foreground" Value="#ffffff" />
         </Style>
+        <Style Selector="Border.header Button.update /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource BlueBrush}" />
+            <Setter Property="Foreground" Value="#ffffff" />
+        </Style>
+        <Style Selector="Border.header Button.update:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1a3dbd" />
+        </Style>
         <Style Selector="Border.header Button.on /template/ ContentPresenter">
             <Setter Property="Background" Value="#393939" />
             <Setter Property="Foreground" Value="#ffffff" />
@@ -275,6 +282,14 @@
                 <Button DockPanel.Dock="Right" Command="{Binding Print.OpenCommand}" IsVisible="{Binding HasDocument}"
                         ToolTip.Tip="{l:Tr Ui_PrintMenu}" Padding="14,0" x:Name="PrintButton">
                     <c:Icon Data="{StaticResource I.Print}" Size="18" />
+                </Button>
+                <!-- an update was downloaded: one click installs it and starts Washi again -->
+                <Button DockPanel.Dock="Right" Classes="update" Command="{Binding Updates.RestartCommand}" IsVisible="{Binding Updates.IsReady}"
+                        ToolTip.Tip="{Binding Updates.ReadyText}" x:Name="RestartToUpdateButton">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <c:Icon Data="{StaticResource I.Refresh}" Size="16" />
+                        <TextBlock Text="{l:Tr Ui_UpdRestart}" VerticalAlignment="Center" />
+                    </StackPanel>
                 </Button>
                 <Button DockPanel.Dock="Right" Classes.on="{Binding IsAskTool}" Command="{Binding ToggleAskCommand}"
                         ToolTip.Tip="{l:Tr Ui_ToolAsk}" x:Name="AskToolButton">

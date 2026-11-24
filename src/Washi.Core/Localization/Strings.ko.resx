@@ -1167,4 +1167,14 @@
   <data name="Ui_HomeLead" xml:space="preserve"><value>PDF를 이 창에 끌어 놓거나 여세요. 도구에서 시작해도 됩니다. 필요한 파일은 Washi가 묻습니다.</value></data>
   <data name="Ui_MoreOptions" xml:space="preserve"><value>추가 옵션</value></data>
   <data name="Ui_Shortcuts" xml:space="preserve"><value>키보드 단축키</value></data>
+  <data name="Ui_UpdTitle" xml:space="preserve"><value>업데이트</value></data>
+  <data name="Ui_UpdCheck" xml:space="preserve"><value>업데이트 확인</value></data>
+  <data name="Ui_UpdChecking" xml:space="preserve"><value>업데이트를 확인하는 중…</value></data>
+  <data name="Ui_UpdUpToDate" xml:space="preserve"><value>Washi가 최신 버전입니다.</value></data>
+  <data name="Ui_UpdDownloading" xml:space="preserve"><value>Washi {0} 다운로드 중… {1}%</value></data>
+  <data name="Ui_UpdReady" xml:space="preserve"><value>Washi {0} 준비가 끝났습니다. 다시 시작하면 사용할 수 있습니다.</value></data>
+  <data name="Ui_UpdFailed" xml:space="preserve"><value>업데이트를 확인하지 못했습니다: {0}</value></data>
+  <data name="Ui_UpdNotInstalled" xml:space="preserve"><value>업데이트는 설치한 앱에서 사용할 수 있습니다. 이 사본은 소스에서 빌드되었습니다.</value></data>
+  <data name="Ui_UpdRestart" xml:space="preserve"><value>다시 시작하여 업데이트</value></data>
+  <data name="Ui_UpdAuto" xml:space="preserve"><value>자동으로 업데이트 확인</value></data>
 </root>

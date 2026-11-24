@@ -1167,4 +1167,14 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
   <data name="Ui_HomeLead" xml:space="preserve"><value>Ein PDF in dieses Fenster ziehen oder eines öffnen. Oder mit einem Werkzeug beginnen: Washi fragt nach der Datei.</value></data>
   <data name="Ui_MoreOptions" xml:space="preserve"><value>Weitere Optionen</value></data>
   <data name="Ui_Shortcuts" xml:space="preserve"><value>Tastenkürzel</value></data>
+  <data name="Ui_UpdTitle" xml:space="preserve"><value>Updates</value></data>
+  <data name="Ui_UpdCheck" xml:space="preserve"><value>Nach Updates suchen</value></data>
+  <data name="Ui_UpdChecking" xml:space="preserve"><value>Suche nach Updates …</value></data>
+  <data name="Ui_UpdUpToDate" xml:space="preserve"><value>Washi ist auf dem neuesten Stand.</value></data>
+  <data name="Ui_UpdDownloading" xml:space="preserve"><value>Washi {0} wird geladen … {1} %</value></data>
+  <data name="Ui_UpdReady" xml:space="preserve"><value>Washi {0} ist bereit. Starten Sie Washi neu, um es zu verwenden.</value></data>
+  <data name="Ui_UpdFailed" xml:space="preserve"><value>Updates konnten nicht geprüft werden: {0}</value></data>
+  <data name="Ui_UpdNotInstalled" xml:space="preserve"><value>Updates gibt es in der installierten App; diese Kopie wurde aus dem Quellcode gebaut.</value></data>
+  <data name="Ui_UpdRestart" xml:space="preserve"><value>Neu starten und aktualisieren</value></data>
+  <data name="Ui_UpdAuto" xml:space="preserve"><value>Automatisch nach Updates suchen</value></data>
 </root>
