@@ -58,6 +58,10 @@ public static class WashiTools
         .Add(new ListLayersTool(policy))
         .Add(new SetLayersTool(policy))
         .Add(new EncryptForCertificatesTool(policy))
+        .Add(new ExportFormDataTool(policy))
+        .Add(new ImportFormDataTool(policy))
+        .Add(new FillFormFromTableTool(policy))
+        .Add(new CollectFormDataTool(policy))
         .Add(new OcrPdfTool(policy))
         .Add(new EraseContentTool(policy));
 
@@ -1001,6 +1005,118 @@ public sealed class EncryptForCertificatesTool(PathPolicy p) : PdfTool(p)
         {
             output, recipients = PdfCertificateSecurity.RecipientsOf(output).Select(r => new { issuer = r.Issuer, serial = r.Serial }),
         }));
+    }
+}
+
+public sealed class ExportFormDataTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "export_form_data";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Writes the values of a PDF form's fields to a NEW data file, in the format its extension names: .fdf or .xfdf (as Acrobat " +
+        "and other PDF programs import them; fields as a tree of partial names, buttons by their state names), .csv (a header " +
+        "row of field names and a row of values; UTF-8 with a byte-order mark) or .json (field name -> value). Read back before " +
+        "it is kept. Default output: <name>_data.xfdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"Filled PDF form"},
+          "output":{"type":"string","description":"Data file (.fdf, .xfdf, .csv or .json; default <name>_data.xfdf next to the input)"}},
+         "required":["path"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var output = Policy.OutputFile(OptStr(a, "output"), path, "_data.xfdf", ".fdf", ".xfdf", ".csv", ".json");
+        int n = Washi.Core.Forms.PdfFormData.Export(path, output);
+        return new ToolResult(ToJson(new { output, fields = n }));
+    }
+}
+
+public sealed class ImportFormDataTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "import_form_data";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Writes a NEW copy of a PDF form filled from a data file: .fdf, .xfdf, .csv (its first row under the header) or .json. " +
+        "Filled as fill_fields fills: the form's formats, ranges and calculations apply, and Washi draws each value. Reports " +
+        "names in the file that are no field of the form. Never overwrites: output defaults to <name>_filled.pdf.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF form"},
+          "data":{"type":"string","description":"Data file (.fdf, .xfdf, .csv or .json)"},
+          "output":{"type":"string","description":"New PDF path (default: <name>_filled.pdf next to the input)"}},
+         "required":["path","data"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var data = Policy.Input(Str(a, "data"));
+        var output = Policy.Output(OptStr(a, "output"), path, "_filled");
+        var r = Washi.Core.Forms.PdfFormData.Import(path, data, output);
+        return new ToolResult(ToJson(new { output, filled = r.Filled, unknown_names = r.UnknownNames, notes = r.Notes }));
+    }
+}
+
+public sealed class FillFormFromTableTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "fill_form_from_table";
+    public override ToolRisk Risk => ToolRisk.Write;
+    public override string Description =>
+        "Fills one NEW copy of a PDF form per row of a CSV table whose header row names the fields (UTF-8 or Shift_JIS, as " +
+        "spreadsheets save it), into a folder (default <name>_filled). name_column: a column whose value names each copy; " +
+        "otherwise <name>_001.pdf and so on. Empty cells leave their field as the form has it. Existing files are never replaced. " +
+        "Reports each copy, its notes, and the columns that are no field of the form.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "path":{"type":"string","description":"PDF form"},
+          "table":{"type":"string","description":"CSV file: a header row of field names, then a row per copy"},
+          "folder":{"type":"string","description":"Folder for the copies (default: <name>_filled next to the input)"},
+          "name_column":{"type":"string","description":"Column whose value names each copy"}},
+         "required":["path","table"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var path = Policy.Input(Str(a, "path"));
+        var table = Policy.Input(Str(a, "table"));
+        var folder = Policy.OutputFolder(OptStr(a, "folder"), path, "_filled");
+        var r = Washi.Core.Forms.PdfFormData.FillMany(path, table, folder, OptStr(a, "name_column"));
+        return new ToolResult(ToJson(new
+        {
+            folder, copies = r.Rows.Select(x => new { row = x.Row, output = x.Output, filled = x.Filled, notes = x.Notes }),
+            unknown_columns = r.UnknownColumns,
+        }));
+    }
+}
+
+public sealed class CollectFormDataTool(PathPolicy p) : PdfTool(p)
+{
+    public override string Name => "collect_form_data";
+    public override ToolRisk Risk => ToolRisk.Write;
+    protected override bool HoldsPdfiumLock => false;
+    public override string Description =>
+        "Collects many filled PDF forms (files, or folders of them) into one NEW CSV table: a row per PDF with its file name " +
+        "first, a column per field in the order the fields first appear. UTF-8 with a byte-order mark, for spreadsheets.";
+    protected override string Schema => """
+        {"type":"object","properties":{
+          "paths":{"type":"array","items":{"type":"string"},"description":"Filled PDF forms, or folders of them"},
+          "output":{"type":"string","description":"New CSV file"}},
+         "required":["paths","output"],"additionalProperties":false}
+        """;
+
+    protected override ToolResult Run(JsonElement a)
+    {
+        var inputs = new List<string>();
+        foreach (var x in Strs(a, "paths"))
+            if (Directory.Exists(x)) inputs.AddRange(Directory.GetFiles(x, "*.pdf").Order(StringComparer.Ordinal).Select(Policy.Input));
+            else inputs.Add(Policy.Input(x));
+        if (inputs.Count == 0) throw new ToolException("'paths' names no PDF");
+        var output = Policy.OutputFile(OptStr(a, "output"), inputs[0], "_collected.csv", ".csv");
+        int n = Washi.Core.Forms.PdfFormData.Collect(inputs, output);
+        return new ToolResult(ToJson(new { output, rows = n }));
     }
 }
 

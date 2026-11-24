@@ -47,6 +47,9 @@ internal sealed class FakeDialogs : IDialogs
     public string? DigitalId, SaveDigitalId;
     public Task<string?> OpenDigitalIdAsync() => Task.FromResult(DigitalId);
     public Task<string?> SaveDigitalIdAsync(string suggestedName) => Task.FromResult(SaveDigitalId);
+    public string? FormData, SaveData;
+    public Task<string?> OpenFormDataAsync() => Task.FromResult(FormData);
+    public Task<string?> SaveFormDataAsync(string suggestedName) => Task.FromResult(SaveData);
     public string? Certificate;
     public Task<string?> OpenCertificateAsync() => Task.FromResult(Certificate);
     public List<string> Files = [];

@@ -157,6 +157,9 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dossier [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   liste les calques, ou règle ceux affichés
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   chiffrer pour des certificats ; washi pdf unlock &lt;in.pdf&gt; --id id.p12   l’ouvrir
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   les valeurs du formulaire (vers un fichier)
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows tableau.csv [-o dossier] [--name-column col]   une copie par ligne
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|dossier&gt; ... -o tableau.csv   des formulaires remplis en un tableau
   washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} enregistré : {1} texte(s), {2} image(s), {3} dessin(s) supprimés. Contrôle : {4} caractère(s) restant(s) dans les zones effacées, {5} pixel(s) modifié(s) ailleurs.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  conservé page {0} : {1}</value></data>
@@ -1118,4 +1121,28 @@ L’interface suit la langue du système. Définissez WASHI_LANG (p. ex. fr, de,
   <data name="Ui_CertRun" xml:space="preserve"><value>Chiffrer et enregistrer une copie…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>{0} enregistré, chiffré pour {1} certificat(s).</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} n’est pas un certificat lisible.</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>« {0} » n’est pas un fichier de données de formulaire (.fdf, .xfdf, .csv ou .json).</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} n’a pas de champ de formulaire.</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>Les données ne se relisent pas comme écrites ; le fichier n’a pas été conservé.</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} n’a aucune ligne de valeurs sous son en-tête.</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>{0} n’a pas pu être lu comme données de formulaire.</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>Aucun nom de {0} n’est un champ de {1}.</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} n’a pas de colonne « {1} ».</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>Indiquez les formulaires remplis à rassembler.</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>Données de formulaire</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>Données de formulaire</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>Enregistrez les valeurs saisies (XFDF, FDF, CSV ou JSON : l’extension choisit), ou remplissez le formulaire depuis un tel fichier.</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>Enregistrer les données…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>Remplir depuis des données…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>Depuis un tableau (CSV dont l’en-tête nomme les champs), une copie remplie par ligne ; ou plusieurs formulaires remplis en un tableau.</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>Colonne qui nomme chaque copie (facultatif)</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>par exemple Matricule</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>Une copie par ligne…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>Rassembler des formulaires en tableau…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>rassemblement</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>{0} enregistré avec {1} valeur(s).</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>{0} enregistré, {1} champ(s) remplis depuis les données.</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>« {0} » n’est pas un champ de ce formulaire.</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{0} copie(s) remplie(s) dans {1}.</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} enregistré avec {1} formulaire(s).</value></data>
 </root>

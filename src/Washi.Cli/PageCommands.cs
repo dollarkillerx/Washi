@@ -87,6 +87,46 @@ internal static class PageCommands
                     Console.WriteLine(L.F("Ui_CertOpened", output, id.Name));
                     return 0;
                 }
+                case ["data", var input] when opt.TryGetValue("--import", out var data):
+                {
+                    var output = opt.GetValueOrDefault("-o", Beside(input, "_filled.pdf"));
+                    var r = Washi.Core.Forms.PdfFormData.Import(input, data, output);
+                    Console.WriteLine(L.F("Ui_FormDataImported", output, r.Filled));
+                    foreach (var n in r.UnknownNames) Console.WriteLine("    " + L.F("Ui_FormDataUnknown", n));
+                    foreach (var n in r.Notes) Console.WriteLine("    " + n);
+                    return 0;
+                }
+                case ["data", var input] when opt.TryGetValue("--rows", out var table):
+                {
+                    var folder = opt.GetValueOrDefault("-o", Beside(input, "_filled"));
+                    var r = Washi.Core.Forms.PdfFormData.FillMany(input, table, folder, opt.GetValueOrDefault("--name-column"));
+                    foreach (var row in r.Rows)
+                    {
+                        Console.WriteLine($"{row.Row}\t{row.Output}\t{row.Filled}");
+                        foreach (var n in row.Notes) Console.WriteLine("    " + n);
+                    }
+                    foreach (var c in r.UnknownColumns) Console.WriteLine(L.F("Ui_FormDataUnknown", c));
+                    Console.WriteLine(L.F("Ui_FormDataFilledMany", r.Rows.Count, folder));
+                    return 0;
+                }
+                case ["data", var input] when opt.TryGetValue("-o", out var output):
+                {
+                    int n = Washi.Core.Forms.PdfFormData.Export(input, output);
+                    Console.WriteLine(L.F("Ui_FormDataExported", output, n));
+                    return 0;
+                }
+                case ["data", var input]:
+                {
+                    foreach (var (k, v) in Washi.Core.Forms.PdfFormData.Values(input)) Console.WriteLine($"{k}\t{v}");
+                    return 0;
+                }
+                case ["collect", .. var inputs] when inputs.Length >= 1 && opt.TryGetValue("-o", out var output):
+                {
+                    var files = inputs.SelectMany(i => Directory.Exists(i) ? Directory.GetFiles(i, "*.pdf").Order(StringComparer.Ordinal) : (IEnumerable<string>)[i]).ToList();
+                    int n = Washi.Core.Forms.PdfFormData.Collect(files, output);
+                    Console.WriteLine(L.F("Ui_FormDataCollected", output, n));
+                    return 0;
+                }
                 case ["labels", var input] when opt.ContainsKey("--set") || opt.ContainsKey("--clear"):
                 {
                     var ranges = opt.ContainsKey("--clear") ? [] : PdfPageLabels.Parse(opt["--set"]);

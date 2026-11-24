@@ -4,6 +4,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Washi.App.Services;
+using Washi.Core.Forms;
 using Washi.Core.Localization;
 using Washi.Core.Pages;
 
@@ -163,6 +164,79 @@ public sealed partial class DocumentToolViewModel(MainViewModel main) : Observab
                                     .Select(l => l.Info.Id.ToString(CultureInfo.InvariantCulture)).ToList();
         List<string> show = ids(true), hide = ids(false);
         await Write("_layers", tmp => PdfLayers.SetVisible(pdf, tmp, show, hide), o => L.F("Ui_LayersSaved", o));
+    }
+
+    // ------------------------------------------------------------------ form data
+
+    /// <summary>A column of the table whose value names each copy (optional).</summary>
+    [ObservableProperty] private string _nameColumn = "";
+    [ObservableProperty] private string _formDataResult = "";
+
+    [RelayCommand]
+    private async Task ExportDataAsync()
+    {
+        if (main.PdfPath is not { } pdf) return;
+        if (await main.Dialogs.SaveFormDataAsync(Path.GetFileNameWithoutExtension(pdf) + ".xfdf") is not { } output) return;
+        int n = 0;
+        if (await Run(() =>
+        {
+            if (File.Exists(output)) File.Delete(output);   // the save dialog already asked about replacing it
+            n = PdfFormData.Export(pdf, output);
+        }))
+            main.Status = FormDataResult = L.F("Ui_FormDataExported", Path.GetFileName(output), n);
+    }
+
+    [RelayCommand]
+    private async Task ImportDataAsync()
+    {
+        if (main.PdfPath is not { } pdf) return;
+        if (await main.Dialogs.OpenFormDataAsync() is not { } data) return;
+        FillResult? r = null;
+        await Write("_filled", tmp => r = PdfFormData.Import(pdf, data, tmp), o => L.F("Ui_FormDataImported", o, r!.Filled));
+        if (r is not null)
+            FormDataResult = string.Join("\n", new[] { main.Status }.Concat(r.UnknownNames.Select(n => L.F("Ui_FormDataUnknown", n))).Concat(r.Notes));
+    }
+
+    /// <summary>One filled copy per row of a CSV, into a folder the user picks.</summary>
+    [RelayCommand]
+    private async Task FillFromTableAsync()
+    {
+        if (main.PdfPath is not { } pdf) return;
+        if (await main.Dialogs.OpenFormDataAsync() is not { } table) return;
+        if (await main.Dialogs.PickFolderAsync() is not { } folder) return;
+        var column = NameColumn.Trim().Length > 0 ? NameColumn.Trim() : null;
+        FillManyResult? r = null;
+        if (await Run(() => r = PdfFormData.FillMany(pdf, table, folder, column)) && r is not null)
+        {
+            main.Status = L.F("Ui_FormDataFilledMany", r.Rows.Count, folder);
+            FormDataResult = string.Join("\n", new[] { main.Status }
+                .Concat(r.UnknownColumns.Select(c => L.F("Ui_FormDataUnknown", c)))
+                .Concat(r.Rows.SelectMany(x => x.Notes.Select(n => $"{Path.GetFileName(x.Output)}: {n}"))));
+        }
+    }
+
+    /// <summary>Many filled forms into one CSV.</summary>
+    [RelayCommand]
+    private async Task CollectAsync()
+    {
+        var files = await main.Dialogs.OpenPdfsAsync();
+        var pdfs = files.Where(f => f.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (pdfs.Count == 0) return;
+        if (await main.Dialogs.SaveFormDataAsync(L.Get("Ui_FormDataCollectName") + ".csv") is not { } output) return;
+        int n = 0;
+        if (await Run(() =>
+        {
+            if (File.Exists(output)) File.Delete(output);
+            n = PdfFormData.Collect(pdfs, output);
+        }))
+            main.Status = FormDataResult = L.F("Ui_FormDataCollected", Path.GetFileName(output), n);
+    }
+
+    private async Task<bool> Run(Action work)
+    {
+        bool ok = false;
+        await main.Run(async () => { await Task.Run(work); ok = true; });
+        return ok;
     }
 
     // ------------------------------------------------------------------ writing

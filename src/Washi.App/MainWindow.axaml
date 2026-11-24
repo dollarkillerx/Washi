@@ -1170,6 +1170,24 @@
                         <Button Command="{Binding Document.SaveLayersCommand}" IsEnabled="{Binding Document.LayersChanged}" IsVisible="{Binding Document.HasLayers}" Margin="0,4,0,0" x:Name="SaveLayersButton">
                             <TextBlock Text="{l:Tr Ui_LayersRun}" />
                         </Button>
+
+                        <TextBlock Text="{l:Tr Ui_FormDataTitle}" FontWeight="SemiBold" Margin="0,18,0,2" />
+                        <TextBlock Classes="note" Text="{l:Tr Ui_FormDataLead}" TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,4,0,0">
+                            <Button Content="{l:Tr Ui_FormDataExport}" Command="{Binding Document.ExportDataCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="ExportDataButton" />
+                            <Button Content="{l:Tr Ui_FormDataImport}" Command="{Binding Document.ImportDataCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="ImportDataButton" />
+                        </WrapPanel>
+                        <TextBlock Classes="note" Text="{l:Tr Ui_FormDataRowsLead}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock Classes="caption" Text="{l:Tr Ui_FormDataNameColumn}" />
+                        <TextBox Text="{Binding Document.NameColumn}" PlaceholderText="{l:Tr Ui_FormDataNameColumnHint}" />
+                        <WrapPanel Margin="0,4,0,0">
+                            <Button Content="{l:Tr Ui_FormDataRows}" Command="{Binding Document.FillFromTableCommand}" IsEnabled="{Binding Document.CanRun}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="FillFromTableButton" />
+                            <Button Content="{l:Tr Ui_FormDataCollect}" Command="{Binding Document.CollectCommand}" Padding="8,3" FontSize="12" Margin="0,0,6,6" x:Name="CollectButton" />
+                        </WrapPanel>
+                        <Border Background="{StaticResource MistBrush}" Padding="10,8" Margin="0,4,0,0"
+                                IsVisible="{Binding Document.FormDataResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <TextBlock Text="{Binding Document.FormDataResult}" TextWrapping="Wrap" FontSize="12" x:Name="FormDataResultText" />
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
 

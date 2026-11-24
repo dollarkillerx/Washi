@@ -38,7 +38,7 @@ public static class AcroFormFields
     // ------------------------------------------------------------------ list
     public static IReadOnlyList<FieldInfo> List(string path)
     {
-        using var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+        using var doc = PdfReader.Open(path, Pages.PdfPasswords.For(path) ?? "", PdfDocumentOpenMode.Import);
         return List(doc);
     }
 
@@ -93,7 +93,7 @@ public static class AcroFormFields
     /// <param name="embedFont">Optional font embedded and used for every filled text field.</param>
     public static FillResult Fill(string input, string output, IReadOnlyDictionary<string, string> values, OpenTypeFont? embedFont = null)
     {
-        using var doc = PdfReader.Open(input, PdfDocumentOpenMode.Modify);
+        using var doc = Pages.PdfSecurity.OpenForChanges(input, Pages.PdfPasswords.For(input));   // a clear error for a locked form
         var result = Fill(doc, values, embedFont);
         doc.Options.CompressContentStreams = true;
         doc.Save(output);
@@ -215,7 +215,7 @@ public static class AcroFormFields
                     string? on = (ff & FfRadio) != 0 ? Match(value)
                         : IsTrue(value) ? states.FirstOrDefault() ?? "Yes"
                         : Match(value);
-                    if ((ff & FfRadio) != 0 && on is null)
+                    if ((ff & FfRadio) != 0 && on is null && value.Trim() is not ("Off" or ""))   // Off or nothing: no choice
                     {
                         notes.Add($"{name}: '{value}' is not one of {string.Join(", ", pairs.Select(p => p.Label))}");
                         continue;
@@ -561,6 +561,16 @@ public static class AcroFormFields
 
     /// <summary>A button field's on-states with what they stand for: the /Opt item when the parent has one (states
     /// 0, 1, 2 ... index it), else the state name itself.</summary>
+    /// <summary>Each check box's and radio group's on-states and their labels (the label differs when the form has /Opt).</summary>
+    internal static Dictionary<string, List<(string State, string Label)>> ButtonStateMap(string path)
+    {
+        using var doc = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+        var map = new Dictionary<string, List<(string, string)>>(StringComparer.Ordinal);
+        foreach (var (field, name, widgets) in Terminals(doc))
+            if (Inherited(field, "/FT") is PdfName { Value: "/Btn" }) map[name] = ButtonStates(field, widgets);
+        return map;
+    }
+
     private static List<(string State, string Label)> ButtonStates(PdfDictionary field, List<PdfDictionary> widgets)
     {
         var states = widgets.SelectMany(OnStates).Distinct().ToList();

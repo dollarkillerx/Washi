@@ -157,6 +157,9 @@
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 폴더 [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   레이어 목록, 표시 설정
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   인증서로 암호화; washi pdf unlock &lt;in.pdf&gt; --id id.p12   열기
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   양식의 값(데이터 파일로)
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows 표.csv [-o 폴더] [--name-column 열]   행마다 사본
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|폴더&gt; ... -o 표.csv   작성된 양식을 하나의 표로
   washi pdf make-id --name "…" [--email …] -o id.p12   자체 서명 디지털 ID 만들기</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>{0} 저장: 글자 {1}개, 이미지 {2}개, 도형 {3}개 삭제. 확인: 지운 곳에 남은 글자 {4}개, 다른 곳에서 바뀐 픽셀 {5}개.</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  {0}쪽에서 유지: {1}</value></data>
@@ -1118,4 +1121,28 @@
   <data name="Ui_CertRun" xml:space="preserve"><value>암호화하여 사본 저장…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>{0} 저장 (인증서 {1}개용으로 암호화).</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} 은(는) 읽을 수 있는 인증서가 아닙니다.</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>“{0}” 은(는) 양식 데이터 파일이 아닙니다(.fdf, .xfdf, .csv, .json).</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} 에는 입력란이 없습니다.</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>양식 데이터가 쓴 대로 읽히지 않아 저장하지 않았습니다.</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} 에는 머리글 아래 값 행이 없습니다.</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>{0} 을(를) 양식 데이터로 읽을 수 없습니다.</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>{0} 의 이름 중 {1} 의 입력란과 맞는 것이 없습니다.</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} 에는 “{1}” 열이 없습니다.</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>모을 작성된 양식을 지정하세요.</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>양식 데이터</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>양식 데이터</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>양식에 입력된 값을 파일로 저장하거나(XFDF, FDF, CSV, JSON: 확장자로 형식 결정), 그런 파일로 양식을 채웁니다.</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>데이터 저장…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>데이터로 채우기…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>표(머리글이 입력란 이름인 CSV)의 행마다 채운 사본을 만들거나, 여러 작성된 양식을 하나의 표로 모읍니다.</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>사본 이름으로 쓸 열 (선택)</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>예: 사원번호</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>행마다 사본 만들기…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>양식을 표로 모으기…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>모음</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>{0} 저장 (입력란 값 {1}개).</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>{0} 저장 (데이터로 {1}개 입력).</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>“{0}” 은(는) 이 양식의 입력란이 아닙니다.</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>{1} 에 사본 {0}개를 만들었습니다.</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>{0} 저장 (양식 {1}개).</value></data>
 </root>

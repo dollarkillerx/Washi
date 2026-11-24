@@ -157,6 +157,9 @@
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 文件夹 [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   列出图层，或设置显示
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   用证书加密；washi pdf unlock &lt;in.pdf&gt; --id id.p12   打开
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   表单的值（写入数据文件）
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows 表格.csv [-o 文件夹] [--name-column 列]   每行一份副本
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|文件夹&gt; ... -o 表格.csv   将已填表单汇总为一个表格
   washi pdf make-id --name "…" [--email …] -o id.p12   创建自签名数字标识</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已保存 {0}：删除了文字 {1} 段、图像 {2} 个、图形 {3} 个。检查：删除处剩余文字 {4} 个，其他地方变化的像素 {5} 个。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 页保留：{1}</value></data>
@@ -1118,4 +1121,28 @@
   <data name="Ui_CertRun" xml:space="preserve"><value>加密并另存副本…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>已保存 {0}（为 {1} 个证书加密）。</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} 不是 Washi 能读取的证书。</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>“{0}”不是表单数据文件（.fdf、.xfdf、.csv 或 .json）。</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} 没有表单栏位。</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>表单数据未能按写入内容读回，未保存。</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} 的标题行下没有数据行。</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>无法将 {0} 读取为表单数据。</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>{0} 中的名称都不是 {1} 的栏位。</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} 没有“{1}”列。</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>请指定要汇总的已填表单。</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>表单数据</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>表单数据</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>把表单中的值保存到文件（XFDF、FDF、CSV 或 JSON，由扩展名决定），或从这样的文件填写表单。</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>保存数据…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>从数据填写…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>从表格（标题为栏位名称的 CSV）为每一行生成一份已填副本；也可把多份已填表单汇总为一个表格。</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>用作副本名称的列（可选）</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>例如 员工编号</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>每行生成一份副本…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>将表单汇总为表格…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>汇总</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>已保存 {0}（{1} 个栏位值）。</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>已保存 {0}（从数据填写了 {1} 个栏位）。</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>“{0}”不是此表单的栏位。</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>已在 {1} 生成 {0} 份副本。</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>已保存 {0}（{1} 份表单）。</value></data>
 </root>

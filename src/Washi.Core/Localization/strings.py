@@ -547,6 +547,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dir [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   list layers, or set which show\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   encrypt for certificates;  washi pdf unlock <in.pdf> --id id.p12   open it\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   the form\'s values (to a data file)\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows table.csv [-o folder] [--name-column col]   one copy per row\n'
+            '  washi pdf collect <a.pdf> <b.pdf|folder> ... -o table.csv   many filled forms into one table\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   make a self-signed digital ID'
         ),
         "ja": (
@@ -597,6 +600,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract フォルダ [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   レイヤーの一覧、表示の設定\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   証明書で暗号化；washi pdf unlock <in.pdf> --id id.p12   開く\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   フォームの値（データファイルへ）\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows 表.csv [-o フォルダ] [--name-column 列]   1 行ごとにコピー\n'
+            '  washi pdf collect <a.pdf> <b.pdf|フォルダ> ... -o 表.csv   記入済みフォームを 1 つの表に集計\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   自己署名のデジタル ID を作成'
         ),
         "zh-Hans": (
@@ -647,6 +653,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 文件夹 [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   列出图层，或设置显示\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   用证书加密；washi pdf unlock <in.pdf> --id id.p12   打开\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   表单的值（写入数据文件）\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows 表格.csv [-o 文件夹] [--name-column 列]   每行一份副本\n'
+            '  washi pdf collect <a.pdf> <b.pdf|文件夹> ... -o 表格.csv   将已填表单汇总为一个表格\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   创建自签名数字标识'
         ),
         "zh-Hant": (
@@ -697,6 +706,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 資料夾 [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   列出圖層，或設定顯示\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   用憑證加密；washi pdf unlock <in.pdf> --id id.p12   開啟\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   表單的值（寫入資料檔）\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows 表格.csv [-o 資料夾] [--name-column 欄]   每列一份副本\n'
+            '  washi pdf collect <a.pdf> <b.pdf|資料夾> ... -o 表格.csv   將已填表單彙總為一個表格\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   建立自簽署數位識別碼'
         ),
         "ko": (
@@ -747,6 +759,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 폴더 [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   레이어 목록, 표시 설정\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   인증서로 암호화; washi pdf unlock <in.pdf> --id id.p12   열기\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   양식의 값(데이터 파일로)\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows 표.csv [-o 폴더] [--name-column 열]   행마다 사본\n'
+            '  washi pdf collect <a.pdf> <b.pdf|폴더> ... -o 표.csv   작성된 양식을 하나의 표로\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   자체 서명 디지털 ID 만들기'
         ),
         "fr": (
@@ -797,6 +812,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract dossier [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   liste les calques, ou règle ceux affichés\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   chiffrer pour des certificats ; washi pdf unlock <in.pdf> --id id.p12   l’ouvrir\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   les valeurs du formulaire (vers un fichier)\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows tableau.csv [-o dossier] [--name-column col]   une copie par ligne\n'
+            '  washi pdf collect <a.pdf> <b.pdf|dossier> ... -o tableau.csv   des formulaires remplis en un tableau\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   crée une identité auto-signée'
         ),
         "de": (
@@ -847,6 +865,9 @@ Die Oberfläche folgt der Systemsprache. Mit WASHI_LANG (z. B. de, fr, ja) läss
             '  washi pdf attachments <in.pdf> [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract Ordner [--name a]\n'
             '  washi pdf layers <in.pdf> [--show a,b] [--hide c] [-o out.pdf]   Ebenen auflisten oder einstellen, welche sichtbar sind\n'
             '  washi pdf protect <in.pdf> --to a.cer,b.cer [-o out.pdf]   für Zertifikate verschlüsseln; washi pdf unlock <in.pdf> --id id.p12   öffnen\n'
+            '  washi pdf data <in.pdf> [-o data.xfdf|.fdf|.csv|.json]   die Werte des Formulars (in eine Datei)\n'
+            '  washi pdf data <in.pdf> --import data.xfdf [-o out.pdf]   |   --rows tabelle.csv [-o Ordner] [--name-column Spalte]   eine Kopie je Zeile\n'
+            '  washi pdf collect <a.pdf> <b.pdf|Ordner> ... -o tabelle.csv   ausgefüllte Formulare in eine Tabelle\n'
             '  washi pdf make-id --name "…" [--email …] -o id.p12   selbstsignierte digitale ID erstellen'
         ),
     },
@@ -2113,6 +2134,30 @@ _UI = {
     "Ui_CertRun": ["Encrypt and save copy…", "暗号化してコピーを保存…", "加密并另存副本…", "加密並另存副本…", "암호화하여 사본 저장…", "Chiffrer et enregistrer une copie…", "Verschlüsseln und Kopie speichern…"],
     "Ui_CertSealed": ["Saved {0}, encrypted for {1} certificate(s).", "{0} を保存しました（証明書 {1} 件あてに暗号化）。", "已保存 {0}（为 {1} 个证书加密）。", "已儲存 {0}（為 {1} 個憑證加密）。", "{0} 저장 (인증서 {1}개용으로 암호화).", "{0} enregistré, chiffré pour {1} certificat(s).", "{0} gespeichert, für {1} Zertifikat(e) verschlüsselt."],
     "Ui_CertUnreadable": ["{0} is not a certificate Washi can read.", "{0} は読み取れる証明書ではありません。", "{0} 不是 Washi 能读取的证书。", "{0} 不是 Washi 能讀取的憑證。", "{0} 은(는) 읽을 수 있는 인증서가 아닙니다.", "{0} n’est pas un certificat lisible.", "{0} ist kein lesbares Zertifikat."],
+    "Err_FormDataKind": ["“{0}” is not a form data file (.fdf, .xfdf, .csv or .json).", "「{0}」はフォームデータのファイルではありません（.fdf、.xfdf、.csv、.json）。", "“{0}”不是表单数据文件（.fdf、.xfdf、.csv 或 .json）。", "「{0}」不是表單資料檔（.fdf、.xfdf、.csv 或 .json）。", "“{0}” 은(는) 양식 데이터 파일이 아닙니다(.fdf, .xfdf, .csv, .json).", "« {0} » n’est pas un fichier de données de formulaire (.fdf, .xfdf, .csv ou .json).", "„{0}“ ist keine Formulardaten-Datei (.fdf, .xfdf, .csv oder .json)."],
+    "Err_FormDataNoFields": ["{0} has no form fields.", "{0} には記入欄がありません。", "{0} 没有表单栏位。", "{0} 沒有表單欄位。", "{0} 에는 입력란이 없습니다.", "{0} n’a pas de champ de formulaire.", "{0} hat keine Formularfelder."],
+    "Err_FormDataCheck": ["The form data did not read back as written; it was not kept.", "フォームデータが書いた通りに読み戻せなかったため、保存しませんでした。", "表单数据未能按写入内容读回，未保存。", "表單資料未能按寫入內容讀回，未儲存。", "양식 데이터가 쓴 대로 읽히지 않아 저장하지 않았습니다.", "Les données ne se relisent pas comme écrites ; le fichier n’a pas été conservé.", "Die Formulardaten ließen sich nicht wie geschrieben zurücklesen; die Datei wurde nicht behalten."],
+    "Err_FormDataEmpty": ["{0} has no row of values under its header.", "{0} には見出し行の下に値の行がありません。", "{0} 的标题行下没有数据行。", "{0} 的標題列下沒有資料列。", "{0} 에는 머리글 아래 값 행이 없습니다.", "{0} n’a aucune ligne de valeurs sous son en-tête.", "{0} hat unter der Kopfzeile keine Wertezeile."],
+    "Err_FormDataUnreadable": ["{0} could not be read as form data.", "{0} をフォームデータとして読み取れません。", "无法将 {0} 读取为表单数据。", "無法將 {0} 讀取為表單資料。", "{0} 을(를) 양식 데이터로 읽을 수 없습니다.", "{0} n’a pas pu être lu comme données de formulaire.", "{0} ließ sich nicht als Formulardaten lesen."],
+    "Err_FormDataNoMatch": ["None of the names in {0} is a field of {1}.", "{0} の名前はどれも {1} の記入欄と一致しません。", "{0} 中的名称都不是 {1} 的栏位。", "{0} 中的名稱都不是 {1} 的欄位。", "{0} 의 이름 중 {1} 의 입력란과 맞는 것이 없습니다.", "Aucun nom de {0} n’est un champ de {1}.", "Keiner der Namen in {0} ist ein Feld von {1}."],
+    "Err_FormDataNoColumn": ["{0} has no column “{1}”.", "{0} には「{1}」の列がありません。", "{0} 没有“{1}”列。", "{0} 沒有「{1}」欄。", "{0} 에는 “{1}” 열이 없습니다.", "{0} n’a pas de colonne « {1} ».", "{0} hat keine Spalte „{1}“."],
+    "Err_FormDataNothing": ["Give the filled forms to collect.", "集計する記入済みフォームを指定してください。", "请指定要汇总的已填表单。", "請指定要彙總的已填表單。", "모을 작성된 양식을 지정하세요.", "Indiquez les formulaires remplis à rassembler.", "Geben Sie die ausgefüllten Formulare zum Sammeln an."],
+    "Ui_FormDataFiles": ["Form data", "フォームデータ", "表单数据", "表單資料", "양식 데이터", "Données de formulaire", "Formulardaten"],
+    "Ui_FormDataTitle": ["Form data", "フォームデータ", "表单数据", "表單資料", "양식 데이터", "Données de formulaire", "Formulardaten"],
+    "Ui_FormDataLead": ["Save the values typed into the form (XFDF, FDF, CSV or JSON: the extension you give chooses), or fill the form from such a file.", "入力済みの値をファイルに保存したり（XFDF、FDF、CSV、JSON。拡張子で形式が決まります）、そのファイルからフォームに入力したりします。", "把表单中的值保存到文件（XFDF、FDF、CSV 或 JSON，由扩展名决定），或从这样的文件填写表单。", "把表單中的值儲存到檔案（XFDF、FDF、CSV 或 JSON，由副檔名決定），或從這樣的檔案填寫表單。", "양식에 입력된 값을 파일로 저장하거나(XFDF, FDF, CSV, JSON: 확장자로 형식 결정), 그런 파일로 양식을 채웁니다.", "Enregistrez les valeurs saisies (XFDF, FDF, CSV ou JSON : l’extension choisit), ou remplissez le formulaire depuis un tel fichier.", "Die eingetragenen Werte speichern (XFDF, FDF, CSV oder JSON: die Endung entscheidet) oder das Formular aus einer solchen Datei füllen."],
+    "Ui_FormDataExport": ["Save data…", "データを保存…", "保存数据…", "儲存資料…", "데이터 저장…", "Enregistrer les données…", "Daten speichern…"],
+    "Ui_FormDataImport": ["Fill from data…", "データから入力…", "从数据填写…", "從資料填寫…", "데이터로 채우기…", "Remplir depuis des données…", "Aus Daten füllen…"],
+    "Ui_FormDataRowsLead": ["From a table (CSV whose header names the fields), one filled copy per row; or many filled forms into one table.", "表（見出しが記入欄の名前の CSV）から 1 行ごとに記入済みのコピーを作ります。複数の記入済みフォームを 1 つの表にまとめることもできます。", "从表格（标题为栏位名称的 CSV）为每一行生成一份已填副本；也可把多份已填表单汇总为一个表格。", "從表格（標題為欄位名稱的 CSV）為每一列產生一份已填副本；也可把多份已填表單彙總為一個表格。", "표(머리글이 입력란 이름인 CSV)의 행마다 채운 사본을 만들거나, 여러 작성된 양식을 하나의 표로 모읍니다.", "Depuis un tableau (CSV dont l’en-tête nomme les champs), une copie remplie par ligne ; ou plusieurs formulaires remplis en un tableau.", "Aus einer Tabelle (CSV, deren Kopfzeile die Felder nennt) eine ausgefüllte Kopie je Zeile; oder viele ausgefüllte Formulare in eine Tabelle."],
+    "Ui_FormDataNameColumn": ["Column that names each copy (optional)", "コピーの名前にする列（任意）", "用作副本名称的列（可选）", "用作副本名稱的欄（選填）", "사본 이름으로 쓸 열 (선택)", "Colonne qui nomme chaque copie (facultatif)", "Spalte, die jede Kopie benennt (optional)"],
+    "Ui_FormDataNameColumnHint": ["for example 社員番号", "例: 社員番号", "例如 员工编号", "例如 員工編號", "예: 사원번호", "par exemple Matricule", "zum Beispiel Personalnummer"],
+    "Ui_FormDataRows": ["Fill one copy per row…", "1 行ごとにコピーを作成…", "每行生成一份副本…", "每列產生一份副本…", "행마다 사본 만들기…", "Une copie par ligne…", "Eine Kopie je Zeile…"],
+    "Ui_FormDataCollect": ["Collect forms into a table…", "フォームを表に集計…", "将表单汇总为表格…", "將表單彙總為表格…", "양식을 표로 모으기…", "Rassembler des formulaires en tableau…", "Formulare in Tabelle sammeln…"],
+    "Ui_FormDataCollectName": ["collected", "集計", "汇总", "彙總", "모음", "rassemblement", "gesammelt"],
+    "Ui_FormDataExported": ["Saved {0} with {1} field value(s).", "{0} を保存しました（記入欄 {1} 件）。", "已保存 {0}（{1} 个栏位值）。", "已儲存 {0}（{1} 個欄位值）。", "{0} 저장 (입력란 값 {1}개).", "{0} enregistré avec {1} valeur(s).", "{0} mit {1} Feldwert(en) gespeichert."],
+    "Ui_FormDataImported": ["Saved {0} with {1} field(s) filled from the data.", "{0} を保存しました（データから {1} 件を入力）。", "已保存 {0}（从数据填写了 {1} 个栏位）。", "已儲存 {0}（從資料填寫了 {1} 個欄位）。", "{0} 저장 (데이터로 {1}개 입력).", "{0} enregistré, {1} champ(s) remplis depuis les données.", "{0} gespeichert, {1} Feld(er) aus den Daten gefüllt."],
+    "Ui_FormDataUnknown": ["“{0}” is no field of this form.", "「{0}」はこのフォームの記入欄ではありません。", "“{0}”不是此表单的栏位。", "「{0}」不是此表單的欄位。", "“{0}” 은(는) 이 양식의 입력란이 아닙니다.", "« {0} » n’est pas un champ de ce formulaire.", "„{0}“ ist kein Feld dieses Formulars."],
+    "Ui_FormDataFilledMany": ["Filled {0} copies in {1}.", "{1} に {0} 部のコピーを作成しました。", "已在 {1} 生成 {0} 份副本。", "已在 {1} 產生 {0} 份副本。", "{1} 에 사본 {0}개를 만들었습니다.", "{0} copie(s) remplie(s) dans {1}.", "{0} Kopie(n) in {1} ausgefüllt."],
+    "Ui_FormDataCollected": ["Saved {0} with {1} form(s).", "{0} を保存しました（フォーム {1} 件）。", "已保存 {0}（{1} 份表单）。", "已儲存 {0}（{1} 份表單）。", "{0} 저장 (양식 {1}개).", "{0} enregistré avec {1} formulaire(s).", "{0} mit {1} Formular(en) gespeichert."],
 }
 for _k, _v in _UI.items():
     assert len(_v) == len(LANGS), _k

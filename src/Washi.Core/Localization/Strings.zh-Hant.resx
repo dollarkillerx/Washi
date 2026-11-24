@@ -157,6 +157,9 @@
   washi pdf attachments &lt;in.pdf&gt; [--add a,b [--description …] | --remove a,b] [-o out.pdf] | --extract 資料夾 [--name a]
   washi pdf layers &lt;in.pdf&gt; [--show a,b] [--hide c] [-o out.pdf]   列出圖層，或設定顯示
   washi pdf protect &lt;in.pdf&gt; --to a.cer,b.cer [-o out.pdf]   用憑證加密；washi pdf unlock &lt;in.pdf&gt; --id id.p12   開啟
+  washi pdf data &lt;in.pdf&gt; [-o data.xfdf|.fdf|.csv|.json]   表單的值（寫入資料檔）
+  washi pdf data &lt;in.pdf&gt; --import data.xfdf [-o out.pdf]   |   --rows 表格.csv [-o 資料夾] [--name-column 欄]   每列一份副本
+  washi pdf collect &lt;a.pdf&gt; &lt;b.pdf|資料夾&gt; ... -o 表格.csv   將已填表單彙總為一個表格
   washi pdf make-id --name "…" [--email …] -o id.p12   建立自簽署數位識別碼</value></data>
   <data name="Pdf_Erased" xml:space="preserve"><value>已儲存 {0}：刪除了文字 {1} 段、影像 {2} 個、圖形 {3} 個。檢查：刪除處剩餘文字 {4} 個，其他地方變化的像素 {5} 個。</value></data>
   <data name="Pdf_EraseKept" xml:space="preserve"><value>  第 {0} 頁保留：{1}</value></data>
@@ -1118,4 +1121,28 @@
   <data name="Ui_CertRun" xml:space="preserve"><value>加密並另存副本…</value></data>
   <data name="Ui_CertSealed" xml:space="preserve"><value>已儲存 {0}（為 {1} 個憑證加密）。</value></data>
   <data name="Ui_CertUnreadable" xml:space="preserve"><value>{0} 不是 Washi 能讀取的憑證。</value></data>
+  <data name="Err_FormDataKind" xml:space="preserve"><value>「{0}」不是表單資料檔（.fdf、.xfdf、.csv 或 .json）。</value></data>
+  <data name="Err_FormDataNoFields" xml:space="preserve"><value>{0} 沒有表單欄位。</value></data>
+  <data name="Err_FormDataCheck" xml:space="preserve"><value>表單資料未能按寫入內容讀回，未儲存。</value></data>
+  <data name="Err_FormDataEmpty" xml:space="preserve"><value>{0} 的標題列下沒有資料列。</value></data>
+  <data name="Err_FormDataUnreadable" xml:space="preserve"><value>無法將 {0} 讀取為表單資料。</value></data>
+  <data name="Err_FormDataNoMatch" xml:space="preserve"><value>{0} 中的名稱都不是 {1} 的欄位。</value></data>
+  <data name="Err_FormDataNoColumn" xml:space="preserve"><value>{0} 沒有「{1}」欄。</value></data>
+  <data name="Err_FormDataNothing" xml:space="preserve"><value>請指定要彙總的已填表單。</value></data>
+  <data name="Ui_FormDataFiles" xml:space="preserve"><value>表單資料</value></data>
+  <data name="Ui_FormDataTitle" xml:space="preserve"><value>表單資料</value></data>
+  <data name="Ui_FormDataLead" xml:space="preserve"><value>把表單中的值儲存到檔案（XFDF、FDF、CSV 或 JSON，由副檔名決定），或從這樣的檔案填寫表單。</value></data>
+  <data name="Ui_FormDataExport" xml:space="preserve"><value>儲存資料…</value></data>
+  <data name="Ui_FormDataImport" xml:space="preserve"><value>從資料填寫…</value></data>
+  <data name="Ui_FormDataRowsLead" xml:space="preserve"><value>從表格（標題為欄位名稱的 CSV）為每一列產生一份已填副本；也可把多份已填表單彙總為一個表格。</value></data>
+  <data name="Ui_FormDataNameColumn" xml:space="preserve"><value>用作副本名稱的欄（選填）</value></data>
+  <data name="Ui_FormDataNameColumnHint" xml:space="preserve"><value>例如 員工編號</value></data>
+  <data name="Ui_FormDataRows" xml:space="preserve"><value>每列產生一份副本…</value></data>
+  <data name="Ui_FormDataCollect" xml:space="preserve"><value>將表單彙總為表格…</value></data>
+  <data name="Ui_FormDataCollectName" xml:space="preserve"><value>彙總</value></data>
+  <data name="Ui_FormDataExported" xml:space="preserve"><value>已儲存 {0}（{1} 個欄位值）。</value></data>
+  <data name="Ui_FormDataImported" xml:space="preserve"><value>已儲存 {0}（從資料填寫了 {1} 個欄位）。</value></data>
+  <data name="Ui_FormDataUnknown" xml:space="preserve"><value>「{0}」不是此表單的欄位。</value></data>
+  <data name="Ui_FormDataFilledMany" xml:space="preserve"><value>已在 {1} 產生 {0} 份副本。</value></data>
+  <data name="Ui_FormDataCollected" xml:space="preserve"><value>已儲存 {0}（{1} 份表單）。</value></data>
 </root>
