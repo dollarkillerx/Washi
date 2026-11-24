@@ -31,6 +31,7 @@ T = {
     "nav_features": {"en": "Features", "ja": "機能", "zh": "功能"},
     "nav_ai": {"en": "AI & MCP", "ja": "AI と MCP", "zh": "AI 与 MCP"},
     "nav_privacy": {"en": "Privacy", "ja": "プライバシー", "zh": "隐私"},
+    "nav_language": {"en": "Language", "ja": "言語", "zh": "语言"},
     "nav_get": {"en": "Get Washi", "ja": "入手する", "zh": "获取"},
     "eyebrow": {"en": "Open source · AGPL-3.0 · pre-alpha", "ja": "オープンソース · AGPL-3.0 · プレアルファ", "zh": "开源 · AGPL-3.0 · 预览阶段"},
     "h1": {"en": "Flat PDF forms,<br>made fillable.", "ja": "紙の様式を、<br>記入できる PDF に。", "zh": "扁平的 PDF 表格，<br>变成可填写的表单。"},
@@ -242,6 +243,40 @@ GITHUB = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.
           '1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>')
 
 
+GLOBE = ('<svg class="globe" viewBox="0 0 32 32" aria-hidden="true"><path d="M27.85 29H30l-6-15h-2.35l-6 15h2.15l1.6-4h6.85zm-7.65-6 '
+         '2.62-6.56L25.45 23zM18 7V5h-7V2H9v3H2v2h10.74a14.7 14.7 0 0 1-3.19 6.18A13.5 13.5 0 0 1 7.26 9h-2.1a16.5 16.5 0 0 0 3 5.58A16.8 '
+         '16.8 0 0 1 3 18l.75 1.86A18.5 18.5 0 0 0 9.53 16a16.9 16.9 0 0 0 5.76 3.84L16 18a14.5 14.5 0 0 1-5.12-3.37A17.6 17.6 0 0 0 14.8 7z"/></svg>')
+CHEVRON = '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11 3 6l.7-.7L8 9.6l4.3-4.3.7.7z"/></svg>'
+
+# English page only: a first visit follows the browser's language; a language picked in the menu is remembered
+REDIRECT = """<script>
+(function () {
+  try {
+    var pref = localStorage.getItem('washi-lang');
+    if (!pref) {
+      var l = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+      pref = /^ja/i.test(l) ? 'ja' : /^zh/i.test(l) ? 'zh' : 'en';
+    }
+    if (pref === 'ja' || pref === 'zh') location.replace(pref + '/' + location.hash);
+  } catch (e) {}
+})();
+</script>"""
+
+
+MENU_SCRIPT = """<script>
+(function () {
+  // remember a language picked in the menu: the English page follows it on the next visit
+  document.querySelectorAll('[data-lang]').forEach(function (a) {
+    a.addEventListener('click', function () { try { localStorage.setItem('washi-lang', a.dataset.lang); } catch (e) {} });
+  });
+  // close the language menu on a click outside it or Escape
+  var menu = document.querySelector('.lang');
+  document.addEventListener('click', function (e) { if (menu && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu) menu.open = false; });
+})();
+</script>"""
+
+
 def svg(path, cls=""):
     return f'<svg viewBox="0 0 20 20" aria-hidden="true"{cls}><path d="{path}"/></svg>'
 
@@ -252,9 +287,9 @@ def page(lang, base_url):
     t = lambda k: T[k][lang]
     esc = html.escape
 
-    current = ' aria-current="page"'
+    current = ' aria-current="true"'
     langs = "".join(
-        f'<a href="{root}{s}" hreflang="{c}" lang="{c}"{current if k == lang else ""}>{n}</a>'
+        f'<li><a href="{root}{s}" hreflang="{c}" lang="{c}" data-lang="{k}"{current if k == lang else ""}>{n}</a></li>'
         for k, (c, s, n) in LANGS.items())
     alternates = ""
     if base_url:
@@ -292,6 +327,7 @@ def page(lang, base_url):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="{root}style.css">
+{REDIRECT if not sub else ""}
 </head>
 <body>
 <header class="top">
@@ -303,7 +339,10 @@ def page(lang, base_url):
       <a class="sec" href="#privacy">{t("nav_privacy")}</a>
       <a class="sec" href="#get">{t("nav_get")}</a>
       <a class="gh" href="{REPO}">GitHub</a>
-      <span class="lang">{langs}</span>
+      <details class="lang">
+        <summary aria-label="{t("nav_language")}">{GLOBE}<span>{LANGS[lang][2]}</span>{CHEVRON}</summary>
+        <ul>{langs}</ul>
+      </details>
     </nav>
   </div>
 </header>
@@ -469,6 +508,7 @@ def page(lang, base_url):
     </div>
   </div>
 </footer>
+{MENU_SCRIPT}
 </body>
 </html>
 """
